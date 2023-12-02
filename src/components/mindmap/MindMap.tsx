@@ -29,11 +29,6 @@ function Mindmap() {
     x: 0,
     y: 0,
   });
-  const [reset, setReset] = useState(false);
-
-  useEffect(() => {
-    setPosition({ x: 0, y: 0 });
-  }, [reset]);
 
   const addNode = (position: { x: any; y: any }) => {
     setNodes((e) =>
@@ -50,14 +45,13 @@ function Mindmap() {
 
   const handleDrag = (e: any, data: { x: any; y: any }) => {
     setPosition({ x: data.x, y: data.y });
-    console.log("DRAG position:", position);
-    console.log("e:", e);
   };
 
   const handleStop = () => {
-    setReset(true);
     addNode(position);
-    console.log("STOP position:", position);
+    setPosition({ x: 0, y: 0 });
+    console.log("nodes:", nodes);
+    console.log("edges:", edges);
   };
 
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
@@ -93,6 +87,10 @@ function Mindmap() {
         </div>
       </div>
 
+      <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
+        <div className="bg-white shadow-lg h-full rounded-xl"></div>
+      </aside>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -104,12 +102,6 @@ function Mindmap() {
         <Background color="#cccccc" variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Background id="2" gap={100} color="#EDEDED" variant={BackgroundVariant.Lines} />
       </ReactFlow>
-      <div style={{ position: "fixed", left: "45%", bottom: "20px" }}>
-        <input type="text" onChange={(e) => setName(e.target.value)} name="title" />
-        <button type="button" onClick={addNode}>
-          Add Node
-        </button>
-      </div>
     </div>
   );
 }
