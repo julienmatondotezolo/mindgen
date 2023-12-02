@@ -2,6 +2,7 @@
 
 import "reactflow/dist/style.css";
 
+import { stringify } from "querystring";
 import React, { useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import ReactFlow, {
@@ -54,6 +55,56 @@ function Mindmap() {
 
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
+  const getNestedEdges = (edges) => {
+    const nestedEdges = {};
+    let rootNode;
+
+    edges.forEach((edge) => {
+      const { source, target } = edge;
+
+      if (!nestedEdges[source]) {
+        nestedEdges[source] = { node: source, children: [] };
+      }
+
+      if (!nestedEdges[target]) {
+        nestedEdges[target] = { node: target, children: [] };
+      }
+
+      nestedEdges[source].children.push(nestedEdges[target]);
+
+      if (!nestedEdges[target].parent) {
+        nestedEdges[target].parent = nestedEdges[source];
+      }
+
+      if (!nestedEdges[source].parent) {
+        nestedEdges[source].parent = null;
+      }
+
+      if (!nestedEdges[nestedEdges[target].node].parent) {
+        rootNode = nestedEdges[target];
+      }
+    });
+
+    return rootNode;
+  };
+
+  // const createNestedArray = (node) => {
+  //   const result = [node.node];
+
+  //   if (node.children.length > 0) {
+  //     node.children.forEach((child) => {
+  //       result.push(createNestedArray(child));
+  //     });
+  //   }
+
+  //   return result;
+  // };
+
+  // const rootNode = getNestedEdges(edges);
+  // const nestedArray = createNestedArray(rootNode);
+
+  // console.log(JSON.stringify(nestedArray, null, 2));
+
   return (
     <div className="relative w-full h-full">
       <div className="absolute top-5 left-5 flex z-10">
@@ -86,7 +137,10 @@ function Mindmap() {
       </div>
 
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
-        <div className="bg-white shadow-lg h-full rounded-xl"></div>
+        <div className="flex flex-wrap bg-white shadow-lg w-full h-full rounded-xl p-4">
+          <p>{JSON.stringify(edges, null, 2)}</p>
+          <p>{JSON.stringify(getNestedEdges(edges), null, 2)}</p>
+        </div>
       </aside>
 
       <ReactFlow
