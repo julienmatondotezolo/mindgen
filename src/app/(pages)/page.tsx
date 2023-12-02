@@ -1,4 +1,4 @@
-import MindMap from "@/components/MindMap"
+import MindMap from "@/components/mindmap/MindMap"
 
 export default function Home() {
   return (
