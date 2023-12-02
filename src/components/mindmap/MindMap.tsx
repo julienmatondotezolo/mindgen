@@ -2,7 +2,7 @@
 
 import "reactflow/dist/style.css";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import ReactFlow, {
   addEdge,
@@ -24,7 +24,7 @@ const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
 function Mindmap() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [name, setName] = useState("");
+  const [name] = useState("");
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -50,8 +50,6 @@ function Mindmap() {
   const handleStop = () => {
     addNode(position);
     setPosition({ x: 0, y: 0 });
-    console.log("nodes:", nodes);
-    console.log("edges:", edges);
   };
 
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
