@@ -1,0 +1,16 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+    --primary-color: #cf081b;
+    --primary-color-light: #ffced2;
+    --secondary-color: #08cf8f;
+}
+
+@layer base {
+    html {
+        @apply m-0;
+    }
+}
+  
