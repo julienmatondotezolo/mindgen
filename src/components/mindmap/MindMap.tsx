@@ -2,7 +2,8 @@
 
 import "reactflow/dist/style.css";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import Draggable from "react-draggable";
 import ReactFlow, {
   addEdge,
   Background,
@@ -15,8 +16,8 @@ import ReactFlow, {
 } from "reactflow";
 
 const initialNodes = [
-  { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
-  { id: "2", position: { x: 0, y: 100 }, data: { label: "2" } },
+  { id: "1", position: { x: 300, y: 200 }, data: { label: "1" } },
+  { id: "2", position: { x: 400, y: 600 }, data: { label: "2" } },
 ];
 const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
 
@@ -24,24 +25,74 @@ function Mindmap() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [name, setName] = useState("");
+  const [position, setPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [reset, setReset] = useState(false);
 
-  const addNode = () => {
+  useEffect(() => {
+    setPosition({ x: 0, y: 0 });
+  }, [reset]);
+
+  const addNode = (position: { x: any; y: any }) => {
     setNodes((e) =>
       e.concat({
         id: (e.length + 1).toString(),
         data: { label: `${name}` },
         position: {
-          x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight,
+          x: position.x ?? Math.random() * window.innerWidth,
+          y: position.y ?? Math.random() * window.innerHeight,
         },
       }),
     );
   };
 
+  const handleDrag = (e: any, data: { x: any; y: any }) => {
+    setPosition({ x: data.x, y: data.y });
+    console.log("DRAG position:", position);
+    console.log("e:", e);
+  };
+
+  const handleStop = () => {
+    setReset(true);
+    addNode(position);
+    console.log("STOP position:", position);
+  };
+
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   return (
-    <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
+    <div className="relative w-full h-full">
+      <div className="absolute top-5 left-5 flex z-10">
+        <div className="w-12 h-2/3 bg-white rounded-xl shadow-lg">
+          <ul className="flex flex-col items-center justify-center h-full">
+            <li className="my-2">
+              <div className="p-2 bg-gray-50 hover:bg-gray-200 rounded-md cursor-pointer">
+                <Draggable onDrag={handleDrag} onStop={handleStop}>
+                  <div
+                    style={{ transform: `translate(${position})` }}
+                    className="w-5 h-5 bg-transparent border-2 border-black rounded-full"
+                  ></div>
+                </Draggable>
+              </div>
+            </li>
+
+            <li className="my-2">
+              <div className="p-2 bg-gray-50 hover:bg-gray-200 rounded-md cursor-pointer">
+                <div className="w-5 h-5 bg-transparent border-2 border-black rounded-sm"></div>
+              </div>
+            </li>
+
+            <li className="my-2">
+              <div className="p-2 bg-gray-50 hover:bg-gray-200 rounded-md cursor-pointer">
+                <div className="w-5 h-5 bg-transparent border-2 border-black rounded-full"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -50,8 +101,8 @@ function Mindmap() {
         onConnect={onConnect}
       >
         <Controls />
-        <Background color="#ccc" variant={BackgroundVariant.Dots} gap={12} size={1} />
-        <Background id="2" gap={100} color="#F4F4F4" variant={BackgroundVariant.Lines} />
+        <Background color="#cccccc" variant={BackgroundVariant.Dots} gap={12} size={1} />
+        <Background id="2" gap={100} color="#EDEDED" variant={BackgroundVariant.Lines} />
       </ReactFlow>
       <div style={{ position: "fixed", left: "45%", bottom: "20px" }}>
         <input type="text" onChange={(e) => setName(e.target.value)} name="title" />
