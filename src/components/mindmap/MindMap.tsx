@@ -2,7 +2,6 @@
 
 import "reactflow/dist/style.css";
 
-import { stringify } from "querystring";
 import React, { useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import ReactFlow, {
@@ -12,6 +11,7 @@ import ReactFlow, {
   Connection,
   Controls,
   Edge,
+  NodeResizeControl,
   useEdgesState,
   useNodesState,
 } from "reactflow";
@@ -54,39 +54,6 @@ function Mindmap() {
   };
 
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
-  const getNestedEdges = (edges) => {
-    const nestedEdges = {};
-    let rootNode;
-
-    edges.forEach((edge) => {
-      const { source, target } = edge;
-
-      if (!nestedEdges[source]) {
-        nestedEdges[source] = { node: source, children: [] };
-      }
-
-      if (!nestedEdges[target]) {
-        nestedEdges[target] = { node: target, children: [] };
-      }
-
-      nestedEdges[source].children.push(nestedEdges[target]);
-
-      if (!nestedEdges[target].parent) {
-        nestedEdges[target].parent = nestedEdges[source];
-      }
-
-      if (!nestedEdges[source].parent) {
-        nestedEdges[source].parent = null;
-      }
-
-      if (!nestedEdges[nestedEdges[target].node].parent) {
-        rootNode = nestedEdges[target];
-      }
-    });
-
-    return rootNode;
-  };
 
   // const createNestedArray = (node) => {
   //   const result = [node.node];
@@ -139,7 +106,6 @@ function Mindmap() {
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
         <div className="flex flex-wrap bg-white shadow-lg w-full h-full rounded-xl p-4">
           <p>{JSON.stringify(edges, null, 2)}</p>
-          <p>{JSON.stringify(getNestedEdges(edges), null, 2)}</p>
         </div>
       </aside>
 
@@ -150,6 +116,7 @@ function Mindmap() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
       >
+        <NodeResizeControl />
         <Controls />
         <Background color="#cccccc" variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Background id="2" gap={100} color="#EDEDED" variant={BackgroundVariant.Lines} />
