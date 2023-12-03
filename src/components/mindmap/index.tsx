@@ -1,3 +1,4 @@
 export * from "./MindMap";
 export * from "./NavControls";
-export * from "./ResizableNode";
+export * from "./ResizableNodeSelected";
+export * from "./TextUpdaterNode";

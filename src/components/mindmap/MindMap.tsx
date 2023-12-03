@@ -17,12 +17,20 @@ import ReactFlow, {
 import { convertToNestedArray } from "@/utils";
 
 import NavControls from "./NavControls";
+import ResizableNodeSelected from "./ResizableNodeSelected";
+import TextUpdaterNode from "./TextUpdaterNode";
 
 const initialNodes = [
-  { id: "1", position: { x: 300, y: 200 }, data: { label: "Imports Julien" } },
-  { id: "2", position: { x: 400, y: 600 }, data: { label: "Salaire" } },
+  { id: "1", type: "resizableNodeSelected", position: { x: 300, y: 200 }, data: { label: "Imports Julien" } },
+  { id: "2", type: "textUpdater", position: { x: 400, y: 600 }, data: { label: "Salaire" } },
+  { id: "3", type: "textUpdater", position: { x: 0, y: 0 }, data: { label: "Type something" } },
 ];
 const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+
+const nodeTypes = {
+  textUpdater: TextUpdaterNode,
+  resizableNodeSelected: ResizableNodeSelected,
+};
 
 function Mindmap() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -52,6 +60,8 @@ function Mindmap() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        fitView
+        nodeTypes={nodeTypes}
       >
         <Controls />
         <Background color="#cccccc" variant={BackgroundVariant.Dots} gap={12} size={1} />

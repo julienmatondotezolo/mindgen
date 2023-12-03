@@ -3,18 +3,18 @@ import Draggable from "react-draggable";
 
 import { Position } from "@/_types";
 
-interface NavControlsProps {
+type NavControlsProps = {
   position: Position;
   setNodes: any;
   setPosition: any;
-}
+};
 
 function NavControls({ position, setNodes, setPosition }: NavControlsProps) {
   const addNode = (position: Position) => {
     setNodes((e: any[]) =>
       e.concat({
         id: (e.length + 1).toString(),
-        data: { label: `${name}` },
+        data: { label: `Type something` },
         position: {
           x: position.x ?? Math.random() * window.innerWidth,
           y: position.y ?? Math.random() * window.innerHeight,
