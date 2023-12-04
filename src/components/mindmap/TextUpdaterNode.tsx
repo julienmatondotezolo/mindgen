@@ -15,7 +15,7 @@ function TextUpdaterNode({ data, isConnectable }: TextUpdaterNodeProps) {
     <div className="flex justify-center p-2 bg-white rounded-lg w-40 text-sm text-center border border-gray-700 ">
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
       <div>
-        <input id="text" name="text" onChange={onChange} className="nodrag" />
+        <input id="text" name="text" onChange={onChange} />
       </div>
       <Handle type="source" position={Position.Bottom} id="a" isConnectable={isConnectable} />
       {/* <Handle type="source" position={Position.Bottom} id="b" isConnectable={isConnectable} /> */}

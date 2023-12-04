@@ -2,15 +2,12 @@
 // import "reactflow/dist/style.css";
 
 import { NodeResizer } from "@reactflow/node-resizer";
-import { memo } from "react";
+import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, Position } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
 
-// width: params.width,
-// height: params.height,
-
-const customNode = ({ id, data, selected, setNodes }: CustomNodeProps) => {
+const CustomNode = ({ id, data, selected }: CustomNodeProps) => {
   // const resizeNode = (params: any) =>
   //   setNodes((event: any[]) =>
   //     event.concat({
@@ -20,24 +17,24 @@ const customNode = ({ id, data, selected, setNodes }: CustomNodeProps) => {
   //     }),
   //   );
 
-  const handleClick = (params: any) => {
-    setNodes((nodes: Node[]) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          node.height = params.height;
-          node.width = params.width;
-          // console.log("node:", node);
-        }
+  const [inputText, setInputText] = useState(data.label);
 
-        // node.id === id ? { ...node, data: { ...node.data, label: "New Label" } } : node;
-      }),
-    );
+  const resizeNode = (params: any) => {
+    console.log("id:", id);
+    console.log("params:", params);
+    console.log("data:", data);
+  };
+
+  const handleInputChange = (event: { target: { value: SetStateAction<string> } }) => {
+    setInputText(event.target.value);
   };
 
   return (
     <>
-      <NodeResizer onResizeEnd={handleClick} color="#ff0071" isVisible={selected} minWidth={100} minHeight={30} />
-      <div className="py-2 px-6 border-2 border-slate-800 text-sm top-6">{data.label}</div>
+      <NodeResizer onResizeEnd={resizeNode} color="#ff0071" isVisible={selected} minWidth={100} minHeight={30} />
+      <div className="flex justify-center items-center h-full py-2 px-6 text-sm">
+        <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
+      </div>
       <Handle type="source" position={Position.Top} id="a" className="mt-[-5px]" />
       <Handle type="source" position={Position.Right} id="b" className="mr-[-5px]" />
       <Handle type="source" position={Position.Bottom} id="c" className="mb-[-5px]" />
@@ -46,4 +43,4 @@ const customNode = ({ id, data, selected, setNodes }: CustomNodeProps) => {
   );
 };
 
-export default memo(customNode);
+export default memo(CustomNode);

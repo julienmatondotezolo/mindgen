@@ -2,7 +2,7 @@
 
 import "reactflow/dist/style.css";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import ReactFlow, {
   addEdge,
   Background,
@@ -21,7 +21,14 @@ import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
 
 const initialNodes = [
-  { id: "1", type: "customNode", position: { x: 0, y: 300 }, data: { label: "Principal" } },
+  {
+    id: "1",
+    type: "customNode",
+    height: 2000,
+    position: { x: 0, y: 300 },
+    data: { label: "Principal" },
+    style: { border: "1px solid black", borderRadius: 15 },
+  },
   { id: "2", type: "textUpdater", position: { x: 200, y: 600 }, data: { label: "Salaire" } },
   { id: "3", type: "textUpdater", position: { x: 200, y: 200 }, data: { label: "Type something" } },
 ];
@@ -29,6 +36,11 @@ const initialEdges = [
   { id: "a1-2", source: "1", target: "2" },
   { id: "a1-3", source: "1", target: "3" },
 ];
+
+const nodeTypes = {
+  textUpdater: TextUpdaterNode,
+  customNode: (props: CustomNodeProps) => <CustomNode {...props} />,
+};
 
 function Mindmap() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -39,14 +51,6 @@ function Mindmap() {
   });
 
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
-  const nodeTypes = useMemo(
-    () => ({
-      textUpdater: TextUpdaterNode,
-      customNode: (props: CustomNodeProps) => <CustomNode {...props} setNodes={setNodes} />,
-    }),
-    [],
-  );
 
   return (
     <div className="relative w-full h-full">
