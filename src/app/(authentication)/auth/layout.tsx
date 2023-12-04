@@ -2,7 +2,7 @@ import "../../../assets/styles/globals.css";
 
 import { Metadata } from "next";
 import { getServerSession, Session } from "next-auth";
-import { JSX } from "react";
+import React, { JSX } from "react";
 
 import { Providers } from "@/app/providers";
 import { authOptions } from "@/lib/auth";

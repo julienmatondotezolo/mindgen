@@ -22,9 +22,8 @@ export const authOptions: NextAuthOptions = {
         username: { label: "Username", type: "text", placeholder: "jsmith" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         // Add logic here to look up the user from the credentials supplied
-        console.log("credentials", credentials);
         const res: Response = await fetch(`${baseUrl}/signin`, {
           method: "POST",
           headers: {
@@ -38,7 +37,6 @@ export const authOptions: NextAuthOptions = {
         });
         const user = await res.json();
 
-        console.log("status de l'auth ", res.status);
         if (res.status == 200 && user) {
           return user;
         } else {
@@ -92,7 +90,7 @@ export const authOptions: NextAuthOptions = {
       }
       return { ...token, ...user };
     },
-    async session({ session, token, user }): Promise<Session> {
+    async session({ session, token }): Promise<Session> {
       session.user = token as any;
       return session;
     },
