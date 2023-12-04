@@ -7,26 +7,30 @@ import { Handle, Node, Position } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
 
-const CustomNode = ({ id, data, selected }: CustomNodeProps) => {
-  // const resizeNode = (params: any) =>
-  //   setNodes((event: any[]) =>
-  //     event.concat({
-  //       id: id,
-  //       width: params.width,
-  //       height: params.height,
-  //     }),
-  //   );
-
+const CustomNode = ({ id, data, selected, setNodes }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
 
   const resizeNode = (params: any) => {
-    console.log("id:", id);
-    console.log("params:", params);
-    console.log("data:", data);
+    setNodes((nodes: Node[]) => {
+      nodes.map((node) => {
+        if (node.id === id) {
+          node.height = params.height;
+        }
+      });
+    });
   };
 
   const handleInputChange = (event: { target: { value: SetStateAction<string> } }) => {
     setInputText(event.target.value);
+    setNodes((nodes: Node[]) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          // Create a new object to notify React Flow about the change
+          return { ...node, data: { ...node.data, label: event.target.value } };
+        }
+        return node;
+      }),
+    );
   };
 
   return (
