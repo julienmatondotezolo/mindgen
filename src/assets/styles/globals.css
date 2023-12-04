@@ -14,3 +14,8 @@
     }
 }
   
+@layer components {
+    .nodeTextInput {
+        @apply block m-auto bg-transparent text-center outline-none
+    }
+}

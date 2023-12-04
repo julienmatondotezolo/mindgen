@@ -2,110 +2,165 @@
 
 import "reactflow/dist/style.css";
 
-import React, { useCallback, useState } from "react";
-import Draggable from "react-draggable";
+import { useCallback, useMemo, useRef, useState } from "react";
 import ReactFlow, {
   addEdge,
   Background,
   BackgroundVariant,
   Connection,
+  ConnectionMode,
   Controls,
   Edge,
-  NodeResizeControl,
+  Node,
   useEdgesState,
   useNodesState,
 } from "reactflow";
 
-const initialNodes = [
-  { id: "1", position: { x: 300, y: 200 }, data: { label: "1" } },
-  { id: "2", position: { x: 400, y: 600 }, data: { label: "2" } },
+import { CustomNodeProps } from "@/_types";
+import { Button } from "@/components/ui";
+import { convertToNestedArray } from "@/utils";
+
+import BiDirectionalEdge from "./BiDirectionalEdge";
+import CustomNode from "./CustomNode";
+import MainNode from "./MainNode";
+import NavControls from "./NavControls";
+import TextUpdaterNode from "./TextUpdaterNode";
+
+const initialNodes: Node[] = [
+  {
+    id: "node_1",
+    type: "customNode",
+    position: { x: 0, y: 300 },
+    data: { label: "Principal" },
+    style: { border: "1px solid black", borderRadius: 15 },
+  },
 ];
-const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+const initialEdges: Edge[] = [];
+
+const edgeTypes = {
+  bidirectional: BiDirectionalEdge,
+};
+
+let id = 0;
+const getId = () => `node_${id++}`;
 
 function Mindmap() {
+  const connectingNodeId = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [name] = useState("");
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
   });
 
-  const addNode = (position: { x: any; y: any }) => {
-    setNodes((e) =>
-      e.concat({
-        id: (e.length + 1).toString(),
-        data: { label: `${name}` },
-        position: {
-          x: position.x ?? Math.random() * window.innerWidth,
-          y: position.y ?? Math.random() * window.innerHeight,
-        },
-      }),
-    );
+  const [showChat, setShowChat] = useState(false);
+  const [data, setData] = useState("");
+
+  const onConnect = useCallback((params: Edge | Connection) => {
+    // reset the start node on connections
+    connectingNodeId.current = null;
+    setEdges((eds) => addEdge(params, eds));
+  }, []);
+
+  const onConnectStart = useCallback(({ nodeId }: any) => {
+    connectingNodeId.current = nodeId;
+  }, []);
+
+  const onConnectEnd = useCallback(
+    (event: any) => {
+      if (!connectingNodeId.current) return;
+
+      const targetIsPane = event.target.classList.contains("react-flow__pane");
+
+      if (targetIsPane) {
+        // we need to remove the wrapper bounds, in order to get the correct position
+        const id = getId();
+        const newNode = {
+          id,
+          type: "customNode",
+          position: reactFlowInstance.screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+          }),
+          data: { label: `Type something` },
+          style: { border: "1px solid black", borderRadius: 15 },
+          origin: [0.5, 0.0],
+        };
+
+        setNodes((nds) => nds.concat(newNode));
+        // setEdges((eds) => addEdge(params, eds));
+
+        setEdges((eds) =>
+          eds.concat({ id, source: connectingNodeId.current, sourceHandle: null, target: id, targetHandle: null }),
+        );
+      }
+    },
+    [reactFlowInstance],
+  );
+
+  const onDragOver = useCallback((event: { preventDefault: () => void; dataTransfer: { dropEffect: string } }) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: any) => {
+      event.preventDefault();
+
+      const type = event.dataTransfer.getData("application/reactflow");
+
+      // check if the dropped element is valid
+      if (typeof type === "undefined" || !type) {
+        return;
+      }
+
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      const newNode = {
+        id: getId(),
+        type,
+        position,
+        data: { label: `Type something` },
+        style: { border: "1px solid black", borderRadius: 15 },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [reactFlowInstance],
+  );
+
+  const nodeTypes = useMemo(
+    () => ({
+      textUpdater: TextUpdaterNode,
+      customNode: (props: CustomNodeProps) => <CustomNode {...props} setNodes={setNodes} />,
+      mainNode: (props: CustomNodeProps) => <MainNode {...props} setNodes={setNodes} />,
+    }),
+    [setNodes],
+  );
+
+  const handleClick = () => {
+    setShowChat(!showChat);
+    showChat == true ? setData("") : setData(convertToNestedArray(nodes, edges));
   };
-
-  const handleDrag = (e: any, data: { x: any; y: any }) => {
-    setPosition({ x: data.x, y: data.y });
-  };
-
-  const handleStop = () => {
-    addNode(position);
-    setPosition({ x: 0, y: 0 });
-  };
-
-  const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
-  // const createNestedArray = (node) => {
-  //   const result = [node.node];
-
-  //   if (node.children.length > 0) {
-  //     node.children.forEach((child) => {
-  //       result.push(createNestedArray(child));
-  //     });
-  //   }
-
-  //   return result;
-  // };
-
-  // const rootNode = getNestedEdges(edges);
-  // const nestedArray = createNestedArray(rootNode);
-
-  // console.log(JSON.stringify(nestedArray, null, 2));
 
   return (
     <div className="relative w-full h-full">
-      <div className="absolute top-5 left-5 flex z-10">
-        <div className="w-12 h-2/3 bg-white rounded-xl shadow-lg">
-          <ul className="flex flex-col items-center justify-center h-full">
-            <li className="my-2">
-              <div className="p-2 bg-gray-50 hover:bg-gray-200 rounded-md cursor-pointer">
-                <Draggable onDrag={handleDrag} onStop={handleStop}>
-                  <div
-                    style={{ transform: `translate(${position})` }}
-                    className="w-5 h-5 bg-transparent border-2 border-black rounded-full"
-                  ></div>
-                </Draggable>
-              </div>
-            </li>
-
-            <li className="my-2">
-              <div className="p-2 bg-gray-50 hover:bg-gray-200 rounded-md cursor-pointer">
-                <div className="w-5 h-5 bg-transparent border-2 border-black rounded-sm"></div>
-              </div>
-            </li>
-
-            <li className="my-2">
-              <div className="p-2 bg-gray-50 hover:bg-gray-200 rounded-md cursor-pointer">
-                <div className="w-5 h-5 bg-transparent border-2 border-black rounded-full"></div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <NavControls position={position} setNodes={setNodes} setPosition={setPosition} />
 
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
-        <div className="flex flex-wrap bg-white shadow-lg w-full h-full rounded-xl p-4">
-          <p>{JSON.stringify(edges, null, 2)}</p>
+        <div className="flex flex-col p-5 justify-between shadow-lg w-full h-full rounded-xl bg-white ">
+          {/* <p className="max-h-3/4">{JSON.stringify(edges, null, 2)}</p> */}
+          {showChat ? (
+            <div className="border-2 p-4 rounded-xl">
+              <p>{data ? data : "Fetching mail data..."}</p>
+            </div>
+          ) : null}
+          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={handleClick}>
+            <p>Generate mail</p>
+          </Button>
         </div>
       </aside>
 
@@ -115,8 +170,19 @@ function Mindmap() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        onInit={setReactFlowInstance}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        fitView
+        fitViewOptions={{ padding: 2 }}
+        nodeOrigin={[0.5, 0]}
+        snapToGrid={true}
+        edgeTypes={edgeTypes}
+        nodeTypes={nodeTypes}
+        connectionMode={ConnectionMode.Loose}
       >
-        <NodeResizeControl />
         <Controls />
         <Background color="#cccccc" variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Background id="2" gap={100} color="#EDEDED" variant={BackgroundVariant.Lines} />
