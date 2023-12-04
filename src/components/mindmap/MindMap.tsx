@@ -98,19 +98,24 @@ function Mindmap() {
     [setNodes],
   );
 
+  const handleClick = () => {
+    setShowChat(!showChat);
+    showChat == true ? setData("") : setData(convertToNestedArray(nodes, edges));
+  };
+
   return (
     <div className="relative w-full h-full">
       <NavControls position={position} setNodes={setNodes} setPosition={setPosition} />
 
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
         <div className="flex flex-col p-5 justify-between shadow-lg w-full h-full rounded-xl bg-white ">
-          <p>{JSON.stringify(edges, null, 2)}</p>
+          {/* <p className="max-h-3/4">{JSON.stringify(edges, null, 2)}</p> */}
           {showChat ? (
             <div className="border-2 p-4 rounded-xl">
-              <p>{JSON.stringify(convertToNestedArray(nodes, edges))}</p>
+              <p>{data ? data : "Fetching mail data..."}</p>
             </div>
           ) : null}
-          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={() => setShowChat(!showChat)}>
+          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={handleClick}>
             <p>Generate mail</p>
           </Button>
         </div>
