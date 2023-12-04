@@ -25,32 +25,16 @@ import MainNode from "./MainNode";
 import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
 
-const initialNodes = [
+const initialNodes: Node[] = [
   {
-    id: "1",
-    type: "mainNode",
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
+    id: "node_1",
+    type: "customNode",
     position: { x: 0, y: 300 },
     data: { label: "Principal" },
     style: { border: "1px solid black", borderRadius: 15 },
   },
-  {
-    id: "2",
-    type: "customNode",
-    position: { x: 200, y: 600 },
-    data: { label: "Salaire" },
-    style: { border: "1px solid black", borderRadius: 15 },
-  },
-  {
-    id: "3",
-    type: "customNode",
-    position: { x: 200, y: 200 },
-    data: { label: "Type something" },
-    style: { border: "1px solid black", borderRadius: 15 },
-  },
 ];
-const initialEdges = [{}];
+const initialEdges: Edge[] = [];
 
 const edgeTypes = {
   bidirectional: BiDirectionalEdge,
@@ -97,6 +81,7 @@ function Mindmap() {
         type,
         position,
         data: { label: `Type something` },
+        style: { border: "1px solid black", borderRadius: 15 },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -141,8 +126,12 @@ function Mindmap() {
         onDragOver={onDragOver}
         onDrop={onDrop}
         fitView
+        fitViewOptions={{ padding: 2 }}
+        nodeOrigin={[0.5, 0]}
+        snapToGrid={true}
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
+        connectionMode={ConnectionMode.Loose}
       >
         <Controls />
         <Background color="#cccccc" variant={BackgroundVariant.Dots} gap={12} size={1} />
