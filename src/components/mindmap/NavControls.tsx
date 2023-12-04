@@ -55,7 +55,7 @@ function NavControls({ position, setNodes, setPosition }: NavControlsProps) {
           <li className="m-2">
             <div className="p-2 bg-gray-50 hover:bg-gray-200 cursor-grab">
               <div
-                onDragStart={(event) => onDragStart(event, "square")}
+                onDragStart={(event) => onDragStart(event, "customNode")}
                 className="w-5 h-5 bg-transparent border-2 border-black rounded"
                 draggable
               ></div>

@@ -2,15 +2,16 @@
 
 import "reactflow/dist/style.css";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import ReactFlow, {
   addEdge,
   Background,
   BackgroundVariant,
   Connection,
+  ConnectionMode,
   Controls,
   Edge,
-  Position,
+  Node,
   useEdgesState,
   useNodesState,
 } from "reactflow";
@@ -44,6 +45,7 @@ let id = 0;
 const getId = () => `node_${id++}`;
 
 function Mindmap() {
+  const connectingNodeId = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -53,8 +55,49 @@ function Mindmap() {
   });
 
   const [showChat, setShowChat] = useState(false);
+  const [data, setData] = useState("");
 
-  const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  const onConnect = useCallback((params: Edge | Connection) => {
+    // reset the start node on connections
+    connectingNodeId.current = null;
+    setEdges((eds) => addEdge(params, eds));
+  }, []);
+
+  const onConnectStart = useCallback(({ nodeId }: any) => {
+    connectingNodeId.current = nodeId;
+  }, []);
+
+  const onConnectEnd = useCallback(
+    (event: any) => {
+      if (!connectingNodeId.current) return;
+
+      const targetIsPane = event.target.classList.contains("react-flow__pane");
+
+      if (targetIsPane) {
+        // we need to remove the wrapper bounds, in order to get the correct position
+        const id = getId();
+        const newNode = {
+          id,
+          type: "customNode",
+          position: reactFlowInstance.screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+          }),
+          data: { label: `Type something` },
+          style: { border: "1px solid black", borderRadius: 15 },
+          origin: [0.5, 0.0],
+        };
+
+        setNodes((nds) => nds.concat(newNode));
+        // setEdges((eds) => addEdge(params, eds));
+
+        setEdges((eds) =>
+          eds.concat({ id, source: connectingNodeId.current, sourceHandle: null, target: id, targetHandle: null }),
+        );
+      }
+    },
+    [reactFlowInstance],
+  );
 
   const onDragOver = useCallback((event: { preventDefault: () => void; dataTransfer: { dropEffect: string } }) => {
     event.preventDefault();
@@ -127,6 +170,8 @@ function Mindmap() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
         onInit={setReactFlowInstance}
         onDragOver={onDragOver}
         onDrop={onDrop}
