@@ -21,7 +21,7 @@ import { Button } from "@/components/ui";
 import { convertToNestedArray } from "@/utils";
 
 import BiDirectionalEdge from "./BiDirectionalEdge";
-import CustomNode from "./CustomNode";
+import CustomNode from "./customNode";
 import MainNode from "./MainNode";
 import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
@@ -63,7 +63,7 @@ function Mindmap() {
     setEdges((eds) => addEdge(params, eds));
   }, []);
 
-  const onConnectStart = useCallback(({ nodeId }: any) => {
+  const onConnectStart = useCallback((_: any, { nodeId }: any) => {
     connectingNodeId.current = nodeId;
   }, []);
 
@@ -91,9 +91,7 @@ function Mindmap() {
         setNodes((nds) => nds.concat(newNode));
         // setEdges((eds) => addEdge(params, eds));
 
-        setEdges((eds) =>
-          eds.concat({ id, source: connectingNodeId.current, sourceHandle: null, target: id, targetHandle: null }),
-        );
+        setEdges((eds) => eds.concat({ id, source: connectingNodeId.current, target: id }));
       }
     },
     [reactFlowInstance],
