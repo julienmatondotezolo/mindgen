@@ -26,10 +26,14 @@ import MainNode from "./MainNode";
 import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
 
+const miniMapKey = "example-minimap";
+let id = 0;
+const getId = () => `node_${id++}`;
+
 const initialNodes: Node[] = [
   {
-    id: "node_1",
-    type: "customNode",
+    id: getId(),
+    type: "mainNode",
     position: { x: 0, y: 300 },
     data: { label: "Principal" },
     style: { border: "1px solid black", borderRadius: 15 },
@@ -55,11 +59,26 @@ function Mindmap() {
   const [showChat, setShowChat] = useState(false);
   const [data, setData] = useState("");
 
-  const onConnect = useCallback((params: Edge | Connection) => {
-    // reset the start node on connections
-    connectingNodeId.current = null;
-    setEdges((eds) => addEdge(params, eds));
-  }, []);
+  useEffect(() => {
+    console.log("sourceHandle:", sourceHandle);
+  }, [sourceHandle]);
+
+  const saveMindMapFlow = useCallback(() => {
+    if (reactFlowInstance) {
+      const miniMap = reactFlowInstance.toObject();
+
+      localStorage.setItem(miniMapKey, JSON.stringify(miniMap));
+    }
+  }, [reactFlowInstance]);
+
+  const onConnect = useCallback(
+    (params: Edge | Connection) => {
+      // reset the start node on connections
+      connectingNodeId.current = null;
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [setEdges],
+  );
 
   const onConnectStart = useCallback((_: any, { nodeId }: any) => {
     connectingNodeId.current = nodeId;
