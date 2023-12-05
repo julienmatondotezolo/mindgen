@@ -2,7 +2,7 @@
 
 import "reactflow/dist/style.css";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactFlow, {
   addEdge,
   Background,
@@ -18,7 +18,7 @@ import ReactFlow, {
 
 import { CustomNodeProps } from "@/_types";
 import { Button } from "@/components/ui";
-import { convertToNestedArray } from "@/utils";
+import { convertToNestedArray, setTargetHandle } from "@/utils";
 
 import BiDirectionalEdge from "./BiDirectionalEdge";
 import CustomNode from "./customNode";
@@ -41,14 +41,12 @@ const edgeTypes = {
   bidirectional: BiDirectionalEdge,
 };
 
-let id = 0;
-const getId = () => `node_${id++}`;
-
 function Mindmap() {
   const connectingNodeId = useRef(null);
+  const [sourceHandle, setSourceHandle] = useState("");
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState();
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -89,12 +87,19 @@ function Mindmap() {
         };
 
         setNodes((nds) => nds.concat(newNode));
-        // setEdges((eds) => addEdge(params, eds));
 
-        setEdges((eds) => eds.concat({ id, source: connectingNodeId.current, target: id }));
+        const params = {
+          id,
+          source: connectingNodeId.current,
+          sourceHandle: sourceHandle,
+          target: id,
+          targetHandle: setTargetHandle(sourceHandle),
+        };
+
+        setEdges((eds) => addEdge(params, eds));
       }
     },
-    [reactFlowInstance],
+    [reactFlowInstance, sourceHandle],
   );
 
   const onDragOver = useCallback((event: { preventDefault: () => void; dataTransfer: { dropEffect: string } }) => {
@@ -117,6 +122,7 @@ function Mindmap() {
         x: event.clientX,
         y: event.clientY,
       });
+
       const newNode = {
         id: getId(),
         type,
@@ -133,13 +139,17 @@ function Mindmap() {
   const nodeTypes = useMemo(
     () => ({
       textUpdater: TextUpdaterNode,
-      customNode: (props: CustomNodeProps) => <CustomNode {...props} setNodes={setNodes} />,
-      mainNode: (props: CustomNodeProps) => <MainNode {...props} setNodes={setNodes} />,
+      customNode: (props: CustomNodeProps) => (
+        <CustomNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+      ),
+      mainNode: (props: CustomNodeProps) => (
+        <MainNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+      ),
     }),
     [setNodes],
   );
 
-  const handleClick = () => {
+  const handleGenerateClick = () => {
     setShowChat(!showChat);
     showChat == true ? setData("") : setData(convertToNestedArray(nodes, edges));
   };
@@ -156,7 +166,7 @@ function Mindmap() {
               <p>{data ? data : "Fetching mail data..."}</p>
             </div>
           ) : null}
-          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={handleClick}>
+          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={handleGenerateClick}>
             <p>Generate mail</p>
           </Button>
         </div>
