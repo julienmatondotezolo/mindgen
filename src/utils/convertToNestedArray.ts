@@ -29,7 +29,5 @@ export function convertToNestedArray(nodes: Node[], edges: Edge[]) {
 
   const rootLabel = nodeMap.get(nodes[0].id);
 
-  console.log("Edge:", edges);
-  console.log("Nested nested created");
   return buildNestedArray(rootLabel);
 }
