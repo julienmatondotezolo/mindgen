@@ -21,12 +21,12 @@ import { Button } from "@/components/ui";
 import { convertToNestedArray, setTargetHandle } from "@/utils";
 
 import BiDirectionalEdge from "./BiDirectionalEdge";
-import CustomNode from "./customNode";
+import CustomNode from "./CustomNode";
 import MainNode from "./MainNode";
 import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
 
-const miniMapKey = "example-minimap";
+const mindMapKey = "example-minimap";
 let id = 0;
 const getId = () => `node_${id++}`;
 
@@ -35,7 +35,7 @@ const initialNodes: Node[] = [
     id: getId(),
     type: "mainNode",
     position: { x: 0, y: 300 },
-    data: { label: "Principal" },
+    data: { label: "MindGen" },
     style: { border: "1px solid black", borderRadius: 15 },
   },
 ];
@@ -48,8 +48,8 @@ const edgeTypes = {
 function Mindmap() {
   const connectingNodeId = useRef(null);
   const [sourceHandle, setSourceHandle] = useState("");
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState();
   const [position, setPosition] = useState({
     x: 0,
@@ -60,16 +60,30 @@ function Mindmap() {
   const [data, setData] = useState("");
 
   useEffect(() => {
-    console.log("sourceHandle:", sourceHandle);
-  }, [sourceHandle]);
+    restoreMindMapFlow();
+  }, []);
+
+  useEffect(() => {
+    saveMindMapFlow();
+  }, [nodes, edges]);
 
   const saveMindMapFlow = useCallback(() => {
     if (reactFlowInstance) {
-      const miniMap = reactFlowInstance.toObject();
+      const mindMap = reactFlowInstance.toObject();
 
-      localStorage.setItem(miniMapKey, JSON.stringify(miniMap));
+      localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
     }
   }, [reactFlowInstance]);
+
+  const restoreMindMapFlow = async () => {
+    const flow = JSON.parse(localStorage.getItem(mindMapKey));
+
+    if (flow) {
+      // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
+      setNodes(flow.nodes.length == 0 ? initialNodes : flow.nodes);
+      setEdges(flow.edges || initialEdges);
+    }
+  };
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {

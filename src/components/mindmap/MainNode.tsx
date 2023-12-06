@@ -1,6 +1,3 @@
-// import "@reactflow/node-resizer/dist/style.css";
-// import "reactflow/dist/style.css";
-
 import { NodeResizer } from "@reactflow/node-resizer";
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, Position } from "reactflow";
