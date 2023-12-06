@@ -2,7 +2,7 @@
 
 import "reactflow/dist/style.css";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactFlow, {
   addEdge,
   Background,
@@ -18,7 +18,7 @@ import ReactFlow, {
 
 import { CustomNodeProps } from "@/_types";
 import { Button } from "@/components/ui";
-import { convertToNestedArray } from "@/utils";
+import { convertToNestedArray, setTargetHandle } from "@/utils";
 
 import BiDirectionalEdge from "./BiDirectionalEdge";
 import CustomNode from "./CustomNode";
@@ -26,12 +26,14 @@ import MainNode from "./MainNode";
 import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
 
+const mindMapKey = "example-minimap";
+
 const initialNodes: Node[] = [
   {
-    id: "node_1",
-    type: "customNode",
+    id: "node_0",
+    type: "mainNode",
     position: { x: 0, y: 300 },
-    data: { label: "Principal" },
+    data: { label: "MindGen App" },
     style: { border: "1px solid black", borderRadius: 15 },
   },
 ];
@@ -41,29 +43,56 @@ const edgeTypes = {
   bidirectional: BiDirectionalEdge,
 };
 
-let id = 0;
-const getId = () => `node_${id++}`;
-
 function Mindmap() {
   const connectingNodeId = useRef(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [reactFlowInstance, setReactFlowInstance] = useState(null);
-  const [position, setPosition] = useState({
-    x: 0,
-    y: 0,
-  });
+  const [nodeId, setNodeId] = useState();
+  const [sourceHandle, setSourceHandle] = useState("");
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [reactFlowInstance, setReactFlowInstance] = useState();
 
   const [showChat, setShowChat] = useState(false);
   const [data, setData] = useState("");
 
-  const onConnect = useCallback((params: Edge | Connection) => {
-    // reset the start node on connections
-    connectingNodeId.current = null;
-    setEdges((eds) => addEdge(params, eds));
+  useEffect(() => {
+    restoreMindMapFlow();
   }, []);
 
-  const onConnectStart = useCallback(({ nodeId }: any) => {
+  useEffect(() => {
+    saveMindMapFlow();
+  }, [nodes, edges]);
+
+  const saveMindMapFlow = useCallback(() => {
+    if (reactFlowInstance) {
+      const mindMap = reactFlowInstance.toObject();
+
+      localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
+    }
+  }, [reactFlowInstance]);
+
+  const restoreMindMapFlow = async () => {
+    const flow = JSON.parse(localStorage.getItem(mindMapKey));
+
+    if (flow) {
+      // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
+      setNodes(flow.nodes?.length == 0 ? initialNodes : flow.nodes);
+      setNodeId(flow.nodes.length);
+      setEdges(flow.edges || initialEdges);
+    } else {
+      setNodes(initialNodes);
+    }
+  };
+
+  const onConnect = useCallback(
+    (params: Edge | Connection) => {
+      // reset the start node on connections
+      connectingNodeId.current = null;
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [setEdges],
+  );
+
+  const onConnectStart = useCallback((_: any, { nodeId }: any) => {
     connectingNodeId.current = nodeId;
   }, []);
 
@@ -75,7 +104,10 @@ function Mindmap() {
 
       if (targetIsPane) {
         // we need to remove the wrapper bounds, in order to get the correct position
-        const id = getId();
+        setNodeId((id: any) => id + 1);
+
+        const id = `node_${nodeId}`;
+
         const newNode = {
           id,
           type: "customNode",
@@ -89,14 +121,19 @@ function Mindmap() {
         };
 
         setNodes((nds) => nds.concat(newNode));
-        // setEdges((eds) => addEdge(params, eds));
 
-        setEdges((eds) =>
-          eds.concat({ id, source: connectingNodeId.current, sourceHandle: null, target: id, targetHandle: null }),
-        );
+        const params = {
+          id,
+          source: connectingNodeId.current,
+          sourceHandle: sourceHandle,
+          target: id,
+          targetHandle: setTargetHandle(sourceHandle),
+        };
+
+        setEdges((eds) => addEdge(params, eds));
       }
     },
-    [reactFlowInstance],
+    [reactFlowInstance, sourceHandle, nodeId],
   );
 
   const onDragOver = useCallback((event: { preventDefault: () => void; dataTransfer: { dropEffect: string } }) => {
@@ -119,8 +156,9 @@ function Mindmap() {
         x: event.clientX,
         y: event.clientY,
       });
+
       const newNode = {
-        id: getId(),
+        id: getId(nodeId),
         type,
         position,
         data: { label: `Type something` },
@@ -135,20 +173,24 @@ function Mindmap() {
   const nodeTypes = useMemo(
     () => ({
       textUpdater: TextUpdaterNode,
-      customNode: (props: CustomNodeProps) => <CustomNode {...props} setNodes={setNodes} />,
-      mainNode: (props: CustomNodeProps) => <MainNode {...props} setNodes={setNodes} />,
+      customNode: (props: CustomNodeProps) => (
+        <CustomNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+      ),
+      mainNode: (props: CustomNodeProps) => (
+        <MainNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+      ),
     }),
     [setNodes],
   );
 
-  const handleClick = () => {
+  const handleGenerateClick = () => {
     setShowChat(!showChat);
     showChat == true ? setData("") : setData(convertToNestedArray(nodes, edges));
   };
 
   return (
     <div className="relative w-full h-full">
-      <NavControls position={position} setNodes={setNodes} setPosition={setPosition} />
+      <NavControls />
 
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
         <div className="flex flex-col p-5 justify-between shadow-lg w-full h-full rounded-xl bg-white ">
@@ -158,7 +200,7 @@ function Mindmap() {
               <p>{data ? data : "Fetching mail data..."}</p>
             </div>
           ) : null}
-          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={handleClick}>
+          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={handleGenerateClick}>
             <p>Generate mail</p>
           </Button>
         </div>
