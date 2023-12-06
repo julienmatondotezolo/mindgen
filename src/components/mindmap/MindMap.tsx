@@ -27,15 +27,13 @@ import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
 
 const mindMapKey = "example-minimap";
-let id = 0;
-const getId = () => `node_${id++}`;
 
 const initialNodes: Node[] = [
   {
-    id: getId(),
+    id: "node_0",
     type: "mainNode",
     position: { x: 0, y: 300 },
-    data: { label: "MindGen" },
+    data: { label: "MindGen App" },
     style: { border: "1px solid black", borderRadius: 15 },
   },
 ];
@@ -47,14 +45,11 @@ const edgeTypes = {
 
 function Mindmap() {
   const connectingNodeId = useRef(null);
+  const [nodeId, setNodeId] = useState();
   const [sourceHandle, setSourceHandle] = useState("");
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState();
-  const [position, setPosition] = useState({
-    x: 0,
-    y: 0,
-  });
 
   const [showChat, setShowChat] = useState(false);
   const [data, setData] = useState("");
@@ -80,8 +75,11 @@ function Mindmap() {
 
     if (flow) {
       // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
-      setNodes(flow.nodes.length == 0 ? initialNodes : flow.nodes);
+      setNodes(flow.nodes?.length == 0 ? initialNodes : flow.nodes);
+      setNodeId(flow.nodes.length);
       setEdges(flow.edges || initialEdges);
+    } else {
+      setNodes(initialNodes);
     }
   };
 
@@ -106,7 +104,10 @@ function Mindmap() {
 
       if (targetIsPane) {
         // we need to remove the wrapper bounds, in order to get the correct position
-        const id = getId();
+        setNodeId((id: any) => id + 1);
+
+        const id = `node_${nodeId}`;
+
         const newNode = {
           id,
           type: "customNode",
@@ -132,7 +133,7 @@ function Mindmap() {
         setEdges((eds) => addEdge(params, eds));
       }
     },
-    [reactFlowInstance, sourceHandle],
+    [reactFlowInstance, sourceHandle, nodeId],
   );
 
   const onDragOver = useCallback((event: { preventDefault: () => void; dataTransfer: { dropEffect: string } }) => {
@@ -157,7 +158,7 @@ function Mindmap() {
       });
 
       const newNode = {
-        id: getId(),
+        id: getId(nodeId),
         type,
         position,
         data: { label: `Type something` },
@@ -189,7 +190,7 @@ function Mindmap() {
 
   return (
     <div className="relative w-full h-full">
-      <NavControls position={position} setNodes={setNodes} setPosition={setPosition} />
+      <NavControls />
 
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
         <div className="flex flex-col p-5 justify-between shadow-lg w-full h-full rounded-xl bg-white ">
