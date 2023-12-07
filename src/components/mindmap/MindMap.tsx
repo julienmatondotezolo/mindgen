@@ -17,11 +17,12 @@ import ReactFlow, {
 } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
-import { Button } from "@/components/ui";
+import { Button, Textarea } from "@/components/ui";
 import { convertToNestedArray, setTargetHandle } from "@/utils";
 
+import ChatBoxSection from "../ui/chat/ChatBoxSection";
 import BiDirectionalEdge from "./BiDirectionalEdge";
-import CustomNode from "./CustomNode";
+import CustomNode from "./customNode";
 import MainNode from "./MainNode";
 import NavControls from "./NavControls";
 import TextUpdaterNode from "./TextUpdaterNode";
@@ -45,7 +46,7 @@ const edgeTypes = {
 
 function Mindmap() {
   const connectingNodeId = useRef(null);
-  const [nodeId, setNodeId] = useState();
+  const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -79,6 +80,7 @@ function Mindmap() {
       setNodeId(flow.nodes.length);
       setEdges(flow.edges || initialEdges);
     } else {
+      setNodeId(initialNodes.length);
       setNodes(initialNodes);
     }
   };
@@ -157,8 +159,12 @@ function Mindmap() {
         y: event.clientY,
       });
 
+      setNodeId((id: any) => id + 1);
+
+      const id = `node_${nodeId}`;
+
       const newNode = {
-        id: getId(nodeId),
+        id,
         type,
         position,
         data: { label: `Type something` },
@@ -193,17 +199,20 @@ function Mindmap() {
       <NavControls />
 
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
-        <div className="flex flex-col p-5 justify-between shadow-lg w-full h-full rounded-xl bg-white ">
-          {/* <p className="max-h-3/4">{JSON.stringify(edges, null, 2)}</p> */}
+        <ChatBoxSection />
+        {/* <div className="relative p-5 flex flex-col justify-between shadow-lg w-full h-full rounded-xl bg-white">
           {showChat ? (
-            <div className="border-2 p-4 rounded-xl">
-              <p>{data ? data : "Fetching mail data..."}</p>
+            <div className="border-2 p-4 rounded-xl max-h-[70%] overflow-auto">
+              <p className="w-full">{data ? data : "Fetching mail data..."}</p>
             </div>
           ) : null}
-          <Button className="w-full bg-slate-400 hover:bg-slate-200" onClick={handleGenerateClick}>
-            <p>Generate mail</p>
-          </Button>
-        </div>
+          <div className="absolute inset-0 flex flex-col justify-end p-5">
+            <Textarea className="w-full" />
+            <Button variant="outline" className="w-full mt-4" onClick={handleGenerateClick}>
+              <p>Generate mail</p>
+            </Button>
+          </div>
+        </div> */}
       </aside>
 
       <ReactFlow
