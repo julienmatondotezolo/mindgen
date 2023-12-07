@@ -1,17 +1,24 @@
 import React, { useState } from "react";
 
+import { fetchGeneratedTSummaryText } from "@/_services/";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 
 import ChatMessage from "./ChatMessage";
 
 function ChatBoxSection() {
+  const [data, setData] = useState(null);
+
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [inputValue, setInputValue] = useState("");
 
-  const handleMessageSend = () => {
+  const handleMessageSend = async () => {
     if (inputValue.trim() !== "") {
       setMessages([...messages, { text: inputValue, sender: "user" }]);
+      const result = await fetchGeneratedTSummaryText(inputValue);
+
+      setData(result);
       setInputValue("");
+      console.log("data:", data);
     }
   };
 
