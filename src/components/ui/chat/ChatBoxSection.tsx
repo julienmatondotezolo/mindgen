@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import { fetchGeneratedTSummaryText } from "@/_services/";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
@@ -7,14 +7,7 @@ import ChatMessage from "./ChatMessage";
 
 function ChatBoxSection() {
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
-  // const [decodedValue, setDecodedValue] = useState("");
   const [inputValue, setInputValue] = useState("");
-
-  // useEffect(() => {
-  //   if (decodedValue) {
-  //     setMessages((prevMessages) => [...prevMessages, { text: decodedValue, sender: "server" }]);
-  //   }
-  // }, [decodedValue]);
 
   const handleMessageSend = () => {
     if (inputValue.trim() !== "") {
@@ -24,7 +17,7 @@ function ChatBoxSection() {
         .then(async (stream) => {
           const reader = stream.getReader();
 
-          while (true) {
+          while (true as const) {
             const { done, value } = await reader.read();
 
             if (done) {
@@ -33,7 +26,6 @@ function ChatBoxSection() {
             const decodedValue = new TextDecoder("utf-8").decode(value);
 
             setMessages((prevMessages) => [...prevMessages, { text: decodedValue, sender: "server" }]);
-            // setMessages([...messages, { text: decodedValue, sender: "server" }]);
           }
           setInputValue("");
         })
@@ -77,7 +69,3 @@ function ChatBoxSection() {
 }
 
 export default ChatBoxSection;
-
-function DataDisplay({ data }) {
-  return <div>{data}</div>;
-}
