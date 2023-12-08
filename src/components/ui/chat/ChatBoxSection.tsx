@@ -12,10 +12,12 @@ function ChatBoxSection() {
   const handleMessageSend = () => {
     if (inputValue.trim() !== "") {
       setMessages([...messages, { text: inputValue, sender: "user" }]);
+      setMessages((prevMessages) => [...prevMessages, { text: "Loading...", sender: "server" }]);
 
       fetchGeneratedTSummaryText(inputValue)
         .then(async (stream) => {
           const reader = stream.getReader();
+          let decodedValue = "";
 
           while (true as const) {
             const { done, value } = await reader.read();
@@ -23,9 +25,21 @@ function ChatBoxSection() {
             if (done) {
               break;
             }
-            const decodedValue = new TextDecoder("utf-8").decode(value);
+            decodedValue += new TextDecoder("utf-8").decode(value);
 
-            setMessages((prevMessages) => [...prevMessages, { text: decodedValue, sender: "server" }]);
+            // setMessages((prevMessages) => [...prevMessages, { text: decodedValue, sender: "server" }]);
+
+            setMessages((prevMessages) => {
+              const lastServerMessageIndex = prevMessages.findIndex((m) => m.sender === "server");
+
+              const newMessage = {
+                ...prevMessages[lastServerMessageIndex],
+                text: decodedValue,
+                sender: "server",
+              };
+
+              return prevMessages.map((message, index) => (index === lastServerMessageIndex ? newMessage : message));
+            });
           }
           setInputValue("");
         })
