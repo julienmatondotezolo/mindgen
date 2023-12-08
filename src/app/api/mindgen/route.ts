@@ -25,13 +25,13 @@ const encoder = new TextEncoder();
 
 async function* makeIterator() {
   await sleep(1000);
-  yield encoder.encode("One");
-  await sleep(1000);
-  yield encoder.encode(" Two");
-  await sleep(2000);
-  yield encoder.encode(" Three");
-  await sleep(1000);
-  yield encoder.encode(" Four");
+  yield encoder.encode("Absolutely!");
+  await sleep(500);
+  yield encoder.encode(" Here's a sample");
+  await sleep(200);
+  yield encoder.encode(" response as if someone were asking");
+  await sleep(400);
+  yield encoder.encode(" for information about a topic:");
 }
 
 export async function POST(req, res) {
