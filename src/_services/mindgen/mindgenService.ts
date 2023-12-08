@@ -11,32 +11,24 @@ export async function fetchGeneratedTSummaryText(
       headers: {
         "Content-Type": "application/json",
         // Authorization: `Bearer ${session.data.user.token}`,
-        "ngrok-skip-browser-warning": "1",
+        // "ngrok-skip-browser-warning": "1",
       },
       // body: JSON.stringify({ Description, Task, ...body }),
       body: JSON.stringify({ Task }),
     });
 
     if (response.ok) {
-      const reader = response.body?.getReader();
-
-      if (!reader) {
-        throw new Error("Failed to get response stream");
-      }
-
-      const decoder = new TextDecoder("utf-8");
+      const reader = response.body.getReader();
       let result = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-
+      reader.read().then(function process({ done, value }) {
         if (done) {
-          break;
+          return;
         }
-        result += decoder.decode(value, { stream: true });
-      }
-
-      return result;
+        result += new TextDecoder("utf-8").decode(value);
+        console.log("result:", result);
+        return reader.read().then(process);
+      });
     } else {
       throw new Error("Failed to post data and stream response");
     }
