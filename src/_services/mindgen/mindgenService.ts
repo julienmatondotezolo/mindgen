@@ -4,7 +4,7 @@ export async function fetchGeneratedTSummaryText(
   // Description: string,
   Task: string,
   // body: Record<string, any>,
-): Promise<any> {
+): Promise<ReadableStream> {
   try {
     const response: Response = await fetch(`${baseUrl}`, {
       method: "POST",
@@ -18,17 +18,17 @@ export async function fetchGeneratedTSummaryText(
     });
 
     if (response.ok) {
-      const reader = response.body.getReader();
-      let result = "";
+      return response.body;
+      // const reader = response.body.getReader();
+      // let result = "";
 
-      reader.read().then(function process({ done, value }) {
-        if (done) {
-          return;
-        }
-        result += new TextDecoder("utf-8").decode(value);
-        console.log("result:", result);
-        return reader.read().then(process);
-      });
+      // reader.read().then(function process({ done, value }) {
+      //   if (done) {
+      //     return;
+      //   }
+      //   result += new TextDecoder("utf-8").decode(value);
+      //   return reader.read().then(process);
+      // });
     } else {
       throw new Error("Failed to post data and stream response");
     }

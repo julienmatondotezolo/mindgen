@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { fetchGeneratedTSummaryText } from "@/_services/";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
@@ -6,19 +6,42 @@ import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import ChatMessage from "./ChatMessage";
 
 function ChatBoxSection() {
-  const [data, setData] = useState(null);
-
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
+  // const [decodedValue, setDecodedValue] = useState("");
   const [inputValue, setInputValue] = useState("");
 
-  const handleMessageSend = async () => {
+  // useEffect(() => {
+  //   if (decodedValue) {
+  //     setMessages((prevMessages) => [...prevMessages, { text: decodedValue, sender: "server" }]);
+  //   }
+  // }, [decodedValue]);
+
+  const handleMessageSend = () => {
     if (inputValue.trim() !== "") {
       setMessages([...messages, { text: inputValue, sender: "user" }]);
-      const result = await fetchGeneratedTSummaryText(inputValue);
 
-      setData(result);
+      fetchGeneratedTSummaryText(inputValue)
+        .then(async (stream) => {
+          const reader = stream.getReader();
+
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              break;
+            }
+            const decodedValue = new TextDecoder("utf-8").decode(value);
+
+            setMessages((prevMessages) => [...prevMessages, { text: decodedValue, sender: "server" }]);
+            // setMessages([...messages, { text: decodedValue, sender: "server" }]);
+          }
+          setInputValue("");
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
       setInputValue("");
-      console.log("data:", data);
     }
   };
 
@@ -54,3 +77,7 @@ function ChatBoxSection() {
 }
 
 export default ChatBoxSection;
+
+function DataDisplay({ data }) {
+  return <div>{data}</div>;
+}
