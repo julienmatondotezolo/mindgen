@@ -27,10 +27,8 @@ function ChatBoxSection() {
             }
             decodedValue += new TextDecoder("utf-8").decode(value);
 
-            // setMessages((prevMessages) => [...prevMessages, { text: decodedValue, sender: "server" }]);
-
             setMessages((prevMessages) => {
-              const lastServerMessageIndex = prevMessages.findIndex((m) => m.sender === "server");
+              const lastServerMessageIndex = prevMessages.map((msg) => msg.sender).lastIndexOf("server");
 
               const newMessage = {
                 ...prevMessages[lastServerMessageIndex],
