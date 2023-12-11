@@ -2,7 +2,7 @@ import jwt_decode from "jwt-decode";
 import type { NextAuthOptions, Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/api/v1/auth";
+const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/auth";
 
 export const authOptions: NextAuthOptions = {
   session: {
