@@ -199,7 +199,7 @@ function Mindmap() {
       <NavControls />
 
       <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
-        <ChatBoxSection />
+        <ChatBoxSection mindMapData={reactFlowInstance?.toObject()} />
         {/* <div className="relative p-5 flex flex-col justify-between shadow-lg w-full h-full rounded-xl bg-white">
           {showChat ? (
             <div className="border-2 p-4 rounded-xl max-h-[70%] overflow-auto">

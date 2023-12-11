@@ -2,10 +2,11 @@ import React, { useState } from "react";
 
 import { fetchGeneratedTSummaryText } from "@/_services/";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
+import { convertToNestedArray } from "@/utils";
 
 import ChatMessage from "./ChatMessage";
 
-function ChatBoxSection() {
+function ChatBoxSection({ mindMapData }: any) {
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [inputValue, setInputValue] = useState("");
 
@@ -14,7 +15,9 @@ function ChatBoxSection() {
       setMessages([...messages, { text: inputValue, sender: "user" }]);
       setMessages((prevMessages) => [...prevMessages, { text: "Loading...", sender: "server" }]);
 
-      fetchGeneratedTSummaryText(inputValue)
+      let data = convertToNestedArray(mindMapData.nodes, mindMapData.edges);
+
+      fetchGeneratedTSummaryText("Mindmap explaining mindgen", inputValue, data)
         .then(async (stream) => {
           const reader = stream.getReader();
           let decodedValue = "";
@@ -25,7 +28,16 @@ function ChatBoxSection() {
             if (done) {
               break;
             }
-            decodedValue += new TextDecoder("utf-8").decode(value);
+
+            let data = new TextDecoder("utf-8").decode(value).replaceAll("data:", "");
+
+            let spacesInData = data.split("\n");
+
+            for (var i in spacesInData) {
+              let splittedData = spacesInData[i];
+
+              decodedValue += splittedData ? JSON.parse(splittedData).choices[0].delta.content : "";
+            }
 
             setMessages((prevMessages) => {
               const lastServerMessageIndex = prevMessages.map((msg) => msg.sender).lastIndexOf("server");
@@ -53,7 +65,7 @@ function ChatBoxSection() {
     <div className="flex flex-col h-full w-full bg-white rounded-xl overflow-hidden">
       <div className="bg-gray-200 p-4">Chat Header</div>
       <div className="flex-1 overflow-y-auto px-4">
-        <div className="flex flex-col space-y-2 mt-4">
+        <div className="flex flex-col space-y-6 mt-4 pb-4">
           {messages.map((message, index) => (
             <ChatMessage key={index} message={message} />
           ))}
