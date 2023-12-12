@@ -3,19 +3,35 @@
 @import "tailwindcss/utilities";
 
 :root {
-    --primary-color: #cf081b;
-    --primary-color-light: #ffced2;
-    --secondary-color: #08cf8f;
+    --primary-color: #4D6AFF;
+    --primary-foreground: #FCFBFF;
+    --secondary-color: #8B98FF;
+    --secondary-foreground: #33373B;
+    --tertiary-color: #FF66CC;
+    --tertiary-foreground: #FCFBFF;
+    --light-color: #FCFBFF;
+    --grey-blue-color: #FCFBFF;
+    --grey-color: #707070;
+    --foreground-color: #33373B;
+    --background-color: #EFF4F8;
 }
 
 @layer base {
     html {
-        @apply m-0 bg-slate-100;
+        @apply m-0 bg-background scroll-smooth;
     }
 }
   
 @layer components {
     .nodeTextInput {
         @apply block m-auto bg-transparent text-center outline-none
+    }
+
+    .gradientPrimary {
+        @apply bg-gradient-to-r from-primary-color to-secondary-color
+    }
+
+    .gradientSecondary {
+        @apply bg-gradient-to-r from-primary-color to-secondary-color
     }
 }
