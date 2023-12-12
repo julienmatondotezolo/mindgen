@@ -8,9 +8,10 @@ import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls } fr
 import { CustomNodeProps } from "@/_types";
 import useMindMap from "@/hooks/useMindMaps";
 
-import ChatBoxSection from "../ui/chat/ChatBoxSection";
-import BiDirectionalEdge from "./BiDirectionalEdge";
-import NavControls from "./NavControls";
+import NavLeft from "../header/navLeft";
+import NavRight from "../header/navRight";
+import ToolBar from "../header/toolbar";
+import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 import CustomNode from "./nodes/CustomNode";
 import MainNode from "./nodes/MainNode";
 import TextUpdaterNode from "./nodes/TextUpdaterNode";
@@ -51,11 +52,11 @@ function Mindmap() {
 
   return (
     <div className="relative w-full h-full">
-      <NavControls />
-
-      <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
-        <ChatBoxSection mindMapData={reactFlowInstance?.toObject()} />
-      </aside>
+      <div className="flex justify-between w-[95%] absolute top-5 left-2/4 -translate-x-2/4 z-10">
+        <NavLeft />
+        <ToolBar />
+        <NavRight />
+      </div>
 
       <ReactFlow
         nodes={nodes}

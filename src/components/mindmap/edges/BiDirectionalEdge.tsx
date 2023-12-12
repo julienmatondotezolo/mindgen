@@ -1,21 +1,21 @@
 import React from "react";
 import { BaseEdge, EdgeProps, getBezierPath, ReactFlowState, useStore } from "reactflow";
 
-export type GetSpecialPathParams = {
+type GetSpecialPathParams = {
   sourceX: number;
   sourceY: number;
   targetX: number;
   targetY: number;
 };
 
-export const getSpecialPath = ({ sourceX, sourceY, targetX, targetY }: GetSpecialPathParams, offset: number) => {
+const getSpecialPath = ({ sourceX, sourceY, targetX, targetY }: GetSpecialPathParams, offset: number) => {
   const centerX = (sourceX + targetX) / 2;
   const centerY = (sourceY + targetY) / 2;
 
   return `M ${sourceX} ${sourceY} Q ${centerX} ${centerY + offset} ${targetX} ${targetY}`;
 };
 
-export default function CustomEdge({
+export default function BiDirectionalEdge({
   source,
   target,
   sourceX,
