@@ -4,7 +4,7 @@ export async function fetchGeneratedTSummaryText(
   description: string,
   task: string,
   data: string,
-): Promise<ReadableStream> {
+): Promise<ReadableStream<Uint8Array> | null> {
   try {
     const response: Response = await fetch(`${baseUrl}`, {
       method: "POST",
@@ -15,7 +15,6 @@ export async function fetchGeneratedTSummaryText(
         "ngrok-skip-browser-warning": "1",
       },
       body: JSON.stringify({ description, task, data }),
-      // body: JSON.stringify({ Task }),
     });
 
     if (response.ok) {

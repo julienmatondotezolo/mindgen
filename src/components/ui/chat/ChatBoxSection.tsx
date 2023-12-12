@@ -17,9 +17,9 @@ function ChatBoxSection({ mindMapData }: any) {
 
       let data = convertToNestedArray(mindMapData.nodes, mindMapData.edges);
 
-      fetchGeneratedTSummaryText("Mindmap explaining mindgen", inputValue, data)
+      fetchGeneratedTSummaryText("A short explanation tabout this mindmap", inputValue, data)
         .then(async (stream) => {
-          const reader = stream.getReader();
+          const reader = stream!.getReader();
           let decodedValue = "";
 
           while (true as const) {
