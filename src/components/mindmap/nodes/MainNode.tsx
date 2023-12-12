@@ -1,10 +1,12 @@
+"use client";
+
 import { NodeResizer } from "@reactflow/node-resizer";
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, Position } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
 
-const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
+const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
 
   const resizeNode = (params: any) => {
@@ -69,4 +71,4 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   );
 };
 
-export default memo(CustomNode);
+export default memo(MainNode);

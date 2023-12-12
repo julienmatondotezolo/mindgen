@@ -1,4 +1,5 @@
-export * from "./customNode";
 export * from "./MindMap";
 export * from "./NavControls";
-export * from "./TextUpdaterNode";
+export * from "./nodes";
+export * from "./nodes/CustomNode";
+export * from "./nodes/TextUpdaterNode";
