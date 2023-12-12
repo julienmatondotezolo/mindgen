@@ -25,7 +25,7 @@ function NavRight() {
           </Button>
         </li>
         <li className="m-1">
-          <Button variant={"outline"}>
+          <Button>
             <Image className="mr-2" src={collaborateIcon} height={size} width={size} alt="Collaborate icon" />
             Collaborate
           </Button>
