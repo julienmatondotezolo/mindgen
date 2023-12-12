@@ -10,6 +10,7 @@ import { NavLeft, NavRight, PromptTextInput, ToolBar } from "@/components";
 import { MemoizedCustomNode, MemoizedMainNode, TextUpdaterNode } from "@/components/mindmap";
 import useMindMap from "@/hooks/useMindMaps";
 
+// import ChatBoxSection from "../ui/chat/ChatBoxSection";
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 
 const edgeTypes = {
@@ -54,7 +55,11 @@ function Mindmap() {
         <NavRight />
       </div>
 
-      <div className="absolute left-2/4 -translate-x-2/4 bottom-5 z-10">
+      {/* <aside className="absolute py-8 h-screen right-5 w-[25%] z-10">
+        <ChatBoxSection mindMapData={reactFlowInstance?.toObject()} />
+      </aside> */}
+
+      <div className="w-[80%] md:w-1/3 absolute left-2/4 -translate-x-2/4 bottom-5 z-10">
         <PromptTextInput />
       </div>
 

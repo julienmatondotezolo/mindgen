@@ -13,25 +13,31 @@ import textIcon from "@/assets/icons/text.svg";
 import tileIcon from "@/assets/icons/tile.svg";
 
 function ToolBar() {
-  const size = 15;
+  const size = 14;
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
   };
 
-  const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200";
+  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl";
 
   return (
     <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image className="rotate-90 -scale-x-100" src={redoIcon} height={size} width={size} alt="Redo icon" />
+            <Image
+              className="rotate-90 -scale-x-100"
+              src={redoIcon}
+              height={size * 1.1}
+              width={size * 1.1}
+              alt="Redo icon"
+            />
           </div>
         </li>
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image className="-rotate-90" src={redoIcon} height={size} width={size} alt="Redo icon" />
+            <Image className="-rotate-90" src={redoIcon} height={size * 1.1} width={size * 1.1} alt="Redo icon" />
           </div>
         </li>
 
