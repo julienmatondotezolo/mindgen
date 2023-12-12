@@ -6,7 +6,7 @@ import React, { useMemo } from "react";
 import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
-import { NavLeft, NavRight, ToolBar } from "@/components";
+import { NavLeft, NavRight, PromptTextInput, ToolBar } from "@/components";
 import { MemoizedCustomNode, MemoizedMainNode, TextUpdaterNode } from "@/components/mindmap";
 import useMindMap from "@/hooks/useMindMaps";
 
@@ -48,10 +48,14 @@ function Mindmap() {
 
   return (
     <div className="relative w-full h-full">
-      <div className="flex justify-between w-[98%] absolute top-5 left-2/4 -translate-x-2/4 z-10">
+      <div className="flex justify-between w-[98%] absolute left-2/4 -translate-x-2/4 top-5 z-10">
         <NavLeft />
         <ToolBar />
         <NavRight />
+      </div>
+
+      <div className="absolute left-2/4 -translate-x-2/4 bottom-5 z-10">
+        <PromptTextInput />
       </div>
 
       <ReactFlow
