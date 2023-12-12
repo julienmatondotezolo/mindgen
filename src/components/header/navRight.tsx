@@ -35,4 +35,4 @@ function NavRight() {
   );
 }
 
-export default NavRight;
+export { NavRight };

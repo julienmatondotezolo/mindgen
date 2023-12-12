@@ -106,4 +106,4 @@ function ToolBar() {
   );
 }
 
-export default ToolBar;
+export { ToolBar };

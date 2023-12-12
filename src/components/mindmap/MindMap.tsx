@@ -6,15 +6,11 @@ import React, { useMemo } from "react";
 import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
+import { NavLeft, NavRight, ToolBar } from "@/components";
+import { MemoizedCustomNode, MemoizedMainNode, TextUpdaterNode } from "@/components/mindmap";
 import useMindMap from "@/hooks/useMindMaps";
 
-import NavLeft from "../header/navLeft";
-import NavRight from "../header/navRight";
-import ToolBar from "../header/toolbar";
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
-import CustomNode from "./nodes/CustomNode";
-import MainNode from "./nodes/MainNode";
-import TextUpdaterNode from "./nodes/TextUpdaterNode";
 
 const edgeTypes = {
   bidirectional: BiDirectionalEdge,
@@ -41,10 +37,10 @@ function Mindmap() {
     () => ({
       textUpdater: TextUpdaterNode,
       customNode: (props: CustomNodeProps) => (
-        <CustomNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+        <MemoizedCustomNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
       ),
       mainNode: (props: CustomNodeProps) => (
-        <MainNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+        <MemoizedMainNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
       ),
     }),
     [setNodes],
@@ -52,7 +48,7 @@ function Mindmap() {
 
   return (
     <div className="relative w-full h-full">
-      <div className="flex justify-between w-[95%] absolute top-5 left-2/4 -translate-x-2/4 z-10">
+      <div className="flex justify-between w-[98%] absolute top-5 left-2/4 -translate-x-2/4 z-10">
         <NavLeft />
         <ToolBar />
         <NavRight />

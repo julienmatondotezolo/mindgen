@@ -71,4 +71,6 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   );
 };
 
-export default memo(CustomNode);
+const MemoizedCustomNode = memo(CustomNode);
+
+export { MemoizedCustomNode };
