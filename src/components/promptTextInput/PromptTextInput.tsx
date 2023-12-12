@@ -8,7 +8,7 @@ function PromptTextInput() {
   const size = 15;
 
   return (
-    <div className="w-auto px-1 bg-white rounded-xl shadow-lg">
+    <div className="flex px-1 bg-white rounded-xl shadow-lg">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <Input type="text" placeholder="Ask our generate anything related to this mind map" />

@@ -14,11 +14,13 @@ module.exports = {
       colors: {
         "primary-color": "var(--primary-color)",
         "secondary-color": "var(--secondary-color)",
-        "tertiary-color-light": "var(--tertiary-color)",
+        "tertiary-color": "var(--tertiary-color)",
+        background: "var(--background-color)",
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
-        background: "var(--background-color)",
+        "grey-blue": "var(--grey-blue-color)",
+        grey: "var(--grey-color)",
         foreground: "var(--foreground-color)",
         primary: {
           DEFAULT: "var(--primary-color)",
