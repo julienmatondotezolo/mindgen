@@ -1,7 +1,6 @@
 import Image from "next/image";
 import React, { useState } from "react";
 
-import loadingIcon from "@/assets/icons/loading.svg";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 
