@@ -1,24 +1,57 @@
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 
+import loadingIcon from "@/assets/icons/loading.svg";
 import starsIcon from "@/assets/icons/stars.svg";
-import { Button, Input } from "@/components/";
+import { Button, Textarea } from "@/components/";
 
 function PromptTextInput() {
-  const size = 15;
+  const size = 20;
+
+  const [text, setText] = useState("");
+  const [textareaHeight, setTextareaHeight] = useState("36px");
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleTextareaChange = (event: any) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevent default behavior (new line)
+      handleEnterPress();
+    } else {
+      setText(event.target.value);
+      event.target.style.height = "36px";
+      const newHeight = event.target.scrollHeight;
+
+      setTextareaHeight(newHeight + "px");
+    }
+  };
+
+  const handleEnterPress = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setText("");
+    }, 2000);
+  };
 
   return (
-    <div className="flex px-1 bg-white rounded-xl shadow-lg">
-      <ul className="flex flex-row items-center justify-between">
-        <li className="m-1">
-          <Input type="text" placeholder="Ask our generate anything related to this mind map" />
-        </li>
-        <li className="m-1">
-          <Button>
-            <Image src={starsIcon} height={size} width={size} alt="Stars icon" />
-          </Button>
-        </li>
-      </ul>
+    <div className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg">
+      <Textarea
+        className="resize-none overflow-y-hidden w-[90%]"
+        placeholder="Ask our generate anything related to this mind map..."
+        value={text}
+        onChange={handleTextareaChange}
+        style={{ height: textareaHeight }}
+      />
+      <Button onClick={handleEnterPress} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>
+        <Image
+          className={isLoading ? "animate-spin" : ""}
+          src={starsIcon}
+          height={size}
+          width={size}
+          alt="Stars icon"
+        />
+      </Button>
     </div>
   );
 }

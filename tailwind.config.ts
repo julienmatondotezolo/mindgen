@@ -13,6 +13,7 @@ module.exports = {
     extend: {
       colors: {
         "primary-color": "var(--primary-color)",
+        "primary-opaque": "var(--primary-color-opaque)",
         "secondary-color": "var(--secondary-color)",
         "tertiary-color": "var(--tertiary-color)",
         background: "var(--background-color)",
