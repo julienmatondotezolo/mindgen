@@ -162,4 +162,4 @@ const useMindMap = () => {
   };
 };
 
-export default useMindMap;
+export { useMindMap };

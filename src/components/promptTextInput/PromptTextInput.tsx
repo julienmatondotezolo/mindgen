@@ -27,6 +27,7 @@ function PromptTextInput() {
 
   const handleEnterPress = () => {
     setIsLoading(true);
+
     setTimeout(() => {
       setIsLoading(false);
       setText("");
