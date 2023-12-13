@@ -15,7 +15,6 @@ function PromptTextInput() {
   const handleTextareaChange = (event: any) => {
     if (event.key === "Enter") {
       event.preventDefault(); // Prevent default behavior (new line)
-      handleEnterPress();
     } else {
       setText(event.target.value);
       event.target.style.height = "36px";

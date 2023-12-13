@@ -2,7 +2,7 @@
 
 import "reactflow/dist/style.css";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
