@@ -1,34 +1,24 @@
-const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/api/mindgen";
+const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/chat/stream";
 
 export async function fetchGeneratedTSummaryText(
-  // Description: string,
-  Task: string,
-  // body: Record<string, any>,
-): Promise<ReadableStream> {
+  description: string,
+  task: string,
+  data: string,
+): Promise<ReadableStream<Uint8Array> | null> {
   try {
     const response: Response = await fetch(`${baseUrl}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         // Authorization: `Bearer ${session.data.user.token}`,
-        // "ngrok-skip-browser-warning": "1",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+        "ngrok-skip-browser-warning": "1",
       },
-      // body: JSON.stringify({ Description, Task, ...body }),
-      body: JSON.stringify({ Task }),
+      body: JSON.stringify({ description, task, data }),
     });
 
     if (response.ok) {
       return response.body;
-      // const reader = response.body.getReader();
-      // let result = "";
-
-      // reader.read().then(function process({ done, value }) {
-      //   if (done) {
-      //     return;
-      //   }
-      //   result += new TextDecoder("utf-8").decode(value);
-      //   return reader.read().then(process);
-      // });
     } else {
       throw new Error("Failed to post data and stream response");
     }

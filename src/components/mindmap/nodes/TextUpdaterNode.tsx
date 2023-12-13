@@ -23,4 +23,4 @@ function TextUpdaterNode({ data, isConnectable }: TextUpdaterNodeProps) {
   );
 }
 
-export default TextUpdaterNode;
+export { TextUpdaterNode };

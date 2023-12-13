@@ -1,4 +1,4 @@
-const baseUrl = process.env.NEXT_PUBLIC_API_URL + "/api/v1";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 //Use when Next-Auth version fixed (there is an error where it returns status 200 even if the credentials are wrong)
 export async function connectUser(credentials: any): Promise<Response> {
