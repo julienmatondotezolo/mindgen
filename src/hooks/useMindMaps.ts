@@ -41,7 +41,11 @@ const useMindMap = () => {
   }, [reactFlowInstance]);
 
   const restoreMindMapFlow = async () => {
-    const flow = JSON.parse(localStorage.getItem(mindMapKey) ?? "");
+    let flow;
+
+    if (localStorage.getItem(mindMapKey)) {
+      flow = JSON.parse(localStorage.getItem(mindMapKey) ?? "");
+    }
 
     if (flow) {
       // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
