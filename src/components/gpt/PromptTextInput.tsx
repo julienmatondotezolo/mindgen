@@ -2,7 +2,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useSetRecoilState } from "recoil";
 
-import { promptResultState, promptValueState } from "@/app/recoil";
+import { promptResultState, promptValueState } from "@/recoil";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 

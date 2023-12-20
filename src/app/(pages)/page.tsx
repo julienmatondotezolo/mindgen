@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { useRecoilState } from "recoil";
 
-import { promptResultState } from "@/app/recoil";
+import { promptResultState } from "@/recoil";
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { AnswerText, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
