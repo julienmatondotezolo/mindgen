@@ -7,7 +7,7 @@ module.exports = {
     },
   },
 
-  plugins: ["simple-import-sort", "import"],
+  plugins: ["simple-import-sort", "import", "react-hooks"],
 
   extends: [
     "next",
@@ -21,6 +21,13 @@ module.exports = {
   ],
 
   rules: {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        additionalHooks: "useRecoilCallback",
+      },
+    ],
     "prettier/prettier": ["error", {}, { usePrettierrc: true }],
     "react/react-in-jsx-scope": "off",
     "simple-import-sort/imports": "error",
