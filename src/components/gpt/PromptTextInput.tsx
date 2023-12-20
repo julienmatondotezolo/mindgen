@@ -1,15 +1,18 @@
 import Image from "next/image";
 import React, { useState } from "react";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 
-import { textState } from "@/app/recoil";
+import { promptResultState, promptValueState } from "@/app/recoil";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 
 function PromptTextInput() {
   const size = 20;
 
-  const [text, setText] = useRecoilState(textState);
+  const setPromptValue = useSetRecoilState(promptValueState);
+  const setPromptResult = useSetRecoilState(promptResultState);
+
+  const [text, setText] = useState("");
   const [textareaHeight, setTextareaHeight] = useState("36px");
 
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +34,8 @@ function PromptTextInput() {
 
     setTimeout(() => {
       setIsLoading(false);
+      setPromptResult(true);
+      setPromptValue(text);
       setText("");
     }, 2000);
   };

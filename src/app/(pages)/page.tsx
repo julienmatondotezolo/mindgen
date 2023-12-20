@@ -1,14 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRecoilValue } from "recoil";
 
 import { promptResultState } from "@/app/recoil";
 import { AnswerText, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import Mindmap from "@/components/mindmap/MindMap";
+import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Home() {
   const promptResult = useRecoilValue(promptResultState);
+
+  useEffect(() => {
+    if (promptResult) {
+      scrollToBottom();
+    } else {
+      scrollToTop();
+    }
+  }, [promptResult]);
 
   return (
     <main className="flex justify-between w-screen h-screen scroll-smooth">
