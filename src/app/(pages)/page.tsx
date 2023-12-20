@@ -1,12 +1,17 @@
 "use client";
 
+import { useRecoilValue } from "recoil";
+
+import { promptResultState } from "@/app/recoil";
 import { AnswerText, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import Mindmap from "@/components/mindmap/MindMap";
 
 export default function Home() {
+  const promptResult = useRecoilValue(promptResultState);
+
   return (
-    <main className="flex justify-between w-screen h-screen overflow-x-hidden">
+    <main className="flex justify-between w-screen h-screen scroll-smooth">
       <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-10">
         <NavLeft />
         <ToolBar />

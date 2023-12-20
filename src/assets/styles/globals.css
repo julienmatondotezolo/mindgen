@@ -21,6 +21,10 @@
     html {
         @apply m-0 bg-background scroll-smooth;
     }
+
+    body {
+        @apply overflow-y-scroll overflow-x-hidden;
+    }
 }
   
 @layer components {
