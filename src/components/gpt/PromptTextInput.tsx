@@ -31,13 +31,13 @@ function PromptTextInput() {
 
   const handleEnterPress = () => {
     setIsLoading(true);
+    setPromptResult(true);
 
     setTimeout(() => {
       setIsLoading(false);
-      setPromptResult(true);
       setPromptValue(text);
       setText("");
-    }, 2000);
+    }, 1000);
   };
 
   return (
