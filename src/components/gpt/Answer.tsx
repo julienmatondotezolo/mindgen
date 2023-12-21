@@ -1,8 +1,8 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { useRecoilValue } from "recoil";
 
-import { promptValueState } from "@/app/recoil";
-import { SkeletonAnswerText } from "@/components/gpt";
+import { Messages, SkeletonAnswerText } from "@/components/gpt";
+import { promptValueState } from "@/recoil";
 
 import { Skeleton } from "../ui/skeleton";
 
@@ -16,7 +16,11 @@ function AnswerText() {
       ) : (
         <Skeleton className="h-6 w-96 bg-grey-blue" />
       )}
-      <SkeletonAnswerText />
+      <div className="w-full mt-4">
+        <Suspense fallback={<SkeletonAnswerText />}>
+          <Messages />
+        </Suspense>
+      </div>
     </div>
   );
 }

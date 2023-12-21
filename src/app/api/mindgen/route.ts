@@ -33,7 +33,7 @@ async function* makeIterator() {
         {
           index: 0,
           delta: {
-            content: "La MindGen App est une plateforme polyvalente",
+            content: "Le MindGen App est une plateforme polyvalente",
           },
           logprobs: null,
           finish_reason: null,
@@ -113,7 +113,7 @@ async function* makeIterator() {
         {
           index: 0,
           delta: {
-            content: "Elle offre une interface",
+            content: " Elle offre une interface",
           },
           logprobs: null,
           finish_reason: null,
