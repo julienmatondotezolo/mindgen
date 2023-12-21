@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import arrowIcon from "@/assets/icons/arrow.svg";
-import { AnswerText, PromptTextInput } from "@/components/gpt";
+import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import Mindmap from "@/components/mindmap/MindMap";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,6 @@ export default function Home() {
   useEffect(() => {
     if (promptResult) {
       scrollToBottom();
-    } else {
-      scrollToTop();
     }
   }, [promptResult]);
 
@@ -44,7 +42,7 @@ export default function Home() {
 
       <div
         className={`fixed right-5 bottom-6 z-10 ${
-          promptResult ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
+          promptValue ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
         }`}
       >
         <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
@@ -58,7 +56,7 @@ export default function Home() {
         </div>
         {promptValue ? (
           <div className="relative w-full h-full flex flex-row justify-center">
-            <AnswerText />
+            <Answers />
           </div>
         ) : (
           ""

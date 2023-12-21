@@ -1,31 +1,46 @@
 import Image from "next/image";
-import React, { useState } from "react";
-import { useSetRecoilState } from "recoil";
+import React, { useEffect, useState } from "react";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
+import { fetchGeneratedTSummaryText } from "@/_services";
+import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
-import { promptResultState, promptValueState } from "@/recoil";
+import { useMindMap } from "@/hooks";
+import { promptResultState, promptValueState, streamedMessageState } from "@/recoil";
+import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput() {
   const size = 20;
 
-  const setPromptValue = useSetRecoilState(promptValueState);
+  const [promptValue, setPromptValue] = useRecoilState(promptValueState);
   const setPromptResult = useSetRecoilState(promptResultState);
 
   const [text, setText] = useState("");
   const [textareaHeight, setTextareaHeight] = useState("36px");
 
+  const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const setMessages = useSetRecoilState<ChatMessageProps[]>(streamedMessageState);
+  const { mindMapArray } = useMindMap();
+
+  useEffect(() => {
+    if (done) setIsLoading(false);
+  }, [done]);
 
   const sendPrompt = () => {
     setIsLoading(true);
     setPromptResult(true);
     setPromptValue(text);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      setText("");
-    }, 1000);
+    const fetchStreamData = fetchGeneratedTSummaryText(
+      "Mindgen application working and purpose",
+      promptValue,
+      mindMapArray(),
+    );
+
+    handleStreamGPTData(fetchStreamData, setMessages, setDone);
+    setText("");
   };
 
   const handleTextareaChange = (event: any) => {

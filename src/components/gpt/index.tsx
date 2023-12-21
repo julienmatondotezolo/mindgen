@@ -1,4 +1,4 @@
-export * from "./Answer";
-export * from "./Messages";
+export * from "./AnswerMessages";
+export * from "./Answers";
 export * from "./PromptTextInput";
 export * from "./SkeletonAnswerText";

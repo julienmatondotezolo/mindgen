@@ -5,7 +5,7 @@ export async function fetchGeneratedTSummaryText(
   description: string,
   task: string,
   data: string | undefined,
-): Promise<ReadableStream<Uint8Array> | null> {
+): Promise<ReadableStream<Uint8Array>> {
   try {
     const response: Response = await fetch(baseUrl, {
       method: "POST",
@@ -19,9 +19,16 @@ export async function fetchGeneratedTSummaryText(
     });
 
     if (response.ok) {
-      return response.body;
+      return response.body as ReadableStream<Uint8Array>;
     } else {
-      throw new Error("Failed to post data and stream response");
+      console.error("Failed to post data and stream response");
+      // Return a default empty ReadableStream if the response is not okay
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.close();
+        },
+      });
+      // throw new Error("Failed to post data and stream response");
     }
   } catch (error) {
     console.error(error);

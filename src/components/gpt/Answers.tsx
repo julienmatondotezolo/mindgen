@@ -1,12 +1,12 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { useRecoilValue } from "recoil";
 
-import { Messages, SkeletonAnswerText } from "@/components/gpt";
+import { AnswerMessages } from "@/components/gpt";
 import { promptValueState } from "@/recoil";
 
 import { Skeleton } from "../ui/skeleton";
 
-function AnswerText() {
+function Answers() {
   const promptValue = useRecoilValue(promptValueState);
 
   return (
@@ -17,12 +17,10 @@ function AnswerText() {
         <Skeleton className="h-6 w-96 bg-grey-blue" />
       )}
       <div className="w-full">
-        <Suspense fallback={<SkeletonAnswerText />}>
-          <Messages />
-        </Suspense>
+        <AnswerMessages />
       </div>
     </div>
   );
 }
 
-export { AnswerText };
+export { Answers };
