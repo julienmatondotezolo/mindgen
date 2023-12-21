@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
@@ -25,29 +25,31 @@ function PromptTextInput() {
   const [isLoading, setIsLoading] = useState(false);
   const { mindMapArray } = useMindMap();
 
+  const updateQa = useCallback(() => {
+    setQa((prevQa) => {
+      const updatedQa = [...prevQa];
+      const lastIndex = updatedQa.length - 1;
+
+      if (lastIndex >= 0) {
+        updatedQa[lastIndex] = {
+          ...updatedQa[lastIndex],
+          message: answerMessages[0]?.text || "",
+        };
+      }
+      return updatedQa;
+    });
+  }, [answerMessages]);
+
   useEffect(() => {
-    if (done) {
+    if (done && isLoading) {
       setIsLoading(false);
-
-      // Update the message in the last index of 'qa' state
-      setQa((prevQa) => {
-        const updatedQa = [...prevQa];
-        const lastIndex = updatedQa.length - 1;
-
-        if (lastIndex >= 0) {
-          updatedQa[lastIndex] = {
-            ...updatedQa[lastIndex],
-            message: answerMessages[0]?.text || "", // Update the message with streamed answer text
-          };
-        }
-        return updatedQa;
-      });
-
-      setAnswerMessages([{ text: "", sender: "server" }]);
     }
-  }, [done]);
+
+    updateQa();
+  }, [done, updateQa]);
 
   const sendPrompt = () => {
+    setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);
     setPromptValue(text);
