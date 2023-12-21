@@ -1,5 +1,5 @@
 // const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/chat/stream";
-const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/api/mindgen";
+const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
 
 export async function fetchGeneratedTSummaryText(
   description: string,
