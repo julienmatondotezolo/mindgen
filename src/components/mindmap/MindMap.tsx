@@ -1,5 +1,3 @@
-"use client";
-
 import "reactflow/dist/style.css";
 
 import React, { useMemo } from "react";
@@ -26,7 +24,6 @@ function Mindmap() {
     onConnectEnd,
     onDragOver,
     onDrop,
-    reactFlowInstance,
     setSourceHandle,
     setNodes,
     setReactFlowInstance,
