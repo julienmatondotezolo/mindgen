@@ -1,5 +1,5 @@
 export async function handleStreamGPTData(stream: Promise<ReadableStream<Uint8Array>>, setMessages: any, setDone: any) {
-  setMessages((prevMessages: any) => [...prevMessages, { text: "", sender: "server" }]);
+  // setMessages((prevMessages: any) => [...prevMessages, { text: "", sender: "server" }]);
 
   const reader = (await stream).getReader();
   let decodedValue = "";

@@ -2,19 +2,20 @@
 
 import Image from "next/image";
 import { useEffect } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { AnswerText, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import Mindmap from "@/components/mindmap/MindMap";
 import { Button } from "@/components/ui/button";
-import { promptResultState } from "@/recoil";
+import { promptResultState, promptValueState } from "@/recoil";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Home() {
   const size = 20;
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
+  const promptValue = useRecoilValue(promptValueState);
 
   useEffect(() => {
     if (promptResult) {
@@ -55,9 +56,13 @@ export default function Home() {
         <div className="relative w-full h-full">
           <Mindmap />
         </div>
-        <div className="relative w-full h-full flex flex-row justify-center">
-          <AnswerText />
-        </div>
+        {promptValue ? (
+          <div className="relative w-full h-full flex flex-row justify-center">
+            <AnswerText />
+          </div>
+        ) : (
+          ""
+        )}
       </div>
     </main>
   );

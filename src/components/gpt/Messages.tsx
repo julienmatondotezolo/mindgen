@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
+import { SkeletonAnswerText } from "@/components/gpt";
 import { useMindMap, useStreamGPT } from "@/hooks";
 import { promptResultState, promptValueState } from "@/recoil";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
@@ -13,7 +14,7 @@ function Messages() {
   const { mindMapArray } = useMindMap();
 
   const [done, setDone] = useState(false);
-  const [messages, setMessages] = useState<ChatMessageProps[]>([]);
+  const [messages, setMessages] = useState<ChatMessageProps[]>([{ text: "", sender: "server" }]);
 
   useEffect(() => {
     if (promptResult && !done) {
@@ -26,6 +27,8 @@ function Messages() {
       handleStreamGPTData(fetchStreamData, setMessages, setDone);
     }
   }, [promptResult, done, promptValue, mindMapArray]);
+
+  if (messages[0]?.text == "") return <SkeletonAnswerText />;
 
   return (
     <>

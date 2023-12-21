@@ -10,13 +10,13 @@ function AnswerText() {
   const promptValue = useRecoilValue(promptValueState);
 
   return (
-    <div className="flex flex-row flex-wrap justify-center m-auto w-[90%] md:w-2/4 mt-36">
+    <div className="flex flex-row flex-wrap m-auto w-[90%] md:w-2/4 mt-36">
       {promptValue ? (
-        <h1 className="text-lg font-bold">{promptValue}</h1>
+        <h1 className="text-lg font-bold mb-2">{promptValue}</h1>
       ) : (
         <Skeleton className="h-6 w-96 bg-grey-blue" />
       )}
-      <div className="w-full mt-4">
+      <div className="w-full">
         <Suspense fallback={<SkeletonAnswerText />}>
           <Messages />
         </Suspense>
