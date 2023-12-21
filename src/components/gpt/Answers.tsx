@@ -27,7 +27,11 @@ function Answers() {
               <p className="font-semibold">Answer | Mindgen</p>
             </article>
 
-            {qaItem.message ? <p>{qaItem.message}</p> : <SkeletonAnswerText />}
+            {qaItem.message ? (
+              <p className="opacity-100 ease-in duration-500">{qaItem.message}</p>
+            ) : (
+              <SkeletonAnswerText />
+            )}
           </div>
         ))}
         {/* <AnswerMessages /> */}

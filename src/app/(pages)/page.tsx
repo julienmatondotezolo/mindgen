@@ -24,8 +24,13 @@ export default function Home() {
   }, [promptResult]);
 
   function handleScrollTop() {
-    scrollToTop();
-    setPromptResult(false);
+    if (promptResult) {
+      scrollToTop();
+      setPromptResult(false);
+    } else {
+      scrollToBottom();
+      setPromptResult(true);
+    }
   }
 
   return (
@@ -46,7 +51,13 @@ export default function Home() {
         }`}
       >
         <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
-          <Image src={arrowIcon} height={size} width={size} alt="Stars icon" />
+          <Image
+            className={`${!promptResult ? "rotate-180" : "rotate-0"} transition-all duration-500`}
+            src={arrowIcon}
+            height={size}
+            width={size}
+            alt="Stars icon"
+          />
         </Button>
       </div>
 

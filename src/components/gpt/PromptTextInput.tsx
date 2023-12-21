@@ -8,6 +8,7 @@ import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 import { useMindMap } from "@/hooks";
 import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
+import { scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput() {
@@ -43,6 +44,7 @@ function PromptTextInput() {
   useEffect(() => {
     if (done && isLoading) {
       setIsLoading(false);
+      scrollToBottom();
     }
 
     updateQa();
