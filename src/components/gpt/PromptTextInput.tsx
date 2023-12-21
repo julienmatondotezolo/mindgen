@@ -7,7 +7,7 @@ import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 import { useMindMap } from "@/hooks";
-import { promptResultState, promptValueState, streamedMessageState } from "@/recoil";
+import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput() {
@@ -15,17 +15,36 @@ function PromptTextInput() {
 
   const [promptValue, setPromptValue] = useRecoilState(promptValueState);
   const setPromptResult = useSetRecoilState(promptResultState);
+  const [answerMessages, setAnswerMessages] = useRecoilState<ChatMessageProps[]>(streamedAnswersState);
+  const setQa = useSetRecoilState(qaState);
 
   const [text, setText] = useState("");
   const [textareaHeight, setTextareaHeight] = useState("36px");
 
   const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const setMessages = useSetRecoilState<ChatMessageProps[]>(streamedMessageState);
   const { mindMapArray } = useMindMap();
 
   useEffect(() => {
-    if (done) setIsLoading(false);
+    if (done) {
+      setIsLoading(false);
+
+      // Update the message in the last index of 'qa' state
+      setQa((prevQa) => {
+        const updatedQa = [...prevQa];
+        const lastIndex = updatedQa.length - 1;
+
+        if (lastIndex >= 0) {
+          updatedQa[lastIndex] = {
+            ...updatedQa[lastIndex],
+            message: answerMessages[0]?.text || "", // Update the message with streamed answer text
+          };
+        }
+        return updatedQa;
+      });
+
+      setAnswerMessages([{ text: "", sender: "server" }]);
+    }
   }, [done]);
 
   const sendPrompt = () => {
@@ -39,7 +58,15 @@ function PromptTextInput() {
       mindMapArray(),
     );
 
-    handleStreamGPTData(fetchStreamData, setMessages, setDone);
+    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
+
+    const newQA = {
+      text: text,
+      message: answerMessages[0].text,
+    };
+
+    setQa((prevQa) => [...prevQa, newQA]);
+
     setText("");
   };
 
@@ -72,6 +99,7 @@ function PromptTextInput() {
         value={text}
         onKeyDown={handleSendPrompt}
         onChange={handleTextareaChange}
+        disabled={isLoading}
         style={{ height: textareaHeight }}
       />
       <Button onClick={handleSendPrompt} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>

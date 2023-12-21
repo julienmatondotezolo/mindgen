@@ -1,8 +1,14 @@
-export async function handleStreamGPTData(stream: Promise<ReadableStream<Uint8Array>>, setMessages: any, setDone: any) {
-  // setMessages((prevMessages: any) => [...prevMessages, { text: "", sender: "server" }]);
+export async function handleStreamGPTData(
+  stream: Promise<ReadableStream<Uint8Array>>,
+  setAnswerMessages: any,
+  setDone: any,
+) {
+  // setAnswerMessages((prevMessages: any) => [...prevMessages, { text: "", sender: "server" }]);
 
   const reader = (await stream).getReader();
   let decodedValue = "";
+
+  setDone(false);
 
   while (true as const) {
     const { done, value } = await reader.read();
@@ -21,7 +27,7 @@ export async function handleStreamGPTData(stream: Promise<ReadableStream<Uint8Ar
       decodedValue += splittedData ? JSON.parse(splittedData).choices[0].delta.content : "";
     }
 
-    setMessages((prevMessages: any[]) => {
+    setAnswerMessages((prevMessages: any[]) => {
       const lastServerMessageIndex = prevMessages.map((msg: { sender: any }) => msg.sender).lastIndexOf("server");
 
       const newMessage = {

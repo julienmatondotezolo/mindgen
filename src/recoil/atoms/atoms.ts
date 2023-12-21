@@ -23,7 +23,12 @@ export const edgesState = atom<Edge[]>({
   default: [],
 });
 
-export const streamedMessageState = atom<ChatMessageProps[]>({
-  key: "streamedMessageState",
+export const streamedAnswersState = atom<ChatMessageProps[]>({
+  key: "streamedAnswersState",
   default: [{ text: "", sender: "server" }],
+});
+
+export const qaState = atom({
+  key: "qaState",
+  default: [],
 });
