@@ -233,7 +233,27 @@ async function* makeIterator() {
         {
           index: 0,
           delta: {
-            content: " fonctionnalités clés :",
+            content: " fonctionnalités clés: ",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
+  await sleep(200);
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: null,
           },
           logprobs: null,
           finish_reason: null,
