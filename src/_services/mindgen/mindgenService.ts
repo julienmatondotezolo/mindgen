@@ -1,5 +1,5 @@
-// const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/chat/stream";
-const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
+const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/chat/stream";
+// const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
 
 export async function fetchGeneratedTSummaryText(
   description: string,
@@ -15,7 +15,7 @@ export async function fetchGeneratedTSummaryText(
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
         "ngrok-skip-browser-warning": "1",
       },
-      body: JSON.stringify({ description, task, data }),
+      body: JSON.stringify({ description, task, data, collaboratorId: "c4a97e6b-cac5-41b1-9d29-4e8da67ec050" }),
     });
 
     if (response.ok) {

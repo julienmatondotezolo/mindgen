@@ -57,8 +57,8 @@ function PromptTextInput() {
     setPromptValue(text);
 
     const fetchStreamData = fetchGeneratedTSummaryText(
-      "Mindgen application working and purpose",
-      promptValue,
+      "A detailled description about this mindmap explain it in a short way",
+      text,
       mindMapArray(),
     );
 
