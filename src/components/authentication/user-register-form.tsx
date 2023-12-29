@@ -176,8 +176,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             )}
           </div>
           <Button className="bg-m-color text-white hover:bg-green-600" disabled={isLoading}>
-            {isLoading && <div>123</div>}
-            S&apos;inscrire
+            {isLoading ? <p>Loading...</p> : <p>S&apos;inscrire</p>}
           </Button>
         </div>
       </form>
@@ -198,7 +197,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         type="button"
         disabled={isLoading}
       >
-        {isLoading && <div>loading...</div>} Se connecter
+        Se connecter
       </Button>
     </div>
   );

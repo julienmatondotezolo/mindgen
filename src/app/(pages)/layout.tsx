@@ -1,9 +1,9 @@
 "use client";
 
-import React, { JSX } from "react";
+import React from "react";
 
-import Providers from "@/app/providers";
+import Providers from "../providers";
 
-export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {
+export default function PagesLayout({ children }: { children: React.ReactNode }) {
   return <Providers>{children}</Providers>;
 }

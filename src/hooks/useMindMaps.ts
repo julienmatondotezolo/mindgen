@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { addEdge, Connection, Edge, Node, ReactFlowInstance, useEdgesState, useNodesState } from "reactflow";
+import { useRecoilState } from "recoil";
 
-import { setTargetHandle } from "@/utils";
+import { edgesState, nodesState } from "@/recoil";
+import { convertToNestedArray, setTargetHandle } from "@/utils";
 
 const mindMapKey = "example-minimap";
 
@@ -20,6 +22,10 @@ const useMindMap = () => {
   const connectingNodeId = useRef(null);
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
+
+  // const [nodes, setNodes] = useRecoilState(nodesState);
+  // const [edges, setEdges] = useRecoilState(edgesState);
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
@@ -149,6 +155,12 @@ const useMindMap = () => {
     [reactFlowInstance],
   );
 
+  const mindMapArray = useCallback(() => {
+    if (nodes.length != 0 && nodes.length != 0) {
+      return convertToNestedArray(nodes, edges);
+    }
+  }, [edges, nodes]);
+
   return {
     nodes,
     edges,
@@ -163,6 +175,7 @@ const useMindMap = () => {
     setSourceHandle,
     setNodes,
     setReactFlowInstance,
+    mindMapArray,
   };
 };
 
