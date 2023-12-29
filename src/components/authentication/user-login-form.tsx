@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, SignInResponse } from "next-auth/react";
-import * as React from "react";
-import { ChangeEvent, useState } from "react";
+import { signIn } from "next-auth/react";
+import React, { ChangeEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +22,9 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, source: string) => {
     switch (source) {
       case "username":
-        console.log(event.target.value);
         setUsername(event.target.value);
         break;
       case "password":
-        console.log(event.target.value);
         setPassword(event.target.value);
         break;
     }

@@ -69,4 +69,4 @@ function Mindmap() {
   );
 }
 
-export default Mindmap;
+export { Mindmap };

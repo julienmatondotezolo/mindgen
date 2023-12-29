@@ -23,10 +23,11 @@ const useMindMap = () => {
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
 
-  const [nodes, setNodes] = useRecoilState(nodesState);
-  const [edges, setEdges] = useRecoilState(edgesState);
-  const [, , onNodesChange] = useNodesState([]);
-  const [, , onEdgesChange] = useEdgesState([]);
+  // const [nodes, setNodes] = useRecoilState(nodesState);
+  // const [edges, setEdges] = useRecoilState(edgesState);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
   useEffect(() => {

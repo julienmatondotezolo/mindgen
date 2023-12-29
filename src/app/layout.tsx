@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "MindGen - Generate * with mindmap",
-  description: "Generated everything with a mindma^p",
+  description: "Generated everything with a mindmap",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -7,7 +7,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
-import Mindmap from "@/components/mindmap/MindMap";
+import { Mindmap } from "@/components/mindmap/";
 import { Button } from "@/components/ui/button";
 import { promptResultState, promptValueState } from "@/recoil";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";

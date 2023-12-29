@@ -56,13 +56,15 @@ function PromptTextInput() {
     setPromptResult(true);
     setPromptValue(text);
 
-    const fetchStreamData = fetchGeneratedTSummaryText(
-      "A detailled description about this mindmap explain it in a short way",
-      text,
-      mindMapArray(),
-    );
+    // const fetchStreamData = fetchGeneratedTSummaryText(
+    //   "A very short explanation in bullet points",
+    //   text,
+    //   mindMapArray(),
+    // );
 
-    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
+    console.log("mindMapArray:", mindMapArray());
+
+    // handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 
     const newQA = {
       text: text,
