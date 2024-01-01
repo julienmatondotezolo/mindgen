@@ -8,9 +8,9 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (session) {
-    router.replace("/auth/login");
-  }
+  // if (session) {
+  //   router.replace("/auth/login");
+  // }
 
   return <>{children}</>;
 }
