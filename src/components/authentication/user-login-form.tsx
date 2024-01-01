@@ -85,11 +85,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
             <small>Mot de passe oublié?</small>
           </Link>
           <Button className="bg-m-color text-white hover:bg-green-600" disabled={isLoading}>
-            {isLoading && (
-              // <Icons.spinner className="mr-2 h-4 w-4 animate-spin"/>
-              <div>loading...</div>
-            )}
-            Connexion
+            {isLoading ? <p>Loading...</p> : <p>Connexion</p>}
           </Button>
         </div>
       </form>
@@ -108,7 +104,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
         type="button"
         disabled={isLoading}
       >
-        {isLoading && <div>loading...</div>} Inscrivez-vous!
+        Inscrivez-vous!
       </Button>
     </div>
   );

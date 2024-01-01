@@ -8,8 +8,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }):
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (session) {
-    router.push("/");
+  if (!session) {
+    router.push("/dashboard");
   }
 
   return (
