@@ -11,11 +11,11 @@ function Navigation() {
   const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl";
 
   return (
-    <nav className="flex justify-center fixed top w-full shadow-lg py-3 bg-white">
+    <nav className="flex justify-center fixed top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white">
       <div className="flex justify-between max-w-7xl w-[96%]">
         <section className="flex items-center">
           <figure className=" mr-8">
-            <p className="font-bold text-lg">
+            <p className="font-bold text-base">
               MIND<span className="text-primary-color">GEN</span>
             </p>
           </figure>
