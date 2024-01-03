@@ -14,12 +14,17 @@
     --grey-blue-color: #B4BFCC;
     --grey-color: #707070;
     --foreground-color: #33373B;
-    --background-color: #EFF4F8;
+    /* --background-color: #EFF4F8; */
+    --background-color: #fbfdfd;
 }
 
 @layer base {
     html {
         @apply m-0 bg-background scroll-smooth;
+    }
+
+    body {
+        @apply overflow-y-scroll overflow-x-hidden;
     }
 }
   

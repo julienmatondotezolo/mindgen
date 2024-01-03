@@ -22,32 +22,245 @@ const encoder = new TextEncoder();
 
 async function* makeIterator() {
   await sleep(1000);
-  yield encoder.encode("La MindGen App est une plateforme polyvalente");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: "Le MindGen App est une plateforme polyvalente",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(500);
-  yield encoder.encode(" permettant de créer des cartes");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " permettant de créer des cartes",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(200);
-  yield encoder.encode(" mentales pour organiser des idées");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " mentales pour organiser des idées",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(400);
-  yield encoder.encode(" et des informations.");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " et des informations.",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(1000);
-  yield encoder.encode("Elle offre une interface");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " Elle offre une interface",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(500);
-  yield encoder.encode(" conviviale pour générer des cartes");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " conviviale pour générer des cartes",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(200);
-  yield encoder.encode(" à partir de nœuds personnalisables,");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " à partir de nœuds personnalisables,",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(400);
-  yield encoder.encode(" chacun représentant une tâche");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " chacun représentant une tâche",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(1000);
-  yield encoder.encode(" ou un concept spécifique.");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " ou un concept spécifique.",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(500);
-  yield encoder.encode(" L'application semble offrir plusieurs");
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " L'application semble offrir plusieurs",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
   await sleep(200);
-  yield encoder.encode(" fonctionnalités clés :");
-  await sleep(400);
-  // await sleep(1000);
-  // yield encoder.encode(
-  //   "<ul><li><strong>Création de cartes mentales:</strong> La première étape semble être la création de cartes mentales. Cela se fait à l'aide de nœuds personnalisables. Chaque nœud représente une entité spécifique dans le processus de création.</li><li><strong>Génération d'emails:</strong> Une fonctionnalité intéressante de la MindGen App est la capacité de générer des emails. Un nœud dédié est présent pour cette tâche spécifique.</li><li><strong>Génération de CV au format PDF:</strong> Elle offre également la possibilité de générer des CV au format PDF. Encore une fois, cela est représenté par un nœud distinct dans la carte mentale.</li><li><strong>Gestion d'équipe:</strong> La plateforme semble intégrer une fonctionnalité de gestion d'équipe. Différents membres de l'équipe sont représentés par des nœuds, tels que Snize, Emji, Backend Developer, et Frontend Developer. Ces nœuds sont reliés entre eux, probablement pour montrer les liens et les connexions au sein de l'équipe.</li></ul>",
-  // );
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: " fonctionnalités clés: ",
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
+  await sleep(200);
+  yield encoder.encode(
+    JSON.stringify({
+      id: "chatcmpl-8Y2aGveQxZWi5B2M1wadVZSyFs6B2",
+      object: "chat.completion.chunk",
+      created: 1703123776,
+      model: "gpt-3.5-turbo-0613",
+      system_fingerprint: null,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: null,
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    }),
+  );
 }
 
 export async function POST() {

@@ -1,38 +1,100 @@
 import Image from "next/image";
-import React, { useState } from "react";
-import { useRecoilState } from "recoil";
+import React, { useCallback, useEffect, useState } from "react";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { textState } from "@/app/recoil";
+import { fetchGeneratedTSummaryText } from "@/_services";
+import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
+import { useMindMap } from "@/hooks";
+import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
+import { scrollToBottom } from "@/utils";
+import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput() {
   const size = 20;
 
-  const [text, setText] = useRecoilState(textState);
+  const [promptValue, setPromptValue] = useRecoilState(promptValueState);
+  const setPromptResult = useSetRecoilState(promptResultState);
+  const [answerMessages, setAnswerMessages] = useRecoilState<ChatMessageProps[]>(streamedAnswersState);
+  const setQa = useSetRecoilState(qaState);
+
+  const [text, setText] = useState("");
   const [textareaHeight, setTextareaHeight] = useState("36px");
 
+  const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { mindMapArray } = useMindMap();
 
-  const handleTextareaChange = (event: any) => {
-    if (event.key === "Enter") {
-      event.preventDefault(); // Prevent default behavior (new line)
-    } else {
-      setText(event.target.value);
-      event.target.style.height = "36px";
-      const newHeight = event.target.scrollHeight;
+  const updateQa = useCallback(() => {
+    setQa((prevQa) => {
+      const updatedQa = [...prevQa];
+      const lastIndex = updatedQa.length - 1;
 
-      setTextareaHeight(newHeight + "px");
+      if (lastIndex >= 0) {
+        updatedQa[lastIndex] = {
+          ...updatedQa[lastIndex],
+          message: answerMessages[0]?.text || "",
+        };
+      }
+      return updatedQa;
+    });
+  }, [answerMessages]);
+
+  useEffect(() => {
+    if (done && isLoading) {
+      setIsLoading(false);
+      scrollToBottom();
     }
+
+    updateQa();
+  }, [done, updateQa]);
+
+  const sendPrompt = () => {
+    setAnswerMessages([{ text: "", sender: "server" }]);
+    setIsLoading(true);
+    setPromptResult(true);
+    setPromptValue(text);
+
+    // const fetchStreamData = fetchGeneratedTSummaryText(
+    //   "A very short explanation in bullet points",
+    //   text,
+    //   mindMapArray(),
+    // );
+
+    console.log("mindMapArray:", mindMapArray());
+
+    // handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
+
+    const newQA = {
+      text: text,
+      message: answerMessages[0].text,
+    };
+
+    setQa((prevQa) => [...prevQa, newQA]);
+
+    setText("");
   };
 
-  const handleEnterPress = () => {
-    setIsLoading(true);
+  const handleTextareaChange = (event: any) => {
+    setText(event.target.value);
+    event.target.style.height = "36px";
+    const newHeight = event.target.scrollHeight;
 
-    setTimeout(() => {
-      setIsLoading(false);
-      setText("");
-    }, 2000);
+    setTextareaHeight(newHeight + "px");
+  };
+
+  const handleSendPrompt = (event: any) => {
+    if (text) {
+      if (event.code === "Enter") {
+        event.preventDefault();
+        sendPrompt();
+      }
+
+      if (event.type === "click") {
+        sendPrompt();
+      }
+    }
   };
 
   return (
@@ -41,10 +103,12 @@ function PromptTextInput() {
         className="resize-none overflow-y-hidden w-[90%]"
         placeholder="Ask our generate anything related to this mind map..."
         value={text}
+        onKeyDown={handleSendPrompt}
         onChange={handleTextareaChange}
+        disabled={isLoading}
         style={{ height: textareaHeight }}
       />
-      <Button onClick={handleEnterPress} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>
+      <Button onClick={handleSendPrompt} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>
         <Image
           className={isLoading ? "animate-spin" : ""}
           src={starsIcon}
