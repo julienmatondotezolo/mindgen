@@ -3,12 +3,12 @@ import Image from "next/image";
 import React from "react";
 
 import diamondsIcon from "@/assets/icons/diamonds.svg";
-import profileIcon from "@/assets/icons/profile.svg";
 import { Button, Input } from "@/components/ui";
+
+import { NavProfile } from "./NavProfile";
 
 function Navigation() {
   const size = 17;
-  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl";
 
   return (
     <nav className="flex justify-center fixed top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white">
@@ -28,18 +28,7 @@ function Navigation() {
             Upgrade
           </Button>
 
-          <section className="flex float-right">
-            <article className=" text-right">
-              <p className="text-primary-color text-sm font-bold">Emji</p>
-              <p className=" text-xs">emji@mindgen.ai</p>
-            </article>
-
-            <div className="w-[1px] h-8 self-center mx-4 bg-slate-200"></div>
-
-            <figure className={`${listStyle} cursor-pointer`}>
-              <Image src={profileIcon} height={size} width={size} alt="Mouse icon" />
-            </figure>
-          </section>
+          <NavProfile />
         </div>
       </div>
     </nav>
