@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 import { HeroProfile, MindGenTemplates, Navigation, RecentMindMap } from "@/components/dashboard";

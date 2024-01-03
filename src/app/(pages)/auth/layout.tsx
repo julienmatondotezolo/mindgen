@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }):
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (!session) {
+  if (session?.authenticated == true) {
     router.push("/dashboard");
   }
 
