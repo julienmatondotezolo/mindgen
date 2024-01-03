@@ -7,19 +7,22 @@ export async function fetchGeneratedTSummaryText(
   data: string | undefined,
 ): Promise<ReadableStream<Uint8Array>> {
   try {
-    const response: Response = await fetch(baseUrl + "/chat/stream", {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseSummaryText: Response = await fetch(baseUrl + "/chat/stream", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${session.data.user.token}`,
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
       body: JSON.stringify({ description, task, data, collaboratorId: "c4a97e6b-cac5-41b1-9d29-4e8da67ec050" }),
     });
 
-    if (response.ok) {
-      return response.body as ReadableStream<Uint8Array>;
+    if (responseSummaryText.ok) {
+      return responseSummaryText.body as ReadableStream<Uint8Array>;
     } else {
       console.error("Failed to post data and stream response");
       // Return a default empty ReadableStream if the response is not okay
