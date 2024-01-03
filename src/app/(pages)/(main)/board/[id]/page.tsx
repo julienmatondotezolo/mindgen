@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { promptResultState, promptValueState } from "@/recoil";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
-export default function Home() {
+export default function Board({ params }: { params: { id: string } }) {
   const size = 20;
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
   const promptValue = useRecoilValue(promptValueState);
@@ -36,6 +36,7 @@ export default function Home() {
   return (
     <main className="flex justify-between w-screen h-screen scroll-smooth">
       <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-10">
+        <div>My Mindmap: {params.id}</div>
         <NavLeft />
         <ToolBar />
         <NavRight />
