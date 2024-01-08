@@ -20,20 +20,19 @@ function NavProfile() {
       </section>
     );
 
-  const { username, email } = userProfile;
+  if (userProfile)
+    return (
+      <section className="flex float-right">
+        <article className=" text-right">
+          <p className="text-primary-color text-sm font-bold">{uppercaseFirstLetter(userProfile.username)}</p>
+          <p className=" text-xs">{userProfile.email}</p>
+        </article>
 
-  return (
-    <section className="flex float-right">
-      <article className=" text-right">
-        <p className="text-primary-color text-sm font-bold">{uppercaseFirstLetter(username)}</p>
-        <p className=" text-xs">{email}</p>
-      </article>
+        <div className="w-[1px] h-8 self-center mx-4 bg-slate-200"></div>
 
-      <div className="w-[1px] h-8 self-center mx-4 bg-slate-200"></div>
-
-      <ProfileMenu />
-    </section>
-  );
+        <ProfileMenu />
+      </section>
+    );
 }
 
 export { NavProfile };

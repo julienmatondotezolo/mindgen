@@ -18,16 +18,17 @@ function HeroProfile() {
       </article>
     );
 
-  const { username } = userProfile;
-
-  return (
-    <article className="w-full border-b-2 pb-4">
-      <p className="text-2xl font-bold">
-        Welcome to Mindgen,{" "}
-        <span className="text-primary-color first-letter:uppercase">{uppercaseFirstLetter(username)}</span>
-      </p>
-    </article>
-  );
+  if (userProfile)
+    return (
+      <article className="w-full border-b-2 pb-4">
+        <p className="text-2xl font-bold">
+          Welcome to Mindgen,{" "}
+          <span className="text-primary-color first-letter:uppercase">
+            {uppercaseFirstLetter(userProfile.username)}
+          </span>
+        </p>
+      </article>
+    );
 }
 
 export { HeroProfile };
