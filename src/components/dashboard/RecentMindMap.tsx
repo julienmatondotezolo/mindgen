@@ -15,13 +15,13 @@ function RecentMindMap() {
 
   return (
     <div>
-      <section className="flex flex-wrap justify-between mb-6">
+      <section className="flex flex-wrap justify-between mb-8">
         <p className="mb-6 font-bold">My recent mind maps</p>
         <OpenOurNewMindmap />
       </section>
-      <article className="flex flex-wrap w-full">
-        <div onClick={handleClick} className="mr-4 cursor-pointer">
-          <figure className="flex w-44 h-24 border-2 border-primary-color mb-2 rounded-xl">
+      <article className="grid grid-cols-5 gap-8 w-full">
+        <div onClick={handleClick} className="cursor-pointer ">
+          <figure className="flex  w-full h-24 border-2 border-primary-color mb-2 rounded-xl">
             <article className="m-auto text-primary-color text-center">
               <span className="text-4xl">+</span>
               <p className="font-medium text-xs">New mind map</p>
