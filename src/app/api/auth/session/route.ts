@@ -7,7 +7,7 @@ export async function GET(): Promise<NextResponse> {
   const session = await getServerSession(authOptions);
 
   return NextResponse.json({
-    authenticated: !!session,
+    // authenticated: !!session,
     session,
   });
 }

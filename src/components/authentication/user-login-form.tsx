@@ -40,7 +40,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
         return;
       }
       setShowBadCredentialsMessage(false);
-      router.replace("/");
+      router.push("/dashboard");
     });
   }
 
