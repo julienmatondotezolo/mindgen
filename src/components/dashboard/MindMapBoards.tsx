@@ -3,6 +3,7 @@ import { useQuery } from "react-query";
 
 import { fetchMindmaps } from "@/_services";
 import { MindmapObject } from "@/_types";
+import { formatDate } from "@/utils";
 
 import { Skeleton } from "../ui/skeleton";
 
@@ -13,7 +14,7 @@ function MindMapBoards() {
 
   if (isLoading)
     return Array.from({ length: 3 }).map((_, index) => (
-      <section key={index} className="flex flex-wrap flex-col w-56">
+      <section key={index} className="flex flex-wrap flex-col w-56 mr-4">
         <Skeleton className="h-24 w-full rounded-xl mb-4 bg-grey-blue" />
         <article className=" space-y-2">
           <Skeleton className="h-3 w-28 bg-grey-blue" />
@@ -31,7 +32,7 @@ function MindMapBoards() {
           <article>
             <p className="text-sm font-medium">{mindmap.name}</p>
             <p className="text-xs text-primary-color">Created by {mindmap.creatorUsername}</p>
-            <p className="text-xs text-primary-color">{mindmap.createdAt}</p>
+            <p className="text-xs text-primary-color">{formatDate(mindmap.createdAt)}</p>
           </article>
         </div>
       ))}
