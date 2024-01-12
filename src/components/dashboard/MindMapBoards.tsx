@@ -2,26 +2,38 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
 import React from "react";
-import { useIsMutating, useQuery } from "react-query";
+import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 
-import { fetchMindmaps } from "@/_services";
+import { deleteMindmapById, fetchMindmaps } from "@/_services";
 import { MindmapObject } from "@/_types";
 import documentIcon from "@/assets/icons/delete.svg";
-import { formatDate } from "@/utils";
-
-import { SkeletonMindMapBoard } from "../ui/SkeletonMindMapBoard";
+import { SkeletonMindMapBoard } from "@/components/ui";
+import { formatDate, uppercaseFirstLetter } from "@/utils";
 
 const fetchUserMindmaps = () => fetchMindmaps();
 
 function MindMapBoards() {
   const size = 10;
 
-  const handleDelete = (id: string) => {
-    console.log("id:", id);
-  };
-
+  const queryClient = useQueryClient();
+  const { mutateAsync } = useMutation(deleteMindmapById);
   const { isLoading, data: userMindmap } = useQuery("userMindmap", fetchUserMindmaps);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });
+
+  const handleDelete = async (mindMapId: string) => {
+    try {
+      await mutateAsync(mindMapId, {
+        onSuccess: () => {
+          // Invalidate the query to cause a re-fetch
+          queryClient.invalidateQueries("userMindmap");
+        },
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`An error has occurred: ${error.message}`);
+      }
+    }
+  };
 
   if (isLoading) return Array.from({ length: 3 }).map((_, index) => <SkeletonMindMapBoard key={index} />);
 
@@ -33,8 +45,13 @@ function MindMapBoards() {
           <article className="flex flex-wrap justify-between items-start">
             <div>
               <p className="text-sm font-medium">{mindmap.name}</p>
-              <p className="text-xs text-primary-color">Created by {mindmap.creatorUsername}</p>
-              <p className="text-xs text-primary-color">{formatDate(mindmap.createdAt)}</p>
+              <p className="text-xs text-grey">
+                Created by{" "}
+                <span className="text-primary-color cursor-pointer hover:underline">
+                  {uppercaseFirstLetter(mindmap.creatorUsername)}
+                </span>
+              </p>
+              <p className="text-xs text-grey">{formatDate(mindmap.createdAt)}</p>
             </div>
             <figure
               onClick={() => handleDelete(mindmap.id)}
