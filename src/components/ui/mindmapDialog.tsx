@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { createMindmap } from "@/_services";
@@ -17,8 +17,13 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
   });
 
   // Initialize state for title and description
-  const [inputTitle, setInputTitle] = useState(title ?? "");
-  const [inputDescription, setInputDescription] = useState(description ?? "");
+  const [inputTitle, setInputTitle] = useState("");
+  const [inputDescription, setInputDescription] = useState("");
+
+  useEffect(() => {
+    if (title) setInputTitle(title);
+    if (description) setInputTitle(description);
+  }, [title, description]);
 
   // Update state when input changes
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,6 +51,8 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
       }
     }
 
+    setInputTitle("");
+    setInputDescription("");
     handleClose();
   };
 

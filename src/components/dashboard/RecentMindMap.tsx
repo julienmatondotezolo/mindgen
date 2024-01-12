@@ -20,11 +20,11 @@ function RecentMindMap() {
         <OpenOurNewMindmap />
       </section>
       <article className="flex flex-wrap w-full">
-        <div onClick={handleClick} className="mr-6 cursor-pointer">
-          <figure className="flex w-56 h-24 border-2 border-primary-color mb-2 rounded-xl">
+        <div onClick={handleClick} className="mr-4 cursor-pointer">
+          <figure className="flex w-44 h-24 border-2 border-primary-color mb-2 rounded-xl">
             <article className="m-auto text-primary-color text-center">
               <span className="text-4xl">+</span>
-              <p className="font-medium">New mind map</p>
+              <p className="font-medium text-xs">New mind map</p>
             </article>
           </figure>
           <article>
@@ -35,12 +35,7 @@ function RecentMindMap() {
         <MindMapBoards />
       </article>
 
-      <MindmapDialog
-        title="Mindgen mindmap"
-        description="Are you sure you want to proceed?"
-        open={isOpen}
-        setIsOpen={setIsOpen}
-      />
+      <MindmapDialog title="" description="" open={isOpen} setIsOpen={setIsOpen} />
     </div>
   );
 }
