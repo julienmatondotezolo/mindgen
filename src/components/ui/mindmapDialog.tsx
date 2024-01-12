@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { createMindmap } from "@/_services";
@@ -16,8 +16,21 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
     mutationKey: "CREATE_MINDMAP",
   });
 
+  // Initialize state for title and description
+  const [inputTitle, setInputTitle] = useState(title ?? "");
+  const [inputDescription, setInputDescription] = useState(description ?? "");
+
+  // Update state when input changes
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputTitle(e.target.value);
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputDescription(e.target.value);
+  };
+
   const handleConfirm = async () => {
-    const emptyMindmapObject = emptyMindMapObject(title, description);
+    const emptyMindmapObject = emptyMindMapObject(inputTitle, inputDescription);
 
     try {
       await mutateAsync(emptyMindmapObject, {
@@ -40,8 +53,13 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
     <div className={`fixed inset-0 items-center justify-center z-50 dialog ${open ? "flex" : "hidden"}`}>
       <div className="bg-white p-4 rounded shadow-lg">
         <article className="space-y-2">
-          <Input type="text" placeholder="Mindmap name" value={title ?? ""} readOnly />
-          <Input type="text" placeholder="mindmap description" value={description ?? ""} readOnly />
+          <Input type="text" placeholder="Mindmap name" value={inputTitle} onChange={handleTitleChange} />
+          <Input
+            type="text"
+            placeholder="mindmap description"
+            value={inputDescription}
+            onChange={handleDescriptionChange}
+          />
         </article>
         <div className="dialog-actions mt-4">
           <button onClick={handleClose} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
