@@ -1,9 +1,18 @@
-import React from "react";
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import React, { useState } from "react";
 
+import { MindmapDialog } from "../ui/mindmapDialog";
 import { MindMapBoards } from "./MindMapBoards";
 import { OpenOurNewMindmap } from "./OpenOurNewMindmap";
 
 function RecentMindMap() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleClick = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div>
       <section className="flex flex-wrap justify-between mb-6">
@@ -11,7 +20,7 @@ function RecentMindMap() {
         <OpenOurNewMindmap />
       </section>
       <article className="flex flex-wrap w-full">
-        <div className="mr-4">
+        <div onClick={handleClick} className="mr-4 cursor-pointer">
           <figure className="flex w-56 h-24 border-2 border-primary-color mb-2 rounded-xl">
             <article className="m-auto text-primary-color text-center">
               <span className="text-4xl">+</span>
@@ -25,6 +34,13 @@ function RecentMindMap() {
 
         <MindMapBoards />
       </article>
+
+      <MindmapDialog
+        title="Mindgen mindmap"
+        description="Are you sure you want to proceed?"
+        open={isOpen}
+        setIsOpen={setIsOpen}
+      />
     </div>
   );
 }
