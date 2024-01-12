@@ -69,7 +69,7 @@ export async function fetchMindmaps(): Promise<any> {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();
 
-    const responseProfile: Response = await fetch(baseUrl + `/mindmap`, {
+    const responseMindmap: Response = await fetch(baseUrl + `/mindmap`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -79,10 +79,36 @@ export async function fetchMindmaps(): Promise<any> {
       },
     });
 
-    if (responseProfile.ok) {
-      return responseProfile.json();
+    if (responseMindmap.ok) {
+      return responseMindmap.json();
     } else {
-      throw responseProfile;
+      throw responseMindmap;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch profiles:", error);
+  }
+}
+
+export async function createMindmap(mindmapObject: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseCreatedMindMap: Response = await fetch(baseUrl + `/mindmap`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(mindmapObject),
+    });
+
+    if (responseCreatedMindMap.ok) {
+      return responseCreatedMindMap;
+    } else {
+      throw responseCreatedMindMap;
     }
   } catch (error) {
     console.error("Impossible to fetch profiles:", error);

@@ -1,15 +1,21 @@
 import React, { FC } from "react";
 
+import { createMindmap } from "@/_services";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
-import { Input, Textarea } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { emptyMindMapObject } from "@/utils";
 
 const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIsOpen }) => {
   const handleClose = () => {
     setIsOpen(false);
   };
 
-  const handleConfirm = () => {
-    // Handle confirm action here
+  const handleConfirm = async () => {
+    const emptyMindmapObject = emptyMindMapObject(title, description);
+
+    const response = await createMindmap(emptyMindmapObject);
+
+    console.log("response:", response);
     handleClose();
   };
 
@@ -17,8 +23,8 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
     <div className={`fixed inset-0 items-center justify-center z-50 dialog ${open ? "flex" : "hidden"}`}>
       <div className="bg-white p-4 rounded shadow-lg">
         <article className="space-y-2">
-          <Input type="text" placeholder="Mindmap name" value={title ?? ""} />
-          <Input type="text" placeholder="mindmap description" value={description ?? ""} />
+          <Input type="text" placeholder="Mindmap name" value={title ?? ""} readOnly />
+          <Input type="text" placeholder="mindmap description" value={description ?? ""} readOnly />
         </article>
         <div className="dialog-actions mt-4">
           <button onClick={handleClose} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
