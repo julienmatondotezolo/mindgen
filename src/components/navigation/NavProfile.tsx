@@ -4,8 +4,8 @@ import { useQuery } from "react-query";
 import { fetchProfile } from "@/_services";
 import { uppercaseFirstLetter } from "@/utils";
 
+import { ProfileMenu } from "../dashboard/ProfileMenu";
 import { Skeleton } from "../ui/skeleton";
-import { ProfileMenu } from "./ProfileMenu";
 
 const fetchUserProfile = () => fetchProfile();
 

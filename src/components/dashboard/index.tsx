@@ -1,4 +1,4 @@
 export * from "./HeroProfile";
 export * from "./MindGenTemplates";
-export * from "./Navigation";
+export * from "../navigation/Navigation";
 export * from "./RecentMindMap";
