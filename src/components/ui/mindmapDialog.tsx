@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import { useMutation, useQueryClient } from "react-query";
 
 import { createMindmap } from "@/_services";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
@@ -10,12 +11,28 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
     setIsOpen(false);
   };
 
+  const queryClient = useQueryClient();
+  const { mutateAsync } = useMutation(createMindmap, {
+    mutationKey: "CREATE_MINDMAP",
+  });
+
   const handleConfirm = async () => {
     const emptyMindmapObject = emptyMindMapObject(title, description);
 
-    const response = await createMindmap(emptyMindmapObject);
+    try {
+      await mutateAsync(emptyMindmapObject, {
+        onSuccess: () => {
+          // Invalidate the query to cause a re-fetch
+          queryClient.invalidateQueries("userMindmap");
+        },
+      });
+      handleClose();
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`An error has occurred: ${error.message}`);
+      }
+    }
 
-    console.log("response:", response);
     handleClose();
   };
 
