@@ -22,7 +22,7 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
 
   useEffect(() => {
     if (title) setInputTitle(title);
-    if (description) setInputTitle(description);
+    if (description) setInputDescription(description);
   }, [title, description]);
 
   // Update state when input changes

@@ -35,7 +35,7 @@ function RecentMindMap() {
         <MindMapBoards />
       </article>
 
-      <MindmapDialog title="" description="" open={isOpen} setIsOpen={setIsOpen} />
+      <MindmapDialog title="" description="" open={isOpen} update={false} setIsOpen={setIsOpen} />
     </div>
   );
 }
