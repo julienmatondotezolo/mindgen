@@ -50,7 +50,7 @@ function PromptTextInput({ collaboratorId }: { collaboratorId: string | null }) 
     updateQa();
   }, [done, updateQa]);
 
-  const sendPrompt = (collaboratorId: string | undefined) => {
+  const sendPrompt = (collaboratorId: string | null) => {
     setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);

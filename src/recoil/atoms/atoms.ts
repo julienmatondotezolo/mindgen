@@ -2,6 +2,7 @@ import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
+import { QuestionAnswersProps } from "@/_types/QuestionAnswersProps";
 
 export const promptValueState = atom({
   key: "promptValueState", // unique ID (with respect to other atoms/selectors)
@@ -28,7 +29,7 @@ export const streamedAnswersState = atom<ChatMessageProps[]>({
   default: [{ text: "", sender: "server" }],
 });
 
-export const qaState = atom({
+export const qaState = atom<QuestionAnswersProps[]>({
   key: "qaState",
   default: [],
 });

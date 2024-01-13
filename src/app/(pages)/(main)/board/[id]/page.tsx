@@ -14,7 +14,7 @@ import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { promptResultState, promptValueState } from "@/recoil";
+import { promptResultState, promptValueState, qaState } from "@/recoil";
 import { findCollaboratorId } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
@@ -22,6 +22,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const size = 20;
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
   const promptValue = useRecoilValue(promptValueState);
+  const [qa, setQa] = useRecoilState(qaState);
 
   useEffect(() => {
     if (promptResult) {
@@ -46,6 +47,18 @@ export default function Board({ params }: { params: { id: string } }) {
     getUserMindmapById,
   );
 
+  useEffect(() => {
+    if (userMindmapDetails) {
+      setQa([]);
+      const newQaItems = userMindmapDetails.messages.map((mindMapQA) => ({
+        text: mindMapQA.request,
+        message: mindMapQA.response,
+      }));
+
+      setQa((oldQa) => [...oldQa, ...newQaItems]);
+    }
+  }, [userMindmapDetails]);
+
   const userCollaboratorID = findCollaboratorId(userMindmapDetails?.creatorId, userMindmapDetails?.collaborators);
 
   return (
@@ -62,7 +75,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
       <div
         className={`fixed right-5 bottom-6 z-10 ${
-          promptValue ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
+          promptValue || qa.length > 0 ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
         }`}
       >
         <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
@@ -90,7 +103,7 @@ export default function Board({ params }: { params: { id: string } }) {
             <Mindmap userMindmapDetails={userMindmapDetails} />
           )}
         </div>
-        {promptValue ? (
+        {promptValue || qa.length > 0 ? (
           <div className="relative w-full h-full flex flex-row justify-center">
             <Answers />
           </div>

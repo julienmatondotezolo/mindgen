@@ -5,7 +5,7 @@ export async function fetchGeneratedTSummaryText(
   description: string,
   task: string,
   data: string | undefined,
-  collaboratorId: number,
+  collaboratorId: string | null,
 ): Promise<ReadableStream<Uint8Array>> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
