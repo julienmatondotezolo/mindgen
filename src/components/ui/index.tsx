@@ -5,4 +5,5 @@ export * from "./input";
 export * from "./label";
 export * from "./progress";
 export * from "./SkeletonMindMapBoard";
+export * from "./spinner";
 export * from "./textarea";
