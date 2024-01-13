@@ -4,7 +4,7 @@ import React from "react";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Input } from "@/components/";
 
-function NavLeft() {
+function NavLeft({ mindMapName }: { mindMapName: string }) {
   const size = 15;
 
   const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200";
@@ -18,7 +18,7 @@ function NavLeft() {
           </div>
         </li>
         <li className="m-1">
-          <Input type="text" placeholder="Untitled project" />
+          <Input type="text" value={mindMapName} placeholder="Untitled project" />
         </li>
       </ul>
     </div>

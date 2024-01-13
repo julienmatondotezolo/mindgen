@@ -115,6 +115,31 @@ export async function createMindmap(mindmapObject: any): Promise<any> {
   }
 }
 
+export async function getMindmapById(mindmapId: string): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseDeletedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseDeletedMindMap.ok) {
+      return responseDeletedMindMap.json();
+    } else {
+      throw responseDeletedMindMap;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch profiles:", error);
+  }
+}
+
 export async function deleteMindmapById(mindmapId: string): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
