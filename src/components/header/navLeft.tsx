@@ -9,7 +9,7 @@ function NavLeft({ mindMapName }: { mindMapName: string | undefined }) {
 
   const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200";
 
-  const [newMindMapName, setNewMindMapName] = useState(mindMapName);
+  const [newMindMapName, setNewMindMapName] = useState(mindMapName || "");
 
   // Update state when input changes
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -40,6 +40,26 @@ export async function fetchGeneratedTSummaryText(
   }
 }
 
+export async function fetchApi(): Promise<any> {
+  try {
+    const responseProfile: Response = await fetch(baseUrl + `/user/ping`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseProfile.ok) {
+      return responseProfile;
+    } else {
+      throw responseProfile;
+    }
+  } catch (error) {
+    console.error("Impossible to ACCESS MINDGEN API:", error);
+  }
+}
+
 export async function fetchProfile(): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
