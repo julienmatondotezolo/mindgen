@@ -18,7 +18,7 @@ function NavLeft({ mindMapName }: { mindMapName: string }) {
           </div>
         </li>
         <li className="m-1">
-          <Input type="text" value={mindMapName} placeholder="Untitled project" />
+          <Input type="text" value={mindMapName} placeholder="Untitled project" readOnly />
         </li>
       </ul>
     </div>

@@ -13,7 +13,7 @@ const edgeTypes = {
   bidirectional: BiDirectionalEdge,
 };
 
-function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
+function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const {
     nodes,
     edges,
