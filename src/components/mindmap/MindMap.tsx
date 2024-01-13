@@ -45,9 +45,11 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   );
 
   useEffect(() => {
-    setNodes(userMindmapDetails.nodes);
-    setNodeId(userMindmapDetails.nodes.length);
-    setEdges(userMindmapDetails.edges);
+    if (userMindmapDetails) {
+      setNodes(userMindmapDetails.nodes);
+      setNodeId(userMindmapDetails.nodes.length);
+      setEdges(userMindmapDetails.edges);
+    }
   }, [userMindmapDetails]);
 
   return (

@@ -4,6 +4,8 @@ import { Collaborator, MindMapMessages } from ".";
 
 export type MindMapDetailsProps = {
   id: string;
+  name: string;
+  description: string;
   collaborators: Collaborator[];
   creatorId: string;
   creatorUsername: string;
