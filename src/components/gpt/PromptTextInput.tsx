@@ -11,7 +11,7 @@ import { promptResultState, promptValueState, qaState, streamedAnswersState } fr
 import { scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
-function PromptTextInput() {
+function PromptTextInput({ collaboratorId }: { collaboratorId: string | null }) {
   const size = 20;
 
   const [promptValue, setPromptValue] = useRecoilState(promptValueState);
@@ -50,7 +50,7 @@ function PromptTextInput() {
     updateQa();
   }, [done, updateQa]);
 
-  const sendPrompt = () => {
+  const sendPrompt = (collaboratorId: string | undefined) => {
     setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);
@@ -60,9 +60,8 @@ function PromptTextInput() {
       "A very short explanation in bullet points",
       text,
       mindMapArray(),
+      collaboratorId,
     );
-
-    console.log("mindMapArray:", mindMapArray());
 
     handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 
@@ -88,11 +87,11 @@ function PromptTextInput() {
     if (text) {
       if (event.code === "Enter") {
         event.preventDefault();
-        sendPrompt();
+        sendPrompt(collaboratorId);
       }
 
       if (event.type === "click") {
-        sendPrompt();
+        sendPrompt(collaboratorId);
       }
     }
   };

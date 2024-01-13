@@ -5,6 +5,7 @@ export async function fetchGeneratedTSummaryText(
   description: string,
   task: string,
   data: string | undefined,
+  collaboratorId: number,
 ): Promise<ReadableStream<Uint8Array>> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
@@ -18,7 +19,7 @@ export async function fetchGeneratedTSummaryText(
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
-      body: JSON.stringify({ description, task, data, collaboratorId: "c4a97e6b-cac5-41b1-9d29-4e8da67ec050" }),
+      body: JSON.stringify({ description, task, data, collaboratorId: collaboratorId }),
     });
 
     if (responseSummaryText.ok) {

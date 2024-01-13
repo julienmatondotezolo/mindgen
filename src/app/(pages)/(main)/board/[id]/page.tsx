@@ -15,6 +15,7 @@ import { Mindmap } from "@/components/mindmap/";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { promptResultState, promptValueState } from "@/recoil";
+import { findCollaboratorId } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -45,7 +46,7 @@ export default function Board({ params }: { params: { id: string } }) {
     getUserMindmapById,
   );
 
-  // if (isLoading) return <div>Loading...</div>;
+  const userCollaboratorID = findCollaboratorId(userMindmapDetails?.creatorId, userMindmapDetails?.collaborators);
 
   return (
     <main className="flex justify-between w-screen h-screen scroll-smooth">
@@ -56,7 +57,7 @@ export default function Board({ params }: { params: { id: string } }) {
       </div>
 
       <div className="w-[80%] md:w-1/3 fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
-        <PromptTextInput />
+        <PromptTextInput collaboratorId={userCollaboratorID} />
       </div>
 
       <div

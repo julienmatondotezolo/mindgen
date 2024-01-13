@@ -4,7 +4,7 @@ import React from "react";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Input } from "@/components/";
 
-function NavLeft({ mindMapName }: { mindMapName: string }) {
+function NavLeft({ mindMapName }: { mindMapName: string | undefined }) {
   const size = 15;
 
   const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200";
