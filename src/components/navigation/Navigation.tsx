@@ -11,7 +11,7 @@ function Navigation() {
   const size = 17;
 
   return (
-    <nav className="flex justify-center fixed top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white">
+    <nav className="flex justify-center fixed z-50 top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white">
       <div className="flex justify-between max-w-7xl w-[96%]">
         <section className="flex items-center">
           <figure className=" mr-8">

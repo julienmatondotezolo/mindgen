@@ -55,15 +55,17 @@ function MindMapBoards() {
   return (
     <>
       {userMindmap.map((mindmap: MindmapObject) => (
-        <Link href={`/board/${mindmap.id}`} key={mindmap.id}>
-          <figure className="relative group gradientPrimary w-full h-24 border-2 mb-2 rounded-xl cursor-pointer">
-            <div
-              onClick={() => handleUpdate(mindmap.name, mindmap.description)}
-              className=" z-50 absolute top-2 left-2 group-hover:opacity-100 opacity-0 transition duration-200 ease-in-out p-2 bg-primary-opaque border-grey-blue border-2 rounded-[10%]"
-            >
-              <Image src={settingsIcon} height={size} width={size} alt="document icon" />
-            </div>
-          </figure>
+        <div key={mindmap.id}>
+          <Link href={`/board/${mindmap.id}`}>
+            <figure className="relative group gradientPrimary w-full h-24 border-2 mb-2 rounded-xl cursor-pointer">
+              <div
+                onClick={() => handleUpdate(mindmap.name, mindmap.description)}
+                className="z-50 absolute top-2 left-2 group-hover:opacity-100 opacity-0 transition duration-200 ease-in-out p-2 bg-primary-opaque border-grey-blue border-2 rounded-[10%]"
+              >
+                <Image src={settingsIcon} height={size} width={size} alt="document icon" />
+              </div>
+            </figure>
+          </Link>
           <article className="flex flex-wrap justify-between items-start">
             <div>
               <p className="text-sm font-medium">{mindmap.name}</p>
@@ -82,7 +84,7 @@ function MindMapBoards() {
               <Image src={deleteIcon} height={size} width={size} alt="document icon" />
             </figure>
           </article>
-        </Link>
+        </div>
       ))}
       {isCreatingMindmap ? <SkeletonMindMapBoard /> : <></>}
 
