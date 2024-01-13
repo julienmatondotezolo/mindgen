@@ -174,6 +174,8 @@ const useMindMap = () => {
     reactFlowInstance,
     setSourceHandle,
     setNodes,
+    setNodeId,
+    setEdges,
     setReactFlowInstance,
     mindMapArray,
   };

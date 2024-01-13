@@ -1,9 +1,9 @@
 import "reactflow/dist/style.css";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls } from "reactflow";
 
-import { CustomNodeProps } from "@/_types";
+import { CustomNodeProps, MindMapDetailsProps } from "@/_types";
 import { MemoizedCustomNode, MemoizedMainNode, TextUpdaterNode } from "@/components/mindmap";
 import { useMindMap } from "@/hooks";
 
@@ -13,7 +13,7 @@ const edgeTypes = {
   bidirectional: BiDirectionalEdge,
 };
 
-function Mindmap() {
+function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
   const {
     nodes,
     edges,
@@ -26,6 +26,8 @@ function Mindmap() {
     onDrop,
     setSourceHandle,
     setNodes,
+    setNodeId,
+    setEdges,
     setReactFlowInstance,
   } = useMindMap();
 
@@ -41,6 +43,12 @@ function Mindmap() {
     }),
     [setNodes],
   );
+
+  useEffect(() => {
+    setNodes(userMindmapDetails.nodes);
+    setNodeId(userMindmapDetails.nodes.length);
+    setEdges(userMindmapDetails.edges);
+  }, [userMindmapDetails]);
 
   return (
     <ReactFlow

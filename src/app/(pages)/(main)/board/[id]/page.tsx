@@ -38,18 +38,18 @@ export default function Board({ params }: { params: { id: string } }) {
 
   const getUserMindmapById = () => getMindmapById(params.id);
 
-  const { isLoading, data: userMindmapDetail } = useQuery<MindMapDetailsProps>(
+  const { isLoading, data: userMindmapDetails } = useQuery<MindMapDetailsProps>(
     ["mindmap", params.id],
     getUserMindmapById,
   );
 
   if (isLoading) return <div>Loading...</div>;
 
-  if (userMindmapDetail)
+  if (userMindmapDetails)
     return (
       <main className="flex justify-between w-screen h-screen scroll-smooth">
         <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-10">
-          <NavLeft mindMapName={userMindmapDetail?.id} />
+          <NavLeft mindMapName={userMindmapDetails?.id} />
           <ToolBar />
           <NavRight />
         </div>
@@ -76,7 +76,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
         <div className="w-full">
           <div className="relative w-full h-full">
-            <Mindmap />
+            <Mindmap userMindmapDetails={userMindmapDetails} />
           </div>
           {promptValue ? (
             <div className="relative w-full h-full flex flex-row justify-center">
