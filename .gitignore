@@ -37,3 +37,5 @@ yarn-error.log*
 next-env.d.ts
 src/assets/data/mindmap.json
 src/assets/data/mindgen.txt
+src/assets/data/mindmap_object.json
+src/assets/data/empty_mindmap.json

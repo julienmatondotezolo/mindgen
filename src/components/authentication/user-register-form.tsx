@@ -84,7 +84,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               setErrorMessages(["Une erreur s'est produise"]);
               return;
             }
-            router.replace("/");
+            router.replace("/auth/login");
           });
         } else if (res.status == 400) {
           setIsLoading(false);

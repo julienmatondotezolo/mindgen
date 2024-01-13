@@ -63,3 +63,104 @@ export async function fetchProfile(): Promise<any> {
     console.error("Impossible to fetch profiles:", error);
   }
 }
+
+export async function fetchMindmaps(): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseMindmap: Response = await fetch(baseUrl + `/mindmap`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseMindmap.ok) {
+      return responseMindmap.json();
+    } else {
+      throw responseMindmap;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch profiles:", error);
+  }
+}
+
+export async function createMindmap(mindmapObject: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseCreatedMindMap: Response = await fetch(baseUrl + `/mindmap`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(mindmapObject),
+    });
+
+    if (responseCreatedMindMap.ok) {
+      return responseCreatedMindMap;
+    } else {
+      throw responseCreatedMindMap;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch profiles:", error);
+  }
+}
+
+export async function getMindmapById(mindmapId: string): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseDeletedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseDeletedMindMap.ok) {
+      return responseDeletedMindMap.json();
+    } else {
+      throw responseDeletedMindMap;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch profiles:", error);
+  }
+}
+
+export async function deleteMindmapById(mindmapId: string): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseDeletedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseDeletedMindMap.ok) {
+      return responseDeletedMindMap;
+    } else {
+      throw responseDeletedMindMap;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch profiles:", error);
+  }
+}
