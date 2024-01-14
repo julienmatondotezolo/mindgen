@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
@@ -7,14 +7,14 @@ import { MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
-import { useMindMap } from "@/hooks";
+import { useDidUpdateEffect, useMindMap } from "@/hooks";
 import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
 import { findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
   const size = 20;
-  const { name, description, collaborators, creatorId } = userMindmapDetails;
+  const { description, collaborators, creatorId } = userMindmapDetails;
 
   const userCollaboratorID = findCollaboratorId(creatorId, collaborators);
 
@@ -28,11 +28,12 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
   const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { mindMapArray } = useMindMap();
+  const { mindMapArray } = useMindMap(userMindmapDetails);
 
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
       const updatedQa = [...prevQa];
+
       const lastIndex = updatedQa.length - 1;
 
       if (lastIndex >= 0) {
@@ -41,18 +42,19 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
           message: answerMessages[0]?.text || "",
         };
       }
+
       return updatedQa;
     });
   }, [answerMessages]);
 
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     if (done && isLoading) {
       setIsLoading(false);
+      setPromptResult(false);
       scrollToBottom();
     }
-
     updateQa();
-  }, [done, updateQa]);
+  }, [done, isLoading, updateQa]);
 
   const sendPrompt = (collaboratorId: string | null) => {
     setAnswerMessages([{ text: "", sender: "server" }]);
@@ -60,7 +62,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     setPromptResult(true);
     setPromptValue(text);
 
-    const fetchStreamData = fetchGeneratedTSummaryText(description, name, mindMapArray(), collaboratorId);
+    const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray(), collaboratorId);
 
     handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 
