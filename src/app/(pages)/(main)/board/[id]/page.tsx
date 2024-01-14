@@ -44,19 +44,18 @@ export default function Board({ params }: { params: { id: string } }) {
   const { isLoading, data: userMindmapDetails } = useQuery<MindMapDetailsProps>(
     ["mindmap", params.id],
     getUserMindmapById,
+    {
+      onSuccess: (data) => {
+        setQa([]);
+        const newQaItems = data.messages.map((mindMapQA) => ({
+          text: mindMapQA.request,
+          message: mindMapQA.response,
+        }));
+
+        setQa((prevQa) => [...prevQa, ...newQaItems]);
+      },
+    },
   );
-
-  useEffect(() => {
-    if (userMindmapDetails) {
-      setQa([]);
-      const newQaItems = userMindmapDetails.messages.map((mindMapQA) => ({
-        text: mindMapQA.request,
-        message: mindMapQA.response,
-      }));
-
-      setQa((oldQa) => [...oldQa, ...newQaItems]);
-    }
-  }, [userMindmapDetails]);
 
   return (
     <main className="flex justify-between w-screen h-screen scroll-smooth">
@@ -104,7 +103,7 @@ export default function Board({ params }: { params: { id: string } }) {
             <Mindmap userMindmapDetails={userMindmapDetails} />
           )}
         </div>
-        {promptValue || qa.length > 0 ? (
+        {qa.length > 0 ? (
           <div className="relative w-full h-full flex flex-row justify-center">
             <Answers />
           </div>
