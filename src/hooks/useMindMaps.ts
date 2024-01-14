@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { addEdge, Connection, Edge, Node, ReactFlowInstance, useEdgesState, useNodesState } from "reactflow";
-import { useRecoilState } from "recoil";
 
-import { edgesState, nodesState } from "@/recoil";
-import { convertToNestedArray, setTargetHandle } from "@/utils";
+// import { useRecoilState } from "recoil";
+import { updateMindmapById } from "@/_services";
+import { MindMapDetailsProps } from "@/_types";
+// import { edgesState, nodesState } from "@/recoil";
+import { convertToNestedArray, emptyMindMapObject, setTargetHandle } from "@/utils";
 
 const mindMapKey = "example-minimap";
 
@@ -18,7 +20,37 @@ const initialNodes: Node[] = [
 ];
 const initialEdges: Edge[] = [];
 
-const useMindMap = () => {
+const createCustomNode = (
+  nodeId: Number,
+  reactFlowInstance: ReactFlowInstance | null,
+  event: any,
+  labelText?: string,
+) => {
+  const position = reactFlowInstance!.screenToFlowPosition({
+    x: event.clientX,
+    y: event.clientY,
+  });
+
+  const positionAbsolute = {
+    id: null,
+    node: null,
+    x: position.x,
+    y: position.y,
+  };
+
+  const newNode: Node = {
+    id: `node_${nodeId}`,
+    type: "customNode",
+    position: position,
+    positionAbsolute: positionAbsolute,
+    data: { label: labelText || "Type something" },
+    style: { border: "1px solid black", borderRadius: 15 },
+  };
+
+  return newNode;
+};
+
+const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const connectingNodeId = useRef(null);
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
@@ -30,6 +62,10 @@ const useMindMap = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
+  const name = userMindmapDetails?.name;
+  const description = userMindmapDetails?.description;
+  const mindmapId = userMindmapDetails?.id;
+
   useEffect(() => {
     restoreMindMapFlow();
   }, []);
@@ -38,13 +74,17 @@ const useMindMap = () => {
     saveMindMapFlow();
   }, [nodes, edges]);
 
-  const saveMindMapFlow = useCallback(() => {
+  const saveMindMapFlow = useCallback(async () => {
     if (reactFlowInstance) {
+      const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
+
+      await updateMindmapById(mindmapId, newMindmapObject);
+
       const mindMap = reactFlowInstance.toObject();
 
       localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
     }
-  }, [reactFlowInstance]);
+  }, [reactFlowInstance, nodes, edges]);
 
   const restoreMindMapFlow = async () => {
     let flow;
@@ -89,17 +129,7 @@ const useMindMap = () => {
 
         const id = `node_${nodeId}`;
 
-        const newNode = {
-          id,
-          type: "customNode",
-          position: reactFlowInstance!.screenToFlowPosition({
-            x: event.clientX,
-            y: event.clientY,
-          }),
-          data: { label: `Type something` },
-          style: { border: "1px solid black", borderRadius: 15 },
-          origin: [0.5, 0.0],
-        };
+        const newNode = createCustomNode(nodeId, reactFlowInstance, event);
 
         setNodes((nds) => nds.concat(newNode));
 
@@ -114,7 +144,7 @@ const useMindMap = () => {
         setEdges((eds) => addEdge(params, eds));
       }
     },
-    [reactFlowInstance, sourceHandle, nodeId],
+    [nodeId, reactFlowInstance, setNodes, sourceHandle, setEdges],
   );
 
   const onDragOver = useCallback((event: { preventDefault: () => void; dataTransfer: { dropEffect: string } }) => {
@@ -133,22 +163,9 @@ const useMindMap = () => {
         return;
       }
 
-      const position = reactFlowInstance!.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
       setNodeId((id: any) => id + 1);
 
-      const id = `node_${nodeId}`;
-
-      const newNode = {
-        id,
-        type,
-        position,
-        data: { label: `Type something` },
-        style: { border: "1px solid black", borderRadius: 15 },
-      };
+      const newNode = createCustomNode(nodeId, reactFlowInstance, event);
 
       setNodes((nds) => nds.concat(newNode));
     },

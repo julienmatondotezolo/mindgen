@@ -1,20 +1,24 @@
 import Image from "next/image";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
+import { MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
-import { useMindMap } from "@/hooks";
+import { useDidUpdateEffect, useMindMap } from "@/hooks";
 import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
-import { scrollToBottom } from "@/utils";
+import { findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
-function PromptTextInput({ collaboratorId }: { collaboratorId: string | null }) {
+function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
   const size = 20;
+  const { description, collaborators, creatorId } = userMindmapDetails;
 
-  const [promptValue, setPromptValue] = useRecoilState(promptValueState);
+  const userCollaboratorID = findCollaboratorId(creatorId, collaborators);
+
+  const [, setPromptValue] = useRecoilState(promptValueState);
   const setPromptResult = useSetRecoilState(promptResultState);
   const [answerMessages, setAnswerMessages] = useRecoilState<ChatMessageProps[]>(streamedAnswersState);
   const setQa = useSetRecoilState(qaState);
@@ -24,11 +28,12 @@ function PromptTextInput({ collaboratorId }: { collaboratorId: string | null }) 
 
   const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { mindMapArray } = useMindMap();
+  const { mindMapArray } = useMindMap(userMindmapDetails);
 
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
       const updatedQa = [...prevQa];
+
       const lastIndex = updatedQa.length - 1;
 
       if (lastIndex >= 0) {
@@ -37,31 +42,27 @@ function PromptTextInput({ collaboratorId }: { collaboratorId: string | null }) 
           message: answerMessages[0]?.text || "",
         };
       }
+
       return updatedQa;
     });
   }, [answerMessages]);
 
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     if (done && isLoading) {
       setIsLoading(false);
+      setPromptResult(false);
       scrollToBottom();
     }
-
     updateQa();
-  }, [done, updateQa]);
+  }, [done, isLoading, updateQa]);
 
-  const sendPrompt = (collaboratorId: string | undefined) => {
+  const sendPrompt = (collaboratorId: string | null) => {
     setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);
     setPromptValue(text);
 
-    const fetchStreamData = fetchGeneratedTSummaryText(
-      "A very short explanation in bullet points",
-      text,
-      mindMapArray(),
-      collaboratorId,
-    );
+    const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray(), collaboratorId);
 
     handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 
@@ -87,11 +88,11 @@ function PromptTextInput({ collaboratorId }: { collaboratorId: string | null }) 
     if (text) {
       if (event.code === "Enter") {
         event.preventDefault();
-        sendPrompt(collaboratorId);
+        sendPrompt(userCollaboratorID);
       }
 
       if (event.type === "click") {
-        sendPrompt(collaboratorId);
+        sendPrompt(userCollaboratorID);
       }
     }
   };

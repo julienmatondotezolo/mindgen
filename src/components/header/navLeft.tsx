@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Input } from "@/components/";
@@ -8,6 +8,17 @@ function NavLeft({ mindMapName }: { mindMapName: string | undefined }) {
   const size = 15;
 
   const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200";
+
+  const [newMindMapName, setNewMindMapName] = useState(mindMapName || "");
+
+  useEffect(() => {
+    if (mindMapName) setNewMindMapName(mindMapName);
+  }, [mindMapName]);
+
+  // Update state when input changes
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMindMapName(e.target.value);
+  };
 
   return (
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg">
@@ -18,7 +29,7 @@ function NavLeft({ mindMapName }: { mindMapName: string | undefined }) {
           </div>
         </li>
         <li className="m-1">
-          <Input type="text" value={mindMapName} placeholder="Untitled project" readOnly />
+          <Input type="text" value={newMindMapName} onChange={handleTitleChange} placeholder="Untitled project" />
         </li>
       </ul>
     </div>
