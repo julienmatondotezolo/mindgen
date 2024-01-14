@@ -1,10 +1,10 @@
 import "reactflow/dist/style.css";
 
 import React, { useEffect, useMemo } from "react";
-import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls } from "reactflow";
+import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls, NodeProps } from "reactflow";
 
-import { CustomNodeProps, MindMapDetailsProps } from "@/_types";
-import { MemoizedCustomNode, MemoizedMainNode, TextUpdaterNode } from "@/components/mindmap";
+import { MindMapDetailsProps } from "@/_types";
+import { MemoizedCustomNode, MemoizedMainNode } from "@/components/mindmap";
 import { useMindMap } from "@/hooks";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
@@ -29,19 +29,18 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     setNodeId,
     setEdges,
     setReactFlowInstance,
-  } = useMindMap();
+  } = useMindMap(userMindmapDetails);
 
   const nodeTypes = useMemo(
     () => ({
-      textUpdater: TextUpdaterNode,
-      customNode: (props: CustomNodeProps) => (
+      customNode: (props: NodeProps) => (
         <MemoizedCustomNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
       ),
-      mainNode: (props: CustomNodeProps) => (
+      mainNode: (props: NodeProps) => (
         <MemoizedMainNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
       ),
     }),
-    [setNodes],
+    [setNodes, setSourceHandle],
   );
 
   useEffect(() => {
