@@ -19,7 +19,7 @@ function RecentMindMap() {
         <p className="mb-6 font-bold">My recent mind maps</p>
         <OpenOurNewMindmap />
       </section>
-      <article className="grid grid-cols-5 gap-8 w-full">
+      <article className="grid sm:grid-cols-5 grid-cols-1 gap-8 w-full">
         <div onClick={handleClick} className="cursor-pointer">
           <figure className="flex w-full h-24 border-2 border-primary-color mb-2 rounded-xl opacity-70 hover:opacity-100">
             <article className="m-auto text-primary-color text-center">

@@ -10,7 +10,7 @@ import { deleteMindmapById, fetchMindmaps } from "@/_services";
 import { MindmapObject } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import settingsIcon from "@/assets/icons/settings.svg";
-import { SkeletonMindMapBoard } from "@/components/ui";
+import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
 import { formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { MindmapDialog } from "../ui/mindmapDialog";
@@ -33,14 +33,17 @@ function MindMapBoards() {
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation(deleteMindmapById);
   const { isLoading, data: userMindmap } = useQuery("userMindmap", fetchUserMindmaps);
+  const [isDeleting, setIsDeleting] = useState(false);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });
 
   const handleDelete = async (mindMapId: string) => {
     try {
+      setIsDeleting(true);
       await mutateAsync(mindMapId, {
         onSuccess: () => {
           // Invalidate the query to cause a re-fetch
           queryClient.invalidateQueries("userMindmap");
+          setIsDeleting(false);
         },
       });
     } catch (error) {
@@ -56,7 +59,7 @@ function MindMapBoards() {
     return (
       <>
         {userMindmap.map((mindmap: MindmapObject) => (
-          <div key={mindmap.id}>
+          <div key={mindmap.id} className={isDeleting ? "opacity-20" : "opacity-100"}>
             <Link href={`/board/${mindmap.id}`}>
               <figure className="relative group gradientPrimary w-full h-24 border-2 mb-2 rounded-xl cursor-pointer">
                 <div
@@ -82,7 +85,7 @@ function MindMapBoards() {
                 onClick={() => handleDelete(mindmap.id)}
                 className="bg-red-50 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-red-200"
               >
-                <Image src={deleteIcon} height={size} width={size} alt="document icon" />
+                {!isDeleting ? <Image src={deleteIcon} height={size} width={size} alt="document icon" /> : <Spinner />}
               </figure>
             </article>
           </div>
