@@ -20,7 +20,7 @@ function ProfileMenu() {
 
   return (
     <figure onClick={handleLogout} className={`${listStyle} cursor-pointer`}>
-      <Image src={profileIcon} height={size} width={size} alt="Profile icon" />
+      <Image src={profileIcon} width={size} alt="Profile icon" />
     </figure>
   );
 }

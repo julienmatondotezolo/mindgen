@@ -7,26 +7,45 @@ import shareIcon from "@/assets/icons/share.svg";
 import { Button } from "@/components/";
 
 function NavRight() {
-  const size = 15;
-
   return (
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <Button variant={"outline"}>
-            <Image className="mr-2" src={importIcon} height={size} width={size} alt="Import icon" />
+            <Image
+              className="mr-2"
+              src={importIcon}
+              width="0"
+              height="0"
+              style={{ width: "100%", height: "auto" }}
+              alt="Import icon"
+            />
             Import
           </Button>
         </li>
         <li className="m-1">
           <Button variant={"outline"}>
-            <Image className="mr-2" src={shareIcon} height={size / 1.2} width={size / 1.2} alt="Share icon" />
+            <Image
+              className="mr-2"
+              src={shareIcon}
+              width="0"
+              height="0"
+              style={{ width: "100%", height: "auto" }}
+              alt="Share icon"
+            />
             Share
           </Button>
         </li>
         <li className="m-1">
           <Button>
-            <Image className="mr-2" src={collaborateIcon} height={size} width={size} alt="Collaborate icon" />
+            <Image
+              className="mr-2"
+              src={collaborateIcon}
+              width="0"
+              height="0"
+              style={{ width: "100%", height: "auto" }}
+              alt="Collaborate icon"
+            />
             Collaborate
           </Button>
         </li>

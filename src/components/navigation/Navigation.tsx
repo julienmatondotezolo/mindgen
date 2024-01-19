@@ -8,8 +8,6 @@ import { Button, Input } from "@/components/ui";
 import { NavProfile } from "./NavProfile";
 
 function Navigation() {
-  const size = 17;
-
   return (
     <nav className="flex justify-center fixed z-50 top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white">
       <div className="flex justify-between max-w-7xl w-[96%]">
@@ -24,7 +22,7 @@ function Navigation() {
 
         <div className="block space-x-10">
           <Button>
-            <Image className="mr-2" src={diamondsIcon} height={size} width={size} alt="Collaborate icon" />
+            <Image className="mr-2" src={diamondsIcon} alt="Collaborate icon" />
             Upgrade
           </Button>
 

@@ -5,8 +5,6 @@ import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Input } from "@/components/";
 
 function NavLeft({ mindMapName }: { mindMapName: string | undefined }) {
-  const size = 15;
-
   const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200";
 
   const [newMindMapName, setNewMindMapName] = useState(mindMapName || "");
@@ -25,7 +23,7 @@ function NavLeft({ mindMapName }: { mindMapName: string | undefined }) {
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={hamburgerIcon} height={size} width={size} alt="Hamburger icon" />
+            <Image src={hamburgerIcon} alt="Hamburger icon" />
           </div>
         </li>
         <li className="m-1">

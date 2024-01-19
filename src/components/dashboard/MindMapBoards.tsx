@@ -85,7 +85,7 @@ function MindMapBoards() {
                 onClick={() => handleDelete(mindmap.id)}
                 className="bg-red-50 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-red-200"
               >
-                {!isDeleting ? <Image src={deleteIcon} height={size} width={size} alt="document icon" /> : <Spinner />}
+                {!isDeleting ? <Image src={deleteIcon} height={size} alt="document icon" /> : <Spinner />}
               </figure>
             </article>
           </div>

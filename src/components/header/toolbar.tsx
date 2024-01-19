@@ -13,7 +13,6 @@ import textIcon from "@/assets/icons/text.svg";
 import tileIcon from "@/assets/icons/tile.svg";
 
 function ToolBar() {
-  const size = 14;
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
@@ -26,18 +25,12 @@ function ToolBar() {
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image
-              className="rotate-90 -scale-x-100"
-              src={redoIcon}
-              height={size * 1.1}
-              width={size * 1.1}
-              alt="Redo icon"
-            />
+            <Image className="rotate-90 -scale-x-100" src={redoIcon} alt="Redo icon" />
           </div>
         </li>
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image className="-rotate-90" src={redoIcon} height={size * 1.1} width={size * 1.1} alt="Redo icon" />
+            <Image className="-rotate-90" src={redoIcon} alt="Redo icon" />
           </div>
         </li>
 
@@ -45,7 +38,7 @@ function ToolBar() {
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={mouseIcon} height={size} width={size} alt="Mouse icon" />
+            <Image src={mouseIcon} alt="Mouse icon" />
           </div>
         </li>
 
@@ -54,8 +47,6 @@ function ToolBar() {
             <Image
               onDragStart={(event) => onDragStart(event, "customNode")}
               src={rectangleIcon}
-              height={size * 1.2}
-              width={size * 1.2}
               alt="Rectangle icon"
               draggable
             />
@@ -64,13 +55,13 @@ function ToolBar() {
 
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
-            <Image src={tileIcon} height={size * 1.3} width={size * 1.3} alt="Tile icon" />
+            <Image src={tileIcon} alt="Tile icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
-            <Image src={ellipseIcon} height={size * 1.2} width={size * 1.2} alt="Ellipse icon" />
+            <Image src={ellipseIcon} alt="Ellipse icon" />
           </div>
         </li>
 
@@ -78,25 +69,25 @@ function ToolBar() {
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={penIcon} height={size * 1.1} width={size * 1.1} alt="Pen icon" />
+            <Image src={penIcon} alt="Pen icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={eraserIcon} height={size * 1.2} width={size * 1.2} alt="Eraser icon" />
+            <Image src={eraserIcon} alt="Eraser icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={textIcon} height={size} width={size} alt="Text icon" />
+            <Image src={textIcon} alt="Text icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={imageIcon} height={size * 1.1} width={size * 1.1} alt="Image icon" />
+            <Image src={imageIcon} alt="Image icon" />
           </div>
         </li>
 
@@ -104,7 +95,7 @@ function ToolBar() {
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={deleteIcon} height={size / 1.1} width={size} alt="Delete icon" />
+            <Image src={deleteIcon} width="0" height="0" style={{ width: "100%", height: "auto" }} alt="Delete icon" />
           </div>
         </li>
       </ul>

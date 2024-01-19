@@ -22,7 +22,7 @@ function OpenOurNewMindmap() {
       <ul className="inline-block space-x-4">
         <li className="float-left">
           <Button variant={"outline"}>
-            <Image className="mr-2" src={documentIcon} height={size} width={size} alt="document icon" />
+            <Image className="mr-2" src={documentIcon} height={size} alt="document icon" />
             Open mind map
           </Button>
         </li>
@@ -32,7 +32,7 @@ function OpenOurNewMindmap() {
           </Button>
         </li>
       </ul>
-      <MindmapDialog title="HELLO" description="" open={isOpen} setIsOpen={setIsOpen} />
+      <MindmapDialog title="HELLO" description="" open={isOpen} setIsOpen={setIsOpen} update={false} />
     </>
   );
 }

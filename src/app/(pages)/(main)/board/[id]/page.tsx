@@ -18,7 +18,6 @@ import { promptResultState, promptValueState, qaState } from "@/recoil";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
-  const size = 20;
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
@@ -82,8 +81,6 @@ export default function Board({ params }: { params: { id: string } }) {
           <Image
             className={`${!promptResult ? "rotate-180" : "rotate-0"} transition-all duration-500`}
             src={arrowIcon}
-            height={size}
-            width={size}
             alt="Stars icon"
           />
         </Button>
