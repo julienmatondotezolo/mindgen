@@ -7,7 +7,6 @@ import { updateMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
-import { useMindMap } from "@/hooks";
 import { emptyMindMapObject } from "@/utils";
 
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
@@ -44,12 +43,16 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
     const newMindmapObject = emptyMindMapObject(
       newMindMapName ?? "",
-      mindMapDescription ?? "",
+      newMindMapDescription ?? "",
       userMindmapDetails?.nodes,
       userMindmapDetails?.edges,
     );
 
-    await updateMindmapById(mindMapId, newMindmapObject);
+    console.log("newMindmapObject:", JSON.stringify(newMindmapObject));
+
+    const response = await updateMindmapById(mindMapId, newMindmapObject);
+
+    console.log("response:", response);
   };
 
   return (
