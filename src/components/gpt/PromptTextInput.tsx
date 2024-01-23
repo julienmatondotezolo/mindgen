@@ -100,7 +100,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   return (
     <div className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg">
       <Textarea
-        className="resize-none overflow-y-hidden w-[90%]"
+        className="resize-none overflow-y-hidden w-[90%] border-0"
         placeholder="Ask our generate anything related to this mind map..."
         value={text}
         onKeyDown={handleSendPrompt}

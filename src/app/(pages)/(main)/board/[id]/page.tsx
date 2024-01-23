@@ -59,7 +59,7 @@ export default function Board({ params }: { params: { id: string } }) {
   return (
     <main className="flex justify-between w-screen h-screen scroll-smooth">
       <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
-        <NavLeft mindMapName={userMindmapDetails?.name} />
+        <NavLeft userMindmapDetails={userMindmapDetails} />
         <ToolBar />
         <NavRight />
       </div>
