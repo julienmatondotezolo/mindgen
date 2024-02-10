@@ -23,10 +23,12 @@ function Navigation() {
         </section>
 
         <div className="block space-x-10">
-          <Button>
-            <Image className="mr-2" src={diamondsIcon} alt="Collaborate icon" />
-            Upgrade
-          </Button>
+          <a href={`/pricing`}>
+            <Button>
+              <Image className="mr-2" src={diamondsIcon} alt="Collaborate icon" />
+              Upgrade
+            </Button>
+          </a>
 
           <NavProfile />
         </div>
