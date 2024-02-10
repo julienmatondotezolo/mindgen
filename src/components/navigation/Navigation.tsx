@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import React from "react";
 
 import diamondsIcon from "@/assets/icons/diamonds.svg";
@@ -8,6 +9,8 @@ import { Button, Input } from "@/components/ui";
 import { NavProfile } from "./NavProfile";
 
 function Navigation() {
+  const { data: session } = useSession();
+
   return (
     <nav className="flex justify-center fixed z-50 top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white">
       <div className="flex justify-between max-w-7xl w-[96%]">
@@ -19,7 +22,7 @@ function Navigation() {
               </p>
             </figure>
           </a>
-          <Input className="w-96" type="text" placeholder="Search mindmap" />
+          {session?.session ? <Input className="w-96" type="text" placeholder="Search mindmap" /> : <></>}
         </section>
 
         <div className="block space-x-10">
