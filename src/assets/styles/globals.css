@@ -15,7 +15,8 @@
     --grey-color: #707070;
     --foreground-color: #33373B;
     /* --background-color: #EFF4F8; */
-    --background-color: #fbfdfd;
+    /* --background-color: #fbfdfd; */
+    --background-color: #fff;
 }
 
 @layer base {
