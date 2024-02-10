@@ -11,7 +11,7 @@ interface PlanProps {
 
 // Define the Plan component
 const Plan: React.FC<PlanProps> = ({ title }) => (
-  <div className="bg-gray-200 bg-opacity-50 p-8 rounded-xl">
+  <div className="bg-gray-200 bg-opacity-40 p-8 rounded-xl">
     <h2 className="text-lg font-semibold">{title}</h2>
     <p className="mt-4">Basic features for free</p>
     <button className="mt-6 bg-primary-color text-white px-4 py-2 rounded-md">Get Started</button>

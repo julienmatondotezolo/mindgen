@@ -33,6 +33,8 @@ function Navigation() {
             </Button>
           </a>
 
+          <a href={`/auth/login`}>{session?.session == undefined && <Button variant={"outline"}>Login</Button>}</a>
+
           <NavProfile />
         </div>
       </div>
