@@ -7,7 +7,7 @@ export default function Dashboard() {
   return (
     <>
       <Navigation />
-      <div className="flex justify-center mt-36">
+      <div className="flex justify-center pt-32">
         <section className="max-w-7xl w-[90%] space-y-12">
           <HeroProfile />
           <MindGenTemplates />
