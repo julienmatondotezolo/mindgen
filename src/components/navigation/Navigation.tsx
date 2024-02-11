@@ -12,12 +12,12 @@ function Navigation() {
   const { data: session } = useSession();
 
   return (
-    <nav className="flex justify-center fixed z-50 top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white">
+    <nav className="flex justify-center fixed z-50 top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white dark:shadow-slate-900 dark:bg-gray-900 border-b-2 dark:border-slate-800">
       <div className="flex justify-between max-w-7xl w-[96%]">
         <section className="flex items-center">
           <a href={`/dashboard`}>
             <figure className=" mr-8">
-              <p className="font-bold text-base">
+              <p className="font-bold text-base dark:text-white">
                 MIND<span className="text-primary-color">GEN</span>
               </p>
             </figure>

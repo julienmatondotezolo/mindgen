@@ -29,17 +29,17 @@ function NavProfile() {
       <section className="flex float-right">
         <article className="text-right">
           <p className="text-primary-color text-sm font-bold">{uppercaseFirstLetter(userProfile.username)}</p>
-          <p className=" text-xs">{userProfile.email}</p>
+          <p className="text-xs dark:text-white">{userProfile.email}</p>
         </article>
 
-        <div className="w-[1px] h-8 self-center mx-4 bg-slate-200"></div>
+        <div className="w-[1px] h-8 self-center mx-4 bg-slate-200 dark:bg-[#5a5d6d]"></div>
 
         <figure className={`${listStyle} cursor-pointer`}>
           <Popover>
             <PopoverTrigger asChild>
               <Image src={profileIcon} width={size} alt="Profile icon" />
             </PopoverTrigger>
-            <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg">
+            <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-700 dark:text-white">
               <ProfileMenu />
               {/* Place content for the popover here. */}
             </PopoverContent>

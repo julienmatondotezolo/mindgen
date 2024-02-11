@@ -25,9 +25,9 @@ function ProfileMenu() {
 
   return (
     <div>
-      <div className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-xl">
+      <div className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-xl dark:bg-gray-700 dark:text-white">
         <section className="flex items-center space-x-3">
-          <figure className="bg-gray-100 rounded-full w-10 h-10 flex m-auto">
+          <figure className="bg-gray-100 rounded-full w-10 h-10 flex m-auto dark:bg-gray-700">
             <Image src={profileIcon} width={size / 1.2} className="m-auto" alt="Profile icon" />
           </figure>
           <h2 className="text-base font-semibold dark:text-white">View profile</h2>

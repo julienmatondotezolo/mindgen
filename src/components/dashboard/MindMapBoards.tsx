@@ -61,7 +61,7 @@ function MindMapBoards() {
         {userMindmap.map((mindmap: MindmapObject) => (
           <div key={mindmap.id} className={isDeleting ? "opacity-20" : "opacity-100"}>
             <Link href={`/board/${mindmap.id}`}>
-              <figure className="relative group gradientPrimary w-full h-24 border-2 mb-2 rounded-xl cursor-pointer">
+              <figure className="relative group gradientPrimary w-full h-24 border-2 dark:border-slate-800 mb-2 rounded-xl cursor-pointer">
                 <div
                   onClick={() => handleUpdate(mindmap.name, mindmap.description)}
                   className="z-50 absolute top-2 left-2 group-hover:opacity-100 opacity-0 transition duration-200 ease-in-out p-2 bg-primary-opaque border-grey-blue border-2 rounded-[10%]"
@@ -72,7 +72,7 @@ function MindMapBoards() {
             </Link>
             <article className="flex flex-wrap justify-between items-start">
               <div>
-                <p className="text-sm font-medium">{mindmap.name}</p>
+                <p className="text-sm font-medium dark:text-white">{mindmap.name}</p>
                 <p className="text-xs text-grey">
                   Created by{" "}
                   <span className="text-primary-color cursor-pointer hover:underline">
