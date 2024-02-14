@@ -1,4 +1,5 @@
 import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
 import { JSX, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { RecoilRoot } from "recoil";
@@ -13,7 +14,11 @@ export default function Providers({ children }: Props): JSX.Element {
   return (
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+          </ThemeProvider>
+        </SessionProvider>
       </QueryClientProvider>
     </RecoilRoot>
   );
