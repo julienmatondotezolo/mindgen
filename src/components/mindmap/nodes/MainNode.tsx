@@ -8,9 +8,8 @@ import { CustomNodeProps } from "@/_types";
 
 const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
-
-  const handleSize = "!w-[10px] !h-[10px]";
-  const handleMargin = 15;
+  const size = 10;
+  const handleSize = `!w-[${size}px] !h-[${size}px]`;
 
   const resizeNode = (params: any) => {
     setNodes((nodes: Node[]) =>
@@ -47,28 +46,28 @@ const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeP
         type="source"
         position={Position.Top}
         id="top"
-        className={`mt-[-${handleMargin}px] ${handleSize}`}
+        className={`mt-[-15px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("right")}
         type="source"
         position={Position.Right}
         id="right"
-        className={`mr-[-${handleMargin}px] ${handleSize}`}
+        className={`mr-[-15px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("bottom")}
         type="source"
         position={Position.Bottom}
         id="bottom"
-        className={`mb-[-${handleMargin}px] ${handleSize}`}
+        className={`mb-[-15px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("left")}
         type="source"
         position={Position.Left}
         id="left"
-        className={`ml-[-${handleMargin}px] ${handleSize}`}
+        className={`ml-[-15px] ${handleSize}`}
       />
     </>
   );

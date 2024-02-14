@@ -10,7 +10,6 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   const [inputText, setInputText] = useState(data.label);
 
   const handleSize = "!w-[10px] !h-[10px]";
-  const handleMargin = 15;
 
   const resizeNode = (params: any) => {
     setNodes((nodes: Node[]) =>
@@ -47,28 +46,28 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         type="source"
         position={Position.Top}
         id="top"
-        className={`mt-[-${handleMargin}px] ${handleSize}`}
+        className={`mt-[-15px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("right")}
         type="source"
         position={Position.Right}
         id="right"
-        className={`mr-[-${handleMargin}px] ${handleSize}`}
+        className={`mr-[-15px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("bottom")}
         type="source"
         position={Position.Bottom}
         id="bottom"
-        className={`mb-[-${handleMargin}px] ${handleSize}`}
+        className={`mb-[-15px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("left")}
         type="source"
         position={Position.Left}
         id="left"
-        className={`ml-[-${handleMargin}px] ${handleSize}`}
+        className={`ml-[-15px] ${handleSize}`}
       />
     </>
   );
