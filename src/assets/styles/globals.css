@@ -99,6 +99,10 @@
         @apply block m-auto bg-transparent text-center outline-none
     }
 
+    .gradientWhiteText {
+      @apply bg-gradient-to-br from-foreground to-blue-200 text-transparent bg-clip-text
+    }
+
     .gradientPrimary {
         @apply bg-gradient-to-r from-primary-color to-secondary-color
     }
