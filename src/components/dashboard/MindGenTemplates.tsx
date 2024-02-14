@@ -2,7 +2,7 @@ import React from "react";
 
 function MindGenTemplates() {
   return (
-    <div className="p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-800">
+    <div className="p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20">
       <p className="mb-6 font-bold dark:text-white">Mindgen templates</p>
       <article className="inline-block w-full">
         <div className="float-left mr-4">

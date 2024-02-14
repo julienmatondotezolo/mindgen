@@ -25,39 +25,47 @@ function ProfileMenu() {
 
   return (
     <div>
-      <div className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-xl dark:bg-gray-700 dark:text-white">
+      <div className="group flex justify-between items-center cursor-pointe rounded-xl dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white cursor-pointer">
         <section className="flex items-center space-x-3">
-          <figure className="bg-gray-100 rounded-full w-10 h-10 flex m-auto dark:bg-gray-700">
-            <Image src={profileIcon} width={size / 1.2} className="m-auto" alt="Profile icon" />
+          <figure className="bg-gray-100 rounded-full w-10 h-10 flex m-auto dark:bg-transparent">
+            <Image src={profileIcon} width={size / 1.2} className="m-auto dark:invert" alt="Profile icon" />
           </figure>
           <h2 className="text-base font-semibold dark:text-white">View profile</h2>
         </section>
-        <Image src={arrowforwardIcon} className="mr-4" width={size / 2} alt="Profile icon" />
+        <Image
+          src={arrowforwardIcon}
+          className="mr-6 opacity-50 group-hover:mr-4 group-hover:opacity-100 dark:invert transition-all duration-200 ease-in-out"
+          width={size / 2}
+          alt="Profile icon"
+        />
       </div>
-      <div className="w-full h-[1px] self-center my-4 bg-slate-200"></div>
+      <div className="w-full h-[1px] self-center my-4 bg-slate-200 dark:bg-slate-500"></div>
       <div className="mt-4">
         <ul className="space-y-2">
           <li>
-            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl">
-              <Image src={darkmodeIcon} width={size} alt="Profile icon" />
+            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">
+              <Image className="dark:invert" src={darkmodeIcon} width={size} alt="Profile icon" />
               <p>Dark mode</p>
             </button>
           </li>
           <li>
-            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl">
-              <Image src={languageIcon} width={size} alt="Profile icon" />
+            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">
+              <Image className="dark:invert" src={languageIcon} width={size} alt="Profile icon" />
               <p>Language</p>
             </button>
           </li>
           <li>
-            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-gray-700 dark:text-white rounded-xl">
-              <Image src={helpIcon} width={size} alt="Profile icon" />
+            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">
+              <Image className="dark:invert" src={helpIcon} width={size} alt="Profile icon" />
               <p>Help</p>
             </button>
           </li>
-          <div className="w-full h-[1px] self-center my-4 bg-slate-200"></div>
+          <div className="w-full h-[1px] self-center my-4 bg-slate-200 dark:bg-slate-500"></div>
           <li>
-            <button onClick={handleLogout} className="w-full flex items-center p-2 space-x-3 rounded-xl">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center p-2 space-x-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
               <Image src={logoutIcon} width={size} alt="Profile icon" />
               <p className=" text-red-500">Logout</p>
             </button>

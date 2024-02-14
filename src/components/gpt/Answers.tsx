@@ -28,11 +28,11 @@ function Answers() {
   };
 
   return (
-    <div className="flex flex-row flex-wrap m-auto w-[90%] md:w-2/4 mt-36 pb-36">
+    <div className="flex flex-row flex-wrap m-auto w-[90%] md:w-2/4 mt-36 pb-36 dark:text-white">
       <div className="w-full">
         {qa.map((qaItem, index) => (
-          <div key={index} className="border-t-2 pt-8 mb-8 space-y-2">
-            <h3 className="text-2xl font-bold mb-6">{qaItem.text}</h3>
+          <div key={index} className="border-t-2 dark:border-slate-800 pt-8 mb-8 space-y-2">
+            <h3 className="text-2xl font-bold mb-6 dark:text-white">{qaItem.text}</h3>
 
             <article className="flex mb-2 text-primary-color">
               <Image className="mr-2" src={answerIcon} height={size} width={size} alt="answer icon" />

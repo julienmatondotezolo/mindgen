@@ -22,7 +22,7 @@ function OpenOurNewMindmap() {
       <ul className="inline-block space-x-4">
         <li className="float-left dark:text-white">
           <Button variant={"outline"}>
-            <Image className="mr-2" src={documentIcon} height={size} alt="document icon" />
+            <Image className="mr-2 dark:invert" src={documentIcon} height={size} alt="document icon" />
             <p className="dark:text-white">Open mind map</p>
           </Button>
         </li>

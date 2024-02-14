@@ -13,7 +13,7 @@ const fetchUserProfile = () => fetchProfile();
 
 function NavProfile() {
   const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile);
-  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl";
+  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-700 hover:dark:bg-slate-500";
   const size = 17;
 
   if (isLoading)
@@ -37,9 +37,9 @@ function NavProfile() {
         <figure className={`${listStyle} cursor-pointer`}>
           <Popover>
             <PopoverTrigger asChild>
-              <Image src={profileIcon} width={size} alt="Profile icon" />
+              <Image className="dark:invert dark:group-hover" src={profileIcon} width={size} alt="Profile icon" />
             </PopoverTrigger>
-            <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-700 dark:text-white">
+            <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
               <ProfileMenu />
               {/* Place content for the popover here. */}
             </PopoverContent>

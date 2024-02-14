@@ -102,7 +102,7 @@ export default function Board({ params }: { params: { id: string } }) {
           )}
         </div>
         {qa.length > 0 ? (
-          <div className="relative w-full h-full flex flex-row justify-cente">
+          <div className="relative w-full h-full flex flex-row justify-center bg-background">
             <Answers />
           </div>
         ) : (
