@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { BackDropGradient } from "@/components";
+import { BackDropGradient, Button } from "@/components";
 import { Navigation } from "@/components/dashboard";
 
 // Define the type for the Plan component props
@@ -23,7 +23,7 @@ const Plan: React.FC<PlanProps> = ({ title, price }) => (
         <p className="font-medium">1000</p>
       </article>
     </div>
-    <button className="mt-6 bg-primary-color text-white px-4 py-2 rounded-md">Get Started</button>
+    <Button className="mt-6">Get Started with {title}</Button>
   </div>
 );
 
