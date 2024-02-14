@@ -2,32 +2,97 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-:root {
-    --primary-color: #4D6AFF;
-    --primary-color-opaque: #DCE8F5;
-    --primary-foreground: #FCFBFF;
-    --secondary-color: #8B98FF;
-    --secondary-foreground: #33373B;
-    --tertiary-color: #FF66CC;
-    --tertiary-foreground: #FCFBFF;
-    --light-color: #FCFBFF;
-    --grey-blue-color: #B4BFCC;
-    --grey-color: #707070;
-    --foreground-color: #33373B;
-    /* --background-color: #EFF4F8; */
-    /* --background-color: #fbfdfd; */
-    --background-color: #fff;
+@layer base {
+    :root {
+        --primary-color: #4D6AFF;
+        --primary-color-opaque: #DCE8F5;
+        --primary-foreground: #FCFBFF;
+        --secondary-color: #8B98FF;
+        --secondary-foreground: #33373B;
+        --tertiary-color: #FF66CC;
+        --tertiary-foreground: #FCFBFF;
+        --light-color: #FCFBFF;
+        --grey-blue-color: #B4BFCC;
+        --grey-color: #707070;
+
+        --background: #EFF4F8;
+        --foreground: #33373B;
+    
+        --card: #EFF4F8;
+        --card-foreground: #33373B;
+     
+        --popover: #EFF4F8;
+        --popover-foreground: #33373B;
+     
+        --primary: 220.9 39.3% 11%;
+        --primary-foreground: 210 20% 98%;
+     
+        --secondary: 220 14.3% 95.9%;
+        --secondary-foreground: 220.9 39.3% 11%;
+     
+        --muted: 220 14.3% 95.9%;
+        --muted-foreground: 220 8.9% 46.1%;
+     
+        --accent: 220 14.3% 95.9%;
+        --accent-foreground: 220.9 39.3% 11%;
+     
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 20% 98%;
+    
+        /* --border: 220 13% 91%; */
+        /* --input: 220 13% 91%; */
+        /* --ring: 224 71.4% 4.1%; */
+     
+        --radius: 0.5rem;
+      }
+     
+      .dark {
+        --background: 224 71.4% 4.1%;
+        --foreground: 210 20% 98%;
+     
+        --card: 224 71.4% 4.1%;
+        --card-foreground: 210 20% 98%;
+     
+        --popover: 224 71.4% 4.1%;
+        --popover-foreground: 210 20% 98%;
+     
+        --primary: 210 20% 98%;
+        --primary-foreground: 220.9 39.3% 11%;
+     
+        --secondary: 215 27.9% 16.9%;
+        --secondary-foreground: 210 20% 98%;
+     
+        --muted: 215 27.9% 16.9%;
+        --muted-foreground: 217.9 10.6% 64.9%;
+     
+        --accent: 215 27.9% 16.9%;
+        --accent-foreground: 210 20% 98%;
+     
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 20% 98%;
+     
+        /* --border: 215 27.9% 16.9%; */
+        /* --input: 215 27.9% 16.9%; */
+        --ring: 216 12.2% 83.9%;
+      }
+
+        /* html {
+            @apply m-0 bg-background scroll-smooth;
+        }
+
+        body {
+            @apply overflow-y-scroll overflow-x-hidden;
+        } */
 }
 
 @layer base {
-    html {
-        @apply m-0 bg-background scroll-smooth;
-    }
-
+    /* * {
+      @apply border-border;
+    } */
     body {
-        @apply overflow-y-scroll overflow-x-hidden;
+      @apply bg-background text-foreground;
     }
-}
+  }
   
 @layer components {
     .nodeTextInput {

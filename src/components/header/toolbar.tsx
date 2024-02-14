@@ -18,33 +18,34 @@ function ToolBar() {
     event.dataTransfer.effectAllowed = "move";
   };
 
-  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl";
+  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-800 hover:dark:bg-slate-600";
 
   return (
-    <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg">
+    <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image className="rotate-90 -scale-x-100" src={redoIcon} alt="Redo icon" />
+            <Image className="rotate-90 -scale-x-100 dark:invert" src={redoIcon} alt="Redo icon" />
           </div>
         </li>
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image className="-rotate-90" src={redoIcon} alt="Redo icon" />
+            <Image className="-rotate-90 dark:invert" src={redoIcon} alt="Redo icon" />
           </div>
         </li>
 
-        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200"></div>
+        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={mouseIcon} alt="Mouse icon" />
+            <Image className="dark:invert" src={mouseIcon} alt="Mouse icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
             <Image
+              className="dark:invert"
               onDragStart={(event) => onDragStart(event, "customNode")}
               src={rectangleIcon}
               alt="Rectangle icon"
@@ -55,39 +56,39 @@ function ToolBar() {
 
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
-            <Image src={tileIcon} alt="Tile icon" />
+            <Image className="dark:invert" src={tileIcon} alt="Tile icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
-            <Image src={ellipseIcon} alt="Ellipse icon" />
+            <Image className="dark:invert" src={ellipseIcon} alt="Ellipse icon" />
           </div>
         </li>
 
-        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200"></div>
+        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={penIcon} alt="Pen icon" />
-          </div>
-        </li>
-
-        <li className="m-1">
-          <div className={`${listStyle} cursor-pointer`}>
-            <Image src={eraserIcon} alt="Eraser icon" />
+            <Image className="dark:invert" src={penIcon} alt="Pen icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={textIcon} alt="Text icon" />
+            <Image className="dark:invert" src={eraserIcon} alt="Eraser icon" />
           </div>
         </li>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image src={imageIcon} alt="Image icon" />
+            <Image className="dark:invert" src={textIcon} alt="Text icon" />
+          </div>
+        </li>
+
+        <li className="m-1">
+          <div className={`${listStyle} cursor-pointer`}>
+            <Image className="dark:invert" src={imageIcon} alt="Image icon" />
           </div>
         </li>
 

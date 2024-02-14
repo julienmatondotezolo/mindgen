@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   theme: {
     container: {
@@ -16,13 +16,13 @@ module.exports = {
         "primary-opaque": "var(--primary-color-opaque)",
         "secondary-color": "var(--secondary-color)",
         "tertiary-color": "var(--tertiary-color)",
-        background: "var(--background-color)",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
         "grey-blue": "var(--grey-blue-color)",
         grey: "var(--grey-color)",
-        foreground: "var(--foreground-color)",
         primary: {
           DEFAULT: "var(--primary-color)",
           foreground: "var(--primary-foreground)",

@@ -8,7 +8,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { getMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
-import { Spinner } from "@/components";
+import { BackDropGradient, Spinner } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
@@ -57,7 +57,8 @@ export default function Board({ params }: { params: { id: string } }) {
   );
 
   return (
-    <main className="flex justify-between w-screen h-screen scroll-smooth">
+    <main className="relative flex justify-between w-screen h-screen scroll-smooth">
+      <BackDropGradient />
       <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
         <NavLeft userMindmapDetails={userMindmapDetails} />
         <ToolBar />
@@ -90,7 +91,7 @@ export default function Board({ params }: { params: { id: string } }) {
         <div className="relative w-full h-full">
           {isLoading ? (
             <div className="relative flex w-full h-full">
-              <Skeleton className="bg-primary-opaque w-full h-full" />
+              <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
               <Spinner
                 className="absolute inset-0 flex items-center justify-center"
                 loadingText={"Preparing your mindmap"}
@@ -101,7 +102,7 @@ export default function Board({ params }: { params: { id: string } }) {
           )}
         </div>
         {qa.length > 0 ? (
-          <div className="relative w-full h-full flex flex-row justify-center">
+          <div className="relative w-full h-full flex flex-row justify-center bg-background">
             <Answers />
           </div>
         ) : (

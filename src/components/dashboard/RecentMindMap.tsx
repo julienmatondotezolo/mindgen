@@ -14,9 +14,9 @@ function RecentMindMap() {
   };
 
   return (
-    <div className=" pb-12">
+    <div className="pt-8 pb-16">
       <section className="flex flex-wrap justify-between mb-8">
-        <p className="mb-6 font-bold">My recent mind maps</p>
+        <p className="mb-6 font-bold dark:text-white">My recent mind maps</p>
         <OpenOurNewMindmap />
       </section>
       <article className="grid sm:grid-cols-5 grid-cols-1 gap-8 w-full">
@@ -28,7 +28,7 @@ function RecentMindMap() {
             </article>
           </figure>
           <article>
-            <p className="text-sm font-medium">New mind map</p>
+            <p className="text-sm font-medium dark:text-white">New mind map</p>
           </article>
         </div>
 

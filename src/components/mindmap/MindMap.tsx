@@ -72,8 +72,8 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
       connectionMode={ConnectionMode.Loose}
     >
       <Controls />
-      <Background color="#cccccc" variant={BackgroundVariant.Dots} gap={12} size={1} />
-      <Background id="2" gap={100} color="#EDEDED" variant={BackgroundVariant.Lines} />
+      <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
+      <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
     </ReactFlow>
   );
 }

@@ -61,7 +61,7 @@ function MindMapBoards() {
         {userMindmap.map((mindmap: MindmapObject) => (
           <div key={mindmap.id} className={isDeleting ? "opacity-20" : "opacity-100"}>
             <Link href={`/board/${mindmap.id}`}>
-              <figure className="relative group gradientPrimary w-full h-24 border-2 mb-2 rounded-xl cursor-pointer">
+              <figure className="relative group gradientPrimary w-full h-24 border-2 dark:border-slate-800 mb-2 rounded-xl cursor-pointer">
                 <div
                   onClick={() => handleUpdate(mindmap.name, mindmap.description)}
                   className="z-50 absolute top-2 left-2 group-hover:opacity-100 opacity-0 transition duration-200 ease-in-out p-2 bg-primary-opaque border-grey-blue border-2 rounded-[10%]"
@@ -72,7 +72,7 @@ function MindMapBoards() {
             </Link>
             <article className="flex flex-wrap justify-between items-start">
               <div>
-                <p className="text-sm font-medium">{mindmap.name}</p>
+                <p className="text-sm font-medium dark:text-white">{mindmap.name}</p>
                 <p className="text-xs text-grey">
                   Created by{" "}
                   <span className="text-primary-color cursor-pointer hover:underline">
@@ -83,7 +83,7 @@ function MindMapBoards() {
               </div>
               <figure
                 onClick={() => handleDelete(mindmap.id)}
-                className="bg-red-50 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-red-200"
+                className="bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%"
               >
                 {!isDeleting ? <Image src={deleteIcon} height={size} alt="document icon" /> : <Spinner />}
               </figure>

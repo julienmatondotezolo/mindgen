@@ -20,8 +20,8 @@ function HeroProfile() {
 
   if (userProfile)
     return (
-      <article className="w-full border-b-2 pb-4">
-        <p className="text-2xl font-bold">
+      <article className="w-full border-b-2 dark:border-slate-800 pb-4">
+        <p className="text-2xl font-bold dark:text-white">
           Welcome to Mindgen,{" "}
           <span className="text-primary-color first-letter:uppercase">
             {uppercaseFirstLetter(userProfile.username)}

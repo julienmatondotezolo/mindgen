@@ -8,12 +8,12 @@ import { Button } from "@/components/";
 
 function NavRight() {
   return (
-    <div className="w-auto px-1 bg-white rounded-xl shadow-lg">
+    <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <Button variant={"outline"}>
             <Image
-              className="mr-2"
+              className="mr-2 dark:invert"
               src={importIcon}
               width="0"
               height="0"
@@ -26,7 +26,7 @@ function NavRight() {
         <li className="m-1">
           <Button variant={"outline"}>
             <Image
-              className="mr-2"
+              className="mr-2 dark:invert"
               src={shareIcon}
               width="0"
               height="0"
