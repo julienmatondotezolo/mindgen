@@ -2,6 +2,7 @@
 
 import React from "react";
 
+import { BackDropGradient } from "@/components";
 import { Navigation } from "@/components/dashboard";
 
 // Define the type for the Plan component props
@@ -31,7 +32,7 @@ const Plan: React.FC<PlanProps> = ({ title, price }) => (
 export default function Pricing() {
   return (
     <div className="relative">
-      <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[200px] w-4/5 md:h-[400px] rounded-[100%] bg-primary-color blur-[90px] pointer-events-none opacity-10"></div>
+      <BackDropGradient />
       <Navigation />
       <div className="flex flex-wrap justify-center py-32">
         <article className="w-full space-y-3 text-center">
