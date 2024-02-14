@@ -1,17 +1,28 @@
 "use-client";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
+import { useTheme } from "next-themes";
 import React from "react";
 
 import arrowforwardIcon from "@/assets/icons/arrowforward.svg";
 import darkmodeIcon from "@/assets/icons/darkmode.svg";
 import helpIcon from "@/assets/icons/help.svg";
 import languageIcon from "@/assets/icons/language.svg";
+import lightmodeIcon from "@/assets/icons/lightmode.svg";
 import logoutIcon from "@/assets/icons/logout.svg";
 import profileIcon from "@/assets/icons/profile.svg";
 
 function ProfileMenu() {
+  const { setTheme, resolvedTheme } = useTheme();
   const size = 17;
+
+  const toggleDarkMode = () => {
+    if (resolvedTheme === "dark") {
+      setTheme("light");
+    } else {
+      setTheme("dark");
+    }
+  };
 
   function handleLogout() {
     try {
@@ -42,10 +53,18 @@ function ProfileMenu() {
       <div className="w-full h-[1px] self-center my-4 bg-slate-200 dark:bg-slate-500"></div>
       <div className="mt-4">
         <ul className="space-y-2">
-          <li>
-            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">
-              <Image className="dark:invert" src={darkmodeIcon} width={size} alt="Profile icon" />
-              <p>Dark mode</p>
+          <li className="cursor-pointer">
+            <button
+              onClick={toggleDarkMode}
+              className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl"
+            >
+              <Image
+                className="dark:invert"
+                src={resolvedTheme === "dark" ? lightmodeIcon : darkmodeIcon}
+                width={size}
+                alt="Profile icon"
+              />
+              <p>{resolvedTheme === "dark" ? "Light mode" : "Dark mode"}</p>
             </button>
           </li>
           <li>

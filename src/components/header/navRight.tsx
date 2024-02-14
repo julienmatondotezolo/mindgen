@@ -8,7 +8,7 @@ import { Button } from "@/components/";
 
 function NavRight() {
   return (
-    <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">
+    <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <Button variant={"outline"}>

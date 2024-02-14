@@ -98,7 +98,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   };
 
   return (
-    <div className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:border-slate-700 dark:bg-slate-600 dark:bg-opacity-20">
+    <div className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:border-slate-800 dark:bg-slate-600 dark:bg-opacity-20">
       <Textarea
         className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
         placeholder="Ask our generate anything related to this mind map..."
