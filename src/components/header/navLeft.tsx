@@ -57,7 +57,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   return (
     <>
-      <div className="flex px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">
+      <div className="flex px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
         <ul className="flex flex-row items-center justify-between">
           <li className="m-1">
             <div className={`${listStyle} cursor-pointer`} onClick={() => setIsMenuOpen(!isMenuOpen)}>

@@ -21,7 +21,7 @@ function ToolBar() {
   const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-800 hover:dark:bg-slate-600";
 
   return (
-    <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">
+    <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
