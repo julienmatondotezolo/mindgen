@@ -57,7 +57,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   return (
     <>
-      <div className="flex px-1 bg-white rounded-xl shadow-lg">
+      <div className="flex px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">
         <ul className="flex flex-row items-center justify-between">
           <li className="m-1">
             <div className={`${listStyle} cursor-pointer`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -66,8 +66,8 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
           </li>
           <li className="m-1">
             <a href={`/dashboard`}>
-              <figure className="mr-8">
-                <p className="font-bold text-base">
+              <figure className=" mr-8">
+                <p className="font-bold text-base dark:text-white">
                   MIND<span className="text-primary-color">GEN</span>
                 </p>
               </figure>

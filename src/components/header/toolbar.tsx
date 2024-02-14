@@ -18,10 +18,10 @@ function ToolBar() {
     event.dataTransfer.effectAllowed = "move";
   };
 
-  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl";
+  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-700 hover:dark:bg-slate-400";
 
   return (
-    <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg">
+    <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
@@ -34,7 +34,7 @@ function ToolBar() {
           </div>
         </li>
 
-        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200"></div>
+        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
@@ -65,7 +65,7 @@ function ToolBar() {
           </div>
         </li>
 
-        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200"></div>
+        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
