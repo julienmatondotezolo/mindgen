@@ -14,7 +14,7 @@ function RecentMindMap() {
   };
 
   return (
-    <div className=" pb-12">
+    <div className="pt-8 pb-16">
       <section className="flex flex-wrap justify-between mb-8">
         <p className="mb-6 font-bold dark:text-white">My recent mind maps</p>
         <OpenOurNewMindmap />
