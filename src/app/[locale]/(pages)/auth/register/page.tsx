@@ -2,10 +2,11 @@
 
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { UserRegisterForm } from "@/components/authentication/user-register-form";
+
+import { Link } from "../../../../../navigation";
 
 export default function AuthenticationPage() {
   const router: AppRouterInstance = useRouter();

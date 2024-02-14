@@ -3,12 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import createMiddleware from "next-intl/middleware";
 
-export default createMiddleware({
-  // A list of all locales that are supported
-  locales: ["en", "fr", "nl"],
+import { localePrefix, locales } from "./navigation";
 
-  // Used when no locale matches
+export default createMiddleware({
   defaultLocale: "en",
+  localePrefix,
+  locales,
 });
 
 export const config = {

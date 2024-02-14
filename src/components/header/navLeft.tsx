@@ -9,6 +9,8 @@ import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
 import { emptyMindMapObject } from "@/utils";
 
+import { Link } from "../../navigation";
+
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const [newMindMapName, setNewMindMapName] = useState("");
   const [newMindMapDescription, setNewMindMapDescription] = useState("");
@@ -65,13 +67,13 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
             </div>
           </li>
           <li className="m-1">
-            <a href={`/dashboard`}>
+            <Link href={`/dashboard`}>
               <figure className=" mr-8">
                 <p className="font-bold text-base dark:text-white">
                   MIND<span className="text-primary-color">GEN</span>
                 </p>
               </figure>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

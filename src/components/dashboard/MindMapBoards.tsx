@@ -2,7 +2,6 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
-import Link from "next/link";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 
@@ -13,6 +12,7 @@ import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
 import { formatDate, uppercaseFirstLetter } from "@/utils";
 
+import { Link } from "../../navigation";
 import { MindmapDialog } from "../ui/mindmapDialog";
 
 const fetchUserMindmaps = () => fetchMindmaps();

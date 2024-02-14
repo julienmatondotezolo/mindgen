@@ -2,10 +2,11 @@
 import { ArrowLeft } from "lucide-react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { UserLoginForm } from "@/components/authentication/user-login-form";
+
+import { Link } from "../../../../../navigation";
 
 export default function AuthenticationPage() {
   const router: AppRouterInstance = useRouter();
