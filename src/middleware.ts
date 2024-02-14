@@ -1,6 +1,20 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import createMiddleware from "next-intl/middleware";
+
+export default createMiddleware({
+  // A list of all locales that are supported
+  locales: ["en", "fr", "nl"],
+
+  // Used when no locale matches
+  defaultLocale: "en",
+});
+
+export const config = {
+  // Match only internationalized pathnames
+  matcher: ["/", "/(fr|nl)/:path*"],
+};
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -15,16 +29,6 @@ export async function middleware(req: NextRequest) {
   });
 
   const res = NextResponse.next();
-
-  // try {
-  //   const apiRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/ping`);
-
-  //   // If the request fails, redirect the user to /auth/login
-  //   if (!apiRes.ok) throw new Error("Cannot connect to API");
-  // } catch (error) {
-  //   console.error(error);
-  //   return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/auth/login`);
-  // }
 
   if (isPathProtected) {
     const token = await getToken({ req });
