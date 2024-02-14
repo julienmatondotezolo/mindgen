@@ -13,7 +13,7 @@ function NavRight() {
         <li className="m-1">
           <Button variant={"outline"}>
             <Image
-              className="mr-2"
+              className="mr-2 dark:invert"
               src={importIcon}
               width="0"
               height="0"
@@ -26,7 +26,7 @@ function NavRight() {
         <li className="m-1">
           <Button variant={"outline"}>
             <Image
-              className="mr-2"
+              className="mr-2 dark:invert"
               src={shareIcon}
               width="0"
               height="0"

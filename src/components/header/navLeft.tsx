@@ -20,7 +20,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   mindMapName;
 
-  const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200";
+  const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200 dark:bg-slate-700 hover:dark:bg-slate-600";
 
   useEffect(() => {
     if (mindMapName) setNewMindMapName(mindMapName);
@@ -61,7 +61,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         <ul className="flex flex-row items-center justify-between">
           <li className="m-1">
             <div className={`${listStyle} cursor-pointer`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <Image src={hamburgerIcon} alt="Hamburger icon" />
+              <Image className="dark:invert" src={hamburgerIcon} alt="Hamburger icon" />
             </div>
           </li>
           <li className="m-1">
