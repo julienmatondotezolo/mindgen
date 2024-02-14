@@ -15,7 +15,7 @@ const initialNodes: Node[] = [
     type: "mainNode",
     position: { x: 0, y: 300 },
     data: { label: "MindGen App" },
-    style: { border: "1px solid black", borderRadius: 15 },
+    style: { border: "2px solid #4D6AFF", borderRadius: 15 },
   },
 ];
 const initialEdges: Edge[] = [];
@@ -44,7 +44,7 @@ const createCustomNode = (
     position: position,
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something" },
-    style: { border: "1px solid black", borderRadius: 15 },
+    style: { border: "1px solid", borderRadius: 15 },
   };
 
   return newNode;

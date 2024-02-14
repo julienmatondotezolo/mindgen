@@ -9,6 +9,9 @@ import { CustomNodeProps } from "@/_types";
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
 
+  const handleSize = "!w-[10px] !h-[10px]";
+  const handleMargin = 15;
+
   const resizeNode = (params: any) => {
     setNodes((nodes: Node[]) =>
       nodes.map((node) => {
@@ -35,8 +38,8 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   return (
     <>
-      <NodeResizer onResizeEnd={resizeNode} color="#ff0071" isVisible={selected} minWidth={100} minHeight={30} />
-      <div className="flex justify-center items-center h-full py-2 px-6 text-sm">
+      <NodeResizer onResizeEnd={resizeNode} color="#4D6AFF" isVisible={selected} minWidth={100} minHeight={30} />
+      <div className="flex justify-center items-center h-full py-2 px-6">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
       <Handle
@@ -44,28 +47,28 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         type="source"
         position={Position.Top}
         id="top"
-        className="mt-[-5px]"
+        className={`mt-[-${handleMargin}px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("right")}
         type="source"
         position={Position.Right}
         id="right"
-        className="mr-[-5px]"
+        className={`mr-[-${handleMargin}px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("bottom")}
         type="source"
         position={Position.Bottom}
         id="bottom"
-        className="mb-[-5px]"
+        className={`mb-[-${handleMargin}px] ${handleSize}`}
       />
       <Handle
         onMouseDown={() => setSourceHandle("left")}
         type="source"
         position={Position.Left}
         id="left"
-        className="ml-[-5px]"
+        className={`ml-[-${handleMargin}px] ${handleSize}`}
       />
     </>
   );

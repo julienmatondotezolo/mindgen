@@ -20,7 +20,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   mindMapName;
 
-  const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200 dark:bg-slate-700 hover:dark:bg-slate-600";
+  const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200 dark:bg-slate-800 hover:dark:bg-slate-600";
 
   useEffect(() => {
     if (mindMapName) setNewMindMapName(mindMapName);

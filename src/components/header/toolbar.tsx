@@ -18,7 +18,7 @@ function ToolBar() {
     event.dataTransfer.effectAllowed = "move";
   };
 
-  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-700 hover:dark:bg-slate-600";
+  const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-800 hover:dark:bg-slate-600";
 
   return (
     <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-700">

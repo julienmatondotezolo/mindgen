@@ -91,7 +91,7 @@ export default function Board({ params }: { params: { id: string } }) {
         <div className="relative w-full h-full">
           {isLoading ? (
             <div className="relative flex w-full h-full">
-              <Skeleton className="bg-primary-opaque w-full h-full" />
+              <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
               <Spinner
                 className="absolute inset-0 flex items-center justify-center"
                 loadingText={"Preparing your mindmap"}
