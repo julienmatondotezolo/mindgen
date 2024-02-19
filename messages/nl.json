@@ -8,5 +8,22 @@
   "Navigation": {
     "upgradeButton": "Upgraden",
     "loginButton": "Inloggen"
+  },
+  "Pricing": {
+    "hero": "Prijzen",
+    "heroExplanation": "Betaal alleen voor wat je gebruikt met prijzen per aanvraag.",
+    "planButton": "Begin met",
+    "freePlan": "Gratis",
+    "freePlanPrice": "0",
+    "freePlanExplanation": "Basisfuncties gratis",
+    "freePlanRate": "Max Mindmap per maand",
+    "payAsYouGoPlan": "Betaal per gebruik",
+    "payAsYouGoPlanPrice": "0",
+    "payAsYouGoPlanExplanation": "Basisfuncties gratis",
+    "payAsYouGoPlanRate": "Max Mindmap per maand",
+    "EnterprisePlan": "Enterprise",
+    "EnterprisePlanPrice": "0",
+    "EnterprisePlanExplanation": "Basisfuncties gratis",
+    "EnterprisePlanRate": "Max Mindmap per maand"
   }
 }

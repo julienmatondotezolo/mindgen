@@ -1,5 +1,5 @@
 import { SessionProvider } from "next-auth/react";
-import { NextIntlClientProvider, useMessages, useTimeZone } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
 import React, { JSX, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
