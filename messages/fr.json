@@ -6,6 +6,7 @@
     "heroButton": "Commencer"
   },
   "Navigation": {
+    "searchInput": "Rechercher un mindmap",
     "upgradeButton": "Mettre à niveau",
     "loginButton": "Se connecter"
   },

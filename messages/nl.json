@@ -6,6 +6,7 @@
     "heroButton": "Aan de slag"
   },
   "Navigation": {
+    "searchInput": "Zoek een mindmap",
     "upgradeButton": "Upgraden",
     "loginButton": "Inloggen"
   },
