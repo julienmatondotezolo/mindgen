@@ -2,7 +2,10 @@
   "Index": {
     "createdBy": "Créé par",
     "open": "ouvrir",
-    "new": "nouveau"
+    "new": "nouveau",
+    "language": "Langue",
+    "help": "Aide",
+    "logout": "Déconnexion"
   },
   "Welcome": {
     "hero1": "Libérez votre créativité",
@@ -35,5 +38,8 @@
     "EnterprisePlanPrice": "0",
     "EnterprisePlanExplanation": "Fonctionnalités de base gratuitement",
     "EnterprisePlanRate": "Max de mindmaps par mois"
+  },
+  "Profile": {
+    "viewProfile": "Voir votre profil"
   }
 }

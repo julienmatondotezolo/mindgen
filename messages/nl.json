@@ -2,7 +2,10 @@
   "Index": {
     "createdBy": "Gemaakt door",
     "open": "open",
-    "new": "nieuwe"
+    "new": "nieuwe",
+    "language": "Taal",
+    "help": "Hulp",
+    "logout": "Uitloggen"
   },
   "Welcome": {
     "hero1": "Ontgrendel je creativiteit",
@@ -35,5 +38,8 @@
     "EnterprisePlanPrice": "0",
     "EnterprisePlanExplanation": "Basisfuncties gratis",
     "EnterprisePlanRate": "Maximum mindmaps per maand"
+  },
+  "Profile": {
+    "viewProfile": "Bekijk profiel"
   }
 }

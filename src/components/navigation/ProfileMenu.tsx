@@ -1,6 +1,7 @@
 "use-client";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import React from "react";
 
@@ -13,6 +14,9 @@ import logoutIcon from "@/assets/icons/logout.svg";
 import profileIcon from "@/assets/icons/profile.svg";
 
 function ProfileMenu() {
+  const text = useTranslations("Index");
+  const profileText = useTranslations("Profile");
+
   const { setTheme, resolvedTheme } = useTheme();
   const size = 17;
 
@@ -27,7 +31,7 @@ function ProfileMenu() {
   function handleLogout() {
     try {
       signOut({
-        callbackUrl: process.env.NEXT_PUBLIC_URL + "/auth/login",
+        callbackUrl: process.env.NEXT_PUBLIC_URL + "/",
       });
     } catch (error) {
       console.error("Error during sign out:", error);
@@ -41,7 +45,7 @@ function ProfileMenu() {
           <figure className="bg-gray-100 rounded-full w-10 h-10 flex m-auto dark:bg-transparent">
             <Image src={profileIcon} width={size / 1.2} className="m-auto dark:invert" alt="Profile icon" />
           </figure>
-          <h2 className="text-base font-semibold dark:text-white">View profile</h2>
+          <h2 className="text-base font-semibold dark:text-white">{profileText("viewProfile")}</h2>
         </section>
         <Image
           src={arrowforwardIcon}
@@ -70,13 +74,13 @@ function ProfileMenu() {
           <li>
             <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">
               <Image className="dark:invert" src={languageIcon} width={size} alt="Profile icon" />
-              <p>Language</p>
+              <p>{text("language")}</p>
             </button>
           </li>
           <li>
             <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">
               <Image className="dark:invert" src={helpIcon} width={size} alt="Profile icon" />
-              <p>Help</p>
+              <p>{text("help")}</p>
             </button>
           </li>
           <div className="w-full h-[1px] self-center my-4 bg-slate-200 dark:bg-slate-500"></div>
@@ -86,7 +90,7 @@ function ProfileMenu() {
               className="w-full flex items-center p-2 space-x-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <Image src={logoutIcon} width={size} alt="Profile icon" />
-              <p className=" text-red-500">Logout</p>
+              <p className=" text-red-500">{text("logout")}</p>
             </button>
           </li>
         </ul>
