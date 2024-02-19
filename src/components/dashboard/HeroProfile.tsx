@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
 
@@ -9,6 +10,7 @@ import { Skeleton } from "../ui/skeleton";
 const fetchUserProfile = () => fetchProfile();
 
 function HeroProfile() {
+  const heroText = useTranslations("Dashboard");
   const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile);
 
   if (isLoading)
@@ -22,7 +24,7 @@ function HeroProfile() {
     return (
       <article className="w-full border-b-2 dark:border-slate-800 pb-4">
         <p className="text-2xl font-bold dark:text-white">
-          Welcome to Mindgen,{" "}
+          {heroText("welcome")}{" "}
           <span className="text-primary-color first-letter:uppercase">
             {uppercaseFirstLetter(userProfile.username)}
           </span>

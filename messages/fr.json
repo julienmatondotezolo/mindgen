@@ -1,4 +1,9 @@
 {
+  "Index": {
+    "createdBy": "Créé par",
+    "open": "ouvrir",
+    "new": "nouveau"
+  },
   "Welcome": {
     "hero1": "Libérez votre créativité",
     "hero2": "avec Mindgen",
@@ -10,6 +15,10 @@
     "upgradeButton": "Mettre à niveau",
     "loginButton": "Se connecter"
   },
+  "Dashboard": {
+    "welcome": "Bienvenue sur Mindgen,",
+    "myRecentMindmaps": "Mes mind map récentes"
+  },
   "Pricing": {
     "hero": "Tarification",
     "heroExplanation": "Payez seulement pour ce que vous utilisez avec la tarification à la demande.",
@@ -17,14 +26,14 @@
     "freePlan": "Gratuit",
     "freePlanPrice": "0",
     "freePlanExplanation": "Fonctionnalités de base gratuitement",
-    "freePlanRate": "Max de cartes mentales par mois",
+    "freePlanRate": "Max de mindmaps par mois",
     "payAsYouGoPlan": "Payer à l'utilisation",
     "payAsYouGoPlanPrice": "0",
     "payAsYouGoPlanExplanation": "Fonctionnalités de base gratuitement",
-    "payAsYouGoPlanRate": "Max de cartes mentales par mois",
+    "payAsYouGoPlanRate": "Max de mindmaps par mois",
     "EnterprisePlan": "Entreprise",
     "EnterprisePlanPrice": "0",
     "EnterprisePlanExplanation": "Fonctionnalités de base gratuitement",
-    "EnterprisePlanRate": "Max de cartes mentales par mois"
+    "EnterprisePlanRate": "Max de mindmaps par mois"
   }
 }

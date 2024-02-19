@@ -2,6 +2,7 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 
@@ -18,6 +19,8 @@ import { MindmapDialog } from "../ui/mindmapDialog";
 const fetchUserMindmaps = () => fetchMindmaps();
 
 function MindMapBoards() {
+  const text = useTranslations("Index");
+
   const size = 10;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +77,7 @@ function MindMapBoards() {
               <div>
                 <p className="text-sm font-medium dark:text-white">{mindmap.name}</p>
                 <p className="text-xs text-grey">
-                  Created by{" "}
+                  {text("createdBy")}{" "}
                   <span className="text-primary-color cursor-pointer hover:underline">
                     {uppercaseFirstLetter(mindmap.creatorUsername)}
                   </span>

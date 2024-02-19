@@ -1,4 +1,9 @@
 {
+  "Index": {
+    "createdBy": "Created by",
+    "open": "open",
+    "new": "new"
+  },
   "Welcome": {
     "hero1": "Unlock your creativity",
     "hero2": "with Mindgen",
@@ -9,6 +14,10 @@
     "searchInput": "Search mindmap",
     "upgradeButton": "Upgrade",
     "loginButton": "Login"
+  },
+  "Dashboard": {
+    "welcome": "Welcome to Mindgen,",
+    "myRecentMindmaps": "My recent mind maps"
   },
   "Pricing": {
     "hero": "Pricing",

@@ -1,4 +1,9 @@
 {
+  "Index": {
+    "createdBy": "Gemaakt door",
+    "open": "open",
+    "new": "nieuwe"
+  },
   "Welcome": {
     "hero1": "Ontgrendel je creativiteit",
     "hero2": "met Mindgen",
@@ -10,6 +15,10 @@
     "upgradeButton": "Upgraden",
     "loginButton": "Inloggen"
   },
+  "Dashboard": {
+    "welcome": "Welkom bij Mindgen,",
+    "myRecentMindmaps": "Mijn recente mindmaps"
+  },
   "Pricing": {
     "hero": "Prijzen",
     "heroExplanation": "Betaal alleen voor wat je gebruikt met prijzen per aanvraag.",
@@ -17,14 +26,14 @@
     "freePlan": "Gratis",
     "freePlanPrice": "0",
     "freePlanExplanation": "Basisfuncties gratis",
-    "freePlanRate": "Max Mindmap per maand",
+    "freePlanRate": "Maximum mindmaps per maand",
     "payAsYouGoPlan": "Betaal per gebruik",
     "payAsYouGoPlanPrice": "0",
     "payAsYouGoPlanExplanation": "Basisfuncties gratis",
-    "payAsYouGoPlanRate": "Max Mindmap per maand",
+    "payAsYouGoPlanRate": "Maximum mindmaps per maand",
     "EnterprisePlan": "Enterprise",
     "EnterprisePlanPrice": "0",
     "EnterprisePlanExplanation": "Basisfuncties gratis",
-    "EnterprisePlanRate": "Max Mindmap per maand"
+    "EnterprisePlanRate": "Maximum mindmaps per maand"
   }
 }
