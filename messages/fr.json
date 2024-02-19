@@ -1,5 +1,12 @@
 {
-    "Index": {
-      "hero": "Bienvenue sur Mindgen WTF,"
-    }
+  "Welcome": {
+    "hero1": "Libérez votre créativité",
+    "hero2": "avec Mindgen",
+    "heroExplanation": "Organisez vos pensées, collaborez facilement et augmentez votre productivité avec notre puissante plateforme SaaS de cartes mentales.",
+    "heroButton": "Commencer"
+  },
+  "Navigation": {
+    "upgradeButton": "Mettre à niveau",
+    "loginButton": "Se connecter"
   }
+}

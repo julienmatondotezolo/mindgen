@@ -1,5 +1,12 @@
 {
-    "Dashboard": {
-      "hero": "Welcome to Mindgen WTF,"
-    }
+  "Welcome": {
+    "hero1": "Unlock your creativity",
+    "hero2": "with Mindgen",
+    "heroExplanation": "Organize your thoughts, collaborate seamlessly, and boost productivity with our powerful mindmap SaaS platform.",
+    "heroButton": "Get started"
+  },
+  "Navigation": {
+    "upgradeButton": "Upgrade",
+    "loginButton": "Login"
   }
+}

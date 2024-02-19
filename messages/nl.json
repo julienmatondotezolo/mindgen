@@ -1,5 +1,12 @@
 {
-    "Index": {
-      "hero": "Welkom op Mindgen WTF,"
-    }
+  "Welcome": {
+    "hero1": "Ontgrendel je creativiteit",
+    "hero2": "met Mindgen",
+    "heroExplanation": "Organiseer je gedachten, werk naadloos samen en verhoog de productiviteit met ons krachtige mindmap SaaS-platform.",
+    "heroButton": "Aan de slag"
+  },
+  "Navigation": {
+    "upgradeButton": "Upgraden",
+    "loginButton": "Inloggen"
   }
+}
