@@ -5,7 +5,27 @@
     "new": "new",
     "language": "language",
     "help": "help",
-    "logout": "logout"
+    "logout": "logout",
+    "loading": "loading..."
+  },
+  "Auth": {
+    "connection": "Connection",
+    "connectionText": "Enter your username and password below to log in.",
+    "forgotPassword": "Forgot Password",
+    "alreadyAccount": "Already have an account?",
+    "noAccount": "No account yet?",
+    "connect": "Log In",
+    "register": "Register",
+    "clickAgreement": "By clicking continue, you agree to our",
+    "connectionButton": "Log In",
+    "registerButton": "Register",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "mailInput": "Email Address",
+    "usernameInput": "Username",
+    "passwordInput": "Password",
+    "wrongCredentials": "Incorrect username or password.",
+    "confirmPasswordInput": "Confirm Password"
   },
   "Welcome": {
     "hero1": "Unlock your creativity",

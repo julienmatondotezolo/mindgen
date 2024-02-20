@@ -7,6 +7,25 @@
     "help": "Aide",
     "logout": "Déconnexion"
   },
+  "Auth": {
+    "connection": "Connexion",
+    "connectionText": "Entrez votre nom d'utilisateur et votre mot de passe ci-dessous pour vous connecter.",
+    "forgotPassword": "Mot de passe oublié",
+    "alreadyAccount": "Vous avez déjà un compte?",
+    "noAccount": "Pas encore de compte?",
+    "connect": "Connexion",
+    "register": "S'incrire",
+    "clickAgreement": "By clicking continue, you agree to our",
+    "connectionButton": "Se connecter",
+    "registerButton": "Inscrivez-vous",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "mailInput": "Adresse mail",
+    "usernameInput": "Nom d'utilisateur",
+    "passwordInput": "Mot de passe",
+    "wrongCredentials": "Nom d'utilisateur ou mot de passe incorrect.",
+    "confirmPasswordInput": "Confirmer le mot de passe"
+  },
   "Welcome": {
     "hero1": "Libérez votre créativité",
     "hero2": "avec Mindgen",

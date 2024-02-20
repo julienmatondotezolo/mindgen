@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
 import React, { ChangeEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+import { Link } from "../../navigation";
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
+  const local = useLocale();
+
+  console.log("local:", local);
+  const authText = useTranslations("Auth");
+  const text = useTranslations("Index");
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
@@ -40,7 +48,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
         return;
       }
       setShowBadCredentialsMessage(false);
-      router.push("/dashboard");
+      router.push("/en/dashboard");
     });
   }
 
@@ -54,7 +62,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
             </Label>
             <Input
               id="username"
-              placeholder="Nom d'utilisateur"
+              placeholder={authText("usernameInput")}
               type="text"
               autoCapitalize="none"
               autoComplete="username"
@@ -69,7 +77,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
             </Label>
             <Input
               id="password"
-              placeholder="Mot de passe"
+              placeholder={authText("passwordInput")}
               type="password"
               autoCapitalize="none"
               autoComplete="password"
@@ -78,14 +86,12 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
               onChange={(e) => handleInputChange(e, "password")}
             />
           </div>
-          {showBadCredentialsMessage && (
-            <div className="text-red-500 text-sm">Nom d&apos;utilisateur ou mot de passe incorrect.</div>
-          )}
+          {showBadCredentialsMessage && <div className="text-red-500 text-sm">{authText("wrongCredentials")}</div>}
           <Link href="/auth/forgot-password" target="_blank" className=" underline underline-offset-4">
-            <small>Mot de passe oublié?</small>
+            <small>{authText("forgotPassword")}?</small>
           </Link>
-          <Button className="bg-m-color text-white hover:bg-green-600" disabled={isLoading}>
-            {isLoading ? <p>Loading...</p> : <p>Connexion</p>}
+          <Button disabled={isLoading}>
+            {isLoading ? <p>{text("loading")}</p> : <p>{authText("connectionButton")}</p>}
           </Button>
         </div>
       </form>
@@ -94,18 +100,14 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Pas encore de compte?</span>
+          <span className="bg-background px-2 text-muted-foreground">{authText("noAccount")}</span>
         </div>
       </div>
-      <Button
-        className="border-m-color text-m-color hover:bg-m-color hover:text-white"
-        onClick={() => router.push("/auth/register")}
-        variant="outline"
-        type="button"
-        disabled={isLoading}
-      >
-        Inscrivez-vous!
-      </Button>
+      <Link href={"/auth/register"}>
+        <Button className="w-full" variant="outline" type="button" disabled={isLoading}>
+          {authText("registerButton")}
+        </Button>
+      </Link>
     </div>
   );
 }

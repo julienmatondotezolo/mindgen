@@ -7,6 +7,25 @@
     "help": "Hulp",
     "logout": "Uitloggen"
   },
+  "Auth": {
+    "connection": "Inloggen",
+    "connectionText": "Voer hieronder je gebruikersnaam en wachtwoord in om in te loggen.",
+    "forgotPassword": "Wachtwoord vergeten",
+    "alreadyAccount": "Heb je al een account?",
+    "noAccount": "Nog geen account?",
+    "connect": "Inloggen",
+    "register": "Registreren",
+    "clickAgreement": "Door verder te gaan, ga je akkoord met onze",
+    "connectionButton": "Inloggen",
+    "registerButton": "Registreren",
+    "termsOfService": "Gebruiksvoorwaarden",
+    "privacyPolicy": "Privacybeleid",
+    "mailInput": "E-mailadres",
+    "usernameInput": "Gebruikersnaam",
+    "passwordInput": "Wachtwoord",
+    "wrongCredentials": "Foute gebruikersnaam of wachtwoord.",
+    "confirmPasswordInput": "Bevestig wachtwoord"
+  },
   "Welcome": {
     "hero1": "Ontgrendel je creativiteit",
     "hero2": "met Mindgen",
