@@ -33,3 +33,8 @@ export const qaState = atom<QuestionAnswersProps[]>({
   key: "qaState",
   default: [],
 });
+
+export const modalState = atom({
+  key: "modalState",
+  default: false,
+});

@@ -5,16 +5,17 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
+import { useRecoilState } from "recoil";
 
 import { deleteMindmapById, fetchMindmaps } from "@/_services";
 import { MindmapObject } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
+import { modalState } from "@/recoil";
 import { formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
-import { MindmapDialog } from "../ui/mindmapDialog";
 
 const fetchUserMindmaps = () => fetchMindmaps();
 
@@ -23,7 +24,7 @@ function MindMapBoards() {
 
   const size = 10;
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("false");
 
@@ -94,8 +95,6 @@ function MindMapBoards() {
           </div>
         ))}
         {isCreatingMindmap ? <SkeletonMindMapBoard /> : <></>}
-
-        <MindmapDialog title={title} description={description} open={isOpen} update={true} setIsOpen={setIsOpen} />
       </>
     );
 }

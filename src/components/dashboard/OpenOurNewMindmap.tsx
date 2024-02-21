@@ -1,20 +1,20 @@
 "use client";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import React, { useState } from "react";
+import React from "react";
+import { useRecoilState } from "recoil";
 
 import documentIcon from "@/assets/icons/document.svg";
 import { Button } from "@/components/ui";
+import { modalState } from "@/recoil";
 import { uppercaseFirstLetter } from "@/utils";
-
-import { MindmapDialog } from "../ui/mindmapDialog";
 
 function OpenOurNewMindmap() {
   const text = useTranslations("Index");
 
   const size = 15;
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useRecoilState(modalState);
 
   const handleClick = () => {
     setIsOpen(!isOpen);
@@ -35,7 +35,6 @@ function OpenOurNewMindmap() {
           </Button>
         </li>
       </ul>
-      <MindmapDialog title="HELLO" description="" open={isOpen} setIsOpen={setIsOpen} update={false} />
     </>
   );
 }

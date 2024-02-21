@@ -1,10 +1,14 @@
 "use client";
 import React from "react";
+import { useRecoilState } from "recoil";
 
-import { BackDropGradient } from "@/components";
+import { BackDropGradient, MindmapDialog } from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, RecentMindMap } from "@/components/dashboard";
+import { modalState } from "@/recoil";
 
 export default function Dashboard() {
+  const [isOpen, setIsOpen] = useRecoilState(modalState);
+
   return (
     <>
       <Navigation />
@@ -16,6 +20,7 @@ export default function Dashboard() {
           <RecentMindMap />
         </section>
       </div>
+      <MindmapDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
     </>
   );
 }
