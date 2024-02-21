@@ -16,6 +16,7 @@
     "noAccount": "No account yet?",
     "connect": "Log In",
     "register": "Register",
+    "registerText": "Enter your email, username and password below to register.",
     "clickAgreement": "By clicking continue, you agree to our",
     "connectionButton": "Log In",
     "registerButton": "Register",

@@ -1,13 +1,12 @@
 "use client";
+
 import { ArrowLeft } from "lucide-react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { BackDropGradient } from "@/components";
 import { UserLoginForm } from "@/components/authentication/user-login-form";
-
-import { Link } from "../../../../../navigation";
+import { Link, useRouter } from "@/navigation";
 
 export default function AuthenticationPage() {
   const authText = useTranslations("Auth");

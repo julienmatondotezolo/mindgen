@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import React, { ChangeEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,14 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-import { Link } from "../../navigation";
+import { Link, useRouter } from "../../navigation";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
-  const local = useLocale();
-
-  console.log("local:", local);
   const authText = useTranslations("Auth");
   const text = useTranslations("Index");
 
@@ -48,7 +44,8 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
         return;
       }
       setShowBadCredentialsMessage(false);
-      router.push("/en/dashboard");
+
+      router.push("/dashboard");
     });
   }
 
