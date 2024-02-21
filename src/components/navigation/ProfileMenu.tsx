@@ -13,6 +13,8 @@ import lightmodeIcon from "@/assets/icons/lightmode.svg";
 import logoutIcon from "@/assets/icons/logout.svg";
 import profileIcon from "@/assets/icons/profile.svg";
 
+import LanguageSwitcher from "../ui/languageSwitcher";
+
 function ProfileMenu() {
   const text = useTranslations("Index");
   const profileText = useTranslations("Profile");
@@ -72,10 +74,11 @@ function ProfileMenu() {
             </button>
           </li>
           <li>
-            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">
+            <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-t-xl rounded-br-xl">
               <Image className="dark:invert" src={languageIcon} width={size} alt="Profile icon" />
               <p>{text("language")}</p>
             </button>
+            <LanguageSwitcher />
           </li>
           <li>
             <button className="w-full flex items-center p-2 space-x-3 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white rounded-xl">

@@ -4,6 +4,7 @@ export * from "./chat";
 export * from "./form";
 export * from "./input";
 export * from "./label";
+export * from "./languageSwitcher";
 export * from "./popover";
 export * from "./progress";
 export * from "./skeleton";
