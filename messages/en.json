@@ -3,10 +3,16 @@
     "createdBy": "Created by",
     "open": "open",
     "new": "new",
+    "create": "create",
+    "cancel": "cancel",
     "language": "language",
     "help": "help",
     "logout": "logout",
-    "loading": "loading..."
+    "loading": "loading...",
+    "name": "Name",
+    "description": "Description",
+    "private": "Private",
+    "onlyViewable": "Only viewable by you"
   },
   "Auth": {
     "connection": "Connection",

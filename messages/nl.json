@@ -3,9 +3,16 @@
     "createdBy": "Gemaakt door",
     "open": "open",
     "new": "nieuwe",
+    "create": "creëren",
+    "cancel": "annuleren",
     "language": "Taal",
     "help": "Hulp",
-    "logout": "Uitloggen"
+    "logout": "Uitloggen",
+    "loading": "laden...",
+    "name": "Naam",
+    "description": "Beschrijving",
+    "private": "Privé",
+    "onlyViewable": "Alleen zichtbaar voor jou"
   },
   "Auth": {
     "connection": "Inloggen",

@@ -5,6 +5,7 @@ export * from "./form";
 export * from "./input";
 export * from "./label";
 export * from "./languageSwitcher";
+export * from "./mindmapDialog";
 export * from "./popover";
 export * from "./progress";
 export * from "./skeleton";

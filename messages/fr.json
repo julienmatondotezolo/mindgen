@@ -3,9 +3,16 @@
     "createdBy": "Créé par",
     "open": "ouvrir",
     "new": "nouveau",
+    "create": "créer",
+    "cancel": "annuler",
     "language": "Langue",
     "help": "Aide",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "loading": "chargement...",
+    "name": "Nom",
+    "description": "Description",
+    "private": "Privé",
+    "onlyViewable": "Uniquement visible par vous"
   },
   "Auth": {
     "connection": "Connexion",

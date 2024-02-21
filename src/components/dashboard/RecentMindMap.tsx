@@ -1,11 +1,12 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useTranslations } from "next-intl";
-import React, { useState } from "react";
+import React from "react";
+import { useRecoilState } from "recoil";
 
+import { modalState } from "@/recoil";
 import { uppercaseFirstLetter } from "@/utils";
 
-import { MindmapDialog } from "../ui/mindmapDialog";
 import { MindMapBoards } from "./MindMapBoards";
 import { OpenOurNewMindmap } from "./OpenOurNewMindmap";
 
@@ -13,7 +14,7 @@ function RecentMindMap() {
   const recentMindmapText = useTranslations("Dashboard");
   const text = useTranslations("Index");
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useRecoilState(modalState);
 
   const handleClick = () => {
     setIsOpen(!isOpen);
@@ -40,8 +41,6 @@ function RecentMindMap() {
 
         <MindMapBoards />
       </article>
-
-      <MindmapDialog title="" description="" open={isOpen} update={false} setIsOpen={setIsOpen} />
     </div>
   );
 }
