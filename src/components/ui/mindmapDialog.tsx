@@ -1,12 +1,15 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { createMindmap } from "@/_services";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
-import { Input } from "@/components/ui";
+import { Button, Input, Textarea } from "@/components/ui";
 import { emptyMindMapObject } from "@/utils";
 
 const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIsOpen }) => {
+  const text = useTranslations("Index");
   const handleClose = () => {
     setIsOpen(false);
   };
@@ -30,7 +33,7 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
     setInputTitle(e.target.value);
   };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputDescription(e.target.value);
   };
 
@@ -58,26 +61,34 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ title, description, open, setIs
 
   return (
     <div className={`fixed inset-0 items-center justify-center z-50 dialog ${open ? "flex" : "hidden"}`}>
-      <div className="bg-white p-4 rounded shadow-lg">
-        <article className="space-y-2">
-          <Input type="text" placeholder="Mindmap name" value={inputTitle} onChange={handleTitleChange} />
-          <Input
-            type="text"
-            placeholder="mindmap description"
-            value={inputDescription}
-            onChange={handleDescriptionChange}
-          />
+      <div className="max-w-full sm:w-4/12 bg-white border-2 p-6 space-y-8 rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:bg-slate-900 dark:bg-opacity-70 dark:shadow-slate-900 dark:border-slate-800">
+        <p className="font-bold text-xl">New mindmap</p>
+        <article className="space-y-4">
+          <section>
+            <p className="text-grey dark:text-grey-blue text-sm mb-2">Name</p>
+            <Input type="text" placeholder="Mindmap name" value={inputTitle} onChange={handleTitleChange} />
+          </section>
+
+          <section>
+            <p className="text-grey dark:text-grey-blue text-sm mb-2">Description</p>
+            <Textarea placeholder="mindmap description" value={inputDescription} onChange={handleDescriptionChange} />
+          </section>
+          <div className="flex flex-wrap justify-between items-center">
+            <article>
+              <p className="font-semibold">Private</p>
+              <p className="text-grey dark:text-grey-blue text-sm">Only viewable by you</p>
+            </article>
+            <label className="inline-flex items-center cursor-pointer">
+              <input type="checkbox" value="" className="sr-only peer" />
+              <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-primary-color rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-color"></div>
+            </label>
+          </div>
         </article>
-        <div className="dialog-actions mt-4">
-          <button onClick={handleClose} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+        <div className="space-x-4 mt-4">
+          <Button variant="outline" onClick={handleClose}>
             Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4"
-          >
-            Confirm
-          </button>
+          </Button>
+          <Button onClick={handleConfirm}>Create mindmap</Button>
         </div>
       </div>
     </div>
