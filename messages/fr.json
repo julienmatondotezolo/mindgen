@@ -1,0 +1,65 @@
+{
+  "Index": {
+    "createdBy": "Créé par",
+    "open": "ouvrir",
+    "new": "nouveau",
+    "language": "Langue",
+    "help": "Aide",
+    "logout": "Déconnexion"
+  },
+  "Auth": {
+    "connection": "Connexion",
+    "connectionText": "Entrez votre nom d'utilisateur et votre mot de passe ci-dessous pour vous connecter.",
+    "forgotPassword": "Mot de passe oublié",
+    "alreadyAccount": "Vous avez déjà un compte?",
+    "noAccount": "Pas encore de compte?",
+    "connect": "Connexion",
+    "register": "S'incrire",
+    "registerText": "Entrez votre email, nom d'utilisateur et mot de passe ci-dessous pour vous inscrire.",
+    "clickAgreement": "By clicking continue, you agree to our",
+    "connectionButton": "Se connecter",
+    "registerButton": "Inscrivez-vous",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "mailInput": "Adresse mail",
+    "usernameInput": "Nom d'utilisateur",
+    "passwordInput": "Mot de passe",
+    "wrongCredentials": "Nom d'utilisateur ou mot de passe incorrect.",
+    "confirmPasswordInput": "Confirmer le mot de passe"
+  },
+  "Welcome": {
+    "hero1": "Libérez votre créativité",
+    "hero2": "avec Mindgen",
+    "heroExplanation": "Organisez vos pensées, collaborez facilement et augmentez votre productivité avec notre puissante plateforme SaaS de cartes mentales.",
+    "heroButton": "Commencer"
+  },
+  "Navigation": {
+    "searchInput": "Rechercher un mindmap",
+    "upgradeButton": "Mettre à niveau",
+    "loginButton": "Se connecter"
+  },
+  "Dashboard": {
+    "welcome": "Bienvenue sur Mindgen,",
+    "myRecentMindmaps": "Mes mind map récentes"
+  },
+  "Pricing": {
+    "hero": "Tarification",
+    "heroExplanation": "Payez seulement pour ce que vous utilisez avec la tarification à la demande.",
+    "planButton": "Commencer avec",
+    "freePlan": "Gratuit",
+    "freePlanPrice": "0",
+    "freePlanExplanation": "Fonctionnalités de base gratuitement",
+    "freePlanRate": "Max de mindmaps par mois",
+    "payAsYouGoPlan": "Payer à l'utilisation",
+    "payAsYouGoPlanPrice": "0",
+    "payAsYouGoPlanExplanation": "Fonctionnalités de base gratuitement",
+    "payAsYouGoPlanRate": "Max de mindmaps par mois",
+    "EnterprisePlan": "Entreprise",
+    "EnterprisePlanPrice": "0",
+    "EnterprisePlanExplanation": "Fonctionnalités de base gratuitement",
+    "EnterprisePlanRate": "Max de mindmaps par mois"
+  },
+  "Profile": {
+    "viewProfile": "Voir votre profil"
+  }
+}

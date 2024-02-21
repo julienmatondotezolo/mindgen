@@ -1,0 +1,66 @@
+{
+  "Index": {
+    "createdBy": "Created by",
+    "open": "open",
+    "new": "new",
+    "language": "language",
+    "help": "help",
+    "logout": "logout",
+    "loading": "loading..."
+  },
+  "Auth": {
+    "connection": "Connection",
+    "connectionText": "Enter your username and password below to log in.",
+    "forgotPassword": "Forgot Password",
+    "alreadyAccount": "Already have an account?",
+    "noAccount": "No account yet?",
+    "connect": "Log In",
+    "register": "Register",
+    "registerText": "Enter your email, username and password below to register.",
+    "clickAgreement": "By clicking continue, you agree to our",
+    "connectionButton": "Log In",
+    "registerButton": "Register",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "mailInput": "Email Address",
+    "usernameInput": "Username",
+    "passwordInput": "Password",
+    "wrongCredentials": "Incorrect username or password.",
+    "confirmPasswordInput": "Confirm Password"
+  },
+  "Welcome": {
+    "hero1": "Unlock your creativity",
+    "hero2": "with Mindgen",
+    "heroExplanation": "Organize your thoughts, collaborate seamlessly, and boost productivity with our powerful mindmap SaaS platform.",
+    "heroButton": "Get started"
+  },
+  "Navigation": {
+    "searchInput": "Search mindmap",
+    "upgradeButton": "Upgrade",
+    "loginButton": "Login"
+  },
+  "Dashboard": {
+    "welcome": "Welcome to Mindgen,",
+    "myRecentMindmaps": "My recent mind maps"
+  },
+  "Pricing": {
+    "hero": "Pricing",
+    "heroExplanation": "Pay only for what you use with per-request pricing.",
+    "planButton": "Get started with",
+    "freePlan": "Free",
+    "freePlanPrice": "0",
+    "freePlanExplanation": "Basic features for free",
+    "freePlanRate": "Max Mindmap per months",
+    "payAsYouGoPlan": "Pay as you go",
+    "payAsYouGoPlanPrice": "0",
+    "payAsYouGoPlanExplanation": "Basic features for free",
+    "payAsYouGoPlanRate": "Max Mindmap per months",
+    "EnterprisePlan": "Enterprise",
+    "EnterprisePlanPrice": "0",
+    "EnterprisePlanExplanation": "Basic features for free",
+    "EnterprisePlanRate": "Max Mindmap per months"
+  },
+  "Profile": {
+    "viewProfile": "View profile"
+  }
+}

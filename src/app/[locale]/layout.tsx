@@ -1,4 +1,4 @@
-import "../assets/styles/globals.css";
+import "../../assets/styles/globals.css";
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -11,9 +11,15 @@ export const metadata: Metadata = {
   description: "Generated everything with a mindmap",
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+  params: { locale },
+}: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
   return (
-    <html suppressHydrationWarning={true} lang="en">
+    <html suppressHydrationWarning={true} lang={locale}>
       <body className={`${inter.className}`}>{children}</body>
     </html>
   );

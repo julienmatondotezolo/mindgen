@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { ChangeEvent, useState } from "react";
 
@@ -10,10 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useRouter } from "@/navigation";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
+  const authText = useTranslations("Auth");
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
@@ -106,7 +109,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             </Label>
             <Input
               id="email"
-              placeholder="Adresse mail"
+              placeholder={authText("mailInput")}
               type="email"
               autoCapitalize="none"
               autoComplete="email"
@@ -124,7 +127,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             </Label>
             <Input
               id="username"
-              placeholder="Nom d'utilisateur"
+              placeholder={authText("usernameInput")}
               type="text"
               autoCapitalize="none"
               autoComplete="username"
@@ -145,7 +148,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             </Label>
             <Input
               id="password"
-              placeholder="Mot de passe"
+              placeholder={authText("passwordInput")}
               type="password"
               autoCapitalize="none"
               autoComplete="password"
@@ -163,7 +166,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             </Label>
             <Input
               id="password"
-              placeholder="Confirmer le mot de passe"
+              placeholder={authText("confirmPasswordInput")}
               type="password"
               autoCapitalize="none"
               autoComplete="password"
@@ -176,7 +179,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             )}
           </div>
           <Button className="bg-m-color text-white hover:bg-green-600" disabled={isLoading}>
-            {isLoading ? <p>Loading...</p> : <p>S&apos;inscrire</p>}
+            {isLoading ? <p>Loading...</p> : <p>{authText("registerButton")}</p>}
           </Button>
         </div>
       </form>
@@ -185,7 +188,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Vous avez déjà un compte?</span>
+          <span className="bg-background px-2 text-muted-foreground">{authText("alreadyAccount")}</span>
         </div>
       </div>
       <Button
@@ -197,7 +200,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         type="button"
         disabled={isLoading}
       >
-        Se connecter
+        {authText("connectionButton")}
       </Button>
     </div>
   );

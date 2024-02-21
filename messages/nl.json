@@ -1,0 +1,65 @@
+{
+  "Index": {
+    "createdBy": "Gemaakt door",
+    "open": "open",
+    "new": "nieuwe",
+    "language": "Taal",
+    "help": "Hulp",
+    "logout": "Uitloggen"
+  },
+  "Auth": {
+    "connection": "Inloggen",
+    "connectionText": "Voer hieronder je gebruikersnaam en wachtwoord in om in te loggen.",
+    "forgotPassword": "Wachtwoord vergeten",
+    "alreadyAccount": "Heb je al een account?",
+    "noAccount": "Nog geen account?",
+    "connect": "Inloggen",
+    "register": "Registreren",
+    "registerText": "Vul hieronder uw e-mailadres, gebruikersnaam en wachtwoord in om te registreren.",
+    "clickAgreement": "Door verder te gaan, ga je akkoord met onze",
+    "connectionButton": "Inloggen",
+    "registerButton": "Registreren",
+    "termsOfService": "Gebruiksvoorwaarden",
+    "privacyPolicy": "Privacybeleid",
+    "mailInput": "E-mailadres",
+    "usernameInput": "Gebruikersnaam",
+    "passwordInput": "Wachtwoord",
+    "wrongCredentials": "Foute gebruikersnaam of wachtwoord.",
+    "confirmPasswordInput": "Bevestig wachtwoord"
+  },
+  "Welcome": {
+    "hero1": "Ontgrendel je creativiteit",
+    "hero2": "met Mindgen",
+    "heroExplanation": "Organiseer je gedachten, werk naadloos samen en verhoog de productiviteit met ons krachtige mindmap SaaS-platform.",
+    "heroButton": "Aan de slag"
+  },
+  "Navigation": {
+    "searchInput": "Zoek een mindmap",
+    "upgradeButton": "Upgraden",
+    "loginButton": "Inloggen"
+  },
+  "Dashboard": {
+    "welcome": "Welkom bij Mindgen,",
+    "myRecentMindmaps": "Mijn recente mindmaps"
+  },
+  "Pricing": {
+    "hero": "Prijzen",
+    "heroExplanation": "Betaal alleen voor wat je gebruikt met prijzen per aanvraag.",
+    "planButton": "Begin met",
+    "freePlan": "Gratis",
+    "freePlanPrice": "0",
+    "freePlanExplanation": "Basisfuncties gratis",
+    "freePlanRate": "Maximum mindmaps per maand",
+    "payAsYouGoPlan": "Betaal per gebruik",
+    "payAsYouGoPlanPrice": "0",
+    "payAsYouGoPlanExplanation": "Basisfuncties gratis",
+    "payAsYouGoPlanRate": "Maximum mindmaps per maand",
+    "EnterprisePlan": "Enterprise",
+    "EnterprisePlanPrice": "0",
+    "EnterprisePlanExplanation": "Basisfuncties gratis",
+    "EnterprisePlanRate": "Maximum mindmaps per maand"
+  },
+  "Profile": {
+    "viewProfile": "Bekijk profiel"
+  }
+}
