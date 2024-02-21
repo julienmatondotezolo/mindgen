@@ -12,19 +12,23 @@ export default createMiddleware({
 });
 
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ["/", "/(fr|nl)/:path*"],
+  // Match only internationalized pathnames and the protected paths
+  matcher: ["/", "/(fr|nl)/:path*", "/dashboard", "/board/:id"],
 };
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  const protectedPaths = ["/dashboard", /\/board\/\d+/]; // Define your protected paths here
+  const protectedPaths = ["/dashboard", "/board/:id"]; // Define your protected paths here
 
-  const isPathProtected = protectedPaths.some((path: string | RegExp) => {
-    if (typeof path === "string") {
-      return pathname.startsWith(path);
+  const isPathProtected = protectedPaths.some((protectedPath) => {
+    // Handle internationalized paths by removing the locale prefix before checking
+    const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
+
+    if (protectedPath.includes(":")) {
+      // For dynamic paths like /board/:id, use a regex test instead of startsWith
+      return new RegExp(`^${protectedPath.replace(":id", "\\d+")}`).test(sanitizedPath);
     } else {
-      return path.test(pathname);
+      return sanitizedPath.startsWith(protectedPath);
     }
   });
 
