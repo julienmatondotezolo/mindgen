@@ -161,7 +161,13 @@ export async function getMindmapById(mindmapId: string): Promise<any> {
   }
 }
 
-export async function updateMindmapById(mindmapId: any, mindmapObject: any): Promise<any> {
+export async function updateMindmapById({
+  mindmapId,
+  mindmapObject,
+}: {
+  mindmapId: string | undefined;
+  mindmapObject: any;
+}): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();

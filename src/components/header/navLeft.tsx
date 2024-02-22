@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
 
 import { updateMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
@@ -19,14 +20,23 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const [newMindMapName, setNewMindMapName] = useState("");
   const [newMindMapDescription, setNewMindMapDescription] = useState("");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const mindMapId = userMindmapDetails?.id;
   const mindMapName = userMindmapDetails?.name;
   const mindMapDescription = userMindmapDetails?.description;
 
-  mindMapName;
-
   const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200 dark:bg-slate-800 hover:dark:bg-slate-600";
+
+  const queryClient = useQueryClient();
+  // Define the mutation
+  const updateMindmapMutation = useMutation(updateMindmapById, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmaps");
+      setIsSheetOpen(false);
+    },
+  });
 
   useEffect(() => {
     if (mindMapName) setNewMindMapName(mindMapName);
@@ -56,13 +66,16 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
     console.log("newMindmapObject:", JSON.stringify(newMindmapObject));
 
-    const response = await updateMindmapById(mindMapId, newMindmapObject);
+    // const response = await updateMindmapById(mindMapId, newMindmapObject);
 
-    console.log("response:", response);
+    updateMindmapMutation.mutate({
+      mindmapId: mindMapId,
+      mindmapObject: newMindmapObject,
+    });
   };
 
   return (
-    <Sheet>
+    <Sheet open={isSheetOpen} onOpenChange={() => setIsSheetOpen(!isSheetOpen)}>
       <div className="flex px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
         <ul className="flex flex-row items-center justify-between px-1">
           <li className="flex mr-4">
@@ -85,7 +98,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
       </div>
       <SheetContent
         side="left"
-        className="rounded-r-2xl shadow-xl bg-white dark:border-slate-800 dark:bg-slate-800 dark:bg-opacity-80 backdrop-filter backdrop-blur-lg"
+        className="rounded-r-2xl shadow-xl bg-white dark:border-slate-800 dark:bg-slate-800 dark:bg-opacity-80 backdrop-filter backdrop-blur-l"
       >
         <ul className="w-full h-full">
           <form className="h-full flex flex-col justify-between pt-4" onSubmit={handleSubmit}>
@@ -99,6 +112,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   value={newMindMapName}
                   onChange={handleNameChange}
                   placeholder={`${text("untitled")} ${text("name").toLowerCase()}`}
+                  disabled={updateMindmapMutation.isLoading}
                 />
               </section>
               <section>
@@ -108,6 +122,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   value={newMindMapDescription}
                   onChange={handleDescriptionChange}
                   placeholder={`${text("untitled")} ${text("description").toLowerCase()}`}
+                  disabled={updateMindmapMutation.isLoading}
                 />
               </section>
               <div className="flex flex-wrap justify-between items-center">
@@ -121,8 +136,8 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                 </label>
               </div>
             </section>
-            <Button className="w-full" type="submit">
-              {uppercaseFirstLetter(text("save"))}
+            <Button className="w-full" type="submit" disabled={updateMindmapMutation.isLoading}>
+              {updateMindmapMutation.isLoading ? text("loading") : uppercaseFirstLetter(text("save"))}
             </Button>
           </form>
         </ul>
