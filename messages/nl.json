@@ -12,7 +12,9 @@
     "name": "Naam",
     "description": "Beschrijving",
     "private": "Privé",
-    "onlyViewable": "Alleen zichtbaar voor jou"
+    "onlyViewable": "Alleen zichtbaar voor jou",
+    "save": "opslaan",
+    "untitled": "Geen"
   },
   "Auth": {
     "connection": "Inloggen",

@@ -1,20 +1,24 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { updateMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
-import { emptyMindMapObject } from "@/utils";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui";
+import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
+  const text = useTranslations("Index");
+
   const [newMindMapName, setNewMindMapName] = useState("");
   const [newMindMapDescription, setNewMindMapDescription] = useState("");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const mindMapId = userMindmapDetails?.id;
   const mindMapName = userMindmapDetails?.name;
@@ -58,17 +62,19 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   };
 
   return (
-    <>
+    <Sheet>
       <div className="flex px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
-        <ul className="flex flex-row items-center justify-between">
-          <li className="m-1">
-            <div className={`${listStyle} cursor-pointer`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <Image className="dark:invert" src={hamburgerIcon} alt="Hamburger icon" />
-            </div>
+        <ul className="flex flex-row items-center justify-between px-1">
+          <li className="flex mr-4">
+            <SheetTrigger>
+              <div className={`${listStyle} cursor-pointer`}>
+                <Image className="dark:invert" src={hamburgerIcon} alt="Hamburger icon" />
+              </div>
+            </SheetTrigger>
           </li>
-          <li className="m-1">
+          <li>
             <Link href={`/dashboard`}>
-              <figure className=" mr-8">
+              <figure>
                 <p className="font-bold text-base dark:text-white">
                   MIND<span className="text-primary-color">GEN</span>
                 </p>
@@ -77,35 +83,51 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
           </li>
         </ul>
       </div>
-      {isMenuOpen && (
-        <ul className="fixed space-x-10 sm:w-1/2 md:w-72 left-0 top-16 p-6 bg-white z-50 rounded-xl shadow-xl">
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="name">
-              Name:
-              <Input
-                id="name"
-                type="text"
-                value={newMindMapName}
-                onChange={handleNameChange}
-                placeholder="Untitled project"
-              />
-            </label>
-            <label htmlFor="name">
-              Description:
-              <Textarea
-                id="description"
-                value={newMindMapDescription}
-                onChange={handleDescriptionChange}
-                placeholder="Untitled project description"
-              />
-            </label>
+      <SheetContent
+        side="left"
+        className="rounded-r-2xl shadow-xl bg-white dark:border-slate-800 dark:bg-slate-800 dark:bg-opacity-80 backdrop-filter backdrop-blur-lg"
+      >
+        <ul className="w-full h-full">
+          <form className="h-full flex flex-col justify-between pt-4" onSubmit={handleSubmit}>
+            <section className="space-y-4">
+              <p className="font-bold text-xl">{uppercaseFirstLetter(text("save"))} mind map</p>
+              <section>
+                <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("name")}</p>
+                <Input
+                  id="name"
+                  type="text"
+                  value={newMindMapName}
+                  onChange={handleNameChange}
+                  placeholder={`${text("untitled")} ${text("name").toLowerCase()}`}
+                />
+              </section>
+              <section>
+                <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("description")}</p>
+                <Textarea
+                  id="description"
+                  value={newMindMapDescription}
+                  onChange={handleDescriptionChange}
+                  placeholder={`${text("untitled")} ${text("description").toLowerCase()}`}
+                />
+              </section>
+              <div className="flex flex-wrap justify-between items-center">
+                <article>
+                  <p className="font-semibold">{text("private")}</p>
+                  <p className="text-grey dark:text-grey-blue text-sm">{text("onlyViewable")}</p>
+                </article>
+                <label className="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" value="" className="sr-only peer" />
+                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-primary-color rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-color"></div>
+                </label>
+              </div>
+            </section>
             <Button className="w-full" type="submit">
-              Save
+              {uppercaseFirstLetter(text("save"))}
             </Button>
           </form>
         </ul>
-      )}
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }
 

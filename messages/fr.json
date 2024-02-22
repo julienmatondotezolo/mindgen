@@ -12,7 +12,9 @@
     "name": "Nom",
     "description": "Description",
     "private": "Privé",
-    "onlyViewable": "Uniquement visible par vous"
+    "onlyViewable": "Uniquement visible par vous",
+    "save": "sauvegarder",
+    "untitled": "Sans"
   },
   "Auth": {
     "connection": "Connexion",
