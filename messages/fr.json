@@ -70,5 +70,8 @@
   },
   "Profile": {
     "viewProfile": "Voir votre profil"
+  },
+  "Chat": {
+    "promptInput": "Demandez/Génére tout à propos de ce mindmap..."
   }
 }

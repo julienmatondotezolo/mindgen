@@ -66,25 +66,31 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
 
-  useEffect(() => {
-    restoreMindMapFlow();
-  }, []);
+  // useEffect(() => {
+  //   restoreMindMapFlow();
+  // }, []);
 
   useEffect(() => {
-    saveMindMapFlow();
+    saveMindMapFlow(mindmapId);
   }, [nodes, edges]);
 
-  const saveMindMapFlow = useCallback(async () => {
-    if (reactFlowInstance) {
-      const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
+  const saveMindMapFlow = useCallback(
+    async (mindMapId: string | undefined) => {
+      if (reactFlowInstance) {
+        const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
 
-      await updateMindmapById(mindmapId, newMindmapObject);
+        await updateMindmapById({
+          mindmapId: mindMapId,
+          mindmapObject: newMindmapObject,
+        });
 
-      const mindMap = reactFlowInstance.toObject();
+        const mindMap = reactFlowInstance.toObject();
 
-      localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
-    }
-  }, [reactFlowInstance, nodes, edges]);
+        localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
+      }
+    },
+    [reactFlowInstance, nodes, edges],
+  );
 
   const restoreMindMapFlow = async () => {
     let flow;

@@ -70,5 +70,8 @@
   },
   "Profile": {
     "viewProfile": "Bekijk profiel"
+  },
+  "Chat": {
+    "promptInput": "Vraag/Genereer alles over deze mindmap..."
   }
 }

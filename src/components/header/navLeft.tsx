@@ -64,10 +64,6 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
       userMindmapDetails?.edges,
     );
 
-    console.log("newMindmapObject:", JSON.stringify(newMindmapObject));
-
-    // const response = await updateMindmapById(mindMapId, newMindmapObject);
-
     updateMindmapMutation.mutate({
       mindmapId: mindMapId,
       mindmapObject: newMindmapObject,

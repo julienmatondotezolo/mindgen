@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
@@ -9,12 +10,14 @@ import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 import { useDidUpdateEffect, useMindMap } from "@/hooks";
 import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
-import { findCollaboratorId, scrollToBottom } from "@/utils";
+import { convertToNestedArray, findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
+  const chatText = useTranslations("Chat");
+
   const size = 20;
-  const { description, collaborators, creatorId } = userMindmapDetails;
+  const { description, collaborators, creatorId, nodes, edges } = userMindmapDetails;
 
   const userCollaboratorID = findCollaboratorId(creatorId, collaborators);
 
@@ -62,16 +65,20 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     setPromptResult(true);
     setPromptValue(text);
 
-    const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray(), collaboratorId);
+    const mindMapArray = convertToNestedArray(nodes, edges);
 
-    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
+    console.log("mindMapArray:", mindMapArray);
+
+    // const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray(), collaboratorId);
+
+    // handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 
     const newQA = {
       text: text,
       message: answerMessages[0].text,
     };
 
-    setQa((prevQa) => [...prevQa, newQA]);
+    // setQa((prevQa) => [...prevQa, newQA]);
 
     setText("");
   };
@@ -101,7 +108,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     <div className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:border-slate-800 dark:bg-slate-600 dark:bg-opacity-20">
       <Textarea
         className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
-        placeholder="Ask our generate anything related to this mind map..."
+        placeholder={chatText("promptInput")}
         value={text}
         onKeyDown={handleSendPrompt}
         onChange={handleTextareaChange}
