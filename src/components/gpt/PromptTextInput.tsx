@@ -31,7 +31,6 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
   const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { mindMapArray } = useMindMap(userMindmapDetails);
 
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
@@ -67,9 +66,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
     const mindMapArray = convertToNestedArray(nodes, edges);
 
-    console.log("mindMapArray:", mindMapArray);
-
-    // const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray(), collaboratorId);
+    const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray, collaboratorId);
 
     // handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 

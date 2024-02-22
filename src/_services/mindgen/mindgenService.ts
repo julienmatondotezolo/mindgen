@@ -19,20 +19,26 @@ export async function fetchGeneratedTSummaryText(
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
-      body: JSON.stringify({ description, task, data, collaboratorId: collaboratorId }),
+      body: JSON.stringify({ description, task, data, collaboratorId }),
     });
 
+    console.log("responseSummaryText:", responseSummaryText.body);
+
     if (responseSummaryText.ok) {
+      // If the response is okay, return the response body as a ReadableStream<Uint8Array>
       return responseSummaryText.body as ReadableStream<Uint8Array>;
     } else {
       console.error("Failed to post data and stream response");
-      // Return a default empty ReadableStream if the response is not okay
+      // If the response is not okay, return a default ReadableStream<Uint8Array> with a message
       return new ReadableStream<Uint8Array>({
         start(controller) {
+          // Convert a string to Uint8Array and enqueue it to the stream
+          const message = "An error occurred while fetching the summary text.";
+
+          controller.enqueue(new TextEncoder().encode(message));
           controller.close();
         },
       });
-      // throw new Error("Failed to post data and stream response");
     }
   } catch (error) {
     console.error(error);
@@ -161,13 +167,7 @@ export async function getMindmapById(mindmapId: string): Promise<any> {
   }
 }
 
-export async function updateMindmapById({
-  mindmapId,
-  mindmapObject,
-}: {
-  mindmapId: string | undefined;
-  mindmapObject: any;
-}): Promise<any> {
+export async function updateMindmapById(mindmapId: any, mindmapObject: any): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();
