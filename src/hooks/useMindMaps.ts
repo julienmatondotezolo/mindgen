@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { addEdge, Connection, Edge, Node, ReactFlowInstance, useEdgesState, useNodesState } from "reactflow";
+import {
+  addEdge,
+  Connection,
+  Edge,
+  getConnectedEdges,
+  getIncomers,
+  getOutgoers,
+  Node,
+  ReactFlowInstance,
+  useEdgesState,
+  useNodesState,
+} from "reactflow";
 
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
@@ -7,7 +18,7 @@ import { MindMapDetailsProps } from "@/_types";
 // import { edgesState, nodesState } from "@/recoil";
 import { convertToNestedArray, emptyMindMapObject, setTargetHandle } from "@/utils";
 
-const mindMapKey = "example-minimap";
+// const mindMapKey = "example-minimap";
 
 const initialNodes: Node[] = [
   {
@@ -18,7 +29,7 @@ const initialNodes: Node[] = [
     style: { border: "2px solid #4D6AFF", borderRadius: 15 },
   },
 ];
-const initialEdges: Edge[] = [];
+// const initialEdges: Edge[] = [];
 
 const createCustomNode = (
   nodeId: Number,
@@ -62,6 +73,56 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
+  // New state for history
+  const [undoStack, setUndoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
+  const [redoStack, setRedoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
+
+  // Function to update history
+  const updateHistory = useCallback(() => {
+    setUndoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]);
+    setRedoStack([]); // Clear redo stack on new action
+  }, [nodes, edges]);
+
+  const clear = useCallback(() => {
+    setNodes([]);
+    setEdges([]);
+    // setNodeId(initialNodes.length);
+    // setNodes(initialNodes);
+  }, [setEdges, setNodes]);
+
+  // Function to undo the last action
+  const undo = useCallback(() => {
+    if (undoStack.length > 0) {
+      setUndoStack((prev) => {
+        const newUndoStack = [...prev];
+        const lastState = newUndoStack.pop();
+
+        setRedoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]);
+        return newUndoStack;
+      });
+
+      setNodes(undoStack[undoStack.length - 1].nodes);
+      setEdges(undoStack[undoStack.length - 1].edges);
+    }
+  }, [undoStack, nodes, edges]);
+
+  // Function to redo the last undone action
+  const redo = useCallback(() => {
+    if (redoStack.length > 0) {
+      const lastState = redoStack[redoStack.length - 1];
+
+      setRedoStack((prev) => prev.slice(0, -1)); // Remove the last state from redo stack
+      setUndoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]); // Push current state to undo stack
+      setNodes(lastState.nodes);
+      setEdges(lastState.edges);
+    }
+  }, [redoStack, nodes, edges]);
+
+  // Update history on every nodes or edges change
+  useEffect(() => {
+    updateHistory();
+  }, [nodes, edges, updateHistory]);
+
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
@@ -79,33 +140,36 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
       if (reactFlowInstance) {
         const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
 
-        await updateMindmapById(mindMapId, newMindmapObject);
+        await updateMindmapById({
+          mindmapId: mindMapId,
+          mindmapObject: newMindmapObject,
+        });
 
-        const mindMap = reactFlowInstance.toObject();
+        // const mindMap = reactFlowInstance.toObject();
 
-        localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
+        // localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
       }
     },
-    [reactFlowInstance, nodes, edges],
+    [reactFlowInstance],
   );
 
-  const restoreMindMapFlow = async () => {
-    let flow;
+  // const restoreMindMapFlow = async () => {
+  //   let flow;
 
-    if (localStorage.getItem(mindMapKey)) {
-      flow = JSON.parse(localStorage.getItem(mindMapKey) ?? "");
-    }
+  //   if (localStorage.getItem(mindMapKey)) {
+  //     flow = JSON.parse(localStorage.getItem(mindMapKey) ?? "");
+  //   }
 
-    if (flow) {
-      // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
-      setNodes(flow.nodes?.length == 0 ? initialNodes : flow.nodes);
-      setNodeId(flow.nodes.length);
-      setEdges(flow.edges || initialEdges);
-    } else {
-      setNodeId(initialNodes.length);
-      setNodes(initialNodes);
-    }
-  };
+  //   if (flow) {
+  //     // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
+  //     setNodes(flow.nodes?.length == 0 ? initialNodes : flow.nodes);
+  //     setNodeId(flow.nodes.length);
+  //     setEdges(flow.edges || initialEdges);
+  //   } else {
+  //     setNodeId(initialNodes.length);
+  //     setNodes(initialNodes);
+  //   }
+  // };
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -175,6 +239,27 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     [reactFlowInstance],
   );
 
+  const onNodesDelete = useCallback(
+    (deleted: any[]) => {
+      setEdges(
+        deleted.reduce((acc, node) => {
+          const incomers = getIncomers(node, nodes, edges);
+          const outgoers = getOutgoers(node, nodes, edges);
+          const connectedEdges = getConnectedEdges([node], edges);
+
+          const remainingEdges = acc.filter((edge: Edge) => !connectedEdges.includes(edge));
+
+          const createdEdges = incomers.flatMap(({ id: source }) =>
+            outgoers.map(({ id: target }) => ({ id: `${source}->${target}`, source, target })),
+          );
+
+          return [...remainingEdges, ...createdEdges];
+        }, edges),
+      );
+    },
+    [nodes, edges],
+  );
+
   const mindMapArray = useCallback(() => {
     if (nodes.length != 0 && nodes.length != 0) {
       return convertToNestedArray(nodes, edges);
@@ -191,6 +276,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     onConnectEnd,
     onDragOver,
     onDrop,
+    onNodesDelete,
     reactFlowInstance,
     setSourceHandle,
     setNodes,
@@ -198,6 +284,11 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     setEdges,
     setReactFlowInstance,
     mindMapArray,
+    undo,
+    redo,
+    undoStack,
+    redoStack,
+    clear,
   };
 };
 
