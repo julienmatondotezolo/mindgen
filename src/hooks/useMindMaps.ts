@@ -79,10 +79,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
       if (reactFlowInstance) {
         const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
 
-        await updateMindmapById({
-          mindmapId: mindMapId,
-          mindmapObject: newMindmapObject,
-        });
+        await updateMindmapById(mindMapId, newMindmapObject);
 
         const mindMap = reactFlowInstance.toObject();
 

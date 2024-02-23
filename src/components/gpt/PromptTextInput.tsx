@@ -8,7 +8,7 @@ import { MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
-import { useDidUpdateEffect, useMindMap } from "@/hooks";
+import { useDidUpdateEffect } from "@/hooks";
 import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
 import { convertToNestedArray, findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
@@ -68,14 +68,14 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
     const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray, collaboratorId);
 
-    // handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
+    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 
     const newQA = {
       text: text,
       message: answerMessages[0].text,
     };
 
-    // setQa((prevQa) => [...prevQa, newQA]);
+    setQa((prevQa) => [...prevQa, newQA]);
 
     setText("");
   };
