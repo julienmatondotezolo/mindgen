@@ -22,8 +22,6 @@ export async function fetchGeneratedTSummaryText(
       body: JSON.stringify({ description, task, data, collaboratorId }),
     });
 
-    console.log("responseSummaryText:", responseSummaryText.body);
-
     if (responseSummaryText.ok) {
       // If the response is okay, return the response body as a ReadableStream<Uint8Array>
       return responseSummaryText.body as ReadableStream<Uint8Array>;

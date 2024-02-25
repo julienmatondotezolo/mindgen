@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
 import React, { JSX, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactFlowProvider } from "reactflow";
 import { RecoilRoot } from "recoil";
 
 // Manually import messages for each locale
@@ -41,7 +42,7 @@ export default function Providers({ children, locale }: Props): JSX.Element {
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
-              {children}
+              <ReactFlowProvider>{children}</ReactFlowProvider>
             </NextIntlClientProvider>
           </ThemeProvider>
         </SessionProvider>

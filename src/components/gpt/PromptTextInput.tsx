@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
+import { Edge, Node, useEdges, useNodes } from "reactflow";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
@@ -9,15 +10,17 @@ import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 import { useDidUpdateEffect } from "@/hooks";
-import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
+import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/state";
 import { convertToNestedArray, findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
   const chatText = useTranslations("Chat");
+  const nodes = useNodes();
+  const edges = useEdges();
 
   const size = 20;
-  const { description, collaborators, creatorId, nodes, edges } = userMindmapDetails;
+  const { description, collaborators, creatorId } = userMindmapDetails;
 
   const userCollaboratorID = findCollaboratorId(creatorId, collaborators);
 
@@ -58,7 +61,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     updateQa();
   }, [done, isLoading, updateQa]);
 
-  const sendPrompt = (collaboratorId: string | null) => {
+  const sendPrompt = (collaboratorId: string | null, nodes: Node[], edges: Edge[]) => {
     setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);
@@ -92,11 +95,11 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     if (text) {
       if (event.code === "Enter") {
         event.preventDefault();
-        sendPrompt(userCollaboratorID);
+        sendPrompt(userCollaboratorID, nodes, edges);
       }
 
       if (event.type === "click") {
-        sendPrompt(userCollaboratorID);
+        sendPrompt(userCollaboratorID, nodes, edges);
       }
     }
   };

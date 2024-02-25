@@ -72,6 +72,7 @@
     "viewProfile": "View profile"
   },
   "Chat": {
-    "promptInput": "Ask/generate anything about this mindmap..."
+    "promptInput": "Ask/generate anything about this mindmap...",
+    "answer": "Answer"
   }
 }

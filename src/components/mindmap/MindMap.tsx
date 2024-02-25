@@ -1,6 +1,6 @@
 import "reactflow/dist/style.css";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls, NodeProps } from "reactflow";
 
 import { MindMapDetailsProps } from "@/_types";
@@ -27,8 +27,6 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     onNodesDelete,
     setSourceHandle,
     setNodes,
-    setNodeId,
-    setEdges,
     setReactFlowInstance,
   } = useMindMap(userMindmapDetails);
 
@@ -44,22 +42,8 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     [setNodes, setSourceHandle],
   );
 
-  useEffect(() => {
-    if (userMindmapDetails) {
-      setNodes(userMindmapDetails.nodes);
-      setNodeId(userMindmapDetails.nodes.length);
-      setEdges(userMindmapDetails.edges);
-    }
-  }, [userMindmapDetails]);
-
-  const clearAllNodes = () => {
-    setNodes([]);
-    setEdges([]);
-  };
-
   return (
     <>
-      <button onClick={clearAllNodes}>Clear All Nodes</button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
