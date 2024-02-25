@@ -1,4 +1,4 @@
-export function formatDate(input: string) {
+export function formatDate(input: string, dateText: any) {
   const dateObj = new Date(input);
   const currentDate = new Date();
   const yesterday = new Date(currentDate);
@@ -27,7 +27,7 @@ export function formatDate(input: string) {
       hour12: false, // Add this line
     });
 
-    formattedDate = `Today, ${currentHourAndMinutes}`;
+    formattedDate = `${dateText("today")}, ${currentHourAndMinutes}`;
   } else if (
     dateObj.getFullYear() === yesterday.getFullYear() &&
     dateObj.getMonth() === yesterday.getMonth() &&
@@ -40,7 +40,7 @@ export function formatDate(input: string) {
       hour12: false, // Add this line
     });
 
-    formattedDate = `Yesterday, ${hourAndMinutes}`;
+    formattedDate = `${dateText("yesterday")}, ${hourAndMinutes}`;
   } else {
     // Format the date as "Month Day, Year"
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

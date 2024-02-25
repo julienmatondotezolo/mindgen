@@ -15,7 +15,7 @@ import { Mindmap } from "@/components/mindmap/";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMindMap } from "@/hooks";
-import { promptResultState, promptValueState, qaState } from "@/recoil";
+import { promptResultState, promptValueState, qaState } from "@/state";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -57,20 +57,16 @@ export default function Board({ params }: { params: { id: string } }) {
     },
   );
 
-  const { undo, redo, undoStack, redoStack, clear } = useMindMap(userMindmapDetails);
-  const canUndo = undoStack.length > 0;
-  const canRedo = redoStack.length > 0;
-
   return (
     <main className="relative flex justify-between w-screen h-screen scroll-smooth">
       <BackDropGradient />
       <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
         <NavLeft userMindmapDetails={userMindmapDetails} />
-        <ToolBar undo={undo} redo={redo} clear={clear} canUndo={canUndo} canRedo={canRedo} />
+        <ToolBar />
         <NavRight />
       </div>
 
-      <div className="w-[80%] md:w-1/3 fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
+      <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
         {userMindmapDetails ? (
           <PromptTextInput userMindmapDetails={userMindmapDetails} />
         ) : (

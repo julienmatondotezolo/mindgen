@@ -6,7 +6,7 @@ import { useRecoilState } from "recoil";
 
 import documentIcon from "@/assets/icons/document.svg";
 import { Button } from "@/components/ui";
-import { modalState } from "@/recoil";
+import { modalState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 function OpenOurNewMindmap() {

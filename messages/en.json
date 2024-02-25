@@ -49,7 +49,9 @@
   },
   "Dashboard": {
     "welcome": "Welcome to Mindgen,",
-    "myRecentMindmaps": "My recent mind maps"
+    "myRecentMindmaps": "My recent mind maps",
+    "yesterday": "Yesterday",
+    "today": "Today"
   },
   "Pricing": {
     "hero": "Pricing",

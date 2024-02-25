@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import React from "react";
 import { useRecoilState } from "recoil";
 
-import { modalState } from "@/recoil";
+import { modalState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 import { MindMapBoards } from "./MindMapBoards";

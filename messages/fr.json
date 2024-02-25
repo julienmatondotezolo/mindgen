@@ -49,7 +49,9 @@
   },
   "Dashboard": {
     "welcome": "Bienvenue sur Mindgen,",
-    "myRecentMindmaps": "Mes mind map récentes"
+    "myRecentMindmaps": "Mes mind map récentes",
+    "yesterday": "Hier",
+    "today": "Aujourd'hui"
   },
   "Pricing": {
     "hero": "Tarification",

@@ -49,7 +49,9 @@
   },
   "Dashboard": {
     "welcome": "Welkom bij Mindgen,",
-    "myRecentMindmaps": "Mijn recente mindmaps"
+    "myRecentMindmaps": "Mijn recente mindmaps",
+    "yesterday": "Gisteren",
+    "today": "Vandaag"
   },
   "Pricing": {
     "hero": "Prijzen",

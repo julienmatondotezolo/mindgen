@@ -1,7 +1,6 @@
 import Image from "next/image";
 import React from "react";
 
-import { ToolBarProps } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import ellipseIcon from "@/assets/icons/ellipse.svg";
 import eraserIcon from "@/assets/icons/eraser.svg";
@@ -13,7 +12,7 @@ import redoIcon from "@/assets/icons/redo.svg";
 import textIcon from "@/assets/icons/text.svg";
 import tileIcon from "@/assets/icons/tile.svg";
 
-const ToolBar: React.FC<ToolBarProps> = ({ undo, redo, clear, canUndo, canRedo }) => {
+const ToolBar: React.FC = () => {
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
@@ -25,20 +24,12 @@ const ToolBar: React.FC<ToolBarProps> = ({ undo, redo, clear, canUndo, canRedo }
     <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
-          <button
-            className={`${listStyle} cursor-pointer ${canUndo ? "" : "opacity-25"}`}
-            onClick={undo}
-            disabled={!canUndo}
-          >
+          <button className={`${listStyle} cursor-pointer`}>
             <Image className="rotate-90 -scale-x-100 dark:invert" src={redoIcon} alt="Redo icon" />
           </button>
         </li>
         <li className="m-1">
-          <button
-            className={`${listStyle} cursor-pointer ${canRedo ? "" : "opacity-25"}`}
-            onClick={redo}
-            disabled={!canRedo}
-          >
+          <button className={`${listStyle} cursor-pointer`}>
             <Image className="-rotate-90 dark:invert" src={redoIcon} alt="Redo icon" />
           </button>
         </li>
@@ -104,7 +95,7 @@ const ToolBar: React.FC<ToolBarProps> = ({ undo, redo, clear, canUndo, canRedo }
         <div className="w-[1px] h-6 self-center mx-2 bg-slate-200"></div>
 
         <li className="m-1">
-          <button className={`${listStyle} cursor-pointer`} onClick={clear}>
+          <button className={`${listStyle} cursor-pointer`}>
             <Image src={deleteIcon} width="0" height="0" style={{ width: "100%", height: "auto" }} alt="Delete icon" />
           </button>
         </li>

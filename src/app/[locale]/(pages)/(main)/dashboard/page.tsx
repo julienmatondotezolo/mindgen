@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil";
 
 import { BackDropGradient, MindmapDialog } from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, RecentMindMap } from "@/components/dashboard";
-import { modalState } from "@/recoil";
+import { modalState } from "@/state";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
