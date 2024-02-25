@@ -1,5 +1,7 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
+import { Edge, Node, useEdges, useNodes } from "reactflow";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
@@ -7,12 +9,16 @@ import { MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
-import { useDidUpdateEffect, useMindMap } from "@/hooks";
-import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/recoil";
-import { findCollaboratorId, scrollToBottom } from "@/utils";
+import { useDidUpdateEffect } from "@/hooks";
+import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/state";
+import { convertToNestedArray, findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
+  const chatText = useTranslations("Chat");
+  const nodes = useNodes();
+  const edges = useEdges();
+
   const size = 20;
   const { description, collaborators, creatorId } = userMindmapDetails;
 
@@ -28,7 +34,6 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
   const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { mindMapArray } = useMindMap(userMindmapDetails);
 
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
@@ -56,13 +61,15 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     updateQa();
   }, [done, isLoading, updateQa]);
 
-  const sendPrompt = (collaboratorId: string | null) => {
+  const sendPrompt = (collaboratorId: string | null, nodes: Node[], edges: Edge[]) => {
     setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);
     setPromptValue(text);
 
-    const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray(), collaboratorId);
+    const mindMapArray = convertToNestedArray(nodes, edges);
+
+    const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray, collaboratorId);
 
     handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
 
@@ -88,11 +95,11 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     if (text) {
       if (event.code === "Enter") {
         event.preventDefault();
-        sendPrompt(userCollaboratorID);
+        sendPrompt(userCollaboratorID, nodes, edges);
       }
 
       if (event.type === "click") {
-        sendPrompt(userCollaboratorID);
+        sendPrompt(userCollaboratorID, nodes, edges);
       }
     }
   };
@@ -101,7 +108,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     <div className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:border-slate-800 dark:bg-slate-600 dark:bg-opacity-20">
       <Textarea
         className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
-        placeholder="Ask our generate anything related to this mind map..."
+        placeholder={chatText("promptInput")}
         value={text}
         onKeyDown={handleSendPrompt}
         onChange={handleTextareaChange}

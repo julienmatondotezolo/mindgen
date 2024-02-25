@@ -3,7 +3,7 @@ import { useRecoilValue } from "recoil";
 
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import { SkeletonAnswerText } from "@/components/gpt";
-import { streamedAnswersState } from "@/recoil";
+import { streamedAnswersState } from "@/state";
 
 function AnswerMessages() {
   const messages = useRecoilValue<ChatMessageProps[]>(streamedAnswersState);

@@ -49,7 +49,9 @@
   },
   "Dashboard": {
     "welcome": "Welkom bij Mindgen,",
-    "myRecentMindmaps": "Mijn recente mindmaps"
+    "myRecentMindmaps": "Mijn recente mindmaps",
+    "yesterday": "Gisteren",
+    "today": "Vandaag"
   },
   "Pricing": {
     "hero": "Prijzen",
@@ -70,5 +72,9 @@
   },
   "Profile": {
     "viewProfile": "Bekijk profiel"
+  },
+  "Chat": {
+    "promptInput": "Vraag/Genereer alles over deze mindmap...",
+    "answer": "Antwoord"
   }
 }

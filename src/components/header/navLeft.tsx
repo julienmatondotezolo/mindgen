@@ -64,10 +64,6 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
       userMindmapDetails?.edges,
     );
 
-    console.log("newMindmapObject:", JSON.stringify(newMindmapObject));
-
-    // const response = await updateMindmapById(mindMapId, newMindmapObject);
-
     updateMindmapMutation.mutate({
       mindmapId: mindMapId,
       mindmapObject: newMindmapObject,
@@ -96,10 +92,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
           </li>
         </ul>
       </div>
-      <SheetContent
-        side="left"
-        className="rounded-r-2xl shadow-xl bg-white dark:border-slate-800 dark:bg-slate-800 dark:bg-opacity-80 backdrop-filter backdrop-blur-l"
-      >
+      <SheetContent side="left" className="rounded-r-2xl shadow-xl bg-white dark:border-slate-800 dark:bg-slate-900">
         <ul className="w-full h-full">
           <form className="h-full flex flex-col justify-between pt-4" onSubmit={handleSubmit}>
             <section className="space-y-4">

@@ -12,7 +12,7 @@ import { MindmapObject } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
-import { modalState } from "@/recoil";
+import { modalState } from "@/state";
 import { formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
@@ -21,6 +21,7 @@ const fetchUserMindmaps = () => fetchMindmaps();
 
 function MindMapBoards() {
   const text = useTranslations("Index");
+  const dateText = useTranslations("Dashboard");
 
   const size = 10;
 
@@ -83,7 +84,7 @@ function MindMapBoards() {
                     {uppercaseFirstLetter(mindmap.creatorUsername)}
                   </span>
                 </p>
-                <p className="text-xs text-grey">{formatDate(mindmap.createdAt)}</p>
+                <p className="text-xs text-grey">{formatDate(mindmap.createdAt, dateText)}</p>
               </div>
               <figure
                 onClick={() => handleDelete(mindmap.id)}

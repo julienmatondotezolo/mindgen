@@ -1,24 +1,22 @@
+import { debounce } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { addEdge, Connection, Edge, Node, ReactFlowInstance, useEdgesState, useNodesState } from "reactflow";
+import {
+  addEdge,
+  Connection,
+  Edge,
+  getConnectedEdges,
+  getIncomers,
+  getOutgoers,
+  Node,
+  ReactFlowInstance,
+  useEdgesState,
+  useNodesState,
+} from "reactflow";
 
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
-// import { edgesState, nodesState } from "@/recoil";
 import { convertToNestedArray, emptyMindMapObject, setTargetHandle } from "@/utils";
-
-const mindMapKey = "example-minimap";
-
-const initialNodes: Node[] = [
-  {
-    id: "node_0",
-    type: "mainNode",
-    position: { x: 0, y: 300 },
-    data: { label: "MindGen App" },
-    style: { border: "2px solid #4D6AFF", borderRadius: 15 },
-  },
-];
-const initialEdges: Edge[] = [];
 
 const createCustomNode = (
   nodeId: Number,
@@ -55,54 +53,89 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
 
-  // const [nodes, setNodes] = useRecoilState(nodesState);
-  // const [edges, setEdges] = useRecoilState(edgesState);
-
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+
+  // New state for history
+  // const [undoStack, setUndoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
+  // const [redoStack, setRedoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
+
+  // Function to update history
+  // const updateHistory = useCallback(() => {
+  //   setUndoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]);
+  //   setRedoStack([]); // Clear redo stack on new action
+  // }, [nodes, edges]);
+
+  // const clear = useCallback(() => {
+  //   setNodes([]);
+  //   setEdges([]);
+  //   // setNodeId(initialNodes.length);
+  //   // setNodes(initialNodes);
+  // }, [setEdges, setNodes]);
+
+  // // Function to undo the last action
+  // const undo = useCallback(() => {
+  //   if (undoStack.length > 0) {
+  //     setUndoStack((prev) => {
+  //       const newUndoStack = [...prev];
+  //       const lastState = newUndoStack.pop();
+
+  //       setRedoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]);
+  //       return newUndoStack;
+  //     });
+
+  //     setNodes(undoStack[undoStack.length - 1].nodes);
+  //     setEdges(undoStack[undoStack.length - 1].edges);
+  //   }
+  // }, [undoStack, nodes, edges]);
+
+  // // Function to redo the last undone action
+  // const redo = useCallback(() => {
+  //   if (redoStack.length > 0) {
+  //     const lastState = redoStack[redoStack.length - 1];
+
+  //     setRedoStack((prev) => prev.slice(0, -1)); // Remove the last state from redo stack
+  //     setUndoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]); // Push current state to undo stack
+  //     setNodes(lastState.nodes);
+  //     setEdges(lastState.edges);
+  //   }
+  // }, [redoStack, nodes, edges]);
+
+  // Update history on every nodes or edges change
+  // useEffect(() => {
+  //   updateHistory();
+  // }, [nodes, edges, updateHistory]);
 
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
 
   useEffect(() => {
-    restoreMindMapFlow();
+    if (userMindmapDetails) {
+      setNodes(userMindmapDetails.nodes);
+      setNodeId(userMindmapDetails.nodes.length);
+      setEdges(userMindmapDetails.edges);
+    }
   }, []);
 
   useEffect(() => {
-    saveMindMapFlow();
+    debouncedSaveMindMapFlow(mindmapId);
   }, [nodes, edges]);
 
-  const saveMindMapFlow = useCallback(async () => {
-    if (reactFlowInstance) {
-      const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
+  const debouncedSaveMindMapFlow = useCallback(
+    debounce(async (mindMapId: string | undefined) => {
+      if (reactFlowInstance) {
+        const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
 
-      await updateMindmapById(mindmapId, newMindmapObject);
-
-      const mindMap = reactFlowInstance.toObject();
-
-      localStorage.setItem(mindMapKey, JSON.stringify(mindMap));
-    }
-  }, [reactFlowInstance, nodes, edges]);
-
-  const restoreMindMapFlow = async () => {
-    let flow;
-
-    if (localStorage.getItem(mindMapKey)) {
-      flow = JSON.parse(localStorage.getItem(mindMapKey) ?? "");
-    }
-
-    if (flow) {
-      // const { x = 0, y = 0, zoom = 1 } = flow.viewport;
-      setNodes(flow.nodes?.length == 0 ? initialNodes : flow.nodes);
-      setNodeId(flow.nodes.length);
-      setEdges(flow.edges || initialEdges);
-    } else {
-      setNodeId(initialNodes.length);
-      setNodes(initialNodes);
-    }
-  };
+        await updateMindmapById({
+          mindmapId: mindMapId,
+          mindmapObject: newMindmapObject,
+        });
+      }
+    }, 3000), //  1000ms delay
+    [reactFlowInstance, name, description, nodes, edges],
+  );
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -172,6 +205,27 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     [reactFlowInstance],
   );
 
+  const onNodesDelete = useCallback(
+    (deleted: any[]) => {
+      setEdges(
+        deleted.reduce((acc, node) => {
+          const incomers = getIncomers(node, nodes, edges);
+          const outgoers = getOutgoers(node, nodes, edges);
+          const connectedEdges = getConnectedEdges([node], edges);
+
+          const remainingEdges = acc.filter((edge: Edge) => !connectedEdges.includes(edge));
+
+          const createdEdges = incomers.flatMap(({ id: source }) =>
+            outgoers.map(({ id: target }) => ({ id: `${source}->${target}`, source, target })),
+          );
+
+          return [...remainingEdges, ...createdEdges];
+        }, edges),
+      );
+    },
+    [nodes, edges],
+  );
+
   const mindMapArray = useCallback(() => {
     if (nodes.length != 0 && nodes.length != 0) {
       return convertToNestedArray(nodes, edges);
@@ -188,6 +242,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     onConnectEnd,
     onDragOver,
     onDrop,
+    onNodesDelete,
     reactFlowInstance,
     setSourceHandle,
     setNodes,

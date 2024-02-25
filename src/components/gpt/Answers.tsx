@@ -1,12 +1,14 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React from "react";
 import { useRecoilValue } from "recoil";
 
 import answerIcon from "@/assets/icons/answer.svg";
 import { SkeletonAnswerText } from "@/components/gpt";
-import { qaState } from "@/recoil";
+import { qaState } from "@/state";
 
 function Answers() {
+  const chatText = useTranslations("Chat");
   const qa = useRecoilValue(qaState);
   const size = 15;
 
@@ -36,7 +38,7 @@ function Answers() {
 
             <article className="flex mb-2 text-primary-color">
               <Image className="mr-2" src={answerIcon} height={size} width={size} alt="answer icon" />
-              <p className="font-semibold">Answer | Mindgen</p>
+              <p className="font-semibold">{chatText("answer")} | Mindgen</p>
             </article>
 
             {qaItem.message ? renderTextContent(qaItem.message) : <SkeletonAnswerText />}

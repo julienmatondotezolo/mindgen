@@ -14,7 +14,8 @@ import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { promptResultState, promptValueState, qaState } from "@/recoil";
+import { useMindMap } from "@/hooks";
+import { promptResultState, promptValueState, qaState } from "@/state";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -65,7 +66,7 @@ export default function Board({ params }: { params: { id: string } }) {
         <NavRight />
       </div>
 
-      <div className="w-[80%] md:w-1/3 fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
+      <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
         {userMindmapDetails ? (
           <PromptTextInput userMindmapDetails={userMindmapDetails} />
         ) : (
