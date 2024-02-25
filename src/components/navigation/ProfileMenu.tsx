@@ -12,6 +12,7 @@ import languageIcon from "@/assets/icons/language.svg";
 import lightmodeIcon from "@/assets/icons/lightmode.svg";
 import logoutIcon from "@/assets/icons/logout.svg";
 import profileIcon from "@/assets/icons/profile.svg";
+import { Link } from "@/navigation";
 
 import LanguageSwitcher from "../ui/languageSwitcher";
 
@@ -42,20 +43,22 @@ function ProfileMenu() {
 
   return (
     <div>
-      <div className="group flex justify-between items-center cursor-pointe rounded-xl dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white cursor-pointer">
-        <section className="flex items-center space-x-3">
-          <figure className="bg-gray-100 rounded-full w-10 h-10 flex m-auto dark:bg-transparent">
-            <Image src={profileIcon} width={size / 1.2} className="m-auto dark:invert" alt="Profile icon" />
-          </figure>
-          <h2 className="text-base font-semibold dark:text-white">{profileText("viewProfile")}</h2>
-        </section>
-        <Image
-          src={arrowforwardIcon}
-          className="mr-6 opacity-50 group-hover:mr-4 group-hover:opacity-100 dark:invert transition-all duration-200 ease-in-out"
-          width={size / 2}
-          alt="Profile icon"
-        />
-      </div>
+      <Link href={`/profile`}>
+        <button className="w-full group flex justify-between items-center cursor-pointe rounded-xl dark:bg-slate-800 dark:hover:bg-gray-700 dark:text-white">
+          <section className="flex items-center space-x-3">
+            <figure className="bg-gray-100 rounded-full w-10 h-10 flex m-auto dark:bg-transparent">
+              <Image src={profileIcon} width={size / 1.2} className="m-auto dark:invert" alt="Profile icon" />
+            </figure>
+            <h2 className="text-base font-semibold dark:text-white">{profileText("viewProfile")}</h2>
+          </section>
+          <Image
+            src={arrowforwardIcon}
+            className="mr-6 opacity-50 group-hover:mr-4 group-hover:opacity-100 dark:invert transition-all duration-200 ease-in-out"
+            width={size / 2}
+            alt="Profile icon"
+          />
+        </button>
+      </Link>
       <div className="w-full h-[1px] self-center my-4 bg-slate-200 dark:bg-slate-500"></div>
       <div className="mt-4">
         <ul className="space-y-2">
