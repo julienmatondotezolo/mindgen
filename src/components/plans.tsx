@@ -12,7 +12,7 @@ function Plans({ title, price }: PlanProps): JSX.Element {
   const pricingPageText = useTranslations("Pricing");
 
   return (
-    <div className="bg-gray-200 dark:bg-slate-500 dark:bg-opacity-20 bg-opacity-40 py-8 px-16 rounded-xl dark:text-white">
+    <div className="bg-gray-200 dark:bg-slate-500 dark:bg-opacity-20 bg-opacity-40 p-8 rounded-xl dark:text-white">
       <p className="text-lg text-primary-color font-semibold">{title}</p>
       <p className="font-bold text-3xl mt-1">€ {price}</p>
       <p className="my-6">Basic features for free</p>

@@ -7,6 +7,7 @@ import {
   BackDropGradient,
   Billing,
   Collaborations,
+  CurrentPlan,
   Navigation,
   Tabs,
   TabsContent,
@@ -36,6 +37,7 @@ export default function Profile() {
             <TabsTrigger className={triggerStyle} value="billing">
               <p>{profileText("billing")}</p>
             </TabsTrigger>
+            <CurrentPlan />
           </TabsList>
           <div className="w-[70%] p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20">
             <TabsContent value="account">

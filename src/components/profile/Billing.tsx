@@ -1,55 +1,22 @@
 import { useTranslations } from "next-intl";
 import React from "react";
-import { useForm } from "react-hook-form";
-import { useQuery } from "react-query";
 
-import { fetchProfile } from "@/_services";
-import { ProfileProps } from "@/_types";
-import { uppercaseFirstLetter } from "@/utils";
-
-import { Button, Input, Spinner } from "..";
-
-const fetchUserProfile = () => fetchProfile();
+import { Button } from "..";
 
 function Billing() {
-  const text = useTranslations("Index");
   const profileText = useTranslations("Profile");
-
-  const { isLoading, data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      username: userProfile?.username,
-      email: userProfile?.email,
-      password: "",
-      confirmNewPassword: "",
-    },
-  });
-
-  // Check if there are any errors
-  const hasErrors = Object.keys(errors).length > 0;
-
-  const onSubmit = (data: any) => {
-    console.log("data:", JSON.stringify(data));
-  };
+  const navigationText = useTranslations("Navigation");
 
   return (
     <div className="w-full">
       <p className="text-xl mb-6 font-bold">{profileText("billing")}</p>
-      {isLoading ? (
-        <Spinner className="flex flex-col items-center" loadingText={`${text("loading")} `}></Spinner>
-      ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          <Button disabled={hasErrors} type="submit">
-            {uppercaseFirstLetter(text("save"))}
-          </Button>
-        </form>
-      )}
+
+      <article className="w-full space-y-4">
+        <div className="w-full h-[1px] self-center my-4 bg-slate-200 dark:bg-slate-500"></div>
+
+        <p>{profileText("billingText")}</p>
+        <Button variant="outline">{navigationText("upgradeButton")}</Button>
+      </article>
     </div>
   );
 }
