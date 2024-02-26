@@ -113,6 +113,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                 <Textarea
                   id="description"
                   value={newMindMapDescription}
+                  className=" h-[100px]"
                   onChange={handleDescriptionChange}
                   placeholder={`${text("untitled")} ${text("description").toLowerCase()}`}
                   disabled={updateMindmapMutation.isLoading}
