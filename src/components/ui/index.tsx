@@ -2,6 +2,7 @@ export * from "./backDropGradient";
 export * from "./button";
 export * from "./chat";
 export * from "./form";
+export * from "./importDialog";
 export * from "./input";
 export * from "./label";
 export * from "./languageSwitcher";
