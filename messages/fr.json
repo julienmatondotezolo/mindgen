@@ -71,7 +71,17 @@
     "EnterprisePlanRate": "Max de mindmaps par mois"
   },
   "Profile": {
-    "viewProfile": "Voir votre profil"
+    "viewProfile": "Voir votre profil",
+    "update": "Mettre à jour",
+    "account": "Compte",
+    "yourCollaborations": "Vos collaborations",
+    "profile": "Profil",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "changePassword": "Changer le mot de passe",
+    "existingPassword": "Mot de passe existant",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe"
   },
   "Chat": {
     "promptInput": "Demandez/Génére tout à propos de ce mindmap...",

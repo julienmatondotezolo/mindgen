@@ -71,7 +71,17 @@
     "EnterprisePlanRate": "Maximum mindmaps per maand"
   },
   "Profile": {
-    "viewProfile": "Bekijk profiel"
+    "viewProfile": "Bekijk profiel",
+    "update": "Update",
+    "account": "Account",
+    "yourCollaborations": "Jouw samenwerkingen",
+    "profile": "Profiel",
+    "username": "Gebruikersnaam",
+    "email": "E-mail",
+    "changePassword": "Wijzig wachtwoord",
+    "existingPassword": "Bestaand wachtwoord",
+    "newPassword": "Nieuw wachtwoord",
+    "confirmNewPassword": "Bevestig nieuw wachtwoord"
   },
   "Chat": {
     "promptInput": "Vraag/Genereer alles over deze mindmap...",
