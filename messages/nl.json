@@ -14,7 +14,9 @@
     "private": "Privé",
     "onlyViewable": "Alleen zichtbaar voor jou",
     "save": "opslaan",
-    "untitled": "Geen"
+    "untitled": "Geen",
+    "requiredInput": "Dit veld is verplicht",
+    "passwordNotMatching": "Wachtwoorden komen niet overeen"
   },
   "Auth": {
     "connection": "Inloggen",
@@ -71,7 +73,20 @@
     "EnterprisePlanRate": "Maximum mindmaps per maand"
   },
   "Profile": {
-    "viewProfile": "Bekijk profiel"
+    "viewProfile": "Bekijk profiel",
+    "update": "Update",
+    "account": "Account",
+    "collaborations": "Samenwerkingen",
+    "yourCollaborations": "Jouw samenwerkingen",
+    "billing": "Facturering beheren",
+    "billingText": "Beheer uw factuur e-mailadres en betalingsmethodes en bekijk al uw facturen met uw account e-mailadres.",
+    "profile": "Profiel",
+    "username": "Gebruikersnaam",
+    "email": "E-mail",
+    "changePassword": "Wijzig wachtwoord",
+    "existingPassword": "Bestaand wachtwoord",
+    "newPassword": "Nieuw wachtwoord",
+    "confirmNewPassword": "Bevestig nieuw wachtwoord"
   },
   "Chat": {
     "promptInput": "Vraag/Genereer alles over deze mindmap...",

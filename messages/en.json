@@ -14,7 +14,9 @@
     "private": "Private",
     "onlyViewable": "Only viewable by you",
     "save": "save",
-    "untitled": "Untitled"
+    "untitled": "Untitled",
+    "requiredInput": "This field is required",
+    "passwordNotMatching": "Passwords do not match"
   },
   "Auth": {
     "connection": "Connection",
@@ -71,7 +73,20 @@
     "EnterprisePlanRate": "Max Mindmap per months"
   },
   "Profile": {
-    "viewProfile": "View profile"
+    "viewProfile": "View profile",
+    "update": "Update",
+    "account": "Account",
+    "collaborations": "Collaborations",
+    "yourCollaborations": "Your collaborations",
+    "billing": "Manage billing",
+    "billingText": "Manage your billing email address, payment method and view invoices with your account email.",
+    "profile": "Profile",
+    "username": "Username",
+    "email": "Email",
+    "changePassword": "Change password",
+    "existingPassword": "Existing password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password"
   },
   "Chat": {
     "promptInput": "Ask/generate anything about this mindmap...",
