@@ -14,7 +14,9 @@
     "private": "Private",
     "onlyViewable": "Only viewable by you",
     "save": "save",
-    "untitled": "Untitled"
+    "untitled": "Untitled",
+    "requiredInput": "This field is required",
+    "passwordNotMatching": "Passwords do not match"
   },
   "Auth": {
     "connection": "Connection",
@@ -75,6 +77,7 @@
     "update": "Update",
     "account": "Account",
     "yourCollaborations": "Your collaborations",
+    "billing": "Manage billing",
     "profile": "Profile",
     "username": "Username",
     "email": "Email",

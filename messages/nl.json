@@ -14,7 +14,9 @@
     "private": "Privé",
     "onlyViewable": "Alleen zichtbaar voor jou",
     "save": "opslaan",
-    "untitled": "Geen"
+    "untitled": "Geen",
+    "requiredInput": "Dit veld is verplicht",
+    "passwordNotMatching": "Wachtwoorden komen niet overeen"
   },
   "Auth": {
     "connection": "Inloggen",
@@ -75,6 +77,7 @@
     "update": "Update",
     "account": "Account",
     "yourCollaborations": "Jouw samenwerkingen",
+    "billing": "Facturering beheren",
     "profile": "Profiel",
     "username": "Gebruikersnaam",
     "email": "E-mail",

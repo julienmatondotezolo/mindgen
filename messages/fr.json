@@ -14,7 +14,9 @@
     "private": "Privé",
     "onlyViewable": "Uniquement visible par vous",
     "save": "sauvegarder",
-    "untitled": "Sans"
+    "untitled": "Sans",
+    "requiredInput": "Ce champ est obligatoire",
+    "passwordNotMatching": "Les mots de passe ne correspondent pas"
   },
   "Auth": {
     "connection": "Connexion",
@@ -75,6 +77,7 @@
     "update": "Mettre à jour",
     "account": "Compte",
     "yourCollaborations": "Vos collaborations",
+    "billing": "Gérer votre facturation",
     "profile": "Profil",
     "username": "Nom d'utilisateur",
     "email": "Email",
