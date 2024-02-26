@@ -1,14 +1,22 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React from "react";
+import { useQuery } from "react-query";
 
+import { fetchProfile } from "@/_services";
+import { ProfileProps } from "@/_types";
 import diamondsIcon from "@/assets/icons/diamonds.svg";
 import { Link } from "@/navigation";
 
 import { Button, Progress } from "..";
 
+const fetchUserProfile = () => fetchProfile();
+
 function CurrentPlan() {
   const navigationText = useTranslations("Navigation");
+  const { isLoading, data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
+
+  console.log("userProfile:", userProfile);
 
   return (
     <div className="w-full !mt-12 p-4 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 rounded-2xl space-y-4">
