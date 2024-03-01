@@ -3,16 +3,17 @@ import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef } from "react";
 
-import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
+import { DialogProps } from "@/_types";
 import { uppercaseFirstLetter } from "@/utils";
 
 import { PdfDropZone } from ".";
 
-const ImportDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
+const ImportDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLDivElement>(null);
 
   const handleClose = () => {
+    // setIsOpen(false);
     setIsOpen(false);
   };
 
