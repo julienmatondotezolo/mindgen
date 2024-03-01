@@ -1,5 +1,10 @@
 import Image from "next/image";
 import React, { useCallback, useState } from "react";
+import { useReactFlow } from "reactflow";
+import { useSetRecoilState } from "recoil";
+
+import { modalState } from "@/state";
+import { importMindmap } from "@/utils";
 
 import { Button } from "./button";
 
@@ -8,6 +13,8 @@ interface PdfDropZoneProps {}
 const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [file, setFile] = useState<File | null>();
+  const { setEdges, setNodes } = useReactFlow();
+  const setIsOpen = useSetRecoilState(modalState);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -56,41 +63,15 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
     if (!file) return;
 
     try {
-      const data = new FormData();
+      const result = await importMindmap(file);
 
-      data.set("file", file);
+      // Assuming the server action returns the nodes, name, and edges
+      const { nodes, edges } = result;
 
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: data,
-      });
+      setEdges(edges);
+      setNodes(nodes);
 
-      if (!res.ok) {
-        const errorText = await res.text();
-
-        throw new Error(errorText);
-      }
-
-      // Read the response as a Blob
-      const blob = await res.blob();
-
-      // Create a URL for the Blob
-      const url = URL.createObjectURL(blob);
-
-      // Create a temporary anchor element to trigger the download
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = "cropped.pdf"; // You can set your preferred filename here
-
-      // Append the anchor to the document body and click it to start the download
-      document.body.appendChild(link);
-      link.click();
-
-      // Clean up after the download is initiated
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
+      setIsOpen(false);
       setFile(undefined);
     } catch (e: any) {
       // Handle errors here
@@ -116,7 +97,7 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
           height={5}
           priority
         />
-        <p>Drag and drop your Mindmap files here</p>
+        <p>Drag and drop your Mindmap file here</p>
         <p className="text-sm opacity-50">Supports: .json</p>
         <input
           type="file"
@@ -129,7 +110,7 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
       </div>
       <article className="w-full">
         {file ? (
-          <section className="flex items-center justify-between pb-2 border-b-2 mb-4">
+          <section className="flex items-center justify-between pb-2 border-b mb-4">
             <p className="font-medium">{file.name}</p>
             <button
               className="cursor-pointer text-sm w-9 p-2 bg-gray-100 dark:bg-neutral-800 rounded-full text-center"

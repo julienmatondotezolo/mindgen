@@ -14,7 +14,11 @@ function NavRight() {
 
   const [isOpen, setIsOpen] = useRecoilState(modalState);
 
-  const handleClick = () => {
+  const handleImport = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleExport = () => {
     setIsOpen(!isOpen);
   };
 
@@ -22,7 +26,7 @@ function NavRight() {
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
-          <Button variant={"outline"} onClick={handleClick}>
+          <Button variant={"outline"} onClick={handleImport}>
             <Image
               className="mr-2 dark:invert"
               src={importIcon}
