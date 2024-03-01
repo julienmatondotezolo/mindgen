@@ -15,6 +15,10 @@
     "onlyViewable": "Uniquement visible par vous",
     "save": "sauvegarder",
     "untitled": "Sans",
+    "import": "Importer",
+    "export": "Exporter",
+    "share": "Partager",
+    "collaborate": "Collaborer",
     "requiredInput": "Ce champ est obligatoire",
     "passwordNotMatching": "Les mots de passe ne correspondent pas"
   },
