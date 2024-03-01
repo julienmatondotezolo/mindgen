@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React from "react";
 import { useRecoilState } from "recoil";
 
@@ -9,9 +10,15 @@ import { Button } from "@/components/";
 import { modalState } from "@/state";
 
 function NavRight() {
+  const text = useTranslations("Index");
+
   const [isOpen, setIsOpen] = useRecoilState(modalState);
 
-  const handleClick = () => {
+  const handleImport = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleExport = () => {
     setIsOpen(!isOpen);
   };
 
@@ -19,7 +26,7 @@ function NavRight() {
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
-          <Button variant={"outline"} onClick={handleClick}>
+          <Button variant={"outline"} onClick={handleImportClick}>
             <Image
               className="mr-2 dark:invert"
               src={importIcon}
@@ -28,7 +35,7 @@ function NavRight() {
               style={{ width: "100%", height: "auto" }}
               alt="Import icon"
             />
-            Import
+            {text("import")}
           </Button>
         </li>
         <li className="m-1">
@@ -41,7 +48,7 @@ function NavRight() {
               style={{ width: "100%", height: "auto" }}
               alt="Share icon"
             />
-            Share
+            {text("share")}
           </Button>
         </li>
         <li className="m-1">
@@ -54,7 +61,7 @@ function NavRight() {
               style={{ width: "100%", height: "auto" }}
               alt="Collaborate icon"
             />
-            Collaborate
+            {text("collaborate")}
           </Button>
         </li>
       </ul>

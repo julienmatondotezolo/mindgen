@@ -15,6 +15,10 @@
     "onlyViewable": "Alleen zichtbaar voor jou",
     "save": "opslaan",
     "untitled": "Geen",
+    "import": "Importeren",
+    "export": "Exporteren",
+    "share": "Deel",
+    "collaborate": "Samenwerken",
     "requiredInput": "Dit veld is verplicht",
     "passwordNotMatching": "Wachtwoorden komen niet overeen"
   },

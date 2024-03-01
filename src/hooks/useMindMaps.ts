@@ -133,7 +133,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
           mindmapObject: newMindmapObject,
         });
       }
-    }, 3000), //  1000ms delay
+    }, 1000), //  1000ms delay
     [reactFlowInstance, name, description, nodes, edges],
   );
 
