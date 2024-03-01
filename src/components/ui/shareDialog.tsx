@@ -1,16 +1,18 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { FileDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { FC, useEffect, useRef } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
+import { useReactFlow } from "reactflow";
 
 import { DialogProps } from "@/_types";
-import { uppercaseFirstLetter } from "@/utils";
+import { exportMindmap, uppercaseFirstLetter } from "@/utils";
 
 import { Button, Input } from ".";
 
 const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLDivElement>(null);
+  const { getEdges, getNodes } = useReactFlow();
 
   const handleClose = () => {
     // setIsOpen(false);
@@ -50,11 +52,6 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
           <FileDown />
           <p>{text("export")} mindmap</p>
         </Button>
-        <article>
-          <p className="text-sm font-bold">Share link</p>
-          <p className="text-sm">Enable a secret link for collaborators to invite new members.</p>
-          <Input className="mt-4" />
-        </article>
       </div>
     </div>
   );
