@@ -1,6 +1,7 @@
 export * from "./backDropGradient";
 export * from "./button";
 export * from "./chat";
+export * from "./collaborateDialog";
 export * from "./form";
 export * from "./importDialog";
 export * from "./input";
@@ -9,6 +10,7 @@ export * from "./languageSwitcher";
 export * from "./mindmapDialog";
 export * from "./popover";
 export * from "./progress";
+export * from "./shareDialog";
 export * from "./sheet";
 export * from "./skeleton";
 export * from "./SkeletonMindMapBoard";
