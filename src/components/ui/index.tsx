@@ -7,6 +7,7 @@ export * from "./input";
 export * from "./label";
 export * from "./languageSwitcher";
 export * from "./mindmapDialog";
+export * from "./PdfDropZOne";
 export * from "./popover";
 export * from "./progress";
 export * from "./sheet";

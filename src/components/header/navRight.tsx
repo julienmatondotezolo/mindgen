@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React from "react";
 import { useRecoilState } from "recoil";
 
@@ -9,6 +10,8 @@ import { Button } from "@/components/";
 import { modalState } from "@/state";
 
 function NavRight() {
+  const text = useTranslations("Index");
+
   const [isOpen, setIsOpen] = useRecoilState(modalState);
 
   const handleClick = () => {
@@ -28,7 +31,7 @@ function NavRight() {
               style={{ width: "100%", height: "auto" }}
               alt="Import icon"
             />
-            Import
+            {text("import")}
           </Button>
         </li>
         <li className="m-1">
@@ -41,7 +44,7 @@ function NavRight() {
               style={{ width: "100%", height: "auto" }}
               alt="Share icon"
             />
-            Share
+            {text("share")}
           </Button>
         </li>
         <li className="m-1">
@@ -54,7 +57,7 @@ function NavRight() {
               style={{ width: "100%", height: "auto" }}
               alt="Collaborate icon"
             />
-            Collaborate
+            {text("collaborate")}
           </Button>
         </li>
       </ul>
