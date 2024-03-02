@@ -1,8 +1,7 @@
 import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps } from "@/_types/ChatMessageProps";
-import { QuestionAnswersProps } from "@/_types/QuestionAnswersProps";
+import { ChatMessageProps, QuestionAnswersProps } from "@/_types";
 
 export const promptValueState = atom({
   key: "promptValueState", // unique ID (with respect to other atoms/selectors)
@@ -36,5 +35,20 @@ export const qaState = atom<QuestionAnswersProps[]>({
 
 export const modalState = atom({
   key: "modalState",
+  default: false,
+});
+
+export const importModalState = atom({
+  key: "importModalState",
+  default: false,
+});
+
+export const shareModalState = atom({
+  key: "shareModalState",
+  default: false,
+});
+
+export const collaborateModalState = atom({
+  key: "collaborateModalState",
   default: false,
 });

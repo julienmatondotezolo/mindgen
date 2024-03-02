@@ -8,18 +8,26 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { getMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
-import { BackDropGradient, ImportDialog, Spinner } from "@/components";
+import { BackDropGradient, Spinner } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { modalState, promptResultState, promptValueState, qaState } from "@/state";
+import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton } from "@/components/ui";
+import {
+  collaborateModalState,
+  importModalState,
+  promptResultState,
+  promptValueState,
+  qaState,
+  shareModalState,
+} from "@/state";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
-  const [isOpen, setIsOpen] = useRecoilState(modalState);
+  const [importModal, setImportModal] = useRecoilState(importModalState);
+  const [shareModal, setShareModal] = useRecoilState(shareModalState);
+  const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
@@ -112,7 +120,9 @@ export default function Board({ params }: { params: { id: string } }) {
           )}
         </div>
       </main>
-      <ImportDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
+      <ImportDialog open={importModal} setIsOpen={setImportModal} />
+      <ShareDialog open={shareModal} setIsOpen={setShareModal} />
+      <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} />
     </>
   );
 }

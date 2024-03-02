@@ -1,5 +1,6 @@
 export * from "./convertToNestedArray";
 export * from "./emptyMindMapObject";
+export * from "./exportMindmap";
 export * from "./findUserCollaboratorId";
 export * from "./formatDate";
 export * from "./importMindmap";

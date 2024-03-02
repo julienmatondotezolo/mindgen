@@ -3,7 +3,7 @@ import React, { useCallback, useState } from "react";
 import { useReactFlow } from "reactflow";
 import { useSetRecoilState } from "recoil";
 
-import { modalState } from "@/state";
+import { importModalState } from "@/state";
 import { importMindmap } from "@/utils";
 
 import { Button } from "./button";
@@ -14,7 +14,7 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [file, setFile] = useState<File | null>();
   const { setEdges, setNodes } = useReactFlow();
-  const setIsOpen = useSetRecoilState(modalState);
+  const setIsOpen = useSetRecoilState(importModalState);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();

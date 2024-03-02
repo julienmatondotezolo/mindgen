@@ -7,19 +7,25 @@ import collaborateIcon from "@/assets/icons/collaborate.svg";
 import importIcon from "@/assets/icons/import.svg";
 import shareIcon from "@/assets/icons/share.svg";
 import { Button } from "@/components/";
-import { modalState } from "@/state";
+import { collaborateModalState, importModalState, shareModalState } from "@/state";
 
 function NavRight() {
   const text = useTranslations("Index");
 
-  const [isOpen, setIsOpen] = useRecoilState(modalState);
+  const [importModal, setImportModal] = useRecoilState(importModalState);
+  const [shareModal, setShareModal] = useRecoilState(shareModalState);
+  const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
 
-  const handleImport = () => {
-    setIsOpen(!isOpen);
+  const handleImportClick = () => {
+    setImportModal(!importModal);
   };
 
-  const handleExport = () => {
-    setIsOpen(!isOpen);
+  const handleShareClick = () => {
+    setShareModal(!shareModal);
+  };
+
+  const handleCollaborateClick = () => {
+    setCollaborateModal(!collaborateModal);
   };
 
   return (
@@ -39,7 +45,7 @@ function NavRight() {
           </Button>
         </li>
         <li className="m-1">
-          <Button variant={"outline"}>
+          <Button variant={"outline"} onClick={handleShareClick}>
             <Image
               className="mr-2 dark:invert"
               src={shareIcon}
@@ -52,7 +58,7 @@ function NavRight() {
           </Button>
         </li>
         <li className="m-1">
-          <Button>
+          <Button onClick={handleCollaborateClick}>
             <Image
               className="mr-2"
               src={collaborateIcon}
