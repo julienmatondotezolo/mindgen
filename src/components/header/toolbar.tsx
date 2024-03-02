@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React from "react";
+import { useReactFlow } from "reactflow";
 
 import deleteIcon from "@/assets/icons/delete.svg";
 import ellipseIcon from "@/assets/icons/ellipse.svg";
@@ -13,12 +14,18 @@ import textIcon from "@/assets/icons/text.svg";
 import tileIcon from "@/assets/icons/tile.svg";
 
 const ToolBar: React.FC = () => {
+  const { setEdges, setNodes } = useReactFlow();
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
   };
 
   const listStyle = "p-2 bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-800 hover:dark:bg-slate-600";
+
+  const handleDelete = () => {
+    setEdges([]);
+    setNodes([]);
+  };
 
   return (
     <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
@@ -95,7 +102,7 @@ const ToolBar: React.FC = () => {
         <div className="w-[1px] h-6 self-center mx-2 bg-slate-200"></div>
 
         <li className="m-1">
-          <button className={`${listStyle} cursor-pointer`}>
+          <button onClick={handleDelete} className={`${listStyle} cursor-pointer`}>
             <Image src={deleteIcon} width="0" height="0" style={{ width: "100%", height: "auto" }} alt="Delete icon" />
           </button>
         </li>
