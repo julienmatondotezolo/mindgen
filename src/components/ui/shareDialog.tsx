@@ -13,6 +13,9 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLDivElement>(null);
   const { getEdges, getNodes } = useReactFlow();
+  const [url, setUrl] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = () => {
     // setIsOpen(false);
@@ -32,8 +35,30 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
     };
   }, []);
 
+  useEffect(() => {
+    setUrl(window.location.href);
+  }, []);
+
+  const handleCopyLink = () => {
+    setUrl(window.location.href);
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        // Select the input content
+        inputRef.current?.select();
+        setIsButtonDisabled(true);
+      })
+      .catch((err) => {
+        console.error("Failed to copy URL: ", err);
+      });
+  };
+
   const handleExport = () => {
-    console.log("Export");
+    const edges = getEdges();
+    const nodes = getNodes();
+
+    exportMindmap(edges, nodes);
+    setIsOpen(false);
   };
 
   return (
@@ -47,7 +72,23 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
         <p className="font-bold text-xl">{uppercaseFirstLetter(text("share"))} mind map</p>
         <X className="cursor-pointer" onClick={handleClose} />
       </article>
-      <div className="w-full mt-4">
+      <div className="w-full mt-4 space-y-6">
+        <article className="w-full">
+          <p className="text-sm font-bold">Share link</p>
+          <p className="text-sm">
+            Enable a secret link for collaborators and invite them to create awesome mind maps together.
+          </p>
+          <div className="relative">
+            <Input value={url} ref={inputRef} className="mt-4" readOnly />
+            <Button
+              disabled={isButtonDisabled}
+              onClick={handleCopyLink}
+              className="absolute top-0 right-0 mt-[6px] mr-[6px] px-[20px] py-[4px] !opacity-100"
+            >
+              {isButtonDisabled ? <p>Copied</p> : <p>Copy</p>}
+            </Button>
+          </div>
+        </article>
         <Button className="space-x-2" onClick={handleExport}>
           <FileDown />
           <p>{text("export")} mindmap</p>
