@@ -5,7 +5,7 @@ import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from 
 
 import { CustomNodeProps } from "@/_types";
 
-const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
+const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
 
   const handleSize = "!w-[10px] !h-[10px]";
@@ -90,6 +90,6 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   );
 };
 
-const MemoizedCustomNode = memo(CustomNode);
+const MemoizedCustomCircleNode = memo(CustomCircleNode);
 
-export { MemoizedCustomNode };
+export { MemoizedCustomCircleNode };

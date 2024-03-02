@@ -1,10 +1,10 @@
 import "reactflow/dist/style.css";
 
 import React, { useMemo } from "react";
-import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls, NodeProps } from "reactflow";
+import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls, NodeProps, useReactFlow } from "reactflow";
 
 import { MindMapDetailsProps } from "@/_types";
-import { MemoizedCustomNode, MemoizedMainNode } from "@/components/mindmap";
+import { MemoizedCustomCircleNode, MemoizedCustomNode, MemoizedMainNode } from "@/components/mindmap";
 import { useMindMap } from "@/hooks";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
@@ -26,14 +26,18 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     onDrop,
     onNodesDelete,
     setSourceHandle,
-    setNodes,
     setReactFlowInstance,
   } = useMindMap(userMindmapDetails);
+
+  const { setNodes } = useReactFlow();
 
   const nodeTypes = useMemo(
     () => ({
       customNode: (props: NodeProps) => (
         <MemoizedCustomNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+      ),
+      customCircleNode: (props: NodeProps) => (
+        <MemoizedCustomCircleNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
       ),
       mainNode: (props: NodeProps) => (
         <MemoizedMainNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />

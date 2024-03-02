@@ -23,6 +23,7 @@ const createCustomNode = (
   reactFlowInstance: ReactFlowInstance | null,
   event: any,
   labelText?: string,
+  type?: string,
 ) => {
   const position = reactFlowInstance!.screenToFlowPosition({
     x: event.clientX,
@@ -38,7 +39,7 @@ const createCustomNode = (
 
   const newNode: Node = {
     id: `node_${nodeId}`,
-    type: "customNode",
+    type: type ? type : "customNode",
     position: position,
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something" },
@@ -198,7 +199,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
       setNodeId((id: any) => id + 1);
 
-      const newNode = createCustomNode(nodeId, reactFlowInstance, event);
+      const newNode = createCustomNode(nodeId, reactFlowInstance, event, undefined, type);
 
       setNodes((nds) => nds.concat(newNode));
     },

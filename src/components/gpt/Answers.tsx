@@ -12,23 +12,6 @@ function Answers() {
   const qa = useRecoilValue(qaState);
   const size = 15;
 
-  // Separate function to render text content
-  const renderTextContent = (text: string) => {
-    if (text.includes("-")) {
-      return (
-        <ul>
-          {text.split("-").map((item, index) => (
-            <li className="ml-2 list-disc" key={index}>
-              {item}
-            </li>
-          ))}
-        </ul>
-      );
-    } else {
-      return <p className="opacity-100 ease-in duration-500">{text}</p>;
-    }
-  };
-
   return (
     <div className="flex flex-row flex-wrap m-auto w-[90%] md:w-2/4 mt-36 pb-36 dark:text-white">
       <div className="w-full">
@@ -41,7 +24,7 @@ function Answers() {
               <p className="font-semibold">{chatText("answer")} | Mindgen</p>
             </article>
 
-            {qaItem.message ? renderTextContent(qaItem.message) : <SkeletonAnswerText />}
+            {qaItem.message ? qaItem.message : <SkeletonAnswerText />}
           </div>
         ))}
       </div>

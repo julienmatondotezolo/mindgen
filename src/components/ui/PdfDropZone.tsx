@@ -63,6 +63,8 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
     if (!file) return;
 
     try {
+      setEdges([]);
+      setNodes([]);
       const result = await importMindmap(file);
 
       // Assuming the server action returns the nodes, name, and edges
