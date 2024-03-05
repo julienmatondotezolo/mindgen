@@ -23,7 +23,6 @@ const createCustomNode = (
   reactFlowInstance: ReactFlowInstance | null,
   event: any,
   labelText?: string,
-  type?: string,
 ) => {
   const position = reactFlowInstance!.screenToFlowPosition({
     x: event.clientX,
@@ -39,14 +38,64 @@ const createCustomNode = (
 
   const newNode: Node = {
     id: `node_${nodeId}`,
-    type: type ? type : "customNode",
+    type: "customNode",
     position: position,
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something" },
-    style: { border: "1px solid", borderRadius: 15 },
+    style: { border: "1px solid", borderRadius: 15, background: "#4d6aff1a" },
   };
 
   return newNode;
+};
+
+const createCustomCircleNode = (
+  nodeId: Number,
+  reactFlowInstance: ReactFlowInstance | null,
+  event: any,
+  labelText?: string,
+) => {
+  const position = reactFlowInstance!.screenToFlowPosition({
+    x: event.clientX,
+    y: event.clientY,
+  });
+
+  const positionAbsolute = {
+    id: null,
+    node: null,
+    x: position.x,
+    y: position.y,
+  };
+
+  const newNode: Node = {
+    id: `node_${nodeId}`,
+    type: "customCircleNode",
+    position: position,
+    positionAbsolute: positionAbsolute,
+    data: { label: labelText || "Type something" },
+    style: {
+      background: "#4d6aff1a",
+      border: "1px solid",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: "50%", // Make the node circular
+      width: "200px", // Adjust width as needed
+      height: "200px",
+    },
+  };
+
+  return newNode;
+};
+
+type NodeType = "customNode" | "customCircleNode";
+
+const nodeCreators: Record<
+  NodeType,
+  // eslint-disable-next-line no-unused-vars
+  (nodeId: number, reactFlowInstance: any, event: DragEvent, undefinedValue?: any) => any
+> = {
+  customNode: createCustomNode,
+  customCircleNode: createCustomCircleNode,
 };
 
 const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
@@ -187,23 +236,29 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   }, []);
 
   const onDrop = useCallback(
-    (event: any) => {
+    (event: DragEvent) => {
       event.preventDefault();
 
-      const type = event.dataTransfer.getData("application/reactflow");
+      if (event.dataTransfer) {
+        const type = event.dataTransfer.getData("application/reactflow");
 
-      // check if the dropped element is valid
-      if (typeof type === "undefined" || !type) {
-        return;
+        if (typeof type === "undefined" || !type) {
+          return;
+        }
+
+        const createNode = nodeCreators[type as NodeType];
+
+        if (!createNode) {
+          return;
+        }
+
+        const newNode = createNode(nodeId, reactFlowInstance, event, undefined);
+
+        setNodeId((id) => id + 1);
+        setNodes((nds) => [...nds, newNode]);
       }
-
-      setNodeId((id: any) => id + 1);
-
-      const newNode = createCustomNode(nodeId, reactFlowInstance, event, undefined, type);
-
-      setNodes((nds) => nds.concat(newNode));
     },
-    [reactFlowInstance],
+    [reactFlowInstance, nodeId, setNodeId, setNodes], // Ensure all dependencies are listed
   );
 
   const onNodesDelete = useCallback(

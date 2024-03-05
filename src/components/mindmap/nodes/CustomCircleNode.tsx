@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, SetStateAction, useState } from "react";
+import React, { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
@@ -38,6 +38,11 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
     );
   };
 
+  const adjustTextareaHeight = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    event.target.style.height = "auto";
+    event.target.style.height = `${event.target.scrollHeight}px`;
+  };
+
   return (
     <>
       <NodeResizer
@@ -55,8 +60,15 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
         }}
         isVisible={selected}
       />
-      <div className="flex justify-center items-center h-full py-2 px-6">
-        <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
+      <div className="flex justify-center items-centerl py-2 px-6">
+        <textarea
+          value={inputText}
+          onChange={handleInputChange}
+          onInput={adjustTextareaHeight}
+          className="nodeTextInput w-full h-full"
+          rows={1}
+          style={{ resize: "none" }}
+        />
       </div>
       <Handle
         onMouseDown={() => setSourceHandle("top")}

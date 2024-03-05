@@ -36,8 +36,6 @@ const ToolBar: React.FC = () => {
   };
 
   const undo = () => {
-    console.log("history undo:", history[0]);
-
     if (historyIndex < 0) return; // No more history to undo
     setHistoryIndex(historyIndex - 1);
     const { nodes, edges } = history[historyIndex];
@@ -47,8 +45,6 @@ const ToolBar: React.FC = () => {
   };
 
   const redo = () => {
-    console.log("history redo:", history[0]);
-
     if (historyIndex >= history.length - 1) return; // No more history to redo
     setHistoryIndex(historyIndex + 1);
     const { nodes, edges } = history[historyIndex + 1];
