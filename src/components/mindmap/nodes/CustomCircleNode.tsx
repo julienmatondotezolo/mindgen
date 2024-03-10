@@ -60,15 +60,19 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
         }}
         isVisible={selected}
       />
-      <div className="flex justify-center items-centerl py-2 px-6">
-        <textarea
+      <div
+        className={`flex content-center items-center h-full w-full py-2 px-6 border-4 rounded-[100%] bg-[#4d6aff1a]`}
+      >
+        {/* <textarea
           value={inputText}
           onChange={handleInputChange}
           onInput={adjustTextareaHeight}
           className="nodeTextInput w-full h-full"
           rows={1}
           style={{ resize: "none" }}
-        />
+        /> */}
+
+        <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
       <Handle
         onMouseDown={() => setSourceHandle("top")}

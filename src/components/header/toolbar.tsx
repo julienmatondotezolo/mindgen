@@ -1,6 +1,7 @@
 import Image from "next/image";
-import React, { useState } from "react";
-import { Edge, Node, useReactFlow } from "reactflow";
+import React from "react";
+import { useReactFlow } from "reactflow";
+import { useRecoilState } from "recoil";
 
 import deleteIcon from "@/assets/icons/delete.svg";
 import ellipseIcon from "@/assets/icons/ellipse.svg";
@@ -12,16 +13,12 @@ import rectangleIcon from "@/assets/icons/rectangle.svg";
 import redoIcon from "@/assets/icons/redo.svg";
 import textIcon from "@/assets/icons/text.svg";
 import tileIcon from "@/assets/icons/tile.svg";
-
-interface HistoryState {
-  nodes: Node[]; // Replace NodeType with the actual type of your nodes
-  edges: Edge[]; // Replace EdgeType with the actual type of your edges
-}
+import { historyIndexState, historyState } from "@/state";
 
 const ToolBar: React.FC = () => {
   const { setEdges, setNodes, getNodes, getEdges } = useReactFlow();
-  const [history, setHistory] = useState<HistoryState[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [history, setHistory] = useRecoilState(historyState);
+  const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
 
   const pushToHistory = () => {
     const currentNodes = getNodes();
@@ -60,6 +57,7 @@ const ToolBar: React.FC = () => {
   };
 
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
+    // Set the data for the drag operation
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
     pushToHistory();
@@ -154,7 +152,7 @@ const ToolBar: React.FC = () => {
           </div>
         </li>
 
-        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200"></div>
+        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
         <li className="m-1">
           <button onClick={handleDelete} className={`${listStyle} cursor-pointer`}>

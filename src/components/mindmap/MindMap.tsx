@@ -29,6 +29,11 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     setReactFlowInstance,
   } = useMindMap(userMindmapDetails);
 
+  const defaultEdgeOptions = {
+    animated: true,
+    type: "simple",
+  };
+
   const { setNodes } = useReactFlow();
 
   const nodeTypes = useMemo(
@@ -49,6 +54,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   return (
     <>
       <ReactFlow
+        defaultEdgeOptions={defaultEdgeOptions}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}

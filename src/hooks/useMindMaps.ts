@@ -7,15 +7,18 @@ import {
   getConnectedEdges,
   getIncomers,
   getOutgoers,
+  HandleType,
   Node,
   ReactFlowInstance,
   useEdgesState,
   useNodesState,
 } from "reactflow";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
+import { historyIndexState, historyState } from "@/state";
 import { convertToNestedArray, emptyMindMapObject, setTargetHandle } from "@/utils";
 
 const createCustomNode = (
@@ -42,7 +45,7 @@ const createCustomNode = (
     position: position,
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something" },
-    style: { border: "1px solid", borderRadius: 15, background: "#4d6aff1a" },
+    style: { borderRadius: "30px", width: 250, height: 50 },
   };
 
   return newNode;
@@ -73,14 +76,12 @@ const createCustomCircleNode = (
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something" },
     style: {
-      background: "#4d6aff1a",
-      border: "1px solid",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      borderRadius: "50%", // Make the node circular
-      width: "200px", // Adjust width as needed
-      height: "200px",
+      borderRadius: 100,
+      width: 200, // Adjust width as needed
+      height: 200,
     },
   };
 
@@ -107,59 +108,21 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
-  // New state for history
-  // const [undoStack, setUndoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
-  // const [redoStack, setRedoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
-
-  // Function to update history
-  // const updateHistory = useCallback(() => {
-  //   setUndoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]);
-  //   setRedoStack([]); // Clear redo stack on new action
-  // }, [nodes, edges]);
-
-  // const clear = useCallback(() => {
-  //   setNodes([]);
-  //   setEdges([]);
-  //   // setNodeId(initialNodes.length);
-  //   // setNodes(initialNodes);
-  // }, [setEdges, setNodes]);
-
-  // // Function to undo the last action
-  // const undo = useCallback(() => {
-  //   if (undoStack.length > 0) {
-  //     setUndoStack((prev) => {
-  //       const newUndoStack = [...prev];
-  //       const lastState = newUndoStack.pop();
-
-  //       setRedoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]);
-  //       return newUndoStack;
-  //     });
-
-  //     setNodes(undoStack[undoStack.length - 1].nodes);
-  //     setEdges(undoStack[undoStack.length - 1].edges);
-  //   }
-  // }, [undoStack, nodes, edges]);
-
-  // // Function to redo the last undone action
-  // const redo = useCallback(() => {
-  //   if (redoStack.length > 0) {
-  //     const lastState = redoStack[redoStack.length - 1];
-
-  //     setRedoStack((prev) => prev.slice(0, -1)); // Remove the last state from redo stack
-  //     setUndoStack((prev) => [...prev, { nodes: [...nodes], edges: [...edges] }]); // Push current state to undo stack
-  //     setNodes(lastState.nodes);
-  //     setEdges(lastState.edges);
-  //   }
-  // }, [redoStack, nodes, edges]);
-
-  // Update history on every nodes or edges change
-  // useEffect(() => {
-  //   updateHistory();
-  // }, [nodes, edges, updateHistory]);
-
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
+
+  const setHistory = useSetRecoilState(historyState);
+  const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
+
+  const pushToHistory = (currentNodes: Node[], currentEdges: Edge[]) => {
+    setHistory((prevHistory) => {
+      const newHistory = [...prevHistory.slice(0, historyIndex + 1), { nodes: currentNodes, edges: currentEdges }];
+
+      return newHistory;
+    });
+    setHistoryIndex(historyIndex + 1);
+  };
 
   useEffect(() => {
     if (userMindmapDetails) {
@@ -196,9 +159,14 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     [setEdges],
   );
 
-  const onConnectStart = useCallback((_: any, { nodeId }: any) => {
-    connectingNodeId.current = nodeId;
-  }, []);
+  const onConnectStart = useCallback(
+    (_: any, params: { nodeId: any; handleId: string | null; handleType: HandleType | null }) => {
+      const { nodeId } = params;
+
+      connectingNodeId!.current = nodeId;
+    },
+    [],
+  );
 
   const onConnectEnd = useCallback(
     (event: any) => {

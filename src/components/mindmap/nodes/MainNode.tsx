@@ -37,8 +37,22 @@ const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeP
 
   return (
     <>
-      <NodeResizer onResizeEnd={resizeNode} color="#4D6AFF" isVisible={selected} minWidth={100} minHeight={30} />
-      <div className="flex justify-center items-center h-full py-2 px-6 text-sm border rounded-[15px]">
+      <NodeResizer
+        onResizeEnd={(e, params) => resizeNode(params)}
+        minWidth={180}
+        minHeight={45}
+        color="#4D6AFF"
+        handleStyle={{
+          borderWidth: "10px", // Adjust border thickness here
+          borderColor: "#4D6AFF", // Ensure the border color matches the color prop or is set to your preference
+          borderStyle: "solid", // Specify the border style
+          width: "10px",
+          height: "10px",
+          borderRadius: "3px",
+        }}
+        isVisible={selected}
+      />
+      <div className="flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
       <Handle

@@ -55,7 +55,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         }}
         isVisible={selected}
       />
-      <div className="flex justify-center items-center h-full py-2 px-6">
+      <div className="flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
       <Handle
