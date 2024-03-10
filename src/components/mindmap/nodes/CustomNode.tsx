@@ -1,8 +1,7 @@
 "use client";
 
-import { NodeResizer } from "@reactflow/node-resizer";
 import { memo, SetStateAction, useState } from "react";
-import { Handle, Node, Position } from "reactflow";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
 
@@ -11,16 +10,20 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   const handleSize = "!w-[10px] !h-[10px]";
 
-  const resizeNode = (params: any) => {
-    setNodes((nodes: Node[]) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          // Create a new object to notify React Flow about the change
-          return { ...node, height: params.height };
-        }
-        return node;
-      }),
-    );
+  const { getNode } = useReactFlow();
+
+  const resizeNode = (params: ResizeParams) => {
+    const node = getNode(id);
+
+    // Update the node's dimensions
+    const updatedNode = {
+      ...node,
+      width: params.width,
+      height: params.height,
+    };
+
+    // Update the nodes array with the updated node
+    setNodes((nodes: Node[]) => nodes.map((n) => (n.id === id ? updatedNode : n)));
   };
 
   const handleInputChange = (event: { target: { value: SetStateAction<string> } }) => {
@@ -37,8 +40,22 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   return (
     <>
-      <NodeResizer onResizeEnd={resizeNode} color="#4D6AFF" isVisible={selected} minWidth={100} minHeight={30} />
-      <div className="flex justify-center items-center h-full py-2 px-6">
+      <NodeResizer
+        onResizeEnd={(e, params) => resizeNode(params)}
+        minWidth={180}
+        minHeight={45}
+        color="#4D6AFF"
+        handleStyle={{
+          borderWidth: "10px", // Adjust border thickness here
+          borderColor: "#4D6AFF", // Ensure the border color matches the color prop or is set to your preference
+          borderStyle: "solid", // Specify the border style
+          width: "10px",
+          height: "10px",
+          borderRadius: "3px",
+        }}
+        isVisible={selected}
+      />
+      <div className="flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
       <Handle

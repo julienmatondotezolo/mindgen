@@ -24,8 +24,9 @@ export function emptyMindMapObject(
           label: "MindGen App",
         },
         style: {
-          border: "1px solid",
-          borderRadius: 15,
+          borderRadius: "30px",
+          width: 250,
+          height: 50,
         },
         selected: false,
         dragging: false,

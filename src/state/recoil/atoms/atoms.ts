@@ -1,7 +1,7 @@
 import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps, QuestionAnswersProps } from "@/_types";
+import { ChatMessageProps, HistoryState, QuestionAnswersProps } from "@/_types";
 
 export const promptValueState = atom({
   key: "promptValueState", // unique ID (with respect to other atoms/selectors)
@@ -11,6 +11,16 @@ export const promptValueState = atom({
 export const promptResultState = atom({
   key: "promptResultState",
   default: false,
+});
+
+export const historyState = atom<HistoryState[]>({
+  key: "historyState",
+  default: [],
+});
+
+export const historyIndexState = atom({
+  key: "historyIndexState",
+  default: -1,
 });
 
 export const nodesState = atom<Node[]>({

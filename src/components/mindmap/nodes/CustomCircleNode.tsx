@@ -1,26 +1,29 @@
 "use client";
 
-import { NodeResizer } from "@reactflow/node-resizer";
-import { memo, SetStateAction, useState } from "react";
-import { Handle, Node, Position } from "reactflow";
+import React, { memo, SetStateAction, useState } from "react";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
 
-const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
+const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
-  const size = 10;
-  const handleSize = `!w-[${size}px] !h-[${size}px]`;
 
-  const resizeNode = (params: any) => {
-    setNodes((nodes: Node[]) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          // Create a new object to notify React Flow about the change
-          return { ...node, height: params.height };
-        }
-        return node;
-      }),
-    );
+  const handleSize = "!w-[10px] !h-[10px]";
+
+  const { getNode } = useReactFlow();
+
+  const resizeNode = (params: ResizeParams) => {
+    const node = getNode(id);
+
+    // Update the node's dimensions
+    const updatedNode = {
+      ...node,
+      width: params.width,
+      height: params.height,
+    };
+
+    // Update the nodes array with the updated node
+    setNodes((nodes: Node[]) => nodes.map((n) => (n.id === id ? updatedNode : n)));
   };
 
   const handleInputChange = (event: { target: { value: SetStateAction<string> } }) => {
@@ -33,6 +36,11 @@ const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeP
         return node;
       }),
     );
+  };
+
+  const adjustTextareaHeight = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    event.target.style.height = "auto";
+    event.target.style.height = `${event.target.scrollHeight}px`;
   };
 
   return (
@@ -52,7 +60,18 @@ const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeP
         }}
         isVisible={selected}
       />
-      <div className="flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
+      <div
+        className={`flex content-center items-center h-full w-full py-2 px-6 border-4 rounded-[100%] bg-[#4d6aff1a]`}
+      >
+        {/* <textarea
+          value={inputText}
+          onChange={handleInputChange}
+          onInput={adjustTextareaHeight}
+          className="nodeTextInput w-full h-full"
+          rows={1}
+          style={{ resize: "none" }}
+        /> */}
+
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
       <Handle
@@ -87,6 +106,6 @@ const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeP
   );
 };
 
-const MemoizedMainNode = memo(MainNode);
+const MemoizedCustomCircleNode = memo(CustomCircleNode);
 
-export { MemoizedMainNode };
+export { MemoizedCustomCircleNode };
