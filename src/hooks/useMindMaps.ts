@@ -1,5 +1,7 @@
+import { toPng } from "html-to-image";
 import { debounce } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "react-query";
 import {
   addEdge,
   Connection,
@@ -7,6 +9,8 @@ import {
   getConnectedEdges,
   getIncomers,
   getOutgoers,
+  getRectOfNodes,
+  getTransformForBounds,
   HandleType,
   Node,
   ReactFlowInstance,
@@ -20,6 +24,8 @@ import { updateMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
 import { historyIndexState, historyState } from "@/state";
 import { convertToNestedArray, emptyMindMapObject, setTargetHandle } from "@/utils";
+
+import { useSyncMutation } from ".";
 
 const createCustomNode = (
   nodeId: Number,
@@ -101,6 +107,7 @@ const nodeCreators: Record<
 
 const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const connectingNodeId = useRef(null);
+
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
 
@@ -111,6 +118,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
+  const [pictureUrl, setPictureUrl] = useState("");
 
   const setHistory = useSetRecoilState(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
@@ -125,6 +133,10 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   };
 
   useEffect(() => {
+    setNodes([]);
+    setNodeId(NaN);
+    setEdges([]);
+
     if (userMindmapDetails) {
       setNodes(userMindmapDetails.nodes);
       setNodeId(userMindmapDetails.nodes.length);
@@ -132,23 +144,69 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     }
   }, []);
 
+  const queryClient = useQueryClient();
+  // Define the mutation
+  const updateMindmapMutation = useSyncMutation(updateMindmapById, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmaps");
+    },
+  });
+
+  const saveMindMapFlow = async () => {
+    if (reactFlowInstance) {
+      await saveMindMapImage(nodes);
+
+      const newMindmapObject = emptyMindMapObject({
+        name: name ?? "",
+        description: description ?? "",
+        pictureUrl: pictureUrl,
+        nodes,
+        edges,
+      });
+
+      return newMindmapObject;
+    }
+  };
+
+  const saveMindMapImage = useCallback(
+    debounce(async (currentNodes: Node[]) => {
+      const imageWidth = 1920;
+      const imageHeight = 1080;
+
+      const nodesBounds = getRectOfNodes(currentNodes);
+      const transform = getTransformForBounds(nodesBounds, imageWidth, imageHeight, 0.5, 2);
+
+      const imageBase64Data = await toPng(document.querySelector(".react-flow__viewport"), {
+        backgroundColor: "#000",
+        width: imageWidth,
+        height: imageHeight,
+        style: {
+          width: imageWidth,
+          height: imageHeight,
+          transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+        },
+      });
+
+      setPictureUrl(imageBase64Data);
+    }, 10000),
+    [nodes, pictureUrl],
+  );
+
   useEffect(() => {
-    debouncedSaveMindMapFlow(mindmapId);
-  }, [nodes, edges]);
+    const saveMindMap = async () => {
+      const newMindmapObject = await saveMindMapFlow();
 
-  const debouncedSaveMindMapFlow = useCallback(
-    debounce(async (mindMapId: string | undefined) => {
-      if (reactFlowInstance) {
-        const newMindmapObject = emptyMindMapObject(name ?? "", description ?? "", nodes, edges);
-
-        await updateMindmapById({
-          mindmapId: mindMapId,
+      if (newMindmapObject) {
+        updateMindmapMutation.mutate({
+          mindmapId: mindmapId,
           mindmapObject: newMindmapObject,
         });
       }
-    }, 1000), //  1000ms delay
-    [reactFlowInstance, name, description, nodes, edges],
-  );
+    };
+
+    saveMindMap();
+  }, [nodes, edges]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
