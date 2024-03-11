@@ -35,7 +35,11 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   };
 
   const handleConfirm = async () => {
-    const emptyMindmapObject = emptyMindMapObject(inputTitle, inputDescription);
+    const emptyMindmapObject = emptyMindMapObject({
+      name: inputTitle,
+      description: inputDescription,
+      pictureUrl: "",
+    });
 
     try {
       await mutateAsync(emptyMindmapObject, {

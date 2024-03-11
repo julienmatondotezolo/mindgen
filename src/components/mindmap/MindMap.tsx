@@ -31,7 +31,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const defaultEdgeOptions = {
     animated: true,
-    type: "simple",
+    type: "default",
   };
 
   const { setNodes } = useReactFlow();

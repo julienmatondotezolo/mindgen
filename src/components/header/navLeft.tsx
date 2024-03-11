@@ -57,12 +57,12 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     e.preventDefault();
     // Do something with formData
 
-    const newMindmapObject = emptyMindMapObject(
-      newMindMapName ?? "",
-      newMindMapDescription ?? "",
-      userMindmapDetails?.nodes,
-      userMindmapDetails?.edges,
-    );
+    const newMindmapObject = emptyMindMapObject({
+      name: newMindMapName ?? "",
+      description: newMindMapDescription ?? "",
+      nodes: userMindmapDetails?.nodes,
+      edges: userMindmapDetails?.edges,
+    });
 
     updateMindmapMutation.mutate({
       mindmapId: mindMapId,
