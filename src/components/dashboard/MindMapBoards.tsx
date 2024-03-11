@@ -25,9 +25,8 @@ function MindMapBoards() {
 
   const size = 10;
 
-  const [isOpen, setIsOpen] = useRecoilState(modalState);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("false");
+  const [, setTitle] = useState("");
+  const [, setDescription] = useState("false");
 
   const handleUpdate = (mindmapName: string, mindMapDescription: string) => {
     setTitle(mindmapName);
@@ -37,7 +36,10 @@ function MindMapBoards() {
 
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation(deleteMindmapById);
-  const { isLoading, data: userMindmap } = useQuery("userMindmap", fetchUserMindmaps);
+  const { isLoading, data: userMindmap } = useQuery("userMindmap", fetchUserMindmaps, {
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
   const [isDeleting, setIsDeleting] = useState(false);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });
 
@@ -66,7 +68,14 @@ function MindMapBoards() {
         {userMindmap.map((mindmap: MindmapObject) => (
           <div key={mindmap.id} className={isDeleting ? "opacity-20" : "opacity-100"}>
             <Link href={`/board/${mindmap.id}`}>
-              <figure className="relative group gradientPrimary w-full h-24 border-2 dark:border-slate-800 mb-2 rounded-xl cursor-pointer">
+              <figure
+                className="relative group gradientPrimary w-full h-24 border-2 dark:border-slate-800 mb-2 rounded-xl cursor-pointer"
+                style={{
+                  backgroundImage: `url(${mindmap.pictureUrl})`,
+                  backgroundSize: "cover",
+                  backgroundRepeat: "no-repeat",
+                }}
+              >
                 <div
                   onClick={() => handleUpdate(mindmap.name, mindmap.description)}
                   className="z-50 absolute top-2 left-2 group-hover:opacity-100 opacity-0 transition duration-200 ease-in-out p-2 bg-primary-opaque border-grey-blue border-2 rounded-[10%]"
