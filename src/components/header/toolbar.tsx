@@ -148,7 +148,12 @@ const ToolBar: React.FC = () => {
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image className="dark:invert" src={imageIcon} alt="Image icon" />
+            <Image
+              className="dark:invert"
+              onDragStart={(event) => onDragStart(event, "customImageNode")}
+              src={imageIcon}
+              alt="Image icon"
+            />
           </div>
         </li>
 

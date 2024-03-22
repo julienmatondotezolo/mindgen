@@ -4,7 +4,12 @@ import React, { useMemo } from "react";
 import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls, NodeProps, useReactFlow } from "reactflow";
 
 import { MindMapDetailsProps } from "@/_types";
-import { MemoizedCustomCircleNode, MemoizedCustomNode, MemoizedMainNode } from "@/components/mindmap";
+import {
+  MemoizedCustomCircleNode,
+  MemoizedCustomImageNode,
+  MemoizedCustomNode,
+  MemoizedMainNode,
+} from "@/components/mindmap";
 import { useMindMap } from "@/hooks";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
@@ -43,6 +48,9 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
       ),
       customCircleNode: (props: NodeProps) => (
         <MemoizedCustomCircleNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+      ),
+      customImageNode: (props: NodeProps) => (
+        <MemoizedCustomImageNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
       ),
       mainNode: (props: NodeProps) => (
         <MemoizedMainNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />

@@ -1,13 +1,18 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React from "react";
+import { useQuery } from "react-query";
 import { useRecoilState } from "recoil";
 
+import { fetchProfile } from "@/_services";
+import { ProfileProps } from "@/_types";
 import collaborateIcon from "@/assets/icons/collaborate.svg";
 import importIcon from "@/assets/icons/import.svg";
 import shareIcon from "@/assets/icons/share.svg";
 import { Button } from "@/components/";
-import { collaborateModalState, importModalState, shareModalState } from "@/state";
+import { collaborateModalState, importModalState, shareModalState, upgradePlanModalState } from "@/state";
+
+const fetchUserProfile = () => fetchProfile();
 
 function NavRight() {
   const text = useTranslations("Index");
@@ -15,6 +20,7 @@ function NavRight() {
   const [importModal, setImportModal] = useRecoilState(importModalState);
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
+  const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
 
   const handleImportClick = () => {
     setImportModal(!importModal);
@@ -28,11 +34,20 @@ function NavRight() {
     setCollaborateModal(!collaborateModal);
   };
 
+  const handleUpgratePlanClick = () => {
+    setUpgradePlanModal(!upgradePlanModal);
+  };
+
+  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
+
   return (
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <ul className="flex flex-row items-center justify-between">
         <li className="m-1">
-          <Button variant={"outline"} onClick={handleImportClick}>
+          <Button
+            variant={"outline"}
+            onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleImportClick}
+          >
             <Image
               className="mr-2 dark:invert"
               src={importIcon}
@@ -58,7 +73,7 @@ function NavRight() {
           </Button>
         </li>
         <li className="m-1">
-          <Button onClick={handleCollaborateClick}>
+          <Button onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleCollaborateClick}>
             <Image
               className="mr-2"
               src={collaborateIcon}

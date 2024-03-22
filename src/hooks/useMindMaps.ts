@@ -94,7 +94,39 @@ const createCustomCircleNode = (
   return newNode;
 };
 
-type NodeType = "customNode" | "customCircleNode";
+const createCustomImageNode = (nodeId: Number, reactFlowInstance: ReactFlowInstance | null, event: any) => {
+  const position = reactFlowInstance!.screenToFlowPosition({
+    x: event.clientX,
+    y: event.clientY,
+  });
+
+  const positionAbsolute = {
+    id: null,
+    node: null,
+    x: position.x,
+    y: position.y,
+  };
+
+  const newNode: Node = {
+    id: `node_${nodeId}`,
+    type: "customImageNode",
+    position: position,
+    positionAbsolute: positionAbsolute,
+    data: {
+      image: {
+        url: "https://source.unsplash.com/300x400?summer",
+      },
+    },
+    style: {
+      width: 200, // Adjust width as needed
+      height: 200,
+    },
+  };
+
+  return newNode;
+};
+
+type NodeType = "customNode" | "customCircleNode" | "customImageNode";
 
 const nodeCreators: Record<
   NodeType,
@@ -103,6 +135,7 @@ const nodeCreators: Record<
 > = {
   customNode: createCustomNode,
   customCircleNode: createCustomCircleNode,
+  customImageNode: createCustomImageNode,
 };
 
 const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {

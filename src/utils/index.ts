@@ -7,5 +7,4 @@ export * from "./importMindmap";
 export * from "./promiseReader";
 export * from "./scroll";
 export * from "./setTargetHandle";
-export * from "./uploadImageAWS";
 export * from "./uppercaseFirstLetter";

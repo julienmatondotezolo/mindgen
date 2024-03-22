@@ -12,7 +12,7 @@ import { BackDropGradient, Spinner } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
-import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton } from "@/components/ui";
+import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import {
   collaborateModalState,
   importModalState,
@@ -20,6 +20,7 @@ import {
   promptValueState,
   qaState,
   shareModalState,
+  upgradePlanModalState,
 } from "@/state";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
@@ -28,6 +29,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const [importModal, setImportModal] = useRecoilState(importModalState);
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
+  const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
@@ -124,6 +126,7 @@ export default function Board({ params }: { params: { id: string } }) {
       <ImportDialog open={importModal} setIsOpen={setImportModal} />
       <ShareDialog open={shareModal} setIsOpen={setShareModal} />
       <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} />
+      <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
     </>
   );
 }
