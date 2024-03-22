@@ -74,7 +74,7 @@ export default function Board({ params }: { params: { id: string } }) {
         <BackDropGradient />
         <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
           <NavLeft userMindmapDetails={userMindmapDetails} />
-          <ToolBar />
+          <ToolBar userMindmapDetails={userMindmapDetails} />
           <NavRight />
         </div>
 

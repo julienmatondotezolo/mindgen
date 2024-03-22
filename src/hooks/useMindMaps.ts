@@ -16,8 +16,9 @@ import {
   ReactFlowInstance,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "reactflow";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
@@ -141,6 +142,8 @@ const nodeCreators: Record<
 const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const connectingNodeId = useRef(null);
 
+  const { getNodes, getEdges } = useReactFlow();
+
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
 
@@ -153,17 +156,33 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const mindmapId = userMindmapDetails?.id;
   const [pictureUrl, setPictureUrl] = useState("");
 
+  const history = useRecoilValue(historyState);
   const setHistory = useSetRecoilState(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
 
-  const pushToHistory = (currentNodes: Node[], currentEdges: Edge[]) => {
+  const pushToHistory = useCallback(() => {
+    const currentNodes = getNodes();
+    const currentEdges = getEdges();
+
     setHistory((prevHistory) => {
       const newHistory = [...prevHistory.slice(0, historyIndex + 1), { nodes: currentNodes, edges: currentEdges }];
 
       return newHistory;
     });
     setHistoryIndex(historyIndex + 1);
-  };
+  }, [nodes, edges]);
+
+  // const pushToHistory = () => {
+  //   const currentNodes = getNodes();
+  //   const currentEdges = getEdges();
+
+  //   setHistory((prevHistory) => {
+  //     const newHistory = [...prevHistory.slice(0, historyIndex + 1), { nodes: currentNodes, edges: currentEdges }];
+
+  //     return newHistory;
+  //   });
+  //   setHistoryIndex(historyIndex + 1);
+  // };
 
   useEffect(() => {
     setNodes([]);
@@ -284,6 +303,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
         };
 
         setEdges((eds) => addEdge(params, eds));
+
+        pushToHistory();
       }
     },
     [nodeId, reactFlowInstance, setNodes, sourceHandle, setEdges],
@@ -315,6 +336,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
         setNodeId((id) => id + 1);
         setNodes((nds) => [...nds, newNode]);
+
+        pushToHistory();
       }
     },
     [reactFlowInstance, nodeId, setNodeId, setNodes], // Ensure all dependencies are listed
@@ -337,6 +360,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
           return [...remainingEdges, ...createdEdges];
         }, edges),
       );
+
+      pushToHistory();
     },
     [nodes, edges],
   );
@@ -365,6 +390,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     setEdges,
     setReactFlowInstance,
     mindMapArray,
+    pushToHistory,
   };
 };
 
