@@ -92,6 +92,8 @@ const ToolBar = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
           </div>
         </li>
 
+        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
             <Image
@@ -128,7 +130,7 @@ const ToolBar = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
         <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
-        <li className="m-1">
+        {/* <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
             <Image className="dark:invert" src={penIcon} alt="Pen icon" />
           </div>
@@ -144,7 +146,7 @@ const ToolBar = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
           <div className={`${listStyle} cursor-pointer`}>
             <Image className="dark:invert" src={textIcon} alt="Text icon" />
           </div>
-        </li>
+        </li> */}
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
