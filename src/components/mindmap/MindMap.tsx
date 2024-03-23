@@ -6,6 +6,7 @@ import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls, Nod
 import { MindMapDetailsProps } from "@/_types";
 import {
   MemoizedCustomCircleNode,
+  MemoizedCustomDiamondNode,
   MemoizedCustomImageNode,
   MemoizedCustomNode,
   MemoizedMainNode,
@@ -45,6 +46,9 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     () => ({
       customNode: (props: NodeProps) => (
         <MemoizedCustomNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
+      ),
+      customDiamondNode: (props: NodeProps) => (
+        <MemoizedCustomDiamondNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />
       ),
       customCircleNode: (props: NodeProps) => (
         <MemoizedCustomCircleNode {...props} setNodes={setNodes} setSourceHandle={setSourceHandle} />

@@ -106,7 +106,12 @@ const ToolBar = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
-            <Image className="dark:invert" src={tileIcon} alt="Tile icon" />
+            <Image
+              className="dark:invert"
+              onDragStart={(event) => onDragStart(event, "customDiamondNode")}
+              src={tileIcon}
+              alt="Tile icon"
+            />
           </div>
         </li>
 

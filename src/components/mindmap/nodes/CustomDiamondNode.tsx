@@ -6,7 +6,7 @@ import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from 
 import { CustomNodeProps } from "@/_types";
 import { useMindMap } from "@/hooks";
 
-const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
+const CustomDiamondNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
   const { pushToHistory } = useMindMap(undefined);
 
@@ -57,20 +57,13 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
           borderRadius: "3px",
         }}
         isVisible={selected}
+        keepAspectRatio={true}
       />
-      <div
-        className={`flex content-center items-center h-full w-full py-2 px-6 border-2 rounded-[100%] bg-[#4d6aff1a]`}
-      >
-        {/* <textarea
-          value={inputText}
-          onChange={handleInputChange}
-          onInput={adjustTextareaHeight}
-          className="nodeTextInput w-full h-full"
-          rows={1}
-          style={{ resize: "none" }}
-        /> */}
-
-        <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
+      <div className={`flex content-center items-center h-full w-full`}>
+        <div className="relative h-full w-full py-2 px-6">
+          <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 h-[75%] w-[75%] border-2 rounded-xl bg-[#4d6aff1a]"></div>
+        </div>
       </div>
       <Handle
         onMouseDown={() => setSourceHandle("top")}
@@ -104,6 +97,6 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
   );
 };
 
-const MemoizedCustomCircleNode = memo(CustomCircleNode);
+const MemoizedCustomDiamondNode = memo(CustomDiamondNode);
 
-export { MemoizedCustomCircleNode };
+export { MemoizedCustomDiamondNode };
