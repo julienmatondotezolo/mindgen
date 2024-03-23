@@ -1,22 +1,17 @@
 "use client";
 
-import React, { memo, SetStateAction, useState } from "react";
+import React, { memo } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
-import { useMindMap } from "@/hooks";
 
-const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
-  const [inputText, setInputText] = useState(data.label);
-  const { pushToHistory } = useMindMap(undefined);
-
+const CustomImageNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const handleSize = "!w-[10px] !h-[10px]";
 
   const { getNode } = useReactFlow();
+  const node = getNode(id);
 
   const resizeNode = (params: ResizeParams) => {
-    const node = getNode(id);
-
     // Update the node's dimensions
     const updatedNode = {
       ...node,
@@ -26,27 +21,12 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
 
     // Update the nodes array with the updated node
     setNodes((nodes: Node[]) => nodes.map((n) => (n.id === id ? updatedNode : n)));
-    pushToHistory();
-  };
-
-  const handleInputChange = (event: { target: { value: SetStateAction<string> } }) => {
-    setInputText(event.target.value);
-    setNodes((nodes: Node[]) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return { ...node, data: { ...node.data, label: event.target.value } };
-        }
-        return node;
-      }),
-    );
   };
 
   return (
     <>
       <NodeResizer
-        onResizeEnd={(e, params) => resizeNode(params)}
-        minWidth={180}
-        minHeight={45}
+        onResizeEnd={(e: any, params: any) => resizeNode(params)}
         color="#4D6AFF"
         handleStyle={{
           borderWidth: "10px", // Adjust border thickness here
@@ -58,20 +38,16 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
         }}
         isVisible={selected}
       />
-      <div
-        className={`flex content-center items-center h-full w-full py-2 px-6 border-2 rounded-[100%] bg-[#4d6aff1a]`}
-      >
-        {/* <textarea
-          value={inputText}
-          onChange={handleInputChange}
-          onInput={adjustTextareaHeight}
-          className="nodeTextInput w-full h-full"
-          rows={1}
-          style={{ resize: "none" }}
-        /> */}
 
-        <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
-      </div>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundSize: "cover",
+          backgroundImage: `url(${data.image.url})`,
+          backgroundRepeat: "no-repeat",
+        }}
+      ></div>
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"
@@ -104,6 +80,6 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
   );
 };
 
-const MemoizedCustomCircleNode = memo(CustomCircleNode);
+const MemoizedCustomImageNode = memo(CustomImageNode);
 
-export { MemoizedCustomCircleNode };
+export { MemoizedCustomImageNode };

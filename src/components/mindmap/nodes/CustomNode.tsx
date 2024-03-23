@@ -4,9 +4,11 @@ import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
+import { useMindMap } from "@/hooks";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
+  const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
 
@@ -24,6 +26,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
     // Update the nodes array with the updated node
     setNodes((nodes: Node[]) => nodes.map((n) => (n.id === id ? updatedNode : n)));
+    pushToHistory();
   };
 
   const handleInputChange = (event: { target: { value: SetStateAction<string> } }) => {

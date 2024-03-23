@@ -62,3 +62,8 @@ export const collaborateModalState = atom({
   key: "collaborateModalState",
   default: false,
 });
+
+export const upgradePlanModalState = atom({
+  key: "upgradePlanModalState",
+  default: false,
+});

@@ -1,8 +1,9 @@
 import Image from "next/image";
 import React from "react";
 import { useReactFlow } from "reactflow";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
+import { MindMapDetailsProps } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import ellipseIcon from "@/assets/icons/ellipse.svg";
 import eraserIcon from "@/assets/icons/eraser.svg";
@@ -13,24 +14,14 @@ import rectangleIcon from "@/assets/icons/rectangle.svg";
 import redoIcon from "@/assets/icons/redo.svg";
 import textIcon from "@/assets/icons/text.svg";
 import tileIcon from "@/assets/icons/tile.svg";
+import { useMindMap } from "@/hooks";
 import { historyIndexState, historyState } from "@/state";
 
-const ToolBar: React.FC = () => {
-  const { setEdges, setNodes, getNodes, getEdges } = useReactFlow();
-  const [history, setHistory] = useRecoilState(historyState);
+const ToolBar = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) => {
+  const { setEdges, setNodes } = useReactFlow();
+  const history = useRecoilValue(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
-
-  const pushToHistory = () => {
-    const currentNodes = getNodes();
-    const currentEdges = getEdges();
-
-    setHistory((prevHistory) => {
-      const newHistory = [...prevHistory.slice(0, historyIndex + 1), { nodes: currentNodes, edges: currentEdges }];
-
-      return newHistory;
-    });
-    setHistoryIndex(historyIndex + 1);
-  };
+  const { pushToHistory } = useMindMap(userMindmapDetails);
 
   const undo = () => {
     if (historyIndex < 0) return; // No more history to undo
@@ -39,6 +30,8 @@ const ToolBar: React.FC = () => {
 
     setNodes(nodes);
     setEdges(edges);
+
+    pushToHistory();
   };
 
   const redo = () => {
@@ -48,6 +41,8 @@ const ToolBar: React.FC = () => {
 
     setNodes(nodes);
     setEdges(edges);
+
+    pushToHistory();
   };
 
   const handleDelete = () => {
@@ -97,6 +92,8 @@ const ToolBar: React.FC = () => {
           </div>
         </li>
 
+        <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
             <Image
@@ -111,7 +108,12 @@ const ToolBar: React.FC = () => {
 
         <li className="m-1">
           <div className={`${listStyle} cursor-move`}>
-            <Image className="dark:invert" src={tileIcon} alt="Tile icon" />
+            <Image
+              className="dark:invert"
+              onDragStart={(event) => onDragStart(event, "customDiamondNode")}
+              src={tileIcon}
+              alt="Tile icon"
+            />
           </div>
         </li>
 
@@ -128,7 +130,7 @@ const ToolBar: React.FC = () => {
 
         <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
-        <li className="m-1">
+        {/* <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
             <Image className="dark:invert" src={penIcon} alt="Pen icon" />
           </div>
@@ -144,11 +146,16 @@ const ToolBar: React.FC = () => {
           <div className={`${listStyle} cursor-pointer`}>
             <Image className="dark:invert" src={textIcon} alt="Text icon" />
           </div>
-        </li>
+        </li> */}
 
         <li className="m-1">
           <div className={`${listStyle} cursor-pointer`}>
-            <Image className="dark:invert" src={imageIcon} alt="Image icon" />
+            <Image
+              className="dark:invert"
+              onDragStart={(event) => onDragStart(event, "customImageNode")}
+              src={imageIcon}
+              alt="Image icon"
+            />
           </div>
         </li>
 

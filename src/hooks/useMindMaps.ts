@@ -8,16 +8,17 @@ import {
   Edge,
   getConnectedEdges,
   getIncomers,
+  getNodesBounds,
   getOutgoers,
-  getRectOfNodes,
-  getTransformForBounds,
+  getViewportForBounds,
   HandleType,
   Node,
   ReactFlowInstance,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "reactflow";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
@@ -52,6 +53,43 @@ const createCustomNode = (
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something" },
     style: { borderRadius: "30px", width: 250, height: 50 },
+  };
+
+  return newNode;
+};
+
+const createCustomDiamondNode = (
+  nodeId: Number,
+  reactFlowInstance: ReactFlowInstance | null,
+  event: any,
+  labelText?: string,
+) => {
+  const position = reactFlowInstance!.screenToFlowPosition({
+    x: event.clientX,
+    y: event.clientY,
+  });
+
+  const positionAbsolute = {
+    id: null,
+    node: null,
+    x: position.x,
+    y: position.y,
+  };
+
+  const newNode: Node = {
+    id: `node_${nodeId}`,
+    type: "customDiamondNode",
+    position: position,
+    positionAbsolute: positionAbsolute,
+    data: { label: labelText || "Type something" },
+    style: {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: 3,
+      width: 200, // Adjust width as needed
+      height: 200,
+    },
   };
 
   return newNode;
@@ -94,7 +132,39 @@ const createCustomCircleNode = (
   return newNode;
 };
 
-type NodeType = "customNode" | "customCircleNode";
+const createCustomImageNode = (nodeId: Number, reactFlowInstance: ReactFlowInstance | null, event: any) => {
+  const position = reactFlowInstance!.screenToFlowPosition({
+    x: event.clientX,
+    y: event.clientY,
+  });
+
+  const positionAbsolute = {
+    id: null,
+    node: null,
+    x: position.x,
+    y: position.y,
+  };
+
+  const newNode: Node = {
+    id: `node_${nodeId}`,
+    type: "customImageNode",
+    position: position,
+    positionAbsolute: positionAbsolute,
+    data: {
+      image: {
+        url: "https://source.unsplash.com/300x400?summer",
+      },
+    },
+    style: {
+      width: 200, // Adjust width as needed
+      height: 200,
+    },
+  };
+
+  return newNode;
+};
+
+type NodeType = "customNode" | "customDiamondNode" | "customCircleNode" | "customImageNode";
 
 const nodeCreators: Record<
   NodeType,
@@ -102,11 +172,15 @@ const nodeCreators: Record<
   (nodeId: number, reactFlowInstance: any, event: DragEvent, undefinedValue?: any) => any
 > = {
   customNode: createCustomNode,
+  customDiamondNode: createCustomDiamondNode,
   customCircleNode: createCustomCircleNode,
+  customImageNode: createCustomImageNode,
 };
 
 const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const connectingNodeId = useRef(null);
+
+  const { getNodes, getEdges } = useReactFlow();
 
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
@@ -120,17 +194,22 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const mindmapId = userMindmapDetails?.id;
   const [pictureUrl, setPictureUrl] = useState("");
 
+  const history = useRecoilValue(historyState);
+
   const setHistory = useSetRecoilState(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
 
-  const pushToHistory = (currentNodes: Node[], currentEdges: Edge[]) => {
+  const pushToHistory = useCallback(() => {
+    const currentNodes = getNodes();
+    const currentEdges = getEdges();
+
     setHistory((prevHistory) => {
       const newHistory = [...prevHistory.slice(0, historyIndex + 1), { nodes: currentNodes, edges: currentEdges }];
 
       return newHistory;
     });
     setHistoryIndex(historyIndex + 1);
-  };
+  }, [edges, edges]);
 
   useEffect(() => {
     setNodes([]);
@@ -174,8 +253,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
       const imageWidth = 1920;
       const imageHeight = 1080;
 
-      const nodesBounds = getRectOfNodes(currentNodes);
-      const transform = getTransformForBounds(nodesBounds, imageWidth, imageHeight, 0.5, 2);
+      const nodesBounds = getNodesBounds(currentNodes);
+      const transform = getViewportForBounds(nodesBounds, imageWidth, imageHeight, 0.5, 2);
 
       const imageBase64Data = await toPng(document.querySelector(".react-flow__viewport"), {
         backgroundColor: "#000",
@@ -251,6 +330,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
         };
 
         setEdges((eds) => addEdge(params, eds));
+
+        pushToHistory();
       }
     },
     [nodeId, reactFlowInstance, setNodes, sourceHandle, setEdges],
@@ -282,6 +363,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
         setNodeId((id) => id + 1);
         setNodes((nds) => [...nds, newNode]);
+
+        pushToHistory();
       }
     },
     [reactFlowInstance, nodeId, setNodeId, setNodes], // Ensure all dependencies are listed
@@ -304,6 +387,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
           return [...remainingEdges, ...createdEdges];
         }, edges),
       );
+
+      pushToHistory();
     },
     [nodes, edges],
   );
@@ -332,6 +417,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     setEdges,
     setReactFlowInstance,
     mindMapArray,
+    pushToHistory,
   };
 };
 
