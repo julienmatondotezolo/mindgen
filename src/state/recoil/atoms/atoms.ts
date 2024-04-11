@@ -23,6 +23,11 @@ export const historyIndexState = atom({
   default: -1,
 });
 
+export const nodeSelectedState = atom({
+  key: "nodeSelectedState",
+  default: {},
+});
+
 export const nodesState = atom<Node[]>({
   key: "nodesState",
   default: [],
