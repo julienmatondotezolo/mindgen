@@ -2,15 +2,19 @@
 
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
 import { useMindMap } from "@/hooks";
 import { nodeSelectedState } from "@/state";
 
+import { NodeToolbar } from "../NodeToolbar";
+
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
-  const setIsSelected = useSetRecoilState(nodeSelectedState);
+  // const setIsSelected = useSetRecoilState(nodeSelectedState);
+  // const [isSelected, setIsSelected] = useRecoilState(nodeSelectedState);
+  const [isSelected, setIsSelected] = useState(false);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
@@ -21,12 +25,14 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   useOnSelectionChange({
     onChange: ({ nodes }) => {
       const isNodeSelected = nodes.some((node) => node.id === id);
-      // Update the state with both selection status and position
+      // Update the isSelected state based on whether the node is selected
 
-      setIsSelected({
-        isSelected: isNodeSelected,
-        position: isNodeSelected ? nodes.find((node) => node.id === id)?.position : null,
-      });
+      setIsSelected(isNodeSelected);
+      console.log("isNodeSelected:", isNodeSelected);
+      console.log(
+        "selectedNodes:",
+        nodes.filter((node) => node.id === id),
+      );
     },
   });
 
@@ -74,9 +80,10 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         }}
         isVisible={selected}
       />
-      <div className="flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
+      <div className="relative flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
+      {isSelected ? <NodeToolbar /> : <></>}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"

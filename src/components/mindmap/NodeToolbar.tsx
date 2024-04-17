@@ -1,25 +1,17 @@
 import Image from "next/image";
 import React from "react";
-import { useRecoilValue } from "recoil";
 
 import boldIcon from "@/assets/icons/bold.svg";
 import colorTextIcon from "@/assets/icons/colorText.svg";
 import imageIcon from "@/assets/icons/image.svg";
-import { nodeSelectedState } from "@/state";
 
 function NodeToolbar() {
-  const isSelected = useRecoilValue(nodeSelectedState);
-  const x = isSelected.position?.x;
-  const y = isSelected.position?.y;
-
-  console.log("isSelected:", isSelected);
   const listStyle =
     "w-6 h-6 p-2 bg-gray-50 hover:bg-primary-opaque rounded-md dark:bg-slate-800 hover:dark:bg-slate-600";
 
-  return isSelected ? (
+  return (
     <div
-      className={`fixed mt-12 px-4 py-2 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800`}
-      style={{ top: `${y}px`, left: `${-x}px` }}
+      className={`mt-12 px-4 py-2 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800`}
     >
       <ul className="flex flex-row items-center justify-between">
         <div className={`${listStyle} cursor-pointer`}>
@@ -52,8 +44,6 @@ function NodeToolbar() {
         </div>
       </ul>
     </div>
-  ) : (
-    <></>
   );
 }
 

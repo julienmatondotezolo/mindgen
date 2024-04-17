@@ -10,7 +10,6 @@ import {
   MemoizedCustomImageNode,
   MemoizedCustomNode,
   MemoizedMainNode,
-  NodeToolbar,
 } from "@/components/mindmap";
 import { useMindMap } from "@/hooks";
 
@@ -90,9 +89,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         <Controls />
         <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
-        <NodeToolbar />
       </ReactFlow>
-      <NodeToolbar />
     </>
   );
 }

@@ -25,7 +25,7 @@ export const historyIndexState = atom({
 
 export const nodeSelectedState = atom({
   key: "nodeSelectedState",
-  default: {},
+  default: false,
 });
 
 export const nodesState = atom<Node[]>({
