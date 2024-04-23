@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useRecoilState, useRecoilValue } from "recoil";
 
@@ -13,6 +13,7 @@ import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
+import { socket } from "@/socket";
 import {
   collaborateModalState,
   importModalState,
@@ -32,6 +33,39 @@ export default function Board({ params }: { params: { id: string } }) {
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
+
+  const [isConnected, setIsConnected] = useState(false);
+  const [transport, setTransport] = useState("N/A");
+
+  useEffect(() => {
+    if (socket && socket.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+      setTransport(socket.io.engine.transport.name);
+
+      socket.io.engine.on("upgrade", (transport) => {
+        setTransport(transport.name);
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    if (socket) {
+      socket.on("connect", onConnect);
+      socket.on("disconnect", onDisconnect);
+
+      return () => {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     if (promptResult) {
@@ -70,6 +104,10 @@ export default function Board({ params }: { params: { id: string } }) {
 
   return (
     <>
+      <div className="fixed right-0 bottom-0 p-10">
+        <p>Status: {isConnected ? "connected" : "disconnected"}</p>
+        <p>Transport: {transport}</p>
+      </div>
       <main className="relative flex justify-between w-screen h-screen scroll-smooth">
         <BackDropGradient />
         <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">

@@ -63,6 +63,25 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     [setNodes, setSourceHandle],
   );
 
+  const handleBoldNode = () => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === "node_1") {
+          // Create a new object with the updated properties
+          return {
+            ...node,
+            selected: true,
+            data: {
+              ...node.data,
+              selectedByCollaborator: true,
+            },
+          };
+        }
+        return node;
+      }),
+    );
+  };
+
   return (
     <>
       <ReactFlow
@@ -90,6 +109,9 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
       </ReactFlow>
+      <button onClick={handleBoldNode} className="fixed left-0 top-0 w-20 h-20 bg-sky-400 z-50">
+        Update Node 1
+      </button>
     </>
   );
 }

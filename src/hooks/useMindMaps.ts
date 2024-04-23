@@ -17,6 +17,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
+  useStoreApi,
 } from "reactflow";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -51,7 +52,7 @@ const createCustomNode = (
     type: "customNode",
     position: position,
     positionAbsolute: positionAbsolute,
-    data: { label: labelText || "Type something" },
+    data: { label: labelText || "Type something", selectedByCollaborator: false },
     style: { borderRadius: "30px", width: 250, height: 50 },
   };
 
@@ -81,7 +82,7 @@ const createCustomDiamondNode = (
     type: "customDiamondNode",
     position: position,
     positionAbsolute: positionAbsolute,
-    data: { label: labelText || "Type something" },
+    data: { label: labelText || "Type something", selectedByCollaborator: false },
     style: {
       display: "flex",
       justifyContent: "center",
@@ -118,7 +119,7 @@ const createCustomCircleNode = (
     type: "customCircleNode",
     position: position,
     positionAbsolute: positionAbsolute,
-    data: { label: labelText || "Type something" },
+    data: { label: labelText || "Type something", selectedByCollaborator: false },
     style: {
       display: "flex",
       justifyContent: "center",
@@ -151,6 +152,7 @@ const createCustomImageNode = (nodeId: Number, reactFlowInstance: ReactFlowInsta
     position: position,
     positionAbsolute: positionAbsolute,
     data: {
+      selectedByCollaborator: false,
       image: {
         url: "https://source.unsplash.com/300x400?summer",
       },
@@ -192,6 +194,9 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
+
+  const { addSelectedNodes } = useStoreApi();
+
   const [pictureUrl, setPictureUrl] = useState("");
 
   const history = useRecoilValue(historyState);
