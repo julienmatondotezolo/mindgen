@@ -1,18 +1,30 @@
 "use client";
 
 import React, { memo, SetStateAction, useState } from "react";
-import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
+import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
 
 const CustomDiamondNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
+  const [isSelected, setIsSelected] = useState(false);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
 
   const { getNode } = useReactFlow();
+
+  // Use the useOnSelectionChange hook to listen for selection changes
+  useOnSelectionChange({
+    onChange: ({ nodes }) => {
+      const isNodeSelected = nodes.some((node) => node.id === id);
+      // Update the isSelected state based on whether the node is selected
+
+      setIsSelected(isNodeSelected);
+    },
+  });
 
   const resizeNode = (params: ResizeParams) => {
     const node = getNode(id);
@@ -59,16 +71,19 @@ const CustomDiamondNode = ({ id, data, selected, setNodes, setSourceHandle }: Cu
         isVisible={selected}
         keepAspectRatio={true}
       />
-      <div className={`flex content-center items-center h-full w-full`}>
-        <div className="relative h-full w-full py-2 px-6">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 h-[75%] w-[75%] border-2 rounded-xl bg-[#4d6aff1a]"></div>
-          <input
-            className="absolute top-0 left-0 w-full h-full nodeTextInput"
-            type="text"
-            value={inputText}
-            onChange={handleInputChange}
-          />
+      <div className="w-full h-full">
+        <div className={`flex content-center items-center h-full w-full`}>
+          <div className="relative h-full w-full py-2 px-6">
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 h-[75%] w-[75%] border-2 rounded-xl bg-[#4d6aff1a]"></div>
+            <input
+              className="absolute top-0 left-0 w-full h-full nodeTextInput"
+              type="text"
+              value={inputText}
+              onChange={handleInputChange}
+            />
+          </div>
         </div>
+        {isSelected && <NodeToolbar />}
       </div>
       <Handle
         onMouseDown={() => setSourceHandle("top")}

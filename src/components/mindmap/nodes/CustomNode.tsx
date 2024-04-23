@@ -2,24 +2,20 @@
 
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
-import { useRecoilState } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
+import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
-import { nodeSelectedState } from "@/state";
-
-import { NodeToolbar } from "../NodeToolbar";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
-  // const setIsSelected = useSetRecoilState(nodeSelectedState);
-  // const [isSelected, setIsSelected] = useRecoilState(nodeSelectedState);
   const [isSelected, setIsSelected] = useState(false);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
 
   const { getNode } = useReactFlow();
+  const node = getNode(id);
 
   // Use the useOnSelectionChange hook to listen for selection changes
   useOnSelectionChange({
@@ -28,17 +24,10 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       // Update the isSelected state based on whether the node is selected
 
       setIsSelected(isNodeSelected);
-      console.log("isNodeSelected:", isNodeSelected);
-      console.log(
-        "selectedNodes:",
-        nodes.filter((node) => node.id === id),
-      );
     },
   });
 
   const resizeNode = (params: ResizeParams) => {
-    const node = getNode(id);
-
     // Update the node's dimensions
     const updatedNode = {
       ...node,
@@ -69,11 +58,11 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         onResizeEnd={(e, params) => resizeNode(params)}
         minWidth={180}
         minHeight={45}
-        color="#4D6AFF"
+        color={node?.data.selectedByCollaborator == true ? "#FF4DC4" : "#4D6AFF"}
         handleStyle={{
-          borderWidth: "10px", // Adjust border thickness here
-          borderColor: "#4D6AFF", // Ensure the border color matches the color prop or is set to your preference
-          borderStyle: "solid", // Specify the border style
+          borderWidth: "10px",
+          borderColor: node?.data.selectedByCollaborator == true ? "#FF4DC4" : "#4D6AFF",
+          borderStyle: "solid",
           width: "10px",
           height: "10px",
           borderRadius: "3px",
@@ -83,7 +72,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       <div className="relative flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {isSelected ? <NodeToolbar /> : <></>}
+      {isSelected && <NodeToolbar nodeId={id} />}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"
