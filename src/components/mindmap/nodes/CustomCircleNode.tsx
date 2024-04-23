@@ -1,18 +1,30 @@
 "use client";
 
 import React, { memo, SetStateAction, useState } from "react";
-import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
+import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
 
 const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
+  const [isSelected, setIsSelected] = useState(false);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
 
   const { getNode } = useReactFlow();
+
+  // Use the useOnSelectionChange hook to listen for selection changes
+  useOnSelectionChange({
+    onChange: ({ nodes }) => {
+      const isNodeSelected = nodes.some((node) => node.id === id);
+      // Update the isSelected state based on whether the node is selected
+
+      setIsSelected(isNodeSelected);
+    },
+  });
 
   const resizeNode = (params: ResizeParams) => {
     const node = getNode(id);
@@ -61,17 +73,9 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
       <div
         className={`flex content-center items-center h-full w-full py-2 px-6 border-2 rounded-[100%] bg-[#4d6aff1a]`}
       >
-        {/* <textarea
-          value={inputText}
-          onChange={handleInputChange}
-          onInput={adjustTextareaHeight}
-          className="nodeTextInput w-full h-full"
-          rows={1}
-          style={{ resize: "none" }}
-        /> */}
-
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
+      {/* {isSelected && <NodeToolbar />} */}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"
