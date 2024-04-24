@@ -1,11 +1,13 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
 
-import { CustomNodeProps } from "@/_types";
+import { CustomNodeProps, MindMapDetailsProps } from "@/_types";
 import { NodeToolbar } from "@/components";
-import { useMindMap } from "@/hooks";
+import { useCachedQuery, useMindMap } from "@/hooks";
+import { socket } from "@/socket";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
@@ -17,11 +19,17 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   const { getNode } = useReactFlow();
   const node = getNode(id);
 
+  const session = useSession();
+  const username = session.data?.session.user.username;
+  const roomId = "0293d1e1-7e3d-4267-80fd-867a02462ea3";
+
   // Use the useOnSelectionChange hook to listen for selection changes
   useOnSelectionChange({
     onChange: ({ nodes }) => {
       const isNodeSelected = nodes.some((node) => node.id === id);
       // Update the isSelected state based on whether the node is selected
+
+      if (id) socket.emit("cursor-selection", { roomId, username, nodeId: id });
 
       setIsSelected(isNodeSelected);
     },
@@ -51,6 +59,29 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       }),
     );
   };
+
+  const updateNodeFromSocket = () => {
+    setNodes((nds: Node[]) =>
+      nds.map((node) => {
+        if (node.id === "node_1") {
+          // Create a new object with the updated properties
+          return {
+            ...node,
+            selected: true,
+            data: {
+              ...node.data,
+              selectedByCollaborator: true,
+            },
+          };
+        }
+        return node;
+      }),
+    );
+  };
+
+  socket.on("remote-cursor-selection", (data) => {
+    console.log(data);
+  });
 
   return (
     <>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -37,35 +38,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
 
-  useEffect(() => {
-    if (socket && socket.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      setIsConnected(true);
-      setTransport(socket.io.engine.transport.name);
-
-      socket.io.engine.on("upgrade", (transport) => {
-        setTransport(transport.name);
-      });
-    }
-
-    function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
-    }
-
-    if (socket) {
-      socket.on("connect", onConnect);
-      socket.on("disconnect", onDisconnect);
-
-      return () => {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      };
-    }
-  }, []);
+  const session = useSession();
 
   useEffect(() => {
     if (promptResult) {
@@ -98,13 +71,67 @@ export default function Board({ params }: { params: { id: string } }) {
         }));
 
         setQa((prevQa) => [...prevQa, ...newQaItems]);
+
+        joinRoom();
       },
     },
   );
 
+  async function joinRoom() {
+    if (userMindmapDetails?.id != undefined) {
+      console.log("JOINING ROOM");
+      // socket.emit("join-room", {
+      //   roomId: await userMindmapDetails?.id,
+      //   username: await session.data?.session.user.username,
+      // });
+    }
+  }
+
+  async function leaveRoom() {
+    alert("Leaving room");
+    socket.emit("leave-room", {
+      roomId: await userMindmapDetails?.id,
+      username: await session.data?.session.user.username,
+    });
+  }
+
+  useEffect(() => {
+    if (socket && socket.connected && isConnected == false) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+      setTransport(socket.io.engine.transport.name);
+
+      socket.io.engine.on("upgrade", (transport) => {
+        setTransport(transport.name);
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    if (socket) {
+      socket.on("connect", onConnect);
+      socket.on("disconnect", onDisconnect);
+
+      return () => {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+      };
+    }
+  }, []);
+
+  // console.log("roomId:", userMindmapDetails?.id);
+  // console.log("session:", session.data?.session.user.username);
+
   return (
     <>
-      <div className="fixed right-0 bottom-0 p-10">
+      <div className="fixed right-0 bottom-0 p-10 z-50">
+        {isConnected ? <Button onClick={() => leaveRoom()}>Leave room</Button> : <></>}
         <p>Status: {isConnected ? "connected" : "disconnected"}</p>
         <p>Transport: {transport}</p>
       </div>

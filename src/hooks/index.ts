@@ -1,3 +1,4 @@
+export * from "./useCachedQuery";
 export * from "./useDidUpdateEffect";
 export * from "./useMindMaps";
 export * from "./useScrollPosition";
