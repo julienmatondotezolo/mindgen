@@ -27,9 +27,15 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   useOnSelectionChange({
     onChange: ({ nodes }) => {
       const isNodeSelected = nodes.some((node) => node.id === id);
+
+      // console.log("currentnode:", node);
       // Update the isSelected state based on whether the node is selected
 
       if (node?.selected) socket.emit("cursor-selection", { roomId, username, nodeId: node.id });
+
+      if (!isNodeSelected && isSelected) {
+        socket.emit("cursor-selection", { roomId, username, nodeId: node.id });
+      }
 
       setIsSelected(isNodeSelected);
     },
@@ -61,14 +67,13 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   };
 
   const updateNodeFromSocket = (selectedNodeId: string) => {
-    console.log("selectedNodeId:", selectedNodeId);
     setNodes((nds: Node[]) =>
       nds.map((node) => {
         if (node.id === selectedNodeId) {
           // Create a new object with the updated properties
           return {
             ...node,
-            selected: true,
+            selected: node.selected,
             data: {
               ...node.data,
               selectedByCollaborator: true,
@@ -81,6 +86,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   };
 
   socket.on("remote-cursor-selection", (data) => {
+    console.log("data:", data);
     console.log("socket listening...");
     updateNodeFromSocket(data.nodeId);
   });
