@@ -63,7 +63,9 @@ export default function Board({ params }: { params: { id: string } }) {
     getUserMindmapById,
     {
       staleTime: 0,
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
+        await joinRoom(data);
+
         setQa([]);
         const newQaItems = data.messages.map((mindMapQA) => ({
           text: mindMapQA.request,
@@ -71,19 +73,17 @@ export default function Board({ params }: { params: { id: string } }) {
         }));
 
         setQa((prevQa) => [...prevQa, ...newQaItems]);
-
-        joinRoom();
       },
     },
   );
 
-  async function joinRoom() {
-    if (userMindmapDetails?.id != undefined) {
+  async function joinRoom(userMindmapDetails: MindMapDetailsProps) {
+    if (session.data != undefined) {
       console.log("JOINING ROOM");
-      // socket.emit("join-room", {
-      //   roomId: await userMindmapDetails?.id,
-      //   username: await session.data?.session.user.username,
-      // });
+      socket.emit("join-room", {
+        roomId: userMindmapDetails?.id,
+        username: await session.data?.session.user.username,
+      });
     }
   }
 
