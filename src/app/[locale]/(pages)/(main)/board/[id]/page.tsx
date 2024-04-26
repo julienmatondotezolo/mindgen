@@ -24,6 +24,7 @@ import {
   shareModalState,
   upgradePlanModalState,
 } from "@/state";
+import { uppercaseFirstLetter } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -79,7 +80,6 @@ export default function Board({ params }: { params: { id: string } }) {
 
   async function joinRoom(userMindmapDetails: MindMapDetailsProps) {
     if (session.data != undefined) {
-      console.log("JOINING ROOM");
       socket.emit("join-room", {
         roomId: userMindmapDetails?.id,
         username: await session.data?.session.user.username,
@@ -88,7 +88,6 @@ export default function Board({ params }: { params: { id: string } }) {
   }
 
   async function leaveRoom() {
-    alert("Leaving room");
     socket.emit("leave-room", {
       roomId: await userMindmapDetails?.id,
       username: await session.data?.session.user.username,
@@ -125,8 +124,33 @@ export default function Board({ params }: { params: { id: string } }) {
     }
   }, []);
 
-  // console.log("roomId:", userMindmapDetails?.id);
-  // console.log("session:", session.data?.session.user.username);
+  async function handleCursorMove(event: { clientX: any; clientY: any }) {
+    const cursorPos = { x: event.clientX, y: event.clientY };
+
+    socket.emit("cursor-move", {
+      roomId: userMindmapDetails?.id,
+      username: await session.data?.session.user.username,
+      cursorPos,
+    });
+  }
+
+  const [collaUsername, setCollaUsername] = useState("");
+  const [collaCursorPos, setCollaCursorPos] = useState({});
+
+  useEffect(() => {
+    // Listen for cursor movements
+    socket.on("remote-cursor-move", (data) => {
+      const { cursorPos, username } = data;
+
+      setCollaUsername(username);
+      setCollaCursorPos(cursorPos);
+    });
+
+    // Cleanup
+    return () => {
+      socket.off("cursor-move");
+    };
+  }, []);
 
   return (
     <>
@@ -135,7 +159,7 @@ export default function Board({ params }: { params: { id: string } }) {
         <p>Status: {isConnected ? "connected" : "disconnected"}</p>
         <p>Transport: {transport}</p>
       </div>
-      <main className="relative flex justify-between w-screen h-screen scroll-smooth">
+      <main onMouseMove={handleCursorMove} className="relative flex justify-between w-screen h-screen scroll-smooth">
         <BackDropGradient />
         <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
           <NavLeft userMindmapDetails={userMindmapDetails} />
@@ -192,6 +216,13 @@ export default function Board({ params }: { params: { id: string } }) {
       <ShareDialog open={shareModal} setIsOpen={setShareModal} />
       <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} />
       <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
+      <div
+        style={{ left: collaCursorPos.x, top: collaCursorPos.y }}
+        className="fixed bg-[#FF4DC4] px-6 py-2 w-fit max-h-10 rounded-full z-50"
+      >
+        <p>{uppercaseFirstLetter(collaUsername)}</p>
+      </div>
+      ;
     </>
   );
 }

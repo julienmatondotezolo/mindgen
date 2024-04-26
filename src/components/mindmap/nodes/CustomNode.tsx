@@ -3,43 +3,22 @@
 import { useSession } from "next-auth/react";
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
+import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps, MindMapDetailsProps } from "@/_types";
 import { NodeToolbar } from "@/components";
 import { useCachedQuery, useMindMap } from "@/hooks";
 import { socket } from "@/socket";
+import { collaboratorNameState } from "@/state";
+import { uppercaseFirstLetter } from "@/utils";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
+  const { getNode } = useReactFlow();
+  const node = getNode(id);
   const [inputText, setInputText] = useState(data.label);
-  const [isSelected, setIsSelected] = useState(false);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
-
-  const { getNode } = useReactFlow();
-  const node = getNode(id);
-
-  const session = useSession();
-  const username = session.data?.session.user.username;
-  const roomId = "0293d1e1-7e3d-4267-80fd-867a02462ea3";
-
-  // Use the useOnSelectionChange hook to listen for selection changes
-  useOnSelectionChange({
-    onChange: ({ nodes }) => {
-      const isNodeSelected = nodes.some((node) => node.id === id);
-
-      // console.log("currentnode:", node);
-      // Update the isSelected state based on whether the node is selected
-
-      if (node?.selected) socket.emit("cursor-selection", { roomId, username, nodeId: node.id });
-
-      if (!isNodeSelected && isSelected) {
-        socket.emit("cursor-selection", { roomId, username, nodeId: node.id });
-      }
-
-      setIsSelected(isNodeSelected);
-    },
-  });
 
   const resizeNode = (params: ResizeParams) => {
     // Update the node's dimensions
@@ -66,30 +45,11 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
     );
   };
 
-  const updateNodeFromSocket = (selectedNodeId: string) => {
-    setNodes((nds: Node[]) =>
-      nds.map((node) => {
-        if (node.id === selectedNodeId) {
-          // Create a new object with the updated properties
-          return {
-            ...node,
-            selected: node.selected,
-            data: {
-              ...node.data,
-              selectedByCollaborator: true,
-            },
-          };
-        }
-        return node;
-      }),
-    );
-  };
+  const session = useSession();
 
-  socket.on("remote-cursor-selection", (data) => {
-    console.log("data:", data);
-    console.log("socket listening...");
-    updateNodeFromSocket(data.nodeId);
-  });
+  const username = session.data?.session.user.username;
+
+  const collaborateName = useRecoilValue(collaboratorNameState);
 
   return (
     <>
@@ -97,10 +57,10 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         onResizeEnd={(e, params) => resizeNode(params)}
         minWidth={180}
         minHeight={45}
-        color={node?.data.selectedByCollaborator == true ? "#FF4DC4" : "#4D6AFF"}
+        color={username !== collaborateName ? "#FF4DC4" : "#4D6AFF"}
         handleStyle={{
           borderWidth: "10px",
-          borderColor: node?.data.selectedByCollaborator == true ? "#FF4DC4" : "#4D6AFF",
+          borderColor: username !== collaborateName ? "#FF4DC4" : "#4D6AFF",
           borderStyle: "solid",
           width: "10px",
           height: "10px",
@@ -111,7 +71,14 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       <div className="relative flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {isSelected && <NodeToolbar nodeId={id} />}
+      {username !== collaborateName && selected ? (
+        <div className="mt-3 bg-[#FF4DC4] px-6 py-2 w-fit rounded-full">
+          <p>{uppercaseFirstLetter(collaborateName)}</p>
+        </div>
+      ) : (
+        <></>
+      )}
+      {selected && username == collaborateName && <NodeToolbar nodeId={id} />}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"

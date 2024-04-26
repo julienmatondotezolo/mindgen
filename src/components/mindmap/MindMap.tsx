@@ -1,7 +1,22 @@
 import "reactflow/dist/style.css";
 
-import React, { useMemo } from "react";
-import ReactFlow, { Background, BackgroundVariant, ConnectionMode, Controls, NodeProps, useReactFlow } from "reactflow";
+import { useSession } from "next-auth/react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import ReactFlow, {
+  applyNodeChanges,
+  Background,
+  BackgroundVariant,
+  ConnectionMode,
+  Controls,
+  Node,
+  NodeProps,
+  ReactFlowState,
+  useEdges,
+  useNodes,
+  useReactFlow,
+  useStore,
+} from "reactflow";
+import { useSetRecoilState } from "recoil";
 
 import { MindMapDetailsProps } from "@/_types";
 import {
@@ -12,6 +27,8 @@ import {
   MemoizedMainNode,
 } from "@/components/mindmap";
 import { useMindMap } from "@/hooks";
+import { socket } from "@/socket";
+import { collaboratorNameState } from "@/state";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 
@@ -40,7 +57,77 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     type: "default",
   };
 
-  const { setNodes } = useReactFlow();
+  const { setEdges, setNodes, getNodes } = useReactFlow();
+
+  const session = useSession();
+  const nodeChanges = useNodes();
+  const edgeChanges = useEdges();
+
+  function mergeNodes(localNodes: Node[], remoteNodes: Node[]) {
+    // Create a map to easily access nodes in localNodes by their ID
+    const localNodeMap = new Map();
+
+    localNodes.forEach((node) => {
+      localNodeMap.set(node.id, node);
+    });
+
+    // Iterate through remoteNodes and merge them into localNodes
+    remoteNodes.forEach((remoteNode) => {
+      // Check if the node already exists in localNodes by its ID
+      if (localNodeMap.has(remoteNode.id)) {
+        // Node exists, update the existing node in localNodes
+        const localNode = localNodeMap.get(remoteNode.id);
+        // Merge the remoteNode properties into the localNode
+
+        Object.assign(localNode, remoteNode);
+      } else {
+        // Node does not exist, add the remoteNode to localNodes
+        localNodes.push(remoteNode);
+        // Add the remoteNode to the map for future reference
+        localNodeMap.set(remoteNode.id, remoteNode);
+      }
+    });
+
+    // Return the merged list of nodes
+    return localNodes;
+  }
+
+  const [first, setFirst] = useState(true);
+  const setCollaborateName = useSetRecoilState(collaboratorNameState);
+
+  useEffect(() => {
+    if (first) {
+      socket.emit("send-nodes", {
+        roomId: userMindmapDetails?.id,
+        username: session.data?.session.user.username,
+        reactFlowChanges: {
+          nodes: nodeChanges,
+          edges: edgeChanges,
+        },
+      });
+
+      setCollaborateName(session.data?.session.user.username);
+    }
+    setFirst(true);
+  }, [nodeChanges, edgeChanges]);
+
+  useEffect(() => {
+    socket.on("remote-send-nodes", (data) => {
+      const { edges, nodes } = data.reactFlowChanges;
+
+      setCollaborateName(data.username);
+
+      const updatedNodes = mergeNodes(getNodes(), nodes);
+
+      setFirst(false);
+      setNodes(updatedNodes);
+      setEdges(edges);
+    });
+
+    return () => {
+      socket.off("remote-send-nodes");
+    };
+  }, []);
 
   const nodeTypes = useMemo(
     () => ({
@@ -62,25 +149,6 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     }),
     [setNodes, setSourceHandle],
   );
-
-  const handleBoldNode = () => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === "node_1") {
-          // Create a new object with the updated properties
-          return {
-            ...node,
-            selected: true,
-            data: {
-              ...node.data,
-              selectedByCollaborator: true,
-            },
-          };
-        }
-        return node;
-      }),
-    );
-  };
 
   return (
     <>
@@ -108,10 +176,8 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         <Controls />
         <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
+        {/* <StateComponent userMindmapDetails={userMindmapDetails} /> */}
       </ReactFlow>
-      <button onClick={handleBoldNode} className="fixed left-0 top-0 w-20 h-20 bg-sky-400 z-50">
-        Update Node 1
-      </button>
     </>
   );
 }
