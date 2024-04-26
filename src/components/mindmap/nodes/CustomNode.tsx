@@ -71,13 +71,6 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       <div className="relative flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {username !== collaborateName && selected ? (
-        <div className="mt-3 bg-[#FF4DC4] px-6 py-2 w-fit rounded-full">
-          <p>{uppercaseFirstLetter(collaborateName)}</p>
-        </div>
-      ) : (
-        <></>
-      )}
       {selected && username == collaborateName && <NodeToolbar nodeId={id} />}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
