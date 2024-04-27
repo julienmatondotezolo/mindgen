@@ -1,8 +1,17 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { memo, SetStateAction, useState } from "react";
-import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
+import { memo, SetStateAction, useEffect, useState } from "react";
+import {
+  Handle,
+  Node,
+  NodeResizer,
+  Position,
+  ResizeParams,
+  useOnSelectionChange,
+  useOnViewportChange,
+  useReactFlow,
+} from "reactflow";
 import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps, MindMapDetailsProps } from "@/_types";
@@ -14,6 +23,16 @@ import { uppercaseFirstLetter } from "@/utils";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const { getNode } = useReactFlow();
+  const [scaleStyle, setScaleStyle] = useState({});
+
+  useOnViewportChange({
+    onChange: (viewport) => {
+      const scale = 1.2 / viewport.zoom;
+
+      setScaleStyle({ transform: `scale(${scale})` });
+    },
+  });
+
   const node = getNode(id);
   const [inputText, setInputText] = useState(data.label);
   const { pushToHistory } = useMindMap(undefined);
@@ -71,7 +90,11 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       <div className="relative flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {selected && username == collaborateName && <NodeToolbar nodeId={id} />}
+      {selected && username == collaborateName && (
+        <div style={scaleStyle}>
+          <NodeToolbar nodeId={id} />
+        </div>
+      )}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"

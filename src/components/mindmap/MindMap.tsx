@@ -1,20 +1,18 @@
 import "reactflow/dist/style.css";
 
 import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, {
-  applyNodeChanges,
   Background,
   BackgroundVariant,
   ConnectionMode,
   Controls,
   Node,
   NodeProps,
-  ReactFlowState,
+  SelectionMode,
   useEdges,
   useNodes,
   useReactFlow,
-  useStore,
 } from "reactflow";
 import { useSetRecoilState } from "recoil";
 
@@ -35,6 +33,8 @@ import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 const edgeTypes = {
   bidirectional: BiDirectionalEdge,
 };
+
+const panOnDrag = [1, 2];
 
 function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const {
@@ -172,6 +172,10 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
+        panOnScroll
+        panOnDrag={panOnDrag}
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
       >
         <Controls />
         <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
