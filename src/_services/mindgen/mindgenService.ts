@@ -121,6 +121,7 @@ export async function createMindmap(mindmapObject: any): Promise<any> {
 
     const responseCreatedMindMap: Response = await fetch(baseUrl + `/mindmap`, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         // eslint-disable-next-line prettier/prettier
@@ -146,7 +147,11 @@ export async function getMindmapById(mindmapId: string): Promise<any> {
     const session = await response.json();
 
     const responseMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+      next: {
+        revalidate: 0,
+      },
       method: "GET",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         // eslint-disable-next-line prettier/prettier
@@ -178,6 +183,7 @@ export async function updateMindmapById({
 
     const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
       method: "PUT",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         // eslint-disable-next-line prettier/prettier

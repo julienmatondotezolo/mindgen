@@ -27,7 +27,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   useOnViewportChange({
     onChange: (viewport) => {
-      const scale = 1.2 / viewport.zoom;
+      const scale = 1.4 / viewport.zoom;
 
       setScaleStyle({ transform: `scale(${scale})` });
     },

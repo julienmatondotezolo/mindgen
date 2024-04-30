@@ -14,7 +14,9 @@ import {
   HandleType,
   Node,
   ReactFlowInstance,
+  useEdges,
   useEdgesState,
+  useNodes,
   useNodesState,
   useReactFlow,
   useStoreApi,
@@ -181,8 +183,9 @@ const nodeCreators: Record<
 
 const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const connectingNodeId = useRef(null);
+  const connectingNodeType = useRef<String | undefined>("");
 
-  const { getNodes, getEdges } = useReactFlow();
+  const { getNodes, getEdges, getNode } = useReactFlow();
 
   const [nodeId, setNodeId] = useState(0);
   const [sourceHandle, setSourceHandle] = useState("");
@@ -194,6 +197,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
+  const nodeChanges = useNodes();
+  const edgeChanges = useEdges();
 
   const { addSelectedNodes } = useStoreApi();
 
@@ -214,7 +219,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
       return newHistory;
     });
     setHistoryIndex(historyIndex + 1);
-  }, [edges, edges]);
+  }, [getNodes, getEdges, historyIndex]);
 
   useEffect(() => {
     setNodes([]);
@@ -226,14 +231,14 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
       setNodeId(userMindmapDetails.nodes.length);
       setEdges(userMindmapDetails.edges);
     }
-  }, []);
+  }, [userMindmapDetails]);
 
   const queryClient = useQueryClient();
   // Define the mutation
   const updateMindmapMutation = useSyncMutation(updateMindmapById, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
-      queryClient.invalidateQueries("mindmaps");
+      // queryClient.invalidateQueries("mindmaps");
     },
   });
 
@@ -274,7 +279,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
       setPictureUrl(imageBase64Data);
     }, 10000),
-    [nodes, pictureUrl],
+    [nodeChanges, pictureUrl],
   );
 
   useEffect(() => {
@@ -290,7 +295,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     };
 
     saveMindMap();
-  }, [nodes, edges]);
+  }, [nodeChanges, edgeChanges]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -305,14 +310,17 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     (_: any, params: { nodeId: any; handleId: string | null; handleType: HandleType | null }) => {
       const { nodeId } = params;
 
+      const currentSelectedNode = getNode(nodeId);
+
       connectingNodeId!.current = nodeId;
+      connectingNodeType!.current = currentSelectedNode?.type;
     },
     [],
   );
 
   const onConnectEnd = useCallback(
     (event: any) => {
-      if (!connectingNodeId.current) return;
+      if (!connectingNodeId.current || !connectingNodeType.current) return;
 
       const targetIsPane = event.target.classList.contains("react-flow__pane");
 
@@ -322,9 +330,15 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
         const id = `node_${nodeId}`;
 
-        const newNode = createCustomNode(nodeId, reactFlowInstance, event);
+        const createNode = nodeCreators[connectingNodeType.current as NodeType];
 
-        setNodes((nds) => nds.concat(newNode));
+        if (!createNode) {
+          return;
+        }
+
+        const newNode = createNode(nodeId, reactFlowInstance, event, undefined);
+
+        setNodes((nds) => [...nds, newNode]);
 
         const params = {
           id,
