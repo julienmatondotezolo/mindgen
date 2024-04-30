@@ -41,8 +41,6 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   const borderWidth = node?.data?.borderWidth ?? 2;
 
-  console.log("borderWidth:", borderWidth);
-
   const resizeNode = (params: ResizeParams) => {
     // Update the node's dimensions
     const updatedNode = {
