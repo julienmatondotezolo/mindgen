@@ -15,10 +15,9 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
   const { setNodes, getNode } = useReactFlow();
   const currentNode = getNode(nodeId);
   const isBold = currentNode?.style?.fontWeight == "800";
+  const isBorderBig = currentNode?.data?.borderWidth == 4;
 
-  const currentNodeStyle = currentNode?.style;
-
-  console.log("currentNodeStyle:", currentNodeStyle);
+  const currentNodeData = currentNode?.data;
 
   const handleBoldNode = () => {
     setNodes((nds) =>
@@ -56,8 +55,8 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
         if (node.id === nodeId) {
           // it's important that you create a new object here
           // in order to notify react flow about the change
-          node.style = {
-            ...node.style,
+          node.data = {
+            ...node.data,
             borderWidth: width,
           };
         }
@@ -103,15 +102,15 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
         </div>
         <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
         <div
-          className={`flex items-center ${listStyle} cursor-pointer  mr-1`}
-          onClick={() => handleBorderWidth(0)}
+          className={`flex items-center ${listStyle} ${!isBorderBig ? isActive : ""} cursor-pointer  mr-1`}
+          onClick={() => handleBorderWidth(2)}
           aria-hidden="true"
         >
           <figure className=" h-[1px] w-full bg-white"></figure>
         </div>
         <div
-          className={`flex items-center ${listStyle} cursor-pointer`}
-          onClick={() => handleBorderWidth(2)}
+          className={`flex items-center ${listStyle} ${isBorderBig ? isActive : ""} cursor-pointer`}
+          onClick={() => handleBorderWidth(4)}
           aria-hidden="true"
         >
           <figure className=" h-[3px] w-full bg-white"></figure>
