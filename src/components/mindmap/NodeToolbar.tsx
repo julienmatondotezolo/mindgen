@@ -1,6 +1,6 @@
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import { Node, useNodes, useReactFlow } from "reactflow";
+import React, { useState } from "react";
+import { useReactFlow } from "reactflow";
 
 import boldIcon from "@/assets/icons/bold.svg";
 import colorTextIcon from "@/assets/icons/colorText.svg";
@@ -15,6 +15,7 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
   const { setNodes, getNode } = useReactFlow();
   const currentNode = getNode(nodeId);
   const isBold = currentNode?.style?.fontWeight == "800";
+
   const isBorderBig = currentNode?.data?.borderWidth == 4;
   const isBackgroundColor = currentNode?.style?.backgroundColor;
   const isUnderlineText = currentNode?.style?.textDecoration == "underline";
@@ -92,7 +93,7 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
   };
 
   const listStyle = `w-6 h-6 p-2 bg-gray-50 hover:bg-primary-opaque rounded-md dark:bg-slate-800 hover:dark:bg-slate-600`;
-  const isActive = "bg-primary-opaque dark:bg-slate-400/50";
+  const isActive = "bg-primary-opaque dark:bg-slate-400/40";
 
   return (
     <div
@@ -128,7 +129,7 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
             style={{ backgroundColor: !isBackgroundColor ? "#4D6AFF" : currentNode?.style?.backgroundColor }}
           ></figure>
           {isSecondDivVisible && (
-            <div className="absolute top-12 left-0 p-2 bg-white backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 grid grid-cols-4 gap-8">
+            <div className="absolute top-12 left-0 p-2 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 grid grid-cols-4 gap-8">
               {colorsJson.map((colorObj, index) => (
                 <figure
                   key={index}

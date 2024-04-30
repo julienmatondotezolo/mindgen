@@ -1,25 +1,14 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { memo, SetStateAction, useEffect, useState } from "react";
-import {
-  Handle,
-  Node,
-  NodeResizer,
-  Position,
-  ResizeParams,
-  useOnSelectionChange,
-  useOnViewportChange,
-  useReactFlow,
-} from "reactflow";
+import { memo, SetStateAction, useState } from "react";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useOnViewportChange, useReactFlow } from "reactflow";
 import { useRecoilValue } from "recoil";
 
-import { CustomNodeProps, MindMapDetailsProps } from "@/_types";
+import { CustomNodeProps } from "@/_types";
 import { NodeToolbar } from "@/components";
-import { useCachedQuery, useMindMap } from "@/hooks";
-import { socket } from "@/socket";
+import { useMindMap } from "@/hooks";
 import { collaboratorNameState } from "@/state";
-import { uppercaseFirstLetter } from "@/utils";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const { getNode } = useReactFlow();
@@ -39,7 +28,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   const handleSize = "!w-[10px] !h-[10px]";
 
-  const borderWidth = node?.data?.borderWidth ?? 2;
+  const borderWidth = node?.data?.borderWidth ? node?.data?.borderWidth : 2;
 
   const resizeNode = (params: ResizeParams) => {
     // Update the node's dimensions
