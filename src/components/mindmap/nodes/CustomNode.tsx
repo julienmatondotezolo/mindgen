@@ -2,25 +2,16 @@
 
 import { useSession } from "next-auth/react";
 import { memo, SetStateAction, useState } from "react";
-import { Handle, Node, NodeResizer, Position, ResizeParams, useOnViewportChange, useReactFlow } from "reactflow";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
 import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
-import { collaboratorNameState } from "@/state";
+import { collaboratorNameState, viewPortScaleState } from "@/state";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const { getNode } = useReactFlow();
-  const [scaleStyle, setScaleStyle] = useState({});
-
-  useOnViewportChange({
-    onChange: (viewport) => {
-      const scale = 1.4 / viewport.zoom;
-
-      setScaleStyle({ transform: `scale(${scale})` });
-    },
-  });
 
   const node = getNode(id);
   const [inputText, setInputText] = useState(data.label);
@@ -60,6 +51,8 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   const username = session.data?.session.user.username;
 
   const collaborateName = useRecoilValue(collaboratorNameState);
+
+  const scaleStyle = useRecoilValue(viewPortScaleState);
 
   return (
     <>

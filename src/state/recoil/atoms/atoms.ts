@@ -77,3 +77,8 @@ export const collaboratorNameState = atom({
   key: "collaboratorNameState",
   default: "",
 });
+
+export const viewPortScaleState = atom({
+  key: "viewPortScaleState",
+  default: {},
+});
