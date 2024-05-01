@@ -1,20 +1,19 @@
 import "reactflow/dist/style.css";
 
 import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, {
-  applyNodeChanges,
   Background,
   BackgroundVariant,
   ConnectionMode,
   Controls,
   Node,
   NodeProps,
-  ReactFlowState,
+  SelectionMode,
   useEdges,
   useNodes,
+  useOnViewportChange,
   useReactFlow,
-  useStore,
 } from "reactflow";
 import { useSetRecoilState } from "recoil";
 
@@ -28,13 +27,15 @@ import {
 } from "@/components/mindmap";
 import { useMindMap } from "@/hooks";
 import { socket } from "@/socket";
-import { collaboratorNameState } from "@/state";
+import { collaboratorNameState, viewPortScaleState } from "@/state";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 
 const edgeTypes = {
   bidirectional: BiDirectionalEdge,
 };
+
+const panOnDrag = [1, 2];
 
 function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const {
@@ -57,7 +58,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     type: "default",
   };
 
-  const { setEdges, setNodes, getNodes } = useReactFlow();
+  const { setEdges, setNodes, getNodes, setViewport } = useReactFlow();
 
   const session = useSession();
   const nodeChanges = useNodes();
@@ -94,6 +95,20 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const [first, setFirst] = useState(true);
   const setCollaborateName = useSetRecoilState(collaboratorNameState);
+
+  const setScaleStyle = useSetRecoilState(viewPortScaleState);
+
+  function ViewportChangeLogger() {
+    useOnViewportChange({
+      onChange: (viewport) => {
+        const scale = 1.4 / viewport.zoom;
+
+        setScaleStyle({ transform: `scale(${scale})` });
+      },
+    });
+
+    return null;
+  }
 
   useEffect(() => {
     if (first) {
@@ -172,11 +187,16 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
+        panOnScroll
+        panOnDrag={panOnDrag}
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
       >
         <Controls />
         <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
         {/* <StateComponent userMindmapDetails={userMindmapDetails} /> */}
+        <ViewportChangeLogger />
       </ReactFlow>
     </>
   );

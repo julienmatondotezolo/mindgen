@@ -63,7 +63,7 @@ export default function Board({ params }: { params: { id: string } }) {
     ["mindmap", params.id],
     getUserMindmapById,
     {
-      staleTime: 0,
+      // refetchOnMount: "always",
       onSuccess: async (data) => {
         await joinRoom(data);
 

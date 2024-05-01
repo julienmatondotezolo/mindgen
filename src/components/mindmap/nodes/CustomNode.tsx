@@ -2,23 +2,24 @@
 
 import { useSession } from "next-auth/react";
 import { memo, SetStateAction, useState } from "react";
-import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 import { useRecoilValue } from "recoil";
 
-import { CustomNodeProps, MindMapDetailsProps } from "@/_types";
+import { CustomNodeProps } from "@/_types";
 import { NodeToolbar } from "@/components";
-import { useCachedQuery, useMindMap } from "@/hooks";
-import { socket } from "@/socket";
-import { collaboratorNameState } from "@/state";
-import { uppercaseFirstLetter } from "@/utils";
+import { useMindMap } from "@/hooks";
+import { collaboratorNameState, viewPortScaleState } from "@/state";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const { getNode } = useReactFlow();
+
   const node = getNode(id);
   const [inputText, setInputText] = useState(data.label);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
+
+  const borderWidth = node?.data?.borderWidth ? node?.data?.borderWidth : 2;
 
   const resizeNode = (params: ResizeParams) => {
     // Update the node's dimensions
@@ -51,6 +52,8 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   const collaborateName = useRecoilValue(collaboratorNameState);
 
+  const scaleStyle = useRecoilValue(viewPortScaleState);
+
   return (
     <>
       <NodeResizer
@@ -68,17 +71,16 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         }}
         isVisible={selected}
       />
-      <div className="relative flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
+      <div
+        className={`relative flex content-center items-center h-full py-2 px-6 border-${borderWidth} rounded-[100px] bg-[#4d6aff1a]`}
+      >
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {username !== collaborateName && selected ? (
-        <div className="mt-3 bg-[#FF4DC4] px-6 py-2 w-fit rounded-full">
-          <p>{uppercaseFirstLetter(collaborateName)}</p>
+      {selected && username == collaborateName && (
+        <div style={scaleStyle}>
+          <NodeToolbar nodeId={id} />
         </div>
-      ) : (
-        <></>
       )}
-      {selected && username == collaborateName && <NodeToolbar nodeId={id} />}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"
