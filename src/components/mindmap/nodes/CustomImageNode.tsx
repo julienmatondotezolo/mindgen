@@ -44,7 +44,7 @@ const CustomImageNode = ({ id, data, selected, setNodes, setSourceHandle }: Cust
           width: "100%",
           height: "100%",
           backgroundSize: "cover",
-          backgroundImage: `url(${data.image.url})`,
+          backgroundImage: `url(${data.image?.url})`,
           backgroundRepeat: "no-repeat",
         }}
       ></div>

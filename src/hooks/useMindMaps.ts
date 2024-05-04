@@ -12,6 +12,7 @@ import {
   getOutgoers,
   getViewportForBounds,
   HandleType,
+  MarkerType,
   Node,
   ReactFlowInstance,
   useEdges,
@@ -301,6 +302,11 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     (params: Edge | Connection) => {
       // reset the start node on connections
       connectingNodeId.current = null;
+      (params as Edge).markerEnd = {
+        type: MarkerType.ArrowClosed,
+        width: 30,
+        height: 30,
+      };
       setEdges((eds) => addEdge(params, eds));
     },
     [setEdges],
@@ -346,6 +352,11 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
           sourceHandle: sourceHandle,
           target: id,
           targetHandle: setTargetHandle(sourceHandle),
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            width: 30,
+            height: 30,
+          },
         };
 
         setEdges((eds) => addEdge(params, eds));

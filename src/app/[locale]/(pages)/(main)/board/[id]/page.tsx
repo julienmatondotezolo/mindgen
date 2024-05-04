@@ -154,7 +154,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
   return (
     <>
-      <div className="fixed right-0 bottom-0 p-10 z-50">
+      <div className="fixed right-0 bottom-12 p-10 z-50">
         {isConnected ? <Button onClick={() => leaveRoom()}>Leave room</Button> : <></>}
         <p>Status: {isConnected ? "connected" : "disconnected"}</p>
         <p>Transport: {transport}</p>

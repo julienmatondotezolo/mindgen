@@ -55,6 +55,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const defaultEdgeOptions = {
     animated: true,
+    selectable: true,
     type: "default",
   };
 

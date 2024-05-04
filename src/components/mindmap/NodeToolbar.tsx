@@ -24,10 +24,11 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
 
   // Define the JSON with colors
   const colorsJson = [
+    { color: "#4d6aff1a" },
     { color: "#4D6AFF" },
     { color: "#9A4DFF" },
     { color: "#FF6A4D" },
-    { color: "#126D08" },
+    { color: "#14c14d" },
     { color: "#414243" },
   ];
 
@@ -126,14 +127,14 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
         >
           <figure
             className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-3 w-3 rounded-full grid`}
-            style={{ backgroundColor: !isBackgroundColor ? "#4D6AFF" : currentNode?.style?.backgroundColor }}
+            style={{ backgroundColor: !isBackgroundColor ? "#4d6aff1a" : currentNode?.style?.backgroundColor }}
           ></figure>
           {isSecondDivVisible && (
-            <div className="absolute top-12 left-0 p-2 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 grid grid-cols-4 gap-8">
+            <div className="absolute top-12 left-0 p-2 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 grid grid-cols-3 gap-4 w-max">
               {colorsJson.map((colorObj, index) => (
                 <figure
                   key={index}
-                  className={`h-4 w-4 rounded-full`}
+                  className={`h-4 w-4 rounded-full m-auto box-border`} // Centering and sizing
                   style={{ backgroundColor: colorObj.color }}
                   onClick={() => handleBackgroundColor(colorObj.color)}
                   aria-hidden="true"
@@ -156,14 +157,14 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
           onClick={() => handleBorderWidth(2)}
           aria-hidden="true"
         >
-          <figure className=" h-[1px] w-full bg-white"></figure>
+          <figure className=" h-[1px] w-full bg-white dark:bg-white"></figure>
         </div>
         <div
           className={`flex items-center ${listStyle} ${isBorderBig ? isActive : ""} cursor-pointer`}
           onClick={() => handleBorderWidth(4)}
           aria-hidden="true"
         >
-          <figure className=" h-[3px] w-full bg-white"></figure>
+          <figure className=" h-[3px] w-full bg-white dark:bg-white"></figure>
         </div>
       </ul>
     </div>
