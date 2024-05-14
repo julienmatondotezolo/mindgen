@@ -14,4 +14,5 @@ export type MindMapDetailsProps = {
   edges: Edge[];
   nodes: Node[];
   viewport: Viewport;
+  privateMode: boolean;
 };

@@ -214,7 +214,7 @@ export default function Board({ params }: { params: { id: string } }) {
       </main>
       <ImportDialog open={importModal} setIsOpen={setImportModal} />
       <ShareDialog open={shareModal} setIsOpen={setShareModal} />
-      <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} />
+      <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} mindmapId={params.id} />
       <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
       <div
         style={{ left: collaCursorPos.x, top: collaCursorPos.y }}

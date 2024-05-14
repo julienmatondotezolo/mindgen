@@ -59,7 +59,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     type: "default",
   };
 
-  const { setEdges, setNodes, getNodes, setViewport } = useReactFlow();
+  const { setEdges, setNodes, getNodes } = useReactFlow();
 
   const session = useSession();
   const nodeChanges = useNodes();

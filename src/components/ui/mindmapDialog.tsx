@@ -39,6 +39,7 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       name: inputTitle,
       description: inputDescription,
       pictureUrl: "",
+      privateMode: false,
     });
 
     try {
