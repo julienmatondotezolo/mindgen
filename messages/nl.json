@@ -1,5 +1,6 @@
 {
   "Index": {
+    "add": "toevoegen",
     "createdBy": "Gemaakt door",
     "open": "open",
     "new": "nieuwe",
@@ -95,5 +96,12 @@
   "Chat": {
     "promptInput": "Vraag/Genereer alles over deze mindmap...",
     "answer": "Antwoord"
+  },
+  "Collaborator": {
+    "addCollaborator": "Medewerker toevoegen",
+    "admin": "Beheerder",
+    "contributor": "Contributor",
+    "eigenaar": "Eigenaar",
+    "viewer": "Bezoeker"
   }
 }

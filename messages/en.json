@@ -1,5 +1,6 @@
 {
   "Index": {
+    "add": "add",
     "createdBy": "Created by",
     "open": "open",
     "new": "new",
@@ -95,5 +96,12 @@
   "Chat": {
     "promptInput": "Ask/generate anything about this mindmap...",
     "answer": "Answer"
+  },
+  "Collaborator": {
+    "addCollaborator": "Add collaborator",
+    "admin": "Admin",
+    "contributor": "Contributor",
+    "owner": "Owner",
+    "viewer": "Viewer"
   }
 }
