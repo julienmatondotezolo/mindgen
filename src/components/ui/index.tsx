@@ -11,6 +11,7 @@ export * from "./mindmapDialog";
 export * from "./PdfDropZone";
 export * from "./popover";
 export * from "./progress";
+export * from "./select";
 export * from "./shareDialog";
 export * from "./sheet";
 export * from "./skeleton";
