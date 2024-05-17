@@ -280,6 +280,33 @@ export async function addNewCollaborator(collaboratorObject: any): Promise<any> 
   }
 }
 
+export async function inviteAllCollaborators(collaboratorsObject: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseAddCollaborator: Response = await fetch(baseUrl + `/mindmap/invitation/invite`, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(collaboratorsObject),
+    });
+
+    if (responseAddCollaborator.ok) {
+      return responseAddCollaborator;
+    } else {
+      throw responseAddCollaborator;
+    }
+  } catch (error) {
+    console.error("Impossible to add collaborator(s):", error);
+  }
+}
+
 export async function removeCollaboratorById(collaboratorId: string): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
@@ -301,6 +328,6 @@ export async function removeCollaboratorById(collaboratorId: string): Promise<an
       throw responseRemoveCollaborator;
     }
   } catch (error) {
-    console.error("Impossible to remove collaborator:", error.statusText);
+    console.error("Impossible to remove collaborator:", error);
   }
 }

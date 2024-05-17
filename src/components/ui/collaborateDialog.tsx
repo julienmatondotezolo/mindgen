@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
-import { addNewCollaborator, getMindmapById, removeCollaboratorById } from "@/_services";
+import { getMindmapById, inviteAllCollaborators, removeCollaboratorById } from "@/_services";
 import { Collaborator, DialogProps, MindMapDetailsProps } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
@@ -18,7 +18,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   const text = useTranslations("Index");
   const collaboratorText = useTranslations("Collaborator");
   const modalRef = useRef<HTMLDivElement>(null);
-  const [addCollaborator, setAddCollaborator] = useState({ mindmapId, userId: "", role: "VIEWER" });
+
+  const [addCollaborator, setAddCollaborator] = useState({ mindmapId, username: "", role: "VIEWER" });
   const [collaborators, setCollaborators] = useState<Collaborator[] | undefined>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -29,9 +30,13 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   const { isLoading, data: userMindmap } = useQuery<MindMapDetailsProps>("mindmap", getUserMindmapById, {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    onSuccess: (data) => {
+      // Assuming data contains the collaborators array under a property named 'collaborators'
+      setCollaborators(data.collaborators);
+    },
   });
 
-  const fetchAddNewCollaborator = useSyncMutation(addNewCollaborator, {
+  const fetchInviteCollaborator = useSyncMutation(inviteAllCollaborators, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmap");
@@ -77,7 +82,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
 
   // Update state when input changes
   const handleCollaborator = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAddCollaborator({ ...addCollaborator, userId: e.target.value });
+    setAddCollaborator({ ...addCollaborator, username: e.target.value });
   };
 
   const handleCollaboratorRole = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -86,29 +91,57 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
 
   const handleAddCollaborator = async () => {
     try {
-      fetchAddNewCollaborator.mutate(addCollaborator);
+      const mappedCollaborators = {
+        mindmapId: userMindmap?.id,
+        invitees: [
+          {
+            email: `${addCollaborator.username}@yopmail.com`, // Assuming username is the email
+            role: addCollaborator.role,
+          },
+        ],
+      };
+
+      fetchInviteCollaborator.mutate(mappedCollaborators);
     } catch (error) {
       if (error instanceof Error) {
         console.error(`An error has occurred: ${error.message}`);
       }
     }
 
-    setAddCollaborator({ mindmapId, userId: "", role: "" });
+    setAddCollaborator({ mindmapId, username: "", role: "" });
   };
 
-  const handleCollaboratorRoleChange = (e: React.ChangeEvent<HTMLSelectElement>, collaboratorId: string) => {
-    const updatedCollaborators = userMindmap?.collaborators.map((col) => {
-      if (col.collaboratorId === collaboratorId) {
-        return { ...col, role: e.target.value };
-      }
-      return col;
-    });
+  const handleCollaboratorRoleChange = (e: React.ChangeEvent<HTMLSelectElement>, collaboratorIndex: number) => {
+    // Assert that collaborators is an array
+    const collaboratorsArray = collaborators as Collaborator[];
 
-    setCollaborators(updatedCollaborators);
+    // Find the index of the collaborator to update
+
+    if (collaboratorIndex !== -1) {
+      // Create a new array with the updated collaborator role
+      const updatedCollaborators = [...collaboratorsArray];
+
+      updatedCollaborators[collaboratorIndex].role = e.target.value;
+
+      // Update the collaborators state
+      setCollaborators(updatedCollaborators);
+    }
   };
 
   const handleSave = () => {
-    console.log("collaborator:", collaborators);
+    if (collaborators) {
+      const mappedCollaborators = {
+        mindmapId: userMindmap?.id,
+        invitees: collaborators.map((item) => ({
+          email: `${item.username}@yopmail.com`, // Assuming username is the email
+          role: item.role,
+        })),
+      };
+
+      fetchAddNewCollaborator.mutate(mappedCollaborators);
+    } else {
+      console.warn("No collaborators to be saved");
+    }
   };
 
   return (
@@ -130,7 +163,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
           </p>
           <div className="flex flex-wrap justify-between w-full mt-4">
             <Input
-              value={addCollaborator.userId}
+              value={addCollaborator.username}
               onChange={handleCollaborator}
               placeholder={`${uppercaseFirstLetter(collaboratorText("addCollaborator"))}`}
               className="py-4 w-fit"
@@ -153,10 +186,10 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
             <Skeleton className="w-full h-16 bg-slate-600" />
           </>
         ) : (
-          userMindmap?.collaborators.map((collaborator: Collaborator, i) => (
+          userMindmap?.collaborators.map((collaborator: Collaborator, index) => (
             <article
               key={collaborator.collaboratorId}
-              className="flex items-center justify-between p-4 bg-gray-100 hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 rounded-xl"
+              className="flex flex-wrap items-center justify-between p-4 bg-gray-100 hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 rounded-xl"
             >
               <section className="flex items-center">
                 <figure
@@ -168,7 +201,6 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                 </figure>
                 <div>{uppercaseFirstLetter(collaborator.username)}</div>
               </section>
-
               {collaborator.role == "OWNER" ? (
                 <div className="text-sm px-4 py-2 border rounded-lg opacity-50">
                   {collaboratorText(collaborator.role.toLowerCase())}
@@ -177,8 +209,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                 <div className="flex items-center space-x-4">
                   <select
                     className="bg-transparent border p-2 rounded-lg text-sm"
-                    value={collaborators[i]?.role}
-                    onChange={(e) => handleCollaboratorRoleChange(e, collaborator.collaboratorId)}
+                    value={collaborators ? collaborators[index]?.role : ""}
+                    onChange={(e) => handleCollaboratorRoleChange(e, index)}
                   >
                     <option value="ADMIN">{collaboratorText("admin")}</option>
                     <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
