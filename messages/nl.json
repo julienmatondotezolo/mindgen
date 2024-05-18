@@ -1,7 +1,13 @@
 {
   "Index": {
     "add": "toevoegen",
+    "remove": "verwijderen",
     "invite": "uitnodigen",
+    "invitation": "uitnodiging",
+    "invitations": "uitnodigingen",
+    "pending": "in behandeling",
+    "yes": "ja",
+    "no": "nee",
     "createdBy": "Gemaakt door",
     "open": "open",
     "new": "nieuwe",
@@ -99,6 +105,10 @@
     "answer": "Antwoord"
   },
   "Collaborator": {
+    "collaboratorText": "Schakel een samenwerkingssessie in en nodig gebruikers uit om samen geweldige mindmaps te maken.",
+    "noCollaborator": "Geen medewerker",
+    "collaborator": "Medewerker",
+    "collaborators": "Medewerkers",
     "addCollaborator": "Medewerker toevoegen",
     "inviteCollaborator": "Medewerker uitnodigen",
     "admin": "Beheerder",

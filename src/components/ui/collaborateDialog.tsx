@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -5,7 +6,7 @@ import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { getMindmapById, inviteAllCollaborators, removeCollaboratorById } from "@/_services";
-import { Collaborator, DialogProps, MindMapDetailsProps } from "@/_types";
+import { Collaborator, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
 import { uppercaseFirstLetter } from "@/utils";
@@ -35,6 +36,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
       setCollaborators(data.collaborators);
     },
   });
+
+  const collaboratorsLength = userMindmap ? userMindmap?.collaborators.length - 1 : 0;
 
   const fetchInviteCollaborator = useSyncMutation(inviteAllCollaborators, {
     onSuccess: () => {
@@ -158,9 +161,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
       <div className="w-full mt-4 space-y-6">
         <article className="w-full">
           <p className="text-md font-bold mb-2">{uppercaseFirstLetter(collaboratorText("addCollaborator"))}</p>
-          <p className="text-sm">
-            Enable a secret link for collaborators and invite them to create awesome mind maps together.
-          </p>
+          <p className="text-sm">{collaboratorText("collaboratorText")}</p>
           <div className="flex flex-wrap justify-between w-full mt-4">
             <Input
               value={inviteCollaborator.username}
@@ -180,6 +181,45 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
             <Button onClick={handleInviteCollaborator}>{uppercaseFirstLetter(text("invite"))}</Button>
           </div>
         </article>
+        <p className="text-md font-bold mb-2">
+          {userMindmap?.invitations.length
+            ? `${userMindmap?.invitations.length} ${text(
+                userMindmap?.invitations.length > 1 ? `invitations` : `invitation`,
+              )}`
+            : null}
+        </p>
+        {userMindmap?.invitations.map((invitations: Invitations) => (
+          <article
+            key={invitations.id}
+            className="flex flex-wrap items-center justify-between p-4 bg-gray-100 hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 rounded-xl"
+          >
+            <section className="flex items-center">
+              <figure
+                className={`flex h-6 w-6 ${
+                  invitations.role == "OWNER" ? "bg-primary-color" : "bg-[#1fb865]"
+                } mr-4 rounded-full`}
+              >
+                <p className="m-auto text-xs">{invitations.inviteeUsername.substring(0, 1).toUpperCase()}</p>
+              </figure>
+              <div>{uppercaseFirstLetter(invitations.inviteeUsername)}</div>
+            </section>
+
+            <div className="bg-transparent border p-2 rounded-lg text-sm">
+              {collaboratorText(invitations.role.toLowerCase())}
+            </div>
+
+            <p className="text-xs font-bold text-[#eea463] cursor-pointer">
+              {uppercaseFirstLetter(text(invitations.status.toLowerCase()))}
+            </p>
+          </article>
+        ))}
+        <p className="text-md font-bold mb-2">
+          {collaboratorsLength < 1
+            ? collaboratorText("noCollaborator")
+            : `${collaboratorsLength} ${collaboratorText(
+                collaboratorsLength > 1 ? `collaborators` : `collaborator`,
+              ).toLowerCase()}`}
+        </p>
         {isLoading ? (
           <>
             <Skeleton className="w-full h-16 bg-slate-600" />
@@ -223,7 +263,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                       onClick={() => handleRemove(collaborator.collaboratorId)}
                       className="text-xs text-[#ee6a63] cursor-pointer"
                     >
-                      Remove
+                      {uppercaseFirstLetter(text("remove"))}
                     </button>
                   )}
                 </div>
