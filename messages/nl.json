@@ -1,6 +1,7 @@
 {
   "Index": {
     "add": "toevoegen",
+    "invite": "uitnodigen",
     "createdBy": "Gemaakt door",
     "open": "open",
     "new": "nieuwe",
@@ -99,6 +100,7 @@
   },
   "Collaborator": {
     "addCollaborator": "Medewerker toevoegen",
+    "inviteCollaborator": "Medewerker uitnodigen",
     "admin": "Beheerder",
     "contributor": "Contributor",
     "eigenaar": "Eigenaar",

@@ -19,7 +19,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   const collaboratorText = useTranslations("Collaborator");
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [addCollaborator, setAddCollaborator] = useState({ mindmapId, username: "", role: "VIEWER" });
+  const [inviteCollaborator, setInviteCollaborator] = useState({ mindmapId, username: "", role: "VIEWER" });
   const [collaborators, setCollaborators] = useState<Collaborator[] | undefined>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -82,21 +82,21 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
 
   // Update state when input changes
   const handleCollaborator = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAddCollaborator({ ...addCollaborator, username: e.target.value });
+    setInviteCollaborator({ ...inviteCollaborator, username: e.target.value });
   };
 
   const handleCollaboratorRole = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setAddCollaborator({ ...addCollaborator, role: e.target.value });
+    setInviteCollaborator({ ...inviteCollaborator, role: e.target.value });
   };
 
-  const handleAddCollaborator = async () => {
+  const handleInviteCollaborator = async () => {
     try {
       const mappedCollaborators = {
-        mindmapId: userMindmap?.id,
-        invitees: [
+        mindmapId,
+        invitedCollaborators: [
           {
-            email: `${addCollaborator.username}@yopmail.com`, // Assuming username is the email
-            role: addCollaborator.role,
+            username: inviteCollaborator.username,
+            role: inviteCollaborator.role,
           },
         ],
       };
@@ -108,7 +108,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
       }
     }
 
-    setAddCollaborator({ mindmapId, username: "", role: "" });
+    setInviteCollaborator({ mindmapId, username: "", role: "" });
   };
 
   const handleCollaboratorRoleChange = (e: React.ChangeEvent<HTMLSelectElement>, collaboratorIndex: number) => {
@@ -138,7 +138,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
         })),
       };
 
-      fetchAddNewCollaborator.mutate(mappedCollaborators);
+      console.log("mappedCollaborators:", mappedCollaborators);
     } else {
       console.warn("No collaborators to be saved");
     }
@@ -163,21 +163,21 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
           </p>
           <div className="flex flex-wrap justify-between w-full mt-4">
             <Input
-              value={addCollaborator.username}
+              value={inviteCollaborator.username}
               onChange={handleCollaborator}
-              placeholder={`${uppercaseFirstLetter(collaboratorText("addCollaborator"))}`}
+              placeholder={`${uppercaseFirstLetter(collaboratorText("inviteCollaborator"))}`}
               className="py-4 w-fit"
             />
             <select
               className="bg-transparent border-2 rounded-xl text-sm"
-              value={addCollaborator.role}
+              value={inviteCollaborator.role}
               onChange={(e) => handleCollaboratorRole(e)}
             >
               <option value="ADMIN">{collaboratorText("admin")}</option>
               <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
               <option value="VIEWER">{collaboratorText("viewer")}</option>
             </select>
-            <Button onClick={handleAddCollaborator}>{uppercaseFirstLetter(text("add"))}</Button>
+            <Button onClick={handleInviteCollaborator}>{uppercaseFirstLetter(text("invite"))}</Button>
           </div>
         </article>
         {isLoading ? (

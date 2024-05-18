@@ -1,6 +1,7 @@
 {
   "Index": {
     "add": "ajouter",
+    "invite": "inviter",
     "createdBy": "Créé par",
     "open": "ouvrir",
     "new": "nouveau",
@@ -99,6 +100,7 @@
   },
   "Collaborator": {
     "addCollaborator": "Ajouter un collaborateur",
+    "inviteCollaborator": "Inviter un collaborator",
     "admin": "Administrateur",
     "contributor": "Contributor",
     "owner": "Propriétaire",

@@ -1,6 +1,7 @@
 {
   "Index": {
     "add": "add",
+    "invite": "invite",
     "createdBy": "Created by",
     "open": "open",
     "new": "new",
@@ -99,6 +100,7 @@
   },
   "Collaborator": {
     "addCollaborator": "Add collaborator",
+    "inviteCollaborator": "Invite collaborator",
     "admin": "Admin",
     "contributor": "Contributor",
     "owner": "Owner",

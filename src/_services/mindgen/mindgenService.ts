@@ -281,11 +281,13 @@ export async function addNewCollaborator(collaboratorObject: any): Promise<any> 
 }
 
 export async function inviteAllCollaborators(collaboratorsObject: any): Promise<any> {
+  const { mindmapId, invitedCollaborators } = collaboratorsObject;
+
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();
 
-    const responseAddCollaborator: Response = await fetch(baseUrl + `/mindmap/invitation/invite`, {
+    const responseInvitedCollaborator: Response = await fetch(baseUrl + `/mindmap/invitation/invite/${mindmapId}`, {
       method: "POST",
       cache: "no-store",
       headers: {
@@ -294,16 +296,16 @@ export async function inviteAllCollaborators(collaboratorsObject: any): Promise<
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
-      body: JSON.stringify(collaboratorsObject),
+      body: JSON.stringify(invitedCollaborators),
     });
 
-    if (responseAddCollaborator.ok) {
-      return responseAddCollaborator;
+    if (responseInvitedCollaborator.ok) {
+      return responseInvitedCollaborator;
     } else {
-      throw responseAddCollaborator;
+      throw responseInvitedCollaborator;
     }
   } catch (error) {
-    console.error("Impossible to add collaborator(s):", error);
+    console.error("Impossible to invite collaborator(s):", error);
   }
 }
 
