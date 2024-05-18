@@ -24,7 +24,7 @@ import {
   shareModalState,
   upgradePlanModalState,
 } from "@/state";
-import { uppercaseFirstLetter } from "@/utils";
+import { checkPermission, uppercaseFirstLetter } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -77,6 +77,8 @@ export default function Board({ params }: { params: { id: string } }) {
       },
     },
   );
+
+  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
 
   async function joinRoom(userMindmapDetails: MindMapDetailsProps) {
     if (session.data != undefined) {
@@ -163,8 +165,8 @@ export default function Board({ params }: { params: { id: string } }) {
         <BackDropGradient />
         <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
           <NavLeft userMindmapDetails={userMindmapDetails} />
-          <ToolBar userMindmapDetails={userMindmapDetails} />
-          <NavRight />
+          {checkPermission(PERMISSIONS, "UPDATE") && <ToolBar userMindmapDetails={userMindmapDetails} />}
+          <NavRight userMindmapDetails={userMindmapDetails} />
         </div>
 
         <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">

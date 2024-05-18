@@ -1,3 +1,4 @@
+export * from "./checkPermission";
 export * from "./convertToNestedArray";
 export * from "./emptyMindMapObject";
 export * from "./exportMindmap";

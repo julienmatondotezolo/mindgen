@@ -9,7 +9,7 @@ import { getMindmapById, inviteAllCollaborators, removeCollaboratorById } from "
 import { Collaborator, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
-import { uppercaseFirstLetter } from "@/utils";
+import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
 interface CollaborateDialogProps extends DialogProps {
   mindmapId: string;
@@ -36,6 +36,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
       setCollaborators(data.collaborators);
     },
   });
+
+  const PERMISSIONS = userMindmap?.connectedCollaboratorPermissions;
 
   const collaboratorsLength = userMindmap ? userMindmap?.collaborators.length - 1 : 0;
 
@@ -162,57 +164,62 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
         <article className="w-full">
           <p className="text-md font-bold mb-2">{uppercaseFirstLetter(collaboratorText("addCollaborator"))}</p>
           <p className="text-sm">{collaboratorText("collaboratorText")}</p>
-          <div className="flex flex-wrap justify-between w-full mt-4">
-            <Input
-              value={inviteCollaborator.username}
-              onChange={handleCollaborator}
-              placeholder={`${uppercaseFirstLetter(collaboratorText("inviteCollaborator"))}`}
-              className="py-4 w-fit"
-            />
-            <select
-              className="bg-transparent border-2 rounded-xl text-sm"
-              value={inviteCollaborator.role}
-              onChange={(e) => handleCollaboratorRole(e)}
-            >
-              <option value="ADMIN">{collaboratorText("admin")}</option>
-              <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
-              <option value="VIEWER">{collaboratorText("viewer")}</option>
-            </select>
-            <Button onClick={handleInviteCollaborator}>{uppercaseFirstLetter(text("invite"))}</Button>
-          </div>
-        </article>
-        <p className="text-md font-bold mb-2">
-          {userMindmap?.invitations.length
-            ? `${userMindmap?.invitations.length} ${text(
-                userMindmap?.invitations.length > 1 ? `invitations` : `invitation`,
-              )}`
-            : null}
-        </p>
-        {userMindmap?.invitations.map((invitations: Invitations) => (
-          <article
-            key={invitations.id}
-            className="flex flex-wrap items-center justify-between p-4 bg-gray-100 hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 rounded-xl"
-          >
-            <section className="flex items-center">
-              <figure
-                className={`flex h-6 w-6 ${
-                  invitations.role == "OWNER" ? "bg-primary-color" : "bg-[#1fb865]"
-                } mr-4 rounded-full`}
+          {checkPermission(PERMISSIONS, "UPDATE") && (
+            <div className="flex flex-wrap justify-between w-full mt-4">
+              <Input
+                value={inviteCollaborator.username}
+                onChange={handleCollaborator}
+                placeholder={`${uppercaseFirstLetter(collaboratorText("inviteCollaborator"))}`}
+                className="py-4 w-fit"
+              />
+              <select
+                className="bg-transparent border-2 rounded-xl text-sm"
+                value={inviteCollaborator.role}
+                onChange={(e) => handleCollaboratorRole(e)}
               >
-                <p className="m-auto text-xs">{invitations.inviteeUsername.substring(0, 1).toUpperCase()}</p>
-              </figure>
-              <div>{uppercaseFirstLetter(invitations.inviteeUsername)}</div>
-            </section>
-
-            <div className="bg-transparent border p-2 rounded-lg text-sm">
-              {collaboratorText(invitations.role.toLowerCase())}
+                <option value="ADMIN">{collaboratorText("admin")}</option>
+                <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
+                <option value="VIEWER">{collaboratorText("viewer")}</option>
+              </select>
+              <Button onClick={handleInviteCollaborator}>{uppercaseFirstLetter(text("invite"))}</Button>
             </div>
+          )}
+        </article>
+        {checkPermission(PERMISSIONS, "UPDATE") && (
+          <p className="text-md font-bold mb-2">
+            {userMindmap?.invitations.length
+              ? `${userMindmap?.invitations.length} ${text(
+                  userMindmap?.invitations.length > 1 ? `invitations` : `invitation`,
+                )}`
+              : null}
+          </p>
+        )}
+        {checkPermission(PERMISSIONS, "UPDATE") &&
+          userMindmap?.invitations.map((invitations: Invitations) => (
+            <article
+              key={invitations.id}
+              className="flex flex-wrap items-center justify-between p-4 bg-gray-100 hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 rounded-xl"
+            >
+              <section className="flex items-center">
+                <figure
+                  className={`flex h-6 w-6 ${
+                    invitations.role == "OWNER" ? "bg-primary-color" : "bg-[#1fb865]"
+                  } mr-4 rounded-full`}
+                >
+                  <p className="m-auto text-xs">{invitations.inviteeUsername.substring(0, 1).toUpperCase()}</p>
+                </figure>
+                <div>{uppercaseFirstLetter(invitations.inviteeUsername)}</div>
+              </section>
 
-            <p className="text-xs font-bold text-[#eea463] cursor-pointer">
-              {uppercaseFirstLetter(text(invitations.status.toLowerCase()))}
-            </p>
-          </article>
-        ))}
+              <div className="bg-transparent border p-2 rounded-lg text-sm">
+                {collaboratorText(invitations.role.toLowerCase())}
+              </div>
+
+              <p className="text-xs font-bold text-[#eea463] cursor-pointer">
+                {uppercaseFirstLetter(text(invitations.status.toLowerCase()))}
+              </p>
+            </article>
+          ))}
         <p className="text-md font-bold mb-2">
           {collaboratorsLength < 1
             ? collaboratorText("noCollaborator")
@@ -251,20 +258,25 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                     className="bg-transparent border p-2 rounded-lg text-sm"
                     value={collaborators ? collaborators[index]?.role : ""}
                     onChange={(e) => handleCollaboratorRoleChange(e, index)}
+                    disabled={!checkPermission(PERMISSIONS, "UPDATE")}
                   >
                     <option value="ADMIN">{collaboratorText("admin")}</option>
                     <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
                     <option value="VIEWER">{collaboratorText("viewer")}</option>
                   </select>
-                  {isDeleting ? (
-                    <p className="text-xs text-[#ee6a63]">Deleting....</p>
-                  ) : (
-                    <button
-                      onClick={() => handleRemove(collaborator.collaboratorId)}
-                      className="text-xs text-[#ee6a63] cursor-pointer"
-                    >
-                      {uppercaseFirstLetter(text("remove"))}
-                    </button>
+                  {checkPermission(PERMISSIONS, "UPDATE") && (
+                    <>
+                      {isDeleting ? (
+                        <p className="text-xs text-[#ee6a63]">Deleting....</p>
+                      ) : (
+                        <button
+                          onClick={() => handleRemove(collaborator.collaboratorId)}
+                          className="text-xs text-[#ee6a63] cursor-pointer"
+                        >
+                          {uppercaseFirstLetter(text("remove"))}
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -272,7 +284,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
           ))
         )}
       </div>
-      {collaborators?.length != 0 && (
+      {checkPermission(PERMISSIONS, "UPDATE") && collaborators!.length > 1 && (
         <section className="flex justify-end">
           <Button onClick={handleSave}>{uppercaseFirstLetter(text("save"))}</Button>
         </section>

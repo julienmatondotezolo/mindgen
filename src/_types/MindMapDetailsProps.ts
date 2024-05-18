@@ -9,6 +9,7 @@ export type MindMapDetailsProps = {
   description: string;
   invitations: Invitations[];
   collaborators: Collaborator[];
+  connectedCollaboratorPermissions: string[];
   creatorId: string;
   creatorUsername: string;
   messages: MindMapMessages[];
