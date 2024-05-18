@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
-import { getMindmapById, inviteAllCollaborators, removeCollaboratorById } from "@/_services";
+import { getMindmapById, inviteAllCollaborators, removeCollaboratorById, updateCollaborators } from "@/_services";
 import { Collaborator, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
@@ -42,6 +42,13 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   const collaboratorsLength = userMindmap ? userMindmap?.collaborators.length - 1 : 0;
 
   const fetchInviteCollaborator = useSyncMutation(inviteAllCollaborators, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmap");
+    },
+  });
+
+  const fetchUpdateCollaborator = useSyncMutation(updateCollaborators, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmap");
@@ -135,15 +142,14 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
 
   const handleSave = () => {
     if (collaborators) {
-      const mappedCollaborators = {
-        mindmapId: userMindmap?.id,
-        invitees: collaborators.map((item) => ({
-          email: `${item.username}@yopmail.com`, // Assuming username is the email
+      const mappedCollaborators = [
+        collaborators.map((item) => ({
+          collaboratorId: item.collaboratorId,
           role: item.role,
         })),
-      };
+      ];
 
-      console.log("mappedCollaborators:", mappedCollaborators);
+      fetchUpdateCollaborator.mutate(mappedCollaborators[0].slice(1));
     } else {
       console.warn("No collaborators to be saved");
     }

@@ -309,6 +309,33 @@ export async function inviteAllCollaborators(collaboratorsObject: any): Promise<
   }
 }
 
+export async function updateCollaborators(collaboratorsObject: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/collaborator/role`, {
+      method: "PUT",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(collaboratorsObject),
+    });
+
+    if (responseUpdatedCollaborator.ok) {
+      return responseUpdatedCollaborator;
+    } else {
+      throw responseUpdatedCollaborator;
+    }
+  } catch (error) {
+    console.error("Impossible to invite collaborator(s):", error);
+  }
+}
+
 export async function removeCollaboratorById(collaboratorId: string): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
