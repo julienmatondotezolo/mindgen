@@ -163,10 +163,10 @@ export async function getMindmapById(mindmapId: string): Promise<any> {
     if (responseMindMap.ok) {
       return responseMindMap.json();
     } else {
-      throw responseMindMap;
+      throw new Error(`HTTP error status: ${responseMindMap.status}`);
     }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
+  } catch (error: any) {
+    throw new Error(`Fetch error: ${error.message}`);
   }
 }
 

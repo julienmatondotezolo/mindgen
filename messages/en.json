@@ -16,7 +16,7 @@
     "language": "language",
     "help": "help",
     "logout": "logout",
-    "loading": "loading...",
+    "loading": "loading",
     "name": "Name",
     "description": "Description",
     "private": "Private",
