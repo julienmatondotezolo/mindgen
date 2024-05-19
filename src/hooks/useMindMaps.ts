@@ -198,7 +198,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
-  const privateMode = userMindmapDetails?.privateMode;
+  const visibility = userMindmapDetails?.visibility;
   const nodeChanges = useNodes();
   const edgeChanges = useEdges();
 
@@ -254,7 +254,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
         pictureUrl: pictureUrl,
         nodes,
         edges,
-        privateMode: privateMode ?? false,
+        visibility: visibility ?? "PRIVATE",
       });
 
       return newMindmapObject;
