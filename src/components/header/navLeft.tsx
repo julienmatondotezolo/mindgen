@@ -11,15 +11,18 @@ import { MindMapDetailsProps } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui";
-import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
+import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const text = useTranslations("Index");
 
+  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+
   const [newMindMapName, setNewMindMapName] = useState("");
   const [newMindMapDescription, setNewMindMapDescription] = useState("");
+  const [newMindMapVisibility, setNewMindMapVisibility] = useState<boolean>();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const mindMapId = userMindmapDetails?.id;
@@ -124,15 +127,23 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   <p className="font-semibold">{text("private")}</p>
                   <p className="text-grey dark:text-grey-blue text-sm">{text("onlyViewable")}</p>
                 </article>
+                {checkPermission(PERMISSIONS, "UPDATE") && (
                 <label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" value="" className="sr-only peer" />
+                    <input
+                      type="checkbox"
+                      value={newMindMapVisibility == "PRIVATE" ? "true" : "false"}
+                      className="sr-only peer"
+                    />
                   <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-primary-color rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-color"></div>
                 </label>
+                )}
               </div>
             </section>
+            {checkPermission(PERMISSIONS, "UPDATE") && (
             <Button className="w-full" type="submit" disabled={updateMindmapMutation.isLoading}>
               {updateMindmapMutation.isLoading ? text("loading") : uppercaseFirstLetter(text("save"))}
             </Button>
+            )}
           </form>
         </ul>
       </SheetContent>

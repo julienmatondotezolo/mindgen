@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React from "react";
@@ -5,7 +6,7 @@ import { useQuery } from "react-query";
 import { useRecoilState } from "recoil";
 
 import { fetchProfile } from "@/_services";
-import { MindMapDetailsProps, ProfileProps } from "@/_types";
+import { Collaborator, MindMapDetailsProps, ProfileProps } from "@/_types";
 import collaborateIcon from "@/assets/icons/collaborate.svg";
 import importIcon from "@/assets/icons/import.svg";
 import shareIcon from "@/assets/icons/share.svg";
@@ -19,6 +20,8 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
   const text = useTranslations("Index");
 
   const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+  const collaborators = userMindmapDetails ? userMindmapDetails?.collaborators : [];
+  const MAX_COLLABORATORS_SHOWED = 4;
 
   const [importModal, setImportModal] = useRecoilState(importModalState);
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
@@ -80,16 +83,44 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
           </li>
         )}
         <li className="m-1">
-          <Button onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleCollaborateClick}>
-            <Image
-              className="mr-2"
-              src={collaborateIcon}
-              width="0"
-              height="0"
-              style={{ width: "100%", height: "auto" }}
-              alt="Collaborate icon"
-            />
-            {text("collaborate")}
+          <Button
+            variant={collaborators!.length > 1 ? "outline" : "default"}
+            onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleCollaborateClick}
+          >
+            {collaborators?.length > 1 ? (
+              collaborators?.slice(0, MAX_COLLABORATORS_SHOWED).map((collaborator: Collaborator, index: number) => (
+                <figure
+                  key={index}
+                  className={`flex h-6 w-6 rounded-full -ml-2 border ${
+                    collaborator.role == "OWNER" ? "bg-primary-color" : "bg-[#1fb865]"
+                  }`}
+                >
+                  <p className="m-auto text-xs">{collaborator.username.substring(0, 1).toUpperCase()}</p>
+                </figure>
+              ))
+            ) : (
+              <Image
+                className="mr-2"
+                src={collaborateIcon}
+                width="0"
+                height="0"
+                style={{ width: "100%", height: "auto" }}
+                alt="Collaborate icon"
+              />
+            )}
+            {collaborators?.slice(1, collaborators.length).length > MAX_COLLABORATORS_SHOWED ? (
+              <figure className="flex h-6 w-6 rounded-full -ml-2 border bg-white dark:bg-slate-800">
+                <p className="m-auto text-[10px]">{`+${collaborators?.slice(1, collaborators.length).length}`}</p>
+              </figure>
+            ) : (
+              <></>
+            )}
+
+            {collaborators?.length > 1 ? (
+              <Plus className="p-1 ml-2 border-2 rounded-full" />
+            ) : (
+              <p>{text("collaborate")}</p>
+            )}
           </Button>
         </li>
       </ul>
