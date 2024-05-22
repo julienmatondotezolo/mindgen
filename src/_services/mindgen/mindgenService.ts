@@ -73,7 +73,7 @@ export async function fetchProfile(): Promise<any> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
+        "Authorization": `Bearer ${session?.session?.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
     });

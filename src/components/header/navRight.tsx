@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
@@ -21,12 +22,13 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
 
   const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
   const collaborators = userMindmapDetails ? userMindmapDetails?.collaborators : [];
-  const MAX_COLLABORATORS_SHOWED = 4;
+  const MAX_COLLABORATORS_SHOWED = 3;
 
   const [importModal, setImportModal] = useRecoilState(importModalState);
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
+  const session = useSession();
 
   const handleImportClick = () => {
     setImportModal(!importModal);
@@ -44,7 +46,11 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
     setUpgradePlanModal(!upgradePlanModal);
   };
 
-  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
+  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile, {
+    enabled: session.data?.session?.user !== undefined,
+  });
+
+  console.log(collaborators?.slice(1, collaborators.length).length);
 
   return (
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
@@ -108,9 +114,10 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
                 alt="Collaborate icon"
               />
             )}
-            {collaborators?.slice(1, collaborators.length).length > MAX_COLLABORATORS_SHOWED ? (
+
+            {collaborators?.slice(1, collaborators.length).length >= MAX_COLLABORATORS_SHOWED ? (
               <figure className="flex h-6 w-6 rounded-full -ml-2 border bg-white dark:bg-slate-800">
-                <p className="m-auto text-[10px]">{`+${collaborators?.slice(1, collaborators.length).length}`}</p>
+                <p className="m-auto text-[10px]">{`+${collaborators.length - MAX_COLLABORATORS_SHOWED}`}</p>
               </figure>
             ) : (
               <></>
