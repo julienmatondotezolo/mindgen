@@ -1,6 +1,7 @@
 /* eslint-disable indent */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -20,13 +21,16 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   const collaboratorText = useTranslations("Collaborator");
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [inviteCollaborator, setInviteCollaborator] = useState({ mindmapId, username: "", role: "VIEWER" });
+  const [inviteCollaborator, setInviteCollaborator] = useState({ mindmapId, username: "", role: "ADMIN" });
   const [collaborators, setCollaborators] = useState<Collaborator[] | undefined>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [notFoundUsers, setNotFoundUsers] = useState([]);
+  const [currentRole, setCurrentRole] = useState("");
 
   const queryClient = useQueryClient();
 
   const getUserMindmapById = () => getMindmapById(mindmapId);
+  const session = useSession();
 
   const { isLoading, data: userMindmap } = useQuery<MindMapDetailsProps>("mindmap", getUserMindmapById, {
     refetchOnWindowFocus: true,
@@ -37,12 +41,25 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     },
   });
 
+  useEffect(() => {
+    const userId = session.data?.session?.user.id;
+    let collaborator: Collaborator;
+
+    if (userId && userMindmap) {
+      collaborator = userMindmap?.collaborators.filter((collaborator) => collaborator.userId == userId)[0];
+      setCurrentRole(collaborator.role);
+    }
+  }, [session, userMindmap]);
+
   const PERMISSIONS = userMindmap?.connectedCollaboratorPermissions;
 
   const collaboratorsLength = userMindmap ? userMindmap?.collaborators.length - 1 : 0;
 
   const fetchInviteCollaborator = useSyncMutation(inviteAllCollaborators, {
-    onSuccess: () => {
+    onSuccess: (response: any) => {
+      setNotFoundUsers([]);
+      if (response.notFoundUsernames.length > 0 && response.notFoundUsernames != null)
+        setNotFoundUsers(response.notFoundUsernames);
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmap");
     },
@@ -108,7 +125,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
         invitedCollaborators: [
           {
             username: inviteCollaborator.username,
-            role: inviteCollaborator.role,
+            role: inviteCollaborator.role == "" ? "ADMIN" : inviteCollaborator.role,
           },
         ],
       };
@@ -171,24 +188,33 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
           <p className="text-md font-bold mb-2">{uppercaseFirstLetter(collaboratorText("addCollaborator"))}</p>
           <p className="text-sm">{collaboratorText("collaboratorText")}</p>
           {checkPermission(PERMISSIONS, "UPDATE") && (
-            <div className="flex flex-wrap justify-between w-full mt-4">
-              <Input
-                value={inviteCollaborator.username}
-                onChange={handleCollaborator}
-                placeholder={`${uppercaseFirstLetter(collaboratorText("inviteCollaborator"))}`}
-                className="py-4 w-fit"
-              />
-              <select
-                className="bg-transparent border-2 rounded-xl text-sm"
-                value={inviteCollaborator.role}
-                onChange={(e) => handleCollaboratorRole(e)}
-              >
-                <option value="ADMIN">{collaboratorText("admin")}</option>
-                <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
-                <option value="VIEWER">{collaboratorText("viewer")}</option>
-              </select>
-              <Button onClick={handleInviteCollaborator}>{uppercaseFirstLetter(text("invite"))}</Button>
-            </div>
+            <>
+              <div className="flex flex-wrap justify-between w-full mt-4">
+                <Input
+                  value={inviteCollaborator.username}
+                  onChange={handleCollaborator}
+                  placeholder={`${uppercaseFirstLetter(collaboratorText("inviteCollaborator"))}`}
+                  className="py-4 w-fit"
+                />
+                <select
+                  className="bg-transparent border-2 rounded-xl text-sm"
+                  value={inviteCollaborator.role}
+                  onChange={(e) => handleCollaboratorRole(e)}
+                >
+                  <option value="ADMIN">{collaboratorText("admin")}</option>
+                  <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
+                  <option value="VIEWER">{collaboratorText("viewer")}</option>
+                </select>
+                <Button onClick={handleInviteCollaborator}>{uppercaseFirstLetter(text("invite"))}</Button>
+              </div>
+              <section className="w-full space-y-1 mt-4">
+                {notFoundUsers.map((notFoundUser, index) => (
+                  <p key={index} className="text-xs text-red-500">
+                    {notFoundUser} not found
+                  </p>
+                ))}
+              </section>
+            </>
           )}
         </article>
         {checkPermission(PERMISSIONS, "UPDATE") && (
@@ -290,6 +316,11 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
           ))
         )}
       </div>
+      {currentRole == "OWNER" && collaborators!.length > 1 ? (
+        <button className="text-xs text-[#ee6a63] cursor-pointer">Transfer ownsership</button>
+      ) : (
+        <button className="text-xs text-[#ee6a63] cursor-pointer">Leave project</button>
+      )}
       {checkPermission(PERMISSIONS, "UPDATE") && collaborators!.length > 1 && (
         <section className="flex justify-end">
           <Button onClick={handleSave}>{uppercaseFirstLetter(text("save"))}</Button>
