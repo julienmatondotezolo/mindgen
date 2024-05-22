@@ -296,7 +296,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                     <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
                     <option value="VIEWER">{collaboratorText("viewer")}</option>
                   </select>
-                  {checkPermission(PERMISSIONS, "UPDATE") && (
+                  {checkPermission(PERMISSIONS, "DELETE") && (
                     <>
                       {isDeleting ? (
                         <p className="text-xs text-[#ee6a63]">Deleting....</p>
