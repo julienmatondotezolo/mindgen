@@ -201,7 +201,8 @@ function Mindmap({
       nodeTypes={nodeTypes}
       connectionMode={ConnectionMode.Loose}
       panOnScroll
-      panOnDrag={isLocked ? panOnDrag : false}
+      // panOnDrag={isLocked ? panOnDrag : false}
+      panOnDrag={panOnDrag}
       selectionOnDrag
       selectionMode={SelectionMode.Partial}
       edgesUpdatable={isLocked}
@@ -209,8 +210,6 @@ function Mindmap({
       nodesDraggable={isLocked}
       nodesConnectable={isLocked}
       nodesFocusable={isLocked}
-      draggable={isLocked}
-      zoomOnDoubleClick={isLocked} // Optional: Disable zooming
       elementsSelectable={isLocked}
     >
       {isLocked && <Controls />}

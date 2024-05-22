@@ -50,8 +50,6 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
     enabled: session.data?.session?.user !== undefined,
   });
 
-  console.log(collaborators?.slice(1, collaborators.length).length);
-
   return (
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <ul className="flex flex-row items-center justify-between">
