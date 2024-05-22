@@ -26,6 +26,7 @@ import {
 } from "@/components/mindmap";
 import { useMindMap, useSocket } from "@/hooks";
 import { viewPortScaleState } from "@/state";
+import { checkPermission } from "@/utils";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 
@@ -56,6 +57,12 @@ function Mindmap({
     setSourceHandle,
     setReactFlowInstance,
   } = useMindMap(userMindmapDetails);
+
+  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+  const isLocked = checkPermission(PERMISSIONS, "UPDATE") ? true : false;
+  const userCanGive = userMindmapDetails?.collaborators.filter(
+    (collaborator) => collaborator.username == collaUsername,
+  )[0];
 
   const defaultEdgeOptions = {
     animated: true,
@@ -117,7 +124,7 @@ function Mindmap({
   }
 
   useEffect(() => {
-    if (first) {
+    if (first && userCanGive) {
       socketEmit("send-nodes", {
         roomId: userMindmapDetails?.id,
         username: collaUsername,
@@ -126,7 +133,7 @@ function Mindmap({
           edges: edgeChanges,
         },
       });
-
+      // setFirst(false);
       // setCollaborateName(session.data?.session.user.username);
     }
     setFirst(true);
@@ -172,39 +179,46 @@ function Mindmap({
   );
 
   return (
-    <>
-      <ReactFlow
-        defaultEdgeOptions={defaultEdgeOptions}
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
-        onInit={setReactFlowInstance}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        onNodesDelete={onNodesDelete}
-        fitView
-        fitViewOptions={{ padding: 2 }}
-        nodeOrigin={[0.5, 0]}
-        snapToGrid={true}
-        edgeTypes={edgeTypes}
-        nodeTypes={nodeTypes}
-        connectionMode={ConnectionMode.Loose}
-        panOnScroll
-        panOnDrag={panOnDrag}
-        selectionOnDrag
-        selectionMode={SelectionMode.Partial}
-      >
-        <Controls />
-        <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
-        <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
-        {/* <StateComponent userMindmapDetails={userMindmapDetails} /> */}
-        <ViewportChangeLogger />
-      </ReactFlow>
-    </>
+    <ReactFlow
+      className={!checkPermission(PERMISSIONS, "UPDATE") ? "pointer-events-none" : ""}
+      defaultEdgeOptions={defaultEdgeOptions}
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      onConnectStart={onConnectStart}
+      onConnectEnd={onConnectEnd}
+      onInit={setReactFlowInstance}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onNodesDelete={onNodesDelete}
+      fitView
+      fitViewOptions={{ padding: 2 }}
+      nodeOrigin={[0.5, 0]}
+      snapToGrid={true}
+      edgeTypes={edgeTypes}
+      nodeTypes={nodeTypes}
+      connectionMode={ConnectionMode.Loose}
+      panOnScroll
+      panOnDrag={isLocked ? panOnDrag : false}
+      selectionOnDrag
+      selectionMode={SelectionMode.Partial}
+      edgesUpdatable={isLocked}
+      edgesFocusable={isLocked}
+      nodesDraggable={isLocked}
+      nodesConnectable={isLocked}
+      nodesFocusable={isLocked}
+      draggable={isLocked}
+      zoomOnDoubleClick={isLocked} // Optional: Disable zooming
+      elementsSelectable={isLocked}
+    >
+      {isLocked && <Controls />}
+      <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
+      <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
+      {/* <StateComponent userMindmapDetails={userMindmapDetails} /> */}
+      <ViewportChangeLogger />
+    </ReactFlow>
   );
 }
 

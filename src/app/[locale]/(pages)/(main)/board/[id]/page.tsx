@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useRecoilState, useRecoilValue } from "recoil";
+import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
@@ -15,7 +16,7 @@ import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
-import { useSocket } from "@/hooks";
+import { useDidUpdateEffect, useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
   collaborateModalState,
@@ -45,6 +46,21 @@ export default function Board({ params }: { params: { id: string } }) {
   const session = useSession();
 
   const { socketEmit, socketListen, socketOff } = useSocket();
+
+  useDidUpdateEffect(() => {
+    const username = session.data?.session?.user.username;
+
+    if (username) {
+      setCollaUsername(username);
+    } else {
+      const usernameFromStorage = sessionStorage.getItem("collaUsername");
+      let username = usernameFromStorage ?? generateUsername();
+
+      sessionStorage.setItem("collaUsername", username);
+
+      setCollaUsername(username);
+    }
+  }, [session]);
 
   useEffect(() => {
     if (promptResult) {
@@ -85,10 +101,6 @@ export default function Board({ params }: { params: { id: string } }) {
           }));
 
           setQa((prevQa) => [...prevQa, ...newQaItems]);
-        }
-
-        if (session.data?.session) {
-          setCollaUsername(session.data?.session.user.username);
         }
       },
     },
@@ -169,7 +181,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
           <div className="w-full">
             <div className="relative w-full h-full">
-              {isLoading ? (
+              {isLoading && collaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
                   <Spinner
@@ -178,7 +190,7 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Mindmap userMindmapDetails={userMindmapDetails} />
+                <Mindmap userMindmapDetails={userMindmapDetails} collaUsername={collaUsername} />
               )}
             </div>
             {qa.length > 0 ? (

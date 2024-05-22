@@ -116,7 +116,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   value={newMindMapName}
                   onChange={handleNameChange}
                   placeholder={`${text("untitled")} ${text("name").toLowerCase()}`}
-                  disabled={updateMindmapMutation.isLoading}
+                  disabled={updateMindmapMutation.isLoading || !checkPermission(PERMISSIONS, "UPDATE")}
                 />
               </section>
               <section>
@@ -127,7 +127,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   className=" h-[100px]"
                   onChange={handleDescriptionChange}
                   placeholder={`${text("untitled")} ${text("description").toLowerCase()}`}
-                  disabled={updateMindmapMutation.isLoading}
+                  disabled={updateMindmapMutation.isLoading || !checkPermission(PERMISSIONS, "UPDATE")}
                 />
               </section>
               <div className="flex flex-wrap justify-between items-center">
