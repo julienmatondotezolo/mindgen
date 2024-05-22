@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 // const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
 
@@ -15,7 +16,6 @@ export async function fetchGeneratedTSummaryText(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -73,7 +73,6 @@ export async function fetchProfile(): Promise<any> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -98,7 +97,6 @@ export async function fetchMindmaps(): Promise<any> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -124,7 +122,6 @@ export async function createMindmap(mindmapObject: any): Promise<any> {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -146,18 +143,20 @@ export async function getMindmapById(mindmapId: string): Promise<any> {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();
 
+    let headers: any = {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "1",
+    };
+
+    if (session !== null) headers["Authorization"] = `Bearer ${session.session?.user?.token}`;
+
     const responseMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
       next: {
         revalidate: 0,
       },
       method: "GET",
       cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
+      headers: headers,
     });
 
     if (responseMindMap.ok) {
@@ -186,7 +185,6 @@ export async function updateMindmapById({
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -212,7 +210,6 @@ export async function deleteMindmapById(mindmapId: string): Promise<any> {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -237,7 +234,6 @@ export async function leaveMindmap(collaboratorId: string): Promise<any> {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -262,7 +258,6 @@ export async function fetchCollaborator(): Promise<any> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -288,7 +283,6 @@ export async function addNewCollaborator(collaboratorObject: any): Promise<any> 
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -317,7 +311,6 @@ export async function inviteAllCollaborators(collaboratorsObject: any): Promise<
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -344,7 +337,6 @@ export async function updateCollaborators(collaboratorsObject: any): Promise<any
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -373,7 +365,6 @@ export async function transferOwnership(collaboratorId: any): Promise<any> {
         cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          // eslint-disable-next-line prettier/prettier
           "Authorization": `Bearer ${session.session.user.token}`,
           "ngrok-skip-browser-warning": "1",
         },
@@ -399,7 +390,6 @@ export async function removeCollaboratorById(collaboratorId: string): Promise<an
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
