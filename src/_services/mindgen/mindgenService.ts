@@ -228,6 +228,31 @@ export async function deleteMindmapById(mindmapId: string): Promise<any> {
   }
 }
 
+export async function leaveMindmap(collaboratorId: string): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseLeaveMindmap: Response = await fetch(baseUrl + `/mindmap/collaborator/leave/${collaboratorId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        // eslint-disable-next-line prettier/prettier
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseLeaveMindmap.ok) {
+      return responseLeaveMindmap;
+    } else {
+      throw responseLeaveMindmap;
+    }
+  } catch (error) {
+    console.error("Impossible to leave mindmap:", error);
+  }
+}
+
 export async function fetchCollaborator(): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
@@ -300,7 +325,7 @@ export async function inviteAllCollaborators(collaboratorsObject: any): Promise<
     });
 
     if (responseInvitedCollaborator.ok) {
-      return responseInvitedCollaborator;
+      return responseInvitedCollaborator.json();
     } else {
       throw responseInvitedCollaborator;
     }
@@ -333,6 +358,35 @@ export async function updateCollaborators(collaboratorsObject: any): Promise<any
     }
   } catch (error) {
     console.error("Impossible to invite collaborator(s):", error);
+  }
+}
+
+export async function transferOwnership(collaboratorId: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responsetransferOwnership: Response = await fetch(
+      baseUrl + `/mindmap/collaborator/ownership/${collaboratorId}`,
+      {
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          // eslint-disable-next-line prettier/prettier
+          "Authorization": `Bearer ${session.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      },
+    );
+
+    if (responsetransferOwnership.ok) {
+      return responsetransferOwnership;
+    } else {
+      throw responsetransferOwnership;
+    }
+  } catch (error) {
+    console.error("Impossible to transfer ownership:", error);
   }
 }
 
