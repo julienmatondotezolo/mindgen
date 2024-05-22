@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -16,8 +15,8 @@ import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
+import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
-import { socket } from "@/socket";
 import {
   collaborateModalState,
   importModalState,
@@ -27,7 +26,7 @@ import {
   shareModalState,
   upgradePlanModalState,
 } from "@/state";
-import { checkPermission, uppercaseFirstLetter } from "@/utils";
+import { checkPermission, refreshPage, uppercaseFirstLetter } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -40,10 +39,12 @@ export default function Board({ params }: { params: { id: string } }) {
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
-  const [isConnected, setIsConnected] = useState(false);
-  const [transport, setTransport] = useState("N/A");
+  const [collaUsername, setCollaUsername] = useState("");
+  const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 
   const session = useSession();
+
+  const { socketEmit, socketListen, socketOff } = useSocket();
 
   useEffect(() => {
     if (promptResult) {
@@ -62,9 +63,6 @@ export default function Board({ params }: { params: { id: string } }) {
   }
 
   // const getUserMindmapById = () => getMindmapById(params.id);
-  function refreshPage() {
-    window.location.reload(); // Refreshes the current page
-  }
 
   const getUserMindmapById = async () => {
     const mindmapData = await getMindmapById(params.id);
@@ -78,9 +76,8 @@ export default function Board({ params }: { params: { id: string } }) {
     {
       // refetchOnMount: "always",
       onSuccess: async (data) => {
-        if (data) {
-          await joinRoom(data);
-
+        if (data.messages) {
+          // await joinRoom(data);
           setQa([]);
           const newQaItems = data.messages.map((mindMapQA) => ({
             text: mindMapQA.request,
@@ -89,74 +86,29 @@ export default function Board({ params }: { params: { id: string } }) {
 
           setQa((prevQa) => [...prevQa, ...newQaItems]);
         }
+
+        if (session.data?.session) {
+          setCollaUsername(session.data?.session.user.username);
+        }
       },
     },
   );
 
   const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
 
-  async function joinRoom(userMindmapDetails: MindMapDetailsProps) {
-    if (session.data != undefined) {
-      socket.emit("join-room", {
-        roomId: userMindmapDetails?.id,
-        username: await session.data?.session.user.username,
-      });
-    }
-  }
-
-  async function leaveRoom() {
-    socket.emit("leave-room", {
-      roomId: await userMindmapDetails?.id,
-      username: await session.data?.session.user.username,
-    });
-  }
-
-  useEffect(() => {
-    if (socket && socket.connected && isConnected == false) {
-      onConnect();
-    }
-
-    function onConnect() {
-      setIsConnected(true);
-      setTransport(socket.io.engine.transport.name);
-
-      socket.io.engine.on("upgrade", (transport) => {
-        setTransport(transport.name);
-      });
-    }
-
-    function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
-    }
-
-    if (socket) {
-      socket.on("connect", onConnect);
-      socket.on("disconnect", onDisconnect);
-
-      return () => {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      };
-    }
-  }, []);
-
   async function handleCursorMove(event: { clientX: any; clientY: any }) {
     const cursorPos = { x: event.clientX, y: event.clientY };
 
-    socket.emit("cursor-move", {
+    socketEmit("cursor-move", {
       roomId: userMindmapDetails?.id,
-      username: await session.data?.session.user.username,
+      username: collaUsername,
       cursorPos,
     });
   }
 
-  const [collaUsername, setCollaUsername] = useState("");
-  const [collaCursorPos, setCollaCursorPos] = useState({});
-
   useEffect(() => {
     // Listen for cursor movements
-    socket.on("remote-cursor-move", (data) => {
+    socketListen("remote-cursor-move", (data) => {
       const { cursorPos, username } = data;
 
       setCollaUsername(username);
@@ -165,7 +117,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
     // Cleanup
     return () => {
-      socket.off("cursor-move");
+      socketOff("cursor-move");
     };
   }, []);
 
@@ -183,11 +135,6 @@ export default function Board({ params }: { params: { id: string } }) {
   if (userMindmapDetails)
     return (
       <>
-        <div className="fixed right-0 bottom-12 p-10 z-50">
-          {isConnected ? <Button onClick={() => leaveRoom()}>Leave room</Button> : <></>}
-          <p>Status: {isConnected ? "connected" : "disconnected"}</p>
-          <p>Transport: {transport}</p>
-        </div>
         <main onMouseMove={handleCursorMove} className="relative flex justify-between w-screen h-screen scroll-smooth">
           <BackDropGradient />
           <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
@@ -196,13 +143,15 @@ export default function Board({ params }: { params: { id: string } }) {
             <NavRight userMindmapDetails={userMindmapDetails} />
           </div>
 
-          <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
-            {userMindmapDetails ? (
-              <PromptTextInput userMindmapDetails={userMindmapDetails} />
-            ) : (
-              <Skeleton className="w-full max-h-36 h-12 bg-grey-blue rounded-xl" />
-            )}
-          </div>
+          {session.data?.session && (
+            <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
+              {userMindmapDetails ? (
+                <PromptTextInput userMindmapDetails={userMindmapDetails} />
+              ) : (
+                <Skeleton className="w-full max-h-36 h-12 bg-grey-blue rounded-xl" />
+              )}
+            </div>
+          )}
 
           <div
             className={`fixed right-5 bottom-6 z-10 ${

@@ -1,6 +1,5 @@
 import "reactflow/dist/style.css";
 
-import { useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
@@ -25,9 +24,8 @@ import {
   MemoizedCustomNode,
   MemoizedMainNode,
 } from "@/components/mindmap";
-import { useMindMap } from "@/hooks";
-import { socket } from "@/socket";
-import { collaboratorNameState, viewPortScaleState } from "@/state";
+import { useMindMap, useSocket } from "@/hooks";
+import { viewPortScaleState } from "@/state";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 
@@ -37,7 +35,13 @@ const edgeTypes = {
 
 const panOnDrag = [1, 2];
 
-function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
+function Mindmap({
+  userMindmapDetails,
+  collaUsername,
+}: {
+  userMindmapDetails: MindMapDetailsProps | undefined;
+  collaUsername: string;
+}) {
   const {
     nodes,
     edges,
@@ -61,7 +65,6 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const { setEdges, setNodes, getNodes } = useReactFlow();
 
-  const session = useSession();
   const nodeChanges = useNodes();
   const edgeChanges = useEdges();
 
@@ -95,7 +98,9 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   }
 
   const [first, setFirst] = useState(true);
-  const setCollaborateName = useSetRecoilState(collaboratorNameState);
+  // const setCollaborateName = useSetRecoilState(collaboratorNameState);
+
+  const { socketEmit, socketListen, socketOff } = useSocket();
 
   const setScaleStyle = useSetRecoilState(viewPortScaleState);
 
@@ -113,25 +118,25 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   useEffect(() => {
     if (first) {
-      socket.emit("send-nodes", {
+      socketEmit("send-nodes", {
         roomId: userMindmapDetails?.id,
-        username: session.data?.session.user.username,
+        username: collaUsername,
         reactFlowChanges: {
           nodes: nodeChanges,
           edges: edgeChanges,
         },
       });
 
-      setCollaborateName(session.data?.session.user.username);
+      // setCollaborateName(session.data?.session.user.username);
     }
     setFirst(true);
   }, [nodeChanges, edgeChanges]);
 
   useEffect(() => {
-    socket.on("remote-send-nodes", (data) => {
+    socketListen("remote-send-nodes", (data) => {
       const { edges, nodes } = data.reactFlowChanges;
 
-      setCollaborateName(data.username);
+      // setCollaborateName(data.username);
 
       const updatedNodes = mergeNodes(getNodes(), nodes);
 
@@ -141,7 +146,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     });
 
     return () => {
-      socket.off("remote-send-nodes");
+      socketOff("remote-send-nodes");
     };
   }, []);
 
