@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 // const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
 
@@ -15,7 +16,6 @@ export async function fetchGeneratedTSummaryText(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -73,8 +73,7 @@ export async function fetchProfile(): Promise<any> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
-        "Authorization": `Bearer ${session.session.user.token}`,
+        "Authorization": `Bearer ${session?.session?.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
     });
@@ -98,7 +97,6 @@ export async function fetchMindmaps(): Promise<any> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -124,7 +122,6 @@ export async function createMindmap(mindmapObject: any): Promise<any> {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -146,27 +143,29 @@ export async function getMindmapById(mindmapId: string): Promise<any> {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();
 
+    let headers: any = {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "1",
+    };
+
+    if (session !== null) headers["Authorization"] = `Bearer ${session.session?.user?.token}`;
+
     const responseMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
       next: {
         revalidate: 0,
       },
       method: "GET",
       cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
+      headers: headers,
     });
 
     if (responseMindMap.ok) {
       return responseMindMap.json();
     } else {
-      throw responseMindMap;
+      throw new Error(`HTTP error status: ${responseMindMap.status}`);
     }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
+  } catch (error: any) {
+    throw new Error(`Fetch error: ${error.message}`);
   }
 }
 
@@ -186,7 +185,6 @@ export async function updateMindmapById({
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -212,7 +210,6 @@ export async function deleteMindmapById(mindmapId: string): Promise<any> {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        // eslint-disable-next-line prettier/prettier
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
@@ -225,5 +222,185 @@ export async function deleteMindmapById(mindmapId: string): Promise<any> {
     }
   } catch (error) {
     console.error("Impossible to fetch profiles:", error);
+  }
+}
+
+export async function leaveMindmap(collaboratorId: string): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseLeaveMindmap: Response = await fetch(baseUrl + `/mindmap/collaborator/leave/${collaboratorId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseLeaveMindmap.ok) {
+      return responseLeaveMindmap;
+    } else {
+      throw responseLeaveMindmap;
+    }
+  } catch (error) {
+    console.error("Impossible to leave mindmap:", error);
+  }
+}
+
+export async function fetchCollaborator(): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseMindmap: Response = await fetch(baseUrl + `/mindmap/collaborator/all-collaborations`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseMindmap.ok) {
+      return responseMindmap.json();
+    } else {
+      throw responseMindmap;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch collaborators:", error);
+  }
+}
+
+export async function addNewCollaborator(collaboratorObject: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseAddCollaborator: Response = await fetch(baseUrl + `/mindmap/collaborator`, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(collaboratorObject),
+    });
+
+    if (responseAddCollaborator.ok) {
+      return responseAddCollaborator;
+    } else {
+      throw responseAddCollaborator;
+    }
+  } catch (error) {
+    console.error("Impossible to create collaborator:", error);
+  }
+}
+
+export async function inviteAllCollaborators(collaboratorsObject: any): Promise<any> {
+  const { mindmapId, invitedCollaborators } = collaboratorsObject;
+
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseInvitedCollaborator: Response = await fetch(baseUrl + `/mindmap/invitation/invite/${mindmapId}`, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(invitedCollaborators),
+    });
+
+    if (responseInvitedCollaborator.ok) {
+      return responseInvitedCollaborator.json();
+    } else {
+      throw responseInvitedCollaborator;
+    }
+  } catch (error) {
+    console.error("Impossible to invite collaborator(s):", error);
+  }
+}
+
+export async function updateCollaborators(collaboratorsObject: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/collaborator/role`, {
+      method: "PUT",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(collaboratorsObject),
+    });
+
+    if (responseUpdatedCollaborator.ok) {
+      return responseUpdatedCollaborator;
+    } else {
+      throw responseUpdatedCollaborator;
+    }
+  } catch (error) {
+    console.error("Impossible to invite collaborator(s):", error);
+  }
+}
+
+export async function transferOwnership(collaboratorId: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responsetransferOwnership: Response = await fetch(
+      baseUrl + `/mindmap/collaborator/ownership/${collaboratorId}`,
+      {
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      },
+    );
+
+    if (responsetransferOwnership.ok) {
+      return responsetransferOwnership;
+    } else {
+      throw responsetransferOwnership;
+    }
+  } catch (error) {
+    console.error("Impossible to transfer ownership:", error);
+  }
+}
+
+export async function removeCollaboratorById(collaboratorId: string): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseRemoveCollaborator: Response = await fetch(baseUrl + `/mindmap/collaborator/${collaboratorId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseRemoveCollaborator.ok) {
+      return responseRemoveCollaborator;
+    } else {
+      throw responseRemoveCollaborator;
+    }
+  } catch (error) {
+    console.error("Impossible to remove collaborator:", error);
   }
 }

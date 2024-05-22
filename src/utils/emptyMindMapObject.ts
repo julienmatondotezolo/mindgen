@@ -7,6 +7,7 @@ interface MindMapObjectParams {
   nodes?: Node[];
   edges?: Edge[];
   viewport?: Viewport;
+  visibility: string;
 }
 
 export function emptyMindMapObject({
@@ -46,6 +47,7 @@ export function emptyMindMapObject({
     y: -151.14134538066662,
     zoom: 0.9167343307636076,
   },
+  visibility,
 }: MindMapObjectParams) {
   return {
     name,
@@ -54,5 +56,6 @@ export function emptyMindMapObject({
     nodes,
     edges,
     viewport,
+    visibility,
   };
 }

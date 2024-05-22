@@ -13,7 +13,7 @@ import deleteIcon from "@/assets/icons/delete.svg";
 import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
 import { modalState } from "@/state";
-import { formatDate, uppercaseFirstLetter } from "@/utils";
+import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
@@ -95,12 +95,14 @@ function MindMapBoards() {
                 </p>
                 <p className="text-xs text-grey">{formatDate(mindmap.createdAt, dateText)}</p>
               </div>
-              <figure
-                onClick={() => handleDelete(mindmap.id)}
-                className="bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%"
-              >
-                {!isDeleting ? <Image src={deleteIcon} height={size} alt="document icon" /> : <Spinner />}
-              </figure>
+              {checkPermission(mindmap.connectedCollaboratorPermissions, "DELETE") && (
+                <figure
+                  onClick={() => handleDelete(mindmap.id)}
+                  className="bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%"
+                >
+                  {!isDeleting ? <Image src={deleteIcon} height={size} alt="document icon" /> : <Spinner />}
+                </figure>
+              )}
             </article>
           </div>
         ))}

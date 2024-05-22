@@ -3,6 +3,7 @@ export * from "./Collaborator";
 export * from "./CustomNodeProps";
 export * from "./DialogProps";
 export * from "./HistoryState";
+export * from "./Invitations";
 export * from "./MindMapDetailsProps";
 export * from "./MindMapMessages";
 export * from "./MindMapObject";

@@ -1,5 +1,13 @@
 {
   "Index": {
+    "add": "add",
+    "remove": "remove",
+    "invite": "invite",
+    "invitation": "invitation",
+    "invitations": "invitations",
+    "pending": "pending",
+    "yes": "yes",
+    "no": "no",
     "createdBy": "Created by",
     "open": "open",
     "new": "new",
@@ -8,7 +16,7 @@
     "language": "language",
     "help": "help",
     "logout": "logout",
-    "loading": "loading...",
+    "loading": "loading",
     "name": "Name",
     "description": "Description",
     "private": "Private",
@@ -95,5 +103,17 @@
   "Chat": {
     "promptInput": "Ask/generate anything about this mindmap...",
     "answer": "Answer"
+  },
+  "Collaborator": {
+    "collaboratorText": "Enable a collaborations session and invite new people to create awesome mind maps together.",
+    "noCollaborator": "No collaborator",
+    "collaborator": "Collaborator",
+    "collaborators": "Collaborators",
+    "addCollaborator": "Add collaborator",
+    "inviteCollaborator": "Invite collaborator",
+    "admin": "Admin",
+    "contributor": "Contributor",
+    "owner": "Owner",
+    "viewer": "Viewer"
   }
 }

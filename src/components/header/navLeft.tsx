@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -10,21 +11,25 @@ import { updateMindmapById } from "@/_services";
 import { MindMapDetailsProps } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui";
-import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
+import { Sheet, SheetContent, SheetTrigger, Switch } from "@/components/ui";
+import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const text = useTranslations("Index");
 
+  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+
   const [newMindMapName, setNewMindMapName] = useState("");
   const [newMindMapDescription, setNewMindMapDescription] = useState("");
+  const [newMindMapVisibility, setNewMindMapVisibility] = useState("");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const mindMapId = userMindmapDetails?.id;
   const mindMapName = userMindmapDetails?.name;
   const mindMapDescription = userMindmapDetails?.description;
+  const mindMapVisibility = userMindmapDetails?.visibility;
 
   const listStyle = "p-2 bg-gray-50 rounded-xl hover:bg-gray-200 dark:bg-slate-800 hover:dark:bg-slate-600";
 
@@ -41,7 +46,8 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   useEffect(() => {
     if (mindMapName) setNewMindMapName(mindMapName);
     if (mindMapDescription) setNewMindMapDescription(mindMapDescription);
-  }, [mindMapName, mindMapDescription]);
+    if (mindMapVisibility) setNewMindMapVisibility(mindMapVisibility);
+  }, [mindMapName, mindMapDescription, mindMapVisibility]);
 
   // Update state when input changes
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,6 +59,10 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     setNewMindMapDescription(e.target.value);
   };
 
+  const handleVisibilityChange = (checked: boolean) => {
+    setNewMindMapVisibility(checked ? "PRIVATE" : "PUBLIC");
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Do something with formData
@@ -62,6 +72,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
       description: newMindMapDescription ?? "",
       nodes: userMindmapDetails?.nodes,
       edges: userMindmapDetails?.edges,
+      visibility: newMindMapVisibility ?? "PRIVATE",
     });
 
     updateMindmapMutation.mutate({
@@ -105,7 +116,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   value={newMindMapName}
                   onChange={handleNameChange}
                   placeholder={`${text("untitled")} ${text("name").toLowerCase()}`}
-                  disabled={updateMindmapMutation.isLoading}
+                  disabled={updateMindmapMutation.isLoading || !checkPermission(PERMISSIONS, "UPDATE")}
                 />
               </section>
               <section>
@@ -116,7 +127,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   className=" h-[100px]"
                   onChange={handleDescriptionChange}
                   placeholder={`${text("untitled")} ${text("description").toLowerCase()}`}
-                  disabled={updateMindmapMutation.isLoading}
+                  disabled={updateMindmapMutation.isLoading || !checkPermission(PERMISSIONS, "UPDATE")}
                 />
               </section>
               <div className="flex flex-wrap justify-between items-center">
@@ -124,15 +135,18 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                   <p className="font-semibold">{text("private")}</p>
                   <p className="text-grey dark:text-grey-blue text-sm">{text("onlyViewable")}</p>
                 </article>
-                <label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" value="" className="sr-only peer" />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-primary-color rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-color"></div>
-                </label>
+                <Switch
+                  checked={newMindMapVisibility == "PRIVATE" ? true : false}
+                  onCheckedChange={handleVisibilityChange}
+                  disabled={!checkPermission(PERMISSIONS, "UPDATE")}
+                />
               </div>
             </section>
-            <Button className="w-full" type="submit" disabled={updateMindmapMutation.isLoading}>
-              {updateMindmapMutation.isLoading ? text("loading") : uppercaseFirstLetter(text("save"))}
-            </Button>
+            {checkPermission(PERMISSIONS, "UPDATE") && (
+              <Button className="w-full" type="submit" disabled={updateMindmapMutation.isLoading}>
+                {updateMindmapMutation.isLoading ? text("loading") : uppercaseFirstLetter(text("save"))}
+              </Button>
+            )}
           </form>
         </ul>
       </SheetContent>

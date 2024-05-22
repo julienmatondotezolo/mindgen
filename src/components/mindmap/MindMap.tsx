@@ -1,6 +1,5 @@
 import "reactflow/dist/style.css";
 
-import { useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
@@ -25,9 +24,9 @@ import {
   MemoizedCustomNode,
   MemoizedMainNode,
 } from "@/components/mindmap";
-import { useMindMap } from "@/hooks";
-import { socket } from "@/socket";
-import { collaboratorNameState, viewPortScaleState } from "@/state";
+import { useMindMap, useSocket } from "@/hooks";
+import { viewPortScaleState } from "@/state";
+import { checkPermission } from "@/utils";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
 
@@ -37,7 +36,13 @@ const edgeTypes = {
 
 const panOnDrag = [1, 2];
 
-function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
+function Mindmap({
+  userMindmapDetails,
+  collaUsername,
+}: {
+  userMindmapDetails: MindMapDetailsProps | undefined;
+  collaUsername: string;
+}) {
   const {
     nodes,
     edges,
@@ -53,15 +58,20 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     setReactFlowInstance,
   } = useMindMap(userMindmapDetails);
 
+  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+  const isLocked = checkPermission(PERMISSIONS, "UPDATE") ? true : false;
+  const userCanGive = userMindmapDetails?.collaborators.filter(
+    (collaborator) => collaborator.username == collaUsername,
+  )[0];
+
   const defaultEdgeOptions = {
     animated: true,
     selectable: true,
     type: "default",
   };
 
-  const { setEdges, setNodes, getNodes, setViewport } = useReactFlow();
+  const { setEdges, setNodes, getNodes } = useReactFlow();
 
-  const session = useSession();
   const nodeChanges = useNodes();
   const edgeChanges = useEdges();
 
@@ -95,7 +105,9 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   }
 
   const [first, setFirst] = useState(true);
-  const setCollaborateName = useSetRecoilState(collaboratorNameState);
+  // const setCollaborateName = useSetRecoilState(collaboratorNameState);
+
+  const { socketEmit, socketListen, socketOff } = useSocket();
 
   const setScaleStyle = useSetRecoilState(viewPortScaleState);
 
@@ -112,26 +124,26 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   }
 
   useEffect(() => {
-    if (first) {
-      socket.emit("send-nodes", {
+    if (first && userCanGive) {
+      socketEmit("send-nodes", {
         roomId: userMindmapDetails?.id,
-        username: session.data?.session.user.username,
+        username: collaUsername,
         reactFlowChanges: {
           nodes: nodeChanges,
           edges: edgeChanges,
         },
       });
-
-      setCollaborateName(session.data?.session.user.username);
+      // setFirst(false);
+      // setCollaborateName(session.data?.session.user.username);
     }
     setFirst(true);
   }, [nodeChanges, edgeChanges]);
 
   useEffect(() => {
-    socket.on("remote-send-nodes", (data) => {
+    socketListen("remote-send-nodes", (data) => {
       const { edges, nodes } = data.reactFlowChanges;
 
-      setCollaborateName(data.username);
+      // setCollaborateName(data.username);
 
       const updatedNodes = mergeNodes(getNodes(), nodes);
 
@@ -141,7 +153,7 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     });
 
     return () => {
-      socket.off("remote-send-nodes");
+      socketOff("remote-send-nodes");
     };
   }, []);
 
@@ -167,39 +179,46 @@ function Mindmap({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   );
 
   return (
-    <>
-      <ReactFlow
-        defaultEdgeOptions={defaultEdgeOptions}
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
-        onInit={setReactFlowInstance}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        onNodesDelete={onNodesDelete}
-        fitView
-        fitViewOptions={{ padding: 2 }}
-        nodeOrigin={[0.5, 0]}
-        snapToGrid={true}
-        edgeTypes={edgeTypes}
-        nodeTypes={nodeTypes}
-        connectionMode={ConnectionMode.Loose}
-        panOnScroll
-        panOnDrag={panOnDrag}
-        selectionOnDrag
-        selectionMode={SelectionMode.Partial}
-      >
-        <Controls />
-        <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
-        <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
-        {/* <StateComponent userMindmapDetails={userMindmapDetails} /> */}
-        <ViewportChangeLogger />
-      </ReactFlow>
-    </>
+    <ReactFlow
+      className={!checkPermission(PERMISSIONS, "UPDATE") ? "pointer-events-none" : ""}
+      defaultEdgeOptions={defaultEdgeOptions}
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      onConnectStart={onConnectStart}
+      onConnectEnd={onConnectEnd}
+      onInit={setReactFlowInstance}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onNodesDelete={onNodesDelete}
+      fitView
+      fitViewOptions={{ padding: 2 }}
+      nodeOrigin={[0.5, 0]}
+      snapToGrid={true}
+      edgeTypes={edgeTypes}
+      nodeTypes={nodeTypes}
+      connectionMode={ConnectionMode.Loose}
+      panOnScroll
+      panOnDrag={isLocked ? panOnDrag : false}
+      selectionOnDrag
+      selectionMode={SelectionMode.Partial}
+      edgesUpdatable={isLocked}
+      edgesFocusable={isLocked}
+      nodesDraggable={isLocked}
+      nodesConnectable={isLocked}
+      nodesFocusable={isLocked}
+      draggable={isLocked}
+      zoomOnDoubleClick={isLocked} // Optional: Disable zooming
+      elementsSelectable={isLocked}
+    >
+      {isLocked && <Controls />}
+      <Background color="#7F7F7F33" variant={BackgroundVariant.Dots} gap={12} size={1} />
+      <Background id="2" gap={100} color="#7F7F7F0A" variant={BackgroundVariant.Lines} />
+      {/* <StateComponent userMindmapDetails={userMindmapDetails} /> */}
+      <ViewportChangeLogger />
+    </ReactFlow>
   );
 }
 
