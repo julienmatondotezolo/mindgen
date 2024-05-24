@@ -37,17 +37,17 @@ function NavProfile() {
               <PopoverTrigger asChild>
                 <Bell className="w-4 dark:text-[#d3d0cd] text-[#2d2f33] m-auto" />
               </PopoverTrigger>
-              <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
+              <PopoverContent className="absolute top-10 left-0 z-20 w-auto rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
                 <div>
                   <p className="font-bold text-xl mb-4">{uppercaseFirstLetter(text("invitations"))}</p>
                   <article className="space-y-4">
-                    <section className=" inline-flex">
-                      <figure className="flex h-10 w-10 bg-primary-color mr-4 rounded-full">
+                    <section className="space-x-4 inline-flex">
+                      <figure className="flex h-10 w-10 bg-primary-color rounded-full">
                         <p className="m-auto text-xs">G</p>
                       </figure>
-                      <article className="text-xs">
-                        <p className="font-bold">Goldy</p>
-                        <p className="bold">goldy@yopmail.com</p>
+                      <article className="flex flex-col justify-center text-xs w-52">
+                        <p className="font-bold text-">Mindmap</p>
+                        <p className="bold">Goldy wants you to join his mindmap</p>
                       </article>
                       <Button>Accepter</Button>
                     </section>
