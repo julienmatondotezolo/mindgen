@@ -7,4 +7,6 @@ import { io } from "socket.io-client";
 // // Initialize the socket only if the code is running in the browser
 // export const socket = isBrowser ? io("http://localhost:3333") : undefined;
 
-export const socket = io("http://localhost:3333");
+const DEV = true;
+
+export const socket = io(`http://${DEV ? "localhost:3333" : "13.38.65.79:3333"}`);
