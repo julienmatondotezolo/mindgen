@@ -7,7 +7,7 @@ import { fetchProfile } from "@/_services";
 import { ProfileProps } from "@/_types";
 import { uppercaseFirstLetter } from "@/utils";
 
-import { Button, Input, Spinner } from "..";
+import { Button, Spinner } from "..";
 
 const fetchUserProfile = () => fetchProfile();
 
@@ -18,9 +18,9 @@ function Collaborations() {
   const { isLoading, data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
 
   const {
-    register,
+    // register,
     handleSubmit,
-    watch,
+    // watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -34,8 +34,8 @@ function Collaborations() {
   // Check if there are any errors
   const hasErrors = Object.keys(errors).length > 0;
 
-  const onSubmit = (data: any) => {
-    console.log("data:", JSON.stringify(data));
+  const onSubmit = () => {
+    // console.log("data:", JSON.stringify(data));
   };
 
   return (

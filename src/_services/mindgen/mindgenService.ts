@@ -299,6 +299,54 @@ export async function addNewCollaborator(collaboratorObject: any): Promise<any> 
   }
 }
 
+export async function fetchInvitations(): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseInvitations: Response = await fetch(baseUrl + `/mindmap/invitation`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseInvitations.ok) {
+      return responseInvitations.json();
+    } else {
+      throw responseInvitations;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch invitations:", error);
+  }
+}
+
+export async function acceptInvitation(invitationId: string): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseInvitations: Response = await fetch(baseUrl + `/mindmap/invitation/accept/${invitationId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseInvitations.ok) {
+      return responseInvitations;
+    } else {
+      throw responseInvitations;
+    }
+  } catch (error) {
+    console.error("Impossible to accept invitations:", error);
+  }
+}
+
 export async function inviteAllCollaborators(collaboratorsObject: any): Promise<any> {
   const { mindmapId, invitedCollaborators } = collaboratorsObject;
 

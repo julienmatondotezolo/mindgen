@@ -36,8 +36,8 @@ function Account() {
 
   const password = watch("password");
 
-  const onSubmit = (data: any) => {
-    console.log("data:", JSON.stringify(data));
+  const onSubmit = () => {
+    // console.log("data:", JSON.stringify(data));
   };
 
   return (

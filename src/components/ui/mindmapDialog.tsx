@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";

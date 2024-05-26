@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Edge, Node, OnConnect, OnEdgesChange, OnNodesChange } from "reactflow";
 
 export type RFState = {
