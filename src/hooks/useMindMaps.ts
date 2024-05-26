@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { toPng } from "html-to-image";
 import { debounce } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQueryClient } from "react-query";
 import {
   addEdge,
   Connection,
@@ -20,9 +20,8 @@ import {
   useNodes,
   useNodesState,
   useReactFlow,
-  useStoreApi,
 } from "reactflow";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
@@ -202,11 +201,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const nodeChanges = useNodes();
   const edgeChanges = useEdges();
 
-  const { addSelectedNodes } = useStoreApi();
-
   const [pictureUrl, setPictureUrl] = useState("");
-
-  const history = useRecoilValue(historyState);
 
   const setHistory = useSetRecoilState(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
@@ -235,7 +230,6 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     }
   }, [userMindmapDetails]);
 
-  const queryClient = useQueryClient();
   // Define the mutation
   const updateMindmapMutation = useSyncMutation(updateMindmapById, {
     onSuccess: () => {

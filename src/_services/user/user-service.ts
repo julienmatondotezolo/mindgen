@@ -1,6 +1,8 @@
+import { UserDetails } from "@/_types/UserDetails";
+
 const baseUrl: string = process.env.NEXT_PUBLIC_API_URL + "/api/v1/user/profile";
 
-export async function getUserDetails(session, username): Promise<UserDetails> {
+export async function getUserDetails(session: { data: { user: { token: any } } }, username: any): Promise<UserDetails> {
   try {
     if (session.data?.user.token) {
       const response: Response = await fetch(`${baseUrl}/${username}`, {

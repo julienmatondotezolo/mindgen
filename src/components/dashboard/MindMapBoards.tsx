@@ -5,14 +5,12 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
-import { useRecoilState } from "recoil";
 
 import { deleteMindmapById, fetchMindmaps } from "@/_services";
 import { MindmapObject } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
-import { modalState } from "@/state";
 import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";

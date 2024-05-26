@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 "use client";
 
 import * as TabsPrimitive from "@radix-ui/react-tabs";

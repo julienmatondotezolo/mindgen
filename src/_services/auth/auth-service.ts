@@ -3,7 +3,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 //Use when Next-Auth version fixed (there is an error where it returns status 200 even if the credentials are wrong)
 export async function connectUser(credentials: any): Promise<Response> {
   try {
-    return await fetch(`${baseUrl}/auth/signin`, {
+    const response = await fetch(`${baseUrl}/auth/signin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -14,14 +14,21 @@ export async function connectUser(credentials: any): Promise<Response> {
         password: credentials?.password,
       }),
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error status: ${response.status}`);
+    }
+
+    return response; // Directly return the response
   } catch (error) {
     console.error(error);
+    throw error; // Rethrow the error to be handled by the caller
   }
 }
 
 export async function signUp(body: any): Promise<Response> {
   try {
-    return await fetch(`${baseUrl}/auth/signup`, {
+    const response = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -29,6 +36,12 @@ export async function signUp(body: any): Promise<Response> {
       },
       body: JSON.stringify(body),
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error status: ${response.status}`);
+    }
+
+    return response; // Directly return the response
   } catch (error) {
     console.error(error);
   }

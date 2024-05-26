@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 "use client";
 
 import * as PopoverPrimitive from "@radix-ui/react-popover";

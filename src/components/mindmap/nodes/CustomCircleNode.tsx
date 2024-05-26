@@ -4,12 +4,12 @@ import React, { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
 
 import { CustomNodeProps } from "@/_types";
-import { NodeToolbar } from "@/components";
+// import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
 
 const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
-  const [isSelected, setIsSelected] = useState(false);
+  const [, setIsSelected] = useState(false);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";

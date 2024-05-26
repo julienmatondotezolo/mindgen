@@ -15,7 +15,7 @@ const fetchUserProfile = () => fetchProfile();
 
 function CurrentPlan() {
   const navigationText = useTranslations("Navigation");
-  const { isLoading, data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
+  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
 
   function calculatePercentageUsed(totalCredits: number, usedCredits: number) {
     const percentageUsed = (usedCredits / totalCredits) * 100;
