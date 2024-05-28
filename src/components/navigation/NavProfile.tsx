@@ -62,37 +62,41 @@ function NavProfile() {
       <div className="flex float-right">
         <section className="flex flex-wrap space-x-4">
           <figure className={`relative ${listStyle} cursor-pointer`}>
-            <div className="absolute flex -top-1 -right-2 w-5 h-5 rounded-full bg-red-600 text-xs">
-              <p className="m-auto text-white">{invitationLength < 9 ? invitationLength : "9+"}</p>
-            </div>
+            {invitationLength > 0 && (
+              <div className="absolute flex -top-1 -right-2 w-5 h-5 rounded-full bg-red-600 text-xs">
+                <p className="m-auto text-white">{invitationLength < 9 ? invitationLength : "9+"}</p>
+              </div>
+            )}
             <Popover>
               <PopoverTrigger asChild>
                 <Bell className="w-4 dark:text-[#d3d0cd] text-[#2d2f33] m-auto" />
               </PopoverTrigger>
-              <PopoverContent className="absolute top-10 left-0 z-20 w-auto rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
-                <div>
-                  <p className="font-bold text-xl mb-4">{uppercaseFirstLetter(text("invitations"))}</p>
-                  <article className="space-y-4">
-                    {userInvitations?.map((invitation: any) => (
-                      <section
-                        className="space-x-4 inline-flex py-4 border-b dark:border-slate-700"
-                        key={invitation.id}
-                      >
-                        <figure className="flex h-10 w-10 bg-primary-color rounded-full">
-                          <p className="m-auto text-xs">{invitation.inviterUsername.substring(0, 1).toUpperCase()}</p>
-                        </figure>
-                        <article className="flex flex-col justify-center text-xs w-52">
-                          <p className="font-bold text-base">Invited to {invitation.mindmapName}</p>
-                          <p className="bold">{invitation.inviterUsername} wants you to join his mindmap</p>
-                        </article>
-                        <Button onClick={() => handleAccept(invitation.id)} disabled={isAccepting}>
-                          {isAccepting ? "Accepting..." : "Accept "}
-                        </Button>
-                      </section>
-                    ))}
-                  </article>
-                </div>
-              </PopoverContent>
+              {invitationLength > 0 && (
+                <PopoverContent className="absolute top-10 left-0 z-20 w-auto rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
+                  <div>
+                    <p className="font-bold text-xl mb-4">{uppercaseFirstLetter(text("invitations"))}</p>
+                    <article className="space-y-4">
+                      {userInvitations?.map((invitation: any) => (
+                        <section
+                          className="space-x-4 inline-flex py-4 border-b dark:border-slate-700"
+                          key={invitation.id}
+                        >
+                          <figure className="flex h-10 w-10 bg-primary-color rounded-full">
+                            <p className="m-auto text-xs">{invitation.inviterUsername.substring(0, 1).toUpperCase()}</p>
+                          </figure>
+                          <article className="flex flex-col justify-center text-xs w-52">
+                            <p className="font-bold text-base">Invited to {invitation.mindmapName}</p>
+                            <p className="bold">{invitation.inviterUsername} wants you to join his mindmap</p>
+                          </article>
+                          <Button onClick={() => handleAccept(invitation.id)} disabled={isAccepting}>
+                            {isAccepting ? "Accepting..." : "Accept "}
+                          </Button>
+                        </section>
+                      ))}
+                    </article>
+                  </div>
+                </PopoverContent>
+              )}
             </Popover>
           </figure>
           <figure className={`${listStyle} cursor-pointer`}>
