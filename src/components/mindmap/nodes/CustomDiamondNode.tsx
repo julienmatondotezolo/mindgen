@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo, SetStateAction, useState } from "react";
-import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
+import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps } from "@/_types";

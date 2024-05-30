@@ -1,14 +1,13 @@
 "use client";
 
 import { NodeResizer } from "@reactflow/node-resizer";
-import { useSession } from "next-auth/react";
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, Position } from "reactflow";
 import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
 import { NodeToolbar } from "@/components";
-import { collaboratorNameState, viewPortScaleState } from "@/state";
+import { viewPortScaleState } from "@/state";
 
 const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);

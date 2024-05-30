@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { toPng } from "html-to-image";
-import { debounce } from "lodash";
+// import { toPng } from "html-to-image";
+// import { debounce } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   addEdge,
@@ -8,9 +8,9 @@ import {
   Edge,
   getConnectedEdges,
   getIncomers,
-  getNodesBounds,
+  // getNodesBounds,
   getOutgoers,
-  getViewportForBounds,
+  // getViewportForBounds,
   HandleType,
   MarkerType,
   Node,
@@ -201,7 +201,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   const nodeChanges = useNodes();
   const edgeChanges = useEdges();
 
-  const [pictureUrl, setPictureUrl] = useState("");
+  const [pictureUrl] = useState("");
 
   const setHistory = useSetRecoilState(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
@@ -255,29 +255,29 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     }
   };
 
-  const saveMindMapImage = useCallback(
-    debounce(async (currentNodes: Node[]) => {
-      const imageWidth = 1920;
-      const imageHeight = 1080;
+  // const saveMindMapImage = useCallback(
+  //   debounce(async (currentNodes: Node[]) => {
+  //     const imageWidth = 1920;
+  //     const imageHeight = 1080;
 
-      const nodesBounds = getNodesBounds(currentNodes);
-      const transform = getViewportForBounds(nodesBounds, imageWidth, imageHeight, 0.5, 2);
+  //     const nodesBounds = getNodesBounds(currentNodes);
+  //     const transform = getViewportForBounds(nodesBounds, imageWidth, imageHeight, 0.5, 2);
 
-      const imageBase64Data = await toPng(document.querySelector(".react-flow__viewport"), {
-        backgroundColor: "#000",
-        width: imageWidth,
-        height: imageHeight,
-        style: {
-          width: imageWidth,
-          height: imageHeight,
-          transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
-        },
-      });
+  //     const imageBase64Data = await toPng(document.querySelector(".react-flow__viewport"), {
+  //       backgroundColor: "#000",
+  //       width: imageWidth,
+  //       height: imageHeight,
+  //       style: {
+  //         width: imageWidth,
+  //         height: imageHeight,
+  //         transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+  //       },
+  //     });
 
-      setPictureUrl(imageBase64Data);
-    }, 10000),
-    [nodeChanges, pictureUrl],
-  );
+  //     setPictureUrl(imageBase64Data);
+  //   }, 10000),
+  //   [nodeChanges, pictureUrl],
+  // );
 
   useEffect(() => {
     const saveMindMap = async () => {

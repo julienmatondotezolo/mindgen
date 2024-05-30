@@ -4,13 +4,11 @@ import { useRecoilState } from "recoil";
 
 import { BackDropGradient, MindmapDialog, ToastAction, useToast } from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, RecentMindMap } from "@/components/dashboard";
-import { useSocket } from "@/hooks";
 import { modalState } from "@/state";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const { toast } = useToast();
-  const { socketListen } = useSocket();
 
   // Function to trigger a toast notification
   const triggerToast = () => {

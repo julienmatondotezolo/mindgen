@@ -142,7 +142,6 @@ function Mindmap({
 
   useEffect(() => {
     socketListen("remote-mindmap-edited", (data) => {
-      console.log("data:", data);
       const { edges, nodes } = data.reactFlowChanges;
 
       // setCollaborateName(data.username);

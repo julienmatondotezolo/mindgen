@@ -17,8 +17,8 @@ import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
-import { useDidUpdateEffect, useSocket } from "@/hooks";
-import { Link, useRouter } from "@/navigation";
+import { useSocket } from "@/hooks";
+import { Link } from "@/navigation";
 import {
   collaborateModalState,
   importModalState,
@@ -44,10 +44,9 @@ export default function Board({ params }: { params: { id: string } }) {
   const [collaUsername, setCollaUsername] = useState("");
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 
-  const router = useRouter();
   const session = useSession();
 
-  const { socketEmit, socketListen, socketOff, socketJoinRoom, socketLeaveRoom } = useSocket();
+  const { socketEmit, socketListen, socketOff, socketJoinRoom } = useSocket();
 
   useEffect(() => {
     const username = session.data?.session?.user.username;
