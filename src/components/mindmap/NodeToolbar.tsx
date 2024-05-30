@@ -98,7 +98,7 @@ const NodeToolbar: React.FC<NodeToolbarProps> = ({ className, nodeId }) => {
 
   return (
     <div
-      className={`mt-12 px-4 py-2 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 ${className}`}
+      className={`w-fit mx-auto mt-12 px-4 py-2 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 ${className}`}
     >
       <ul className="flex flex-row items-center justify-between">
         <div

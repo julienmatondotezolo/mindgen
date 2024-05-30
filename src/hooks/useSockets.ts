@@ -43,18 +43,26 @@ const useSocket = () => {
     }
   };
 
-  const socketJoinRoom = (roomdId: string, username: string) => {
-    socket.emit("join-room", {
-      roomId: roomdId,
-      username: username,
-    });
+  const socketJoinRoom = (roomdId: string | undefined, username: string) => {
+    try {
+      socket.emit("join-room", {
+        roomId: roomdId,
+        username: username,
+      });
+    } catch (error) {
+      return error;
+    }
   };
 
-  const socketLeaveRoom = (roomdId: string, username: string) => {
-    socket.emit("leave-room", {
-      roomId: roomdId,
-      username: username,
-    });
+  const socketLeaveRoom = (roomdId: string | undefined, username: string) => {
+    try {
+      socket.emit("leave-room", {
+        roomId: roomdId,
+        username: username,
+      });
+    } catch (error) {
+      return error;
+    }
   };
 
   const socketOff = (event: string) => {

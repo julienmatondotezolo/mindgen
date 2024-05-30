@@ -18,7 +18,7 @@ import { NavLeft, NavRight, ToolBar } from "@/components/header";
 import { Mindmap } from "@/components/mindmap/";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import { useDidUpdateEffect, useSocket } from "@/hooks";
-import { Link } from "@/navigation";
+import { Link, useRouter } from "@/navigation";
 import {
   collaborateModalState,
   importModalState,
@@ -44,11 +44,12 @@ export default function Board({ params }: { params: { id: string } }) {
   const [collaUsername, setCollaUsername] = useState("");
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 
+  const router = useRouter();
   const session = useSession();
 
-  const { socketEmit, socketListen, socketOff } = useSocket();
+  const { socketEmit, socketListen, socketOff, socketJoinRoom, socketLeaveRoom } = useSocket();
 
-  useDidUpdateEffect(() => {
+  useEffect(() => {
     const username = session.data?.session?.user.username;
 
     if (username) {
@@ -61,7 +62,26 @@ export default function Board({ params }: { params: { id: string } }) {
 
       setCollaUsername(username);
     }
-  }, [session]);
+  }, []);
+
+  useEffect(() => {
+    if (collaUsername) socketJoinRoom(params.id, collaUsername);
+  }, [collaUsername]);
+
+  useEffect(() => {
+    // Listen for cursor movements
+    socketListen("remote-cursor-move", (data) => {
+      const { cursorPos, username } = data;
+
+      setCollaUsername(username);
+      setCollaCursorPos(cursorPos);
+    });
+
+    // Cleanup
+    return () => {
+      socketOff("cursor-move");
+    };
+  }, []);
 
   useEffect(() => {
     if (promptResult) {
@@ -78,8 +98,6 @@ export default function Board({ params }: { params: { id: string } }) {
       setPromptResult(true);
     }
   }
-
-  // const getUserMindmapById = () => getMindmapById(params.id);
 
   const getUserMindmapById = async () => {
     const mindmapData = await getMindmapById(params.id);
@@ -112,27 +130,14 @@ export default function Board({ params }: { params: { id: string } }) {
   async function handleCursorMove(event: { clientX: any; clientY: any }) {
     const cursorPos = { x: event.clientX, y: event.clientY };
 
-    socketEmit("cursor-move", {
-      roomId: userMindmapDetails?.id,
-      username: collaUsername,
-      cursorPos,
-    });
+    if (checkPermission(PERMISSIONS, "UPDATE")) {
+      socketEmit("cursor-move", {
+        roomId: params.id,
+        username: collaUsername,
+        cursorPos,
+      });
+    }
   }
-
-  useEffect(() => {
-    // Listen for cursor movements
-    socketListen("remote-cursor-move", (data) => {
-      const { cursorPos, username } = data;
-
-      setCollaUsername(username);
-      setCollaCursorPos(cursorPos);
-    });
-
-    // Cleanup
-    return () => {
-      socketOff("cursor-move");
-    };
-  }, []);
 
   if (isLoading)
     return (
@@ -203,6 +208,15 @@ export default function Board({ params }: { params: { id: string } }) {
             )}
           </div>
         </main>
+        {/* <Button
+          onClick={async () => {
+            await socketLeaveRoom(userMindmapDetails?.id, collaUsername);
+            router.back();
+          }}
+          className="fixed right-5 bottom-5"
+        >
+          Leave room
+        </Button> */}
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
         <ShareDialog open={shareModal} setIsOpen={setShareModal} />
         <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} mindmapId={params.id} />

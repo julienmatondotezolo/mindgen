@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React from "react";
 
+import { Toaster } from "@/components/ui/toaster";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -21,6 +23,7 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning={true} lang={locale}>
       <body className={`${inter.className}`}>{children}</body>
+      {/* <Toaster /> */}
     </html>
   );
 }
