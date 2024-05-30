@@ -368,9 +368,9 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-  const onNodeDragStop = useCallback((event: MouseEvent) => {
-    console.log("event:", event);
-  }, []);
+  // const onNodeDragStop = useCallback((event: MouseEvent) => {
+  //   console.log("event:", event);
+  // }, []);
 
   const onDrop = useCallback(
     (event: DragEvent) => {
