@@ -2,29 +2,20 @@
 
 import React, { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
+import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
 import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
+import { viewPortScaleState } from "@/state";
 
 const CustomDiamondNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
-  const [isSelected, setIsSelected] = useState(false);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
 
   const { getNode } = useReactFlow();
-
-  // Use the useOnSelectionChange hook to listen for selection changes
-  useOnSelectionChange({
-    onChange: ({ nodes }) => {
-      const isNodeSelected = nodes.some((node) => node.id === id);
-      // Update the isSelected state based on whether the node is selected
-
-      setIsSelected(isNodeSelected);
-    },
-  });
 
   const resizeNode = (params: ResizeParams) => {
     const node = getNode(id);
@@ -52,6 +43,8 @@ const CustomDiamondNode = ({ id, data, selected, setNodes, setSourceHandle }: Cu
       }),
     );
   };
+
+  const scaleStyle = useRecoilValue(viewPortScaleState);
 
   return (
     <>
@@ -83,7 +76,11 @@ const CustomDiamondNode = ({ id, data, selected, setNodes, setSourceHandle }: Cu
             />
           </div>
         </div>
-        {isSelected && <NodeToolbar />}
+        {selected && (
+          <div style={scaleStyle}>
+            <NodeToolbar nodeId={id} />
+          </div>
+        )}
       </div>
       <Handle
         onMouseDown={() => setSourceHandle("top")}

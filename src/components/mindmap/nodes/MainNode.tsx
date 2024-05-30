@@ -1,10 +1,14 @@
 "use client";
 
 import { NodeResizer } from "@reactflow/node-resizer";
+import { useSession } from "next-auth/react";
 import { memo, SetStateAction, useState } from "react";
 import { Handle, Node, Position } from "reactflow";
+import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
+import { NodeToolbar } from "@/components";
+import { collaboratorNameState, viewPortScaleState } from "@/state";
 
 const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
@@ -35,6 +39,8 @@ const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeP
     );
   };
 
+  const scaleStyle = useRecoilValue(viewPortScaleState);
+
   return (
     <>
       <NodeResizer
@@ -55,6 +61,11 @@ const MainNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeP
       <div className="flex content-center items-center h-full py-2 px-6 border-2 rounded-[100px] bg-[#4d6aff1a]">
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
+      {selected && (
+        <div style={scaleStyle}>
+          <NodeToolbar nodeId={id} />
+        </div>
+      )}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"

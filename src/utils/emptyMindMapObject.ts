@@ -29,7 +29,7 @@ export function emptyMindMapObject({
         selectedByCollaborator: false,
       },
       style: {
-        borderRadius: "30px",
+        borderRadius: "100px",
         width: 250,
         height: 50,
       },

@@ -55,7 +55,7 @@ const createCustomNode = (
     position: position,
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something", selectedByCollaborator: false },
-    style: { borderRadius: "30px", width: 250, height: 50 },
+    style: { borderRadius: "100px", width: 250, height: 50 },
   };
 
   return newNode;
@@ -240,7 +240,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
   const saveMindMapFlow = async () => {
     if (reactFlowInstance) {
-      await saveMindMapImage(nodes);
+      // await saveMindMapImage(nodes);
 
       const newMindmapObject = emptyMindMapObject({
         name: name ?? "",

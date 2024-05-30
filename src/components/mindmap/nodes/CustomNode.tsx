@@ -22,15 +22,15 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
   const borderWidth = node?.data?.borderWidth ? node?.data?.borderWidth : 2;
 
   const resizeNode = (params: ResizeParams) => {
-    // Update the node's dimensions
-    const updatedNode = {
-      ...node,
-      width: params.width,
-      height: params.height,
-    };
-
-    // Update the nodes array with the updated node
-    setNodes((nodes: Node[]) => nodes.map((n) => (n.id === id ? updatedNode : n)));
+    setNodes((nodes: Node[]) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          // Create a new object to notify React Flow about the change
+          return { ...node, height: params.height };
+        }
+        return node;
+      }),
+    );
     pushToHistory();
   };
 
@@ -76,7 +76,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       >
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {selected && username == collaborateName && (
+      {selected && username !== collaborateName && (
         <div style={scaleStyle}>
           <NodeToolbar nodeId={id} />
         </div>
