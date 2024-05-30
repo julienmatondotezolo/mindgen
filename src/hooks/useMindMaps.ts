@@ -245,7 +245,9 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
       const newMindmapObject = emptyMindMapObject({
         name: name ?? "",
         description: description ?? "",
-        pictureUrl: pictureUrl,
+        pictureUrl:
+          pictureUrl ??
+          "https://media.licdn.com/dms/image/C4D03AQFlT19xH_3kdw/profile-displayphoto-shrink_200_200/0/1644350085538?e=1722470400&v=beta&t=teYaxEZMbvLW5u0qGyNaQO1CzVU565yKZAS2vXHJYok",
         nodes,
         edges,
         visibility: visibility ?? "PRIVATE",
