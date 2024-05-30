@@ -2,12 +2,24 @@
 import React from "react";
 import { useRecoilState } from "recoil";
 
-import { BackDropGradient, MindmapDialog } from "@/components";
+import { BackDropGradient, MindmapDialog, ToastAction, useToast } from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, RecentMindMap } from "@/components/dashboard";
+import { useSocket } from "@/hooks";
 import { modalState } from "@/state";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
+  const { toast } = useToast();
+  const { socketListen } = useSocket();
+
+  // Function to trigger a toast notification
+  const triggerToast = () => {
+    toast({
+      title: "Hello, World!",
+      description: "This is a test toast notification.",
+      action: <ToastAction altText="Try again">Open mindmap</ToastAction>,
+    });
+  };
 
   return (
     <>
@@ -20,6 +32,9 @@ export default function Dashboard() {
           <RecentMindMap />
         </section>
       </div>
+      <button className="fixed left-5 bottom-5" onClick={triggerToast}>
+        Click me
+      </button>
       <MindmapDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
     </>
   );
