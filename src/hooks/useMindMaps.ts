@@ -123,10 +123,10 @@ const createCustomCircleNode = (
     positionAbsolute: positionAbsolute,
     data: { label: labelText || "Type something", selectedByCollaborator: false },
     style: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      borderRadius: 100,
+      // display: "flex",
+      // justifyContent: "center",
+      // alignItems: "center",
+      borderRadius: "100%",
       width: 200, // Adjust width as needed
       height: 200,
     },

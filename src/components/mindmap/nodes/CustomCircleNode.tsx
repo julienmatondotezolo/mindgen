@@ -2,10 +2,13 @@
 
 import React, { memo, SetStateAction, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useOnSelectionChange, useReactFlow } from "reactflow";
+import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
+import { NodeToolbar } from "@/components";
 // import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
+import { viewPortScaleState } from "@/state";
 
 const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const [inputText, setInputText] = useState(data.label);
@@ -53,6 +56,8 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
     );
   };
 
+  const scaleStyle = useRecoilValue(viewPortScaleState);
+
   return (
     <>
       <NodeResizer
@@ -75,7 +80,11 @@ const CustomCircleNode = ({ id, data, selected, setNodes, setSourceHandle }: Cus
       >
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {/* {isSelected && <NodeToolbar />} */}
+      {selected && (
+        <div style={scaleStyle}>
+          <NodeToolbar nodeId={id} />
+        </div>
+      )}
       <Handle
         onMouseDown={() => setSourceHandle("top")}
         type="source"
