@@ -125,8 +125,8 @@ function Mindmap({
   }
 
   useEffect(() => {
-    if (first && userCanGive) {
-      socketEmit("send-nodes", {
+    if (first && userCanGive && checkPermission(PERMISSIONS, "UPDATE")) {
+      socketEmit("mindmap-edited", {
         roomId: userMindmapDetails?.id,
         username: collaUsername,
         reactFlowChanges: {
@@ -141,7 +141,8 @@ function Mindmap({
   }, [nodeChanges, edgeChanges]);
 
   useEffect(() => {
-    socketListen("remote-send-nodes", (data) => {
+    socketListen("remote-mindmap-edited", (data) => {
+      console.log("data:", data);
       const { edges, nodes } = data.reactFlowChanges;
 
       // setCollaborateName(data.username);
@@ -154,7 +155,7 @@ function Mindmap({
     });
 
     return () => {
-      socketOff("remote-send-nodes");
+      socketOff("remote-mindmap-edited");
     };
   }, []);
 
