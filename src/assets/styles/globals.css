@@ -110,4 +110,28 @@
     .gradientSecondary {
         @apply bg-gradient-to-r from-secondary-color to-tertiary-color
     }
+
+    .promptContainer {
+      @apply dark:bg-slate-800 rounded-lg p-6 box-content;
+    }
+
+    .promptContainer > h1 {
+      @apply text-2xl;
+    }
+
+    .promptContainer > h2 {
+      @apply text-xl;
+    }
+
+    .promptContainer > h3 {
+      @apply text-2xl;
+    }
+
+    .promptContainer > li {
+      @apply list-item text-left box-content ml-4
+    }
+
+    .promptContainer > ul {
+      @apply list-disc
+    }
 }

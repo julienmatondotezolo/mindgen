@@ -10,7 +10,13 @@ function RenderMarkdown({ markdownText }: { markdownText: string }) {
       try {
         const result = await remark().use(html).process(markdownText);
 
-        setTextFormatted(result.toString());
+        // Get the raw HTML string
+        let htmlString = result.toString();
+
+        // Replace line breaks with <br /> tags
+        htmlString = htmlString.replace(/\n/g, "<br />");
+
+        setTextFormatted(htmlString);
       } catch (error) {
         console.error("Error processing markdown:", error);
         return "[ERROR PROCESSING]";
@@ -20,7 +26,7 @@ function RenderMarkdown({ markdownText }: { markdownText: string }) {
     processMarkdown(markdownText);
   }, [markdownText]);
 
-  return <div dangerouslySetInnerHTML={{ __html: textFormatted }} />;
+  return <div className="promptContainer" dangerouslySetInnerHTML={{ __html: textFormatted }} />;
 }
 
 export { RenderMarkdown };
