@@ -4,7 +4,7 @@ import React from "react";
 import { useRecoilValue } from "recoil";
 
 import answerIcon from "@/assets/icons/answer.svg";
-import { SkeletonAnswerText } from "@/components/gpt";
+import { RenderMarkdown, SkeletonAnswerText } from "@/components/gpt";
 import { qaState } from "@/state";
 
 function Answers() {
@@ -24,7 +24,7 @@ function Answers() {
               <p className="font-semibold">{chatText("answer")} | Mindgen</p>
             </article>
 
-            {qaItem.message ? qaItem.message : <SkeletonAnswerText />}
+            {qaItem.message ? <RenderMarkdown markdownText={qaItem.message} /> : <SkeletonAnswerText />}
           </div>
         ))}
       </div>
