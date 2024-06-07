@@ -1,11 +1,34 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
+import { remark } from "remark";
+import html from "remark-html";
 
 import answerIcon from "@/assets/icons/answer.svg";
 import { SkeletonAnswerText } from "@/components/gpt";
 import { qaState } from "@/state";
+
+export default function RenderMarkdown({ markdownText }: { markdownText: string }) {
+  const [textFormatted, setTextFormatted] = useState("");
+
+  useEffect(() => {
+    const processMarkdown = async (markdownText: string) => {
+      try {
+        const result = await remark().use(html).process(markdownText);
+
+        setTextFormatted(result.toString());
+      } catch (error) {
+        console.error("Error processing markdown:", error);
+        return "";
+      }
+    };
+
+    processMarkdown(markdownText);
+  }, [markdownText]);
+
+  return <div dangerouslySetInnerHTML={{ __html: textFormatted }} />;
+}
 
 function Answers() {
   const chatText = useTranslations("Chat");
@@ -24,7 +47,7 @@ function Answers() {
               <p className="font-semibold">{chatText("answer")} | Mindgen</p>
             </article>
 
-            {qaItem.message ? qaItem.message : <SkeletonAnswerText />}
+            {qaItem.message ? <RenderMarkdown markdownText={qaItem.message} /> : <SkeletonAnswerText />}
           </div>
         ))}
       </div>
