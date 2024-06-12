@@ -116,22 +116,26 @@
     }
 
     .promptContainer > h1 {
-      @apply text-2xl;
+      @apply text-2xl my-6;
     }
 
     .promptContainer > h2 {
-      @apply text-xl;
+      @apply text-xl my-5;
     }
 
     .promptContainer > h3 {
-      @apply text-2xl;
+      @apply text-lg my-4;
+    }
+
+    .promptContainer > p {
+      @apply text-sm my-2;
     }
 
     .promptContainer > li {
       @apply list-item text-left box-content ml-4
     }
 
-    .promptContainer > ul {
-      @apply list-disc
+    .promptContainer > ul, .promptContainer > ol {
+      @apply list-disc text-sm space-y-4
     }
 }
