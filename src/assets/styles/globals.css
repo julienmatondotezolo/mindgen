@@ -131,7 +131,7 @@
       @apply text-sm my-2;
     }
 
-    .promptContainer > li {
+    .promptContainer li {
       @apply list-item text-left box-content ml-4
     }
 

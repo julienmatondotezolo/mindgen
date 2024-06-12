@@ -13,9 +13,6 @@ function RenderMarkdown({ markdownText }: { markdownText: string }) {
         // Get the raw HTML string
         let htmlString = result.toString();
 
-        // Replace line breaks with <br /> tags
-        htmlString = htmlString.replace(/\n/g, "<br />");
-
         setTextFormatted(htmlString);
       } catch (error) {
         console.error("Error processing markdown:", error);
