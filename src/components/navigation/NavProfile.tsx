@@ -24,11 +24,14 @@ function NavProfile() {
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
-  const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile);
+  const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile, {
+    enabled: session.data ? true : false,
+  });
 
   const fetchUserInvitations = () => fetchInvitations({ session: safeSession });
   const { data: userInvitations } = useQuery("userInvitations", fetchUserInvitations, {
     refetchOnMount: true,
+    enabled: session.data ? true : false,
   });
 
   const invitationLength = userInvitations && userInvitations.length;
