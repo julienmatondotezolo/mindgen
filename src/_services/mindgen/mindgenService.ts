@@ -73,7 +73,7 @@ export async function fetchProfile({ session }: { session: CustomSession | null 
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
           "ngrok-skip-browser-warning": "1",
         },
       });
@@ -302,7 +302,7 @@ export async function fetchInvitations({ session }: { session: CustomSession | n
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
           "ngrok-skip-browser-warning": "1",
         },
       });
