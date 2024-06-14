@@ -73,6 +73,11 @@ export const upgradePlanModalState = atom({
   default: false,
 });
 
+export const usernameState = atom({
+  key: "usernameState",
+  default: "",
+});
+
 export const collaboratorNameState = atom({
   key: "collaboratorNameState",
   default: "",

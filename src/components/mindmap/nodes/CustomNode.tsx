@@ -8,7 +8,7 @@ import { useRecoilValue } from "recoil";
 import { CustomNodeProps } from "@/_types";
 import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
-import { collaboratorNameState, viewPortScaleState } from "@/state";
+import { collaboratorNameState, usernameState, viewPortScaleState } from "@/state";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const { getNode } = useReactFlow();
@@ -46,9 +46,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
     );
   };
 
-  const session = useSession();
-
-  const username = session.data?.session.user.username;
+  const username = useRecoilValue(usernameState);
 
   const collaborateName = useRecoilValue(collaboratorNameState);
 

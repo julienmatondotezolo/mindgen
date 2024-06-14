@@ -7,15 +7,13 @@ import { useQuery } from "react-query";
 import { useRecoilState } from "recoil";
 
 import { fetchProfile } from "@/_services";
-import { Collaborator, MindMapDetailsProps, ProfileProps } from "@/_types";
+import { Collaborator, CustomSession, MindMapDetailsProps, ProfileProps } from "@/_types";
 import collaborateIcon from "@/assets/icons/collaborate.svg";
 import importIcon from "@/assets/icons/import.svg";
 import shareIcon from "@/assets/icons/share.svg";
 import { Button } from "@/components/";
 import { collaborateModalState, importModalState, shareModalState, upgradePlanModalState } from "@/state";
 import { checkPermission } from "@/utils";
-
-const fetchUserProfile = () => fetchProfile();
 
 function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const text = useTranslations("Index");
@@ -28,7 +26,10 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
+
   const session = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+  const fetchUserProfile = () => fetchProfile({ session: safeSession });
 
   const handleImportClick = () => {
     setImportModal(!importModal);

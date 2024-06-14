@@ -1,6 +1,7 @@
 export * from "./ChatMessageProps";
 export * from "./Collaborator";
 export * from "./CustomNodeProps";
+export * from "./CustomSession";
 export * from "./DialogProps";
 export * from "./HistoryState";
 export * from "./Invitations";

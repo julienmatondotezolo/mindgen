@@ -1,28 +1,33 @@
 import { Bell, Mail } from "lucide-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { acceptInvitation, fetchInvitations, fetchProfile } from "@/_services";
+import { CustomSession } from "@/_types";
 import profileIcon from "@/assets/icons/profile.svg";
 import { formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Button, Popover, PopoverContent, PopoverTrigger, Skeleton } from "../ui";
 import { ProfileMenu } from "./ProfileMenu";
 
-const fetchUserProfile = () => fetchProfile();
-const fetchUserInvitations = () => fetchInvitations();
-
 function NavProfile() {
+  const session = useSession();
   const text = useTranslations("Index");
   const dateText = useTranslations("Dashboard");
   const [isAccepting, setIsAccepting] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const fetchUserProfile = () => fetchProfile({ session: safeSession });
   const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile);
+
+  const fetchUserInvitations = () => fetchInvitations({ session: safeSession });
   const { data: userInvitations } = useQuery("userInvitations", fetchUserInvitations, {
-    refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
 

@@ -37,16 +37,16 @@ export default function Providers({ children, locale }: Props): JSX.Element {
   const messages = selectMessages(locale);
 
   return (
-    <RecoilRoot>
-      <QueryClientProvider client={queryClient}>
-        <SessionProvider>
+    <SessionProvider>
+      <RecoilRoot>
+        <QueryClientProvider client={queryClient}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
               <ReactFlowProvider>{children}</ReactFlowProvider>
             </NextIntlClientProvider>
           </ThemeProvider>
-        </SessionProvider>
-      </QueryClientProvider>
-    </RecoilRoot>
+        </QueryClientProvider>
+      </RecoilRoot>
+    </SessionProvider>
   );
 }

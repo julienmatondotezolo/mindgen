@@ -10,7 +10,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
-import { MindMapDetailsProps } from "@/_types";
+import { CustomSession, MindMapDetailsProps } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
@@ -27,6 +27,7 @@ import {
   qaState,
   shareModalState,
   upgradePlanModalState,
+  usernameState,
 } from "@/state";
 import { checkPermission, refreshPage, uppercaseFirstLetter } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
@@ -41,15 +42,16 @@ export default function Board({ params }: { params: { id: string } }) {
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
-  const [collaUsername, setCollaUsername] = useState("");
+  const [collaUsername, setCollaUsername] = useRecoilState(usernameState);
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 
   const session = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const { socketEmit, socketListen, socketOff, socketJoinRoom } = useSocket();
 
   useEffect(() => {
-    const username = session.data?.session?.user.username;
+    const username = session.data?.session?.user?.username;
 
     if (username) {
       setCollaUsername(username);
@@ -61,7 +63,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
       setCollaUsername(username);
     }
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     if (collaUsername) socketJoinRoom(params.id, collaUsername);
@@ -99,7 +101,7 @@ export default function Board({ params }: { params: { id: string } }) {
   }
 
   const getUserMindmapById = async () => {
-    const mindmapData = await getMindmapById(params.id);
+    const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
 
     return mindmapData;
   };

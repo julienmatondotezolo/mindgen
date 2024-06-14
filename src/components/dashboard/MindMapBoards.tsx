@@ -2,12 +2,13 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 
 import { deleteMindmapById, fetchMindmaps } from "@/_services";
-import { MindmapObject } from "@/_types";
+import { CustomSession, MindmapObject } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
@@ -15,9 +16,9 @@ import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
-const fetchUserMindmaps = () => fetchMindmaps();
-
 function MindMapBoards() {
+  const session = useSession();
+
   const text = useTranslations("Index");
   const dateText = useTranslations("Dashboard");
 
@@ -34,6 +35,10 @@ function MindMapBoards() {
 
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation(deleteMindmapById);
+
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const fetchUserMindmaps = () => fetchMindmaps({ session: safeSession });
   const { isLoading, data: userMindmap } = useQuery("userMindmap", fetchUserMindmaps, {
     refetchOnWindowFocus: true,
     refetchOnMount: true,

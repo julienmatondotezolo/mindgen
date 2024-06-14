@@ -8,7 +8,7 @@ import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { getMindmapById, inviteAllCollaborators, removeCollaboratorById, updateCollaborators } from "@/_services";
-import { Collaborator, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
+import { Collaborator, CustomSession, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
 import { checkPermission, uppercaseFirstLetter } from "@/utils";
@@ -30,8 +30,9 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
 
   const queryClient = useQueryClient();
 
-  const getUserMindmapById = () => getMindmapById(mindmapId);
   const session = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+  const getUserMindmapById = () => getMindmapById({ session: safeSession, mindmapId });
 
   const { isLoading, data: userMindmap } = useQuery<MindMapDetailsProps>("mindmap", getUserMindmapById, {
     refetchOnWindowFocus: true,

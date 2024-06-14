@@ -1,3 +1,5 @@
+import { CustomSession } from "@/_types";
+
 /* eslint-disable prettier/prettier */
 const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 // const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
@@ -64,52 +66,48 @@ export async function fetchApi(): Promise<any> {
   }
 }
 
-export async function fetchProfile(): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function fetchProfile({ session }: { session: CustomSession | null }): Promise<any> {
+  if(session)
+    try {
+      const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
 
-    const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.session?.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseProfile.ok) {
-      return responseProfile.json();
-    } else {
-      throw responseProfile;
+      if (responseProfile.ok) {
+        return responseProfile.json();
+      } else {
+        throw responseProfile;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch profiles:", error);
     }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
-  }
 }
 
-export async function fetchMindmaps(): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function fetchMindmaps({ session }: { session: CustomSession | null }): Promise<any> {
+  if(session)
+    try {
+      const responseMindmap: Response = await fetch(baseUrl + `/mindmap`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
 
-    const responseMindmap: Response = await fetch(baseUrl + `/mindmap`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseMindmap.ok) {
-      return responseMindmap.json();
-    } else {
-      throw responseMindmap;
+      if (responseMindmap.ok) {
+        return responseMindmap.json();
+      } else {
+        throw responseMindmap;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch profiles:", error);
     }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
-  }
 }
 
 export async function createMindmap(mindmapObject: any): Promise<any> {
@@ -138,67 +136,65 @@ export async function createMindmap(mindmapObject: any): Promise<any> {
   }
 }
 
-export async function getMindmapById(mindmapId: string): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function getMindmapById({ session, mindmapId }: {session: CustomSession | null, mindmapId: string}): Promise<any> {
+  if(session)
+    try {
+      let headers: any = {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "1",
+      };
 
-    let headers: any = {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "1",
-    };
+      if (session?.data.session !== null) headers["Authorization"] = `Bearer ${session.data.session.user.token}`;
 
-    if (session !== null) headers["Authorization"] = `Bearer ${session.session?.user?.token}`;
+      const responseMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+        next: {
+          revalidate: 0,
+        },
+        method: "GET",
+        cache: "no-store",
+        headers: headers,
+      });
 
-    const responseMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
-      next: {
-        revalidate: 0,
-      },
-      method: "GET",
-      cache: "no-store",
-      headers: headers,
-    });
-
-    if (responseMindMap.ok) {
-      return responseMindMap.json();
-    } else {
-      throw new Error(`HTTP error status: ${responseMindMap.status}`);
+      if (responseMindMap.ok) {
+        return responseMindMap.json();
+      } else {
+        throw new Error(`HTTP error status: ${responseMindMap.status}`);
+      }
+    } catch (error: any) {
+      throw new Error(`Fetch error: ${error.message}`);
     }
-  } catch (error: any) {
-    throw new Error(`Fetch error: ${error.message}`);
-  }
 }
 
 export async function updateMindmapById({
+  session,
   mindmapId,
   mindmapObject,
 }: {
+  session: CustomSession | null
   mindmapId: string | undefined;
   mindmapObject: any;
 }): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+  if(session)
+    try {
+      const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify(mindmapObject),
+      });
 
-    const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
-      method: "PUT",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-      body: JSON.stringify(mindmapObject),
-    });
-
-    if (responseUpdatedMindMap.ok) {
-      return responseUpdatedMindMap;
-    } else {
-      throw responseUpdatedMindMap;
+      if (responseUpdatedMindMap.ok) {
+        return responseUpdatedMindMap;
+      } else {
+        throw responseUpdatedMindMap;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch profiles:", error);
     }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
-  }
 }
 
 export async function deleteMindmapById(mindmapId: string): Promise<any> {
@@ -299,28 +295,26 @@ export async function addNewCollaborator(collaboratorObject: any): Promise<any> 
   }
 }
 
-export async function fetchInvitations(): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function fetchInvitations({ session }: { session: CustomSession | null }): Promise<any> {
+  if(session)
+    try {
+      const responseInvitations: Response = await fetch(baseUrl + `/mindmap/invitation`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
 
-    const responseInvitations: Response = await fetch(baseUrl + `/mindmap/invitation`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseInvitations.ok) {
-      return responseInvitations.json();
-    } else {
-      throw responseInvitations;
+      if (responseInvitations.ok) {
+        return responseInvitations.json();
+      } else {
+        throw responseInvitations;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch invitations:", error);
     }
-  } catch (error) {
-    console.error("Impossible to fetch invitations:", error);
-  }
 }
 
 export async function acceptInvitation(invitationId: string): Promise<any> {
