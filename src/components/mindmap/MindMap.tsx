@@ -25,7 +25,7 @@ import {
   MemoizedCustomNode,
   MemoizedMainNode,
 } from "@/components/mindmap";
-import { useMindMap, useSocket } from "@/hooks";
+import { useMindMap, useNodeAndEdgeChangeListener, useSocket } from "@/hooks";
 import { viewPortScaleState } from "@/state";
 import { checkPermission } from "@/utils";
 
@@ -124,21 +124,35 @@ function Mindmap({
     return null;
   }
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (first && userCanGive && checkPermission(PERMISSIONS, "UPDATE")) {
+  //     socketEmit("mindmap-edited", {
+  //       roomId: userMindmapDetails?.id,
+  //       username: collaUsername,
+  //       reactFlowChanges: {
+  //         nodes: nodeChanges,
+  //         edges: edgeChanges,
+  //       },
+  //     });
+  //     // setFirst(false);
+  //     // setCollaborateName(session.data?.session.user.username);
+  //   }
+  //   setFirst(true);
+  // }, [nodeChanges, edgeChanges]);
+
+  useNodeAndEdgeChangeListener(nodes, edges, () => {
     if (first && userCanGive && checkPermission(PERMISSIONS, "UPDATE")) {
       socketEmit("mindmap-edited", {
         roomId: userMindmapDetails?.id,
         username: collaUsername,
         reactFlowChanges: {
-          nodes: nodeChanges,
-          edges: edgeChanges,
+          nodes: nodes,
+          edges: edges,
         },
       });
-      // setFirst(false);
-      // setCollaborateName(session.data?.session.user.username);
+      setFirst(false);
     }
-    setFirst(true);
-  }, [nodeChanges, edgeChanges]);
+  });
 
   useEffect(() => {
     socketListen("remote-mindmap-edited", (data) => {
