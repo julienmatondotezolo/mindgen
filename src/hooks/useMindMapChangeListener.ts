@@ -19,7 +19,7 @@ function useNodeAndEdgeChangeListener(nodes: Node[], edges: Edge[], onChangesDet
     }
 
     return () => {}; // Cleanup function
-  }, [nodes, edges]); // Dependencies
+  }, [nodes, edges, onChangesDetected]); // Dependencies
 }
 
 export { useNodeAndEdgeChangeListener };

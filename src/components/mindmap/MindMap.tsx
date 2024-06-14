@@ -10,8 +10,6 @@ import ReactFlow, {
   Node,
   NodeProps,
   SelectionMode,
-  useEdges,
-  useNodes,
   useOnViewportChange,
   useReactFlow,
 } from "reactflow";
@@ -72,9 +70,6 @@ function Mindmap({
   };
 
   const { setEdges, setNodes, getNodes } = useReactFlow();
-
-  const nodeChanges = useNodes();
-  const edgeChanges = useEdges();
 
   function mergeNodes(localNodes: Node[], remoteNodes: Node[]) {
     // Create a map to easily access nodes in localNodes by their ID
