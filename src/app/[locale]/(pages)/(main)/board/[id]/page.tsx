@@ -209,18 +209,16 @@ export default function Board({ params }: { params: { id: string } }) {
             )}
           </div>
         </main>
-        {/* <Button
-          onClick={async () => {
-            await socketLeaveRoom(userMindmapDetails?.id, collaUsername);
-            router.back();
-          }}
-          className="fixed right-5 bottom-5"
-        >
-          Leave room
-        </Button> */}
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
         <ShareDialog open={shareModal} setIsOpen={setShareModal} />
-        <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} mindmapId={params.id} />
+        {collaborateModal && (
+          <CollaborateDialog
+            open={collaborateModal}
+            setIsOpen={setCollaborateModal}
+            mindmapId={params.id}
+            userMindmap={userMindmapDetails}
+          />
+        )}
         <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
         <div
           style={{ left: collaCursorPos.x, top: collaCursorPos.y }}

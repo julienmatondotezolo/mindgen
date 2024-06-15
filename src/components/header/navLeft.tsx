@@ -3,12 +3,13 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { updateMindmapById } from "@/_services";
-import { MindMapDetailsProps } from "@/_types";
+import { CustomSession, MindMapDetailsProps } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
 import { Sheet, SheetContent, SheetTrigger, Switch } from "@/components/ui";
@@ -17,6 +18,9 @@ import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/uti
 import { Link } from "../../navigation";
 
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
+  const session = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
   const text = useTranslations("Index");
 
   const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
@@ -76,6 +80,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     });
 
     updateMindmapMutation.mutate({
+      session: safeSession,
       mindmapId: mindMapId,
       mindmapObject: newMindmapObject,
     });

@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // import { toPng } from "html-to-image";
 // import { debounce } from "lodash";
+import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   addEdge,
@@ -25,7 +26,7 @@ import { useRecoilState, useSetRecoilState } from "recoil";
 
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
-import { MindMapDetailsProps } from "@/_types";
+import { CustomSession, MindMapDetailsProps } from "@/_types";
 import { historyIndexState, historyState } from "@/state";
 import { convertToNestedArray, emptyMindMapObject, setTargetHandle } from "@/utils";
 
@@ -182,6 +183,9 @@ const nodeCreators: Record<
 };
 
 const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
+  const session = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
   const connectingNodeId = useRef(null);
   const connectingNodeType = useRef<String | undefined>("");
 
@@ -287,6 +291,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
       if (newMindmapObject) {
         updateMindmapMutation.mutate({
+          session: safeSession,
           mindmapId: mindmapId,
           mindmapObject: newMindmapObject,
         });
