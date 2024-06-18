@@ -23,8 +23,8 @@ import {
   MemoizedCustomNode,
   MemoizedMainNode,
 } from "@/components/mindmap";
-import { useMindMap, useNodeAndEdgeChangeListener, useSocket } from "@/hooks";
-import { viewPortScaleState } from "@/state";
+import { useMindMap, useSocket } from "@/hooks";
+import { collaboratorNameState, viewPortScaleState } from "@/state";
 import { checkPermission } from "@/utils";
 
 import BiDirectionalEdge from "./edges/BiDirectionalEdge";
@@ -37,10 +37,10 @@ const panOnDrag = [1, 2];
 
 function Mindmap({
   userMindmapDetails,
-  collaUsername,
+  currentCollaUsername,
 }: {
   userMindmapDetails: MindMapDetailsProps | undefined;
-  collaUsername: string;
+  currentCollaUsername: string;
 }) {
   const {
     nodes,
@@ -60,8 +60,9 @@ function Mindmap({
   const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
   const isLocked = checkPermission(PERMISSIONS, "UPDATE") ? true : false;
   const userCanGive = userMindmapDetails?.collaborators.filter(
-    (collaborator) => collaborator.username == collaUsername,
+    (collaborator) => collaborator.username == currentCollaUsername,
   )[0];
+  const isCollaborativeMindmap = userMindmapDetails!.collaborators?.length > 1;
 
   const defaultEdgeOptions = {
     animated: true,
@@ -100,8 +101,8 @@ function Mindmap({
     return localNodes;
   }
 
-  const [first, setFirst] = useState(true);
-  // const setCollaborateName = useSetRecoilState(collaboratorNameState);
+  // const [first, setFirst] = useState(true);
+  const [collaUsername, setCollaUsername] = useState("");
 
   const { socketEmit, socketListen, socketOff } = useSocket();
 
@@ -120,52 +121,39 @@ function Mindmap({
   }
 
   // useEffect(() => {
-  //   if (first && userCanGive && checkPermission(PERMISSIONS, "UPDATE")) {
+  //   if (userCanGive && isCollaborativeMindmap && checkPermission(PERMISSIONS, "UPDATE")) {
   //     socketEmit("mindmap-edited", {
   //       roomId: userMindmapDetails?.id,
   //       username: collaUsername,
   //       reactFlowChanges: {
-  //         nodes: nodeChanges,
-  //         edges: edgeChanges,
+  //         nodes: nodes,
+  //         edges: edges,
   //       },
   //     });
   //     // setFirst(false);
+  //     // setCollaborateName(collaUsername);
   //     // setCollaborateName(session.data?.session.user.username);
   //   }
-  //   setFirst(true);
-  // }, [nodeChanges, edgeChanges]);
+  //   // setFirst(true);
+  // }, [nodes, edges]);
 
-  useNodeAndEdgeChangeListener(nodes, edges, () => {
-    if (first && userCanGive && checkPermission(PERMISSIONS, "UPDATE")) {
-      socketEmit("mindmap-edited", {
-        roomId: userMindmapDetails?.id,
-        username: collaUsername,
-        reactFlowChanges: {
-          nodes: nodes,
-          edges: edges,
-        },
-      });
-      setFirst(false);
-    }
-  });
+  // useEffect(() => {
+  //   socketListen("remote-mindmap-edited", (data) => {
+  //     const { edges, nodes } = data.reactFlowChanges;
 
-  useEffect(() => {
-    socketListen("remote-mindmap-edited", (data) => {
-      const { edges, nodes } = data.reactFlowChanges;
+  //     // setCollaborateName(data.username);
 
-      // setCollaborateName(data.username);
+  //     const updatedNodes = mergeNodes(getNodes(), nodes);
 
-      const updatedNodes = mergeNodes(getNodes(), nodes);
+  //     // setFirst(false);
+  //     setNodes(updatedNodes);
+  //     setEdges(edges);
+  //   });
 
-      setFirst(false);
-      setNodes(updatedNodes);
-      setEdges(edges);
-    });
-
-    return () => {
-      socketOff("remote-mindmap-edited");
-    };
-  }, []);
+  //   return () => {
+  //     socketOff("remote-mindmap-edited");
+  //   };
+  // }, []);
 
   const nodeTypes = useMemo(
     () => ({

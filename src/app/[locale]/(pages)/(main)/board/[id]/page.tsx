@@ -42,7 +42,9 @@ export default function Board({ params }: { params: { id: string } }) {
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
-  const [collaUsername, setCollaUsername] = useRecoilState(usernameState);
+  const [currentCollaUsername, setCurrentCollaUsername] = useRecoilState(usernameState);
+  const [collaUsername, setCollaUsername] = useState("");
+
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 
   const session = useSession();
@@ -54,20 +56,20 @@ export default function Board({ params }: { params: { id: string } }) {
     const username = session.data?.session?.user?.username;
 
     if (username) {
-      setCollaUsername(username);
+      setCurrentCollaUsername(username);
     } else {
       const usernameFromStorage = sessionStorage.getItem("collaUsername");
       let username = usernameFromStorage ?? generateUsername();
 
       sessionStorage.setItem("collaUsername", username);
 
-      setCollaUsername(username);
+      setCurrentCollaUsername(username);
     }
   }, [session]);
 
   useEffect(() => {
-    if (collaUsername) socketJoinRoom(params.id, collaUsername);
-  }, [collaUsername]);
+    if (currentCollaUsername) socketJoinRoom(params.id, currentCollaUsername);
+  }, [currentCollaUsername]);
 
   useEffect(() => {
     // Listen for cursor movements
@@ -134,7 +136,7 @@ export default function Board({ params }: { params: { id: string } }) {
     if (checkPermission(PERMISSIONS, "UPDATE")) {
       socketEmit("cursor-move", {
         roomId: params.id,
-        username: collaUsername,
+        username: currentCollaUsername,
         cursorPos,
       });
     }
@@ -188,7 +190,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
           <div className="w-full">
             <div className="relative w-full h-full">
-              {isLoading && collaUsername !== undefined ? (
+              {isLoading && currentCollaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
                   <Spinner
@@ -197,7 +199,7 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Mindmap userMindmapDetails={userMindmapDetails} collaUsername={collaUsername} />
+                <Mindmap userMindmapDetails={userMindmapDetails} currentCollaUsername={currentCollaUsername} />
               )}
             </div>
             {qa.length > 0 ? (
