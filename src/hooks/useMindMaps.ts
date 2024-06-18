@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // import { toPng } from "html-to-image";
 // import { debounce } from "lodash";
+import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   addEdge,
   Connection,
@@ -16,9 +17,7 @@ import {
   MarkerType,
   Node,
   ReactFlowInstance,
-  useEdges,
   useEdgesState,
-  useNodes,
   useNodesState,
   useReactFlow,
 } from "reactflow";
@@ -174,7 +173,7 @@ type NodeType = "customNode" | "customDiamondNode" | "customCircleNode" | "custo
 const nodeCreators: Record<
   NodeType,
   // eslint-disable-next-line no-unused-vars
-  (nodeId: number, reactFlowInstance: any, event: DragEvent, undefinedValue?: any) => any
+  (nodeId: number, reactFlowInstance: any, event: React.DragEvent<HTMLDivElement>, undefinedValue?: any) => any
 > = {
   customNode: createCustomNode,
   customDiamondNode: createCustomDiamondNode,
@@ -196,16 +195,15 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
   const name = userMindmapDetails?.name;
   const description = userMindmapDetails?.description;
   const mindmapId = userMindmapDetails?.id;
   const visibility = userMindmapDetails?.visibility;
-  const nodeChanges = useNodes();
-  const edgeChanges = useEdges();
 
-  const [pictureUrl] = useState("");
+  const [pictureUrl] = useState();
 
   const setHistory = useSetRecoilState(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
@@ -261,6 +259,18 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     }
   };
 
+  const saveMindMap = async () => {
+    const newMindmapObject = await saveMindMapFlow();
+
+    if (newMindmapObject) {
+      updateMindmapMutation.mutate({
+        session: safeSession,
+        mindmapId: mindmapId,
+        mindmapObject: newMindmapObject,
+      });
+    }
+  };
+
   // const saveMindMapImage = useCallback(
   //   debounce(async (currentNodes: Node[]) => {
   //     const imageWidth = 1920;
@@ -285,21 +295,11 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   //   [nodeChanges, pictureUrl],
   // );
 
+  const debouncedSaveMindMap = useCallback(debounce(saveMindMap, 1000), [saveMindMap]);
+
   useEffect(() => {
-    const saveMindMap = async () => {
-      const newMindmapObject = await saveMindMapFlow();
-
-      if (newMindmapObject) {
-        updateMindmapMutation.mutate({
-          session: safeSession,
-          mindmapId: mindmapId,
-          mindmapObject: newMindmapObject,
-        });
-      }
-    };
-
-    saveMindMap();
-  }, [nodeChanges, edgeChanges]);
+    debouncedSaveMindMap();
+  }, [nodes, edges]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -375,12 +375,8 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-  // const onNodeDragStop = useCallback((event: MouseEvent) => {
-  //   console.log("event:", event);
-  // }, []);
-
   const onDrop = useCallback(
-    (event: DragEvent) => {
+    (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
 
       if (event.dataTransfer) {
@@ -455,6 +451,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     setReactFlowInstance,
     mindMapArray,
     pushToHistory,
+    saveMindMap,
   };
 };
 
