@@ -21,6 +21,7 @@ import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
   collaborateModalState,
+  collaboratorNameState,
   importModalState,
   promptResultState,
   promptValueState,
@@ -42,7 +43,9 @@ export default function Board({ params }: { params: { id: string } }) {
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
-  const [collaUsername, setCollaUsername] = useRecoilState(usernameState);
+  const [currentCollaUsername, setCurrentCollaUsername] = useRecoilState(usernameState);
+  const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
+
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 
   const session = useSession();
@@ -54,20 +57,20 @@ export default function Board({ params }: { params: { id: string } }) {
     const username = session.data?.session?.user?.username;
 
     if (username) {
-      setCollaUsername(username);
+      setCurrentCollaUsername(username);
     } else {
       const usernameFromStorage = sessionStorage.getItem("collaUsername");
       let username = usernameFromStorage ?? generateUsername();
 
       sessionStorage.setItem("collaUsername", username);
 
-      setCollaUsername(username);
+      setCurrentCollaUsername(username);
     }
   }, [session]);
 
   useEffect(() => {
-    if (collaUsername) socketJoinRoom(params.id, collaUsername);
-  }, [collaUsername]);
+    if (currentCollaUsername) socketJoinRoom(params.id, currentCollaUsername);
+  }, [currentCollaUsername]);
 
   useEffect(() => {
     // Listen for cursor movements
@@ -110,7 +113,7 @@ export default function Board({ params }: { params: { id: string } }) {
     ["mindmap", params.id],
     getUserMindmapById,
     {
-      // refetchOnMount: "always",
+      refetchOnMount: false,
       onSuccess: async (data) => {
         if (data.messages) {
           // await joinRoom(data);
@@ -134,7 +137,7 @@ export default function Board({ params }: { params: { id: string } }) {
     if (checkPermission(PERMISSIONS, "UPDATE")) {
       socketEmit("cursor-move", {
         roomId: params.id,
-        username: collaUsername,
+        username: currentCollaUsername,
         cursorPos,
       });
     }
@@ -188,7 +191,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
           <div className="w-full">
             <div className="relative w-full h-full">
-              {isLoading && collaUsername !== undefined ? (
+              {isLoading && currentCollaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
                   <Spinner
@@ -197,7 +200,7 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Mindmap userMindmapDetails={userMindmapDetails} collaUsername={collaUsername} />
+                <Mindmap userMindmapDetails={userMindmapDetails} currentCollaUsername={currentCollaUsername} />
               )}
             </div>
             {qa.length > 0 ? (
@@ -209,24 +212,22 @@ export default function Board({ params }: { params: { id: string } }) {
             )}
           </div>
         </main>
-        {/* <Button
-          onClick={async () => {
-            await socketLeaveRoom(userMindmapDetails?.id, collaUsername);
-            router.back();
-          }}
-          className="fixed right-5 bottom-5"
-        >
-          Leave room
-        </Button> */}
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
         <ShareDialog open={shareModal} setIsOpen={setShareModal} />
-        <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} mindmapId={params.id} />
+        {collaborateModal && (
+          <CollaborateDialog
+            open={collaborateModal}
+            setIsOpen={setCollaborateModal}
+            mindmapId={params.id}
+            userMindmap={userMindmapDetails}
+          />
+        )}
         <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
         <div
           style={{ left: collaCursorPos.x, top: collaCursorPos.y }}
-          className="fixed bg-[#FF4DC4] px-6 py-2 w-fit max-h-10 rounded-full z-50"
+          className="fixed bg-[#FF4DC4] px-3 py-1 w-fit max-h-10 rounded-full z-50"
         >
-          <p>{uppercaseFirstLetter(collaUsername)}</p>
+          <p className="text-xs">{uppercaseFirstLetter(collaUsername)}</p>
         </div>
         ;
       </>

@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import "reactflow/dist/style.css";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { debounce } from "lodash";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -23,7 +24,7 @@ import {
   MemoizedCustomNode,
   MemoizedMainNode,
 } from "@/components/mindmap";
-import { useMindMap, useNodeAndEdgeChangeListener, useSocket } from "@/hooks";
+import { useMindMap, useSocket } from "@/hooks";
 import { viewPortScaleState } from "@/state";
 import { checkPermission } from "@/utils";
 
@@ -37,10 +38,10 @@ const panOnDrag = [1, 2];
 
 function Mindmap({
   userMindmapDetails,
-  collaUsername,
+  currentCollaUsername,
 }: {
   userMindmapDetails: MindMapDetailsProps | undefined;
-  collaUsername: string;
+  currentCollaUsername: string;
 }) {
   const {
     nodes,
@@ -55,13 +56,15 @@ function Mindmap({
     onNodesDelete,
     setSourceHandle,
     setReactFlowInstance,
+    saveMindMap,
   } = useMindMap(userMindmapDetails);
 
   const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
   const isLocked = checkPermission(PERMISSIONS, "UPDATE") ? true : false;
   const userCanGive = userMindmapDetails?.collaborators.filter(
-    (collaborator) => collaborator.username == collaUsername,
+    (collaborator) => collaborator.username == currentCollaUsername,
   )[0];
+  const isCollaborativeMindmap = userMindmapDetails!.collaborators?.length > 1;
 
   const defaultEdgeOptions = {
     animated: true,
@@ -69,6 +72,7 @@ function Mindmap({
     type: "default",
   };
 
+  const [first, setFirst] = useState(true);
   const { setEdges, setNodes, getNodes } = useReactFlow();
 
   function mergeNodes(localNodes: Node[], remoteNodes: Node[]) {
@@ -100,9 +104,6 @@ function Mindmap({
     return localNodes;
   }
 
-  const [first, setFirst] = useState(true);
-  // const setCollaborateName = useSetRecoilState(collaboratorNameState);
-
   const { socketEmit, socketListen, socketOff } = useSocket();
 
   const setScaleStyle = useSetRecoilState(viewPortScaleState);
@@ -119,45 +120,31 @@ function Mindmap({
     return null;
   }
 
-  // useEffect(() => {
-  //   if (first && userCanGive && checkPermission(PERMISSIONS, "UPDATE")) {
-  //     socketEmit("mindmap-edited", {
-  //       roomId: userMindmapDetails?.id,
-  //       username: collaUsername,
-  //       reactFlowChanges: {
-  //         nodes: nodeChanges,
-  //         edges: edgeChanges,
-  //       },
-  //     });
-  //     // setFirst(false);
-  //     // setCollaborateName(session.data?.session.user.username);
-  //   }
-  //   setFirst(true);
-  // }, [nodeChanges, edgeChanges]);
-
-  useNodeAndEdgeChangeListener(nodes, edges, () => {
-    if (first && userCanGive && checkPermission(PERMISSIONS, "UPDATE")) {
+  useEffect(() => {
+    if (first && userCanGive && isCollaborativeMindmap && checkPermission(PERMISSIONS, "UPDATE")) {
       socketEmit("mindmap-edited", {
         roomId: userMindmapDetails?.id,
-        username: collaUsername,
+        username: currentCollaUsername,
         reactFlowChanges: {
           nodes: nodes,
           edges: edges,
         },
       });
-      setFirst(false);
+      // setFirst(false);
     }
-  });
+    setFirst(true);
+  }, [nodes, edges]);
 
   useEffect(() => {
     socketListen("remote-mindmap-edited", (data) => {
       const { edges, nodes } = data.reactFlowChanges;
 
-      // setCollaborateName(data.username);
-
       const updatedNodes = mergeNodes(getNodes(), nodes);
 
       setFirst(false);
+
+      // onNodesChange(nodes);
+      // onEdgesChange(edges);
       setNodes(updatedNodes);
       setEdges(edges);
     });
@@ -166,6 +153,12 @@ function Mindmap({
       socketOff("remote-mindmap-edited");
     };
   }, []);
+
+  const debouncedSaveMindMap = useCallback(debounce(saveMindMap, 1000), [saveMindMap]);
+
+  useEffect(() => {
+    debouncedSaveMindMap();
+  }, [nodes, edges]);
 
   const nodeTypes = useMemo(
     () => ({

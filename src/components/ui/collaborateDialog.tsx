@@ -5,19 +5,21 @@ import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
-import { getMindmapById, inviteAllCollaborators, removeCollaboratorById, updateCollaborators } from "@/_services";
-import { Collaborator, CustomSession, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
+import { inviteAllCollaborators, removeCollaboratorById, updateCollaborators } from "@/_services";
+import { Collaborator, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
 import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
 interface CollaborateDialogProps extends DialogProps {
   mindmapId: string;
+  userMindmap: MindMapDetailsProps;
 }
 
-const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindmapId }) => {
+const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindmapId, userMindmap }) => {
+  const session = useSession();
   const text = useTranslations("Index");
   const collaboratorText = useTranslations("Collaborator");
   const modalRef = useRef<HTMLDivElement>(null);
@@ -29,29 +31,6 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   const [currentRole, setCurrentRole] = useState("");
 
   const queryClient = useQueryClient();
-
-  const session = useSession();
-  const safeSession = session ? (session as unknown as CustomSession) : null;
-  const getUserMindmapById = () => getMindmapById({ session: safeSession, mindmapId });
-
-  const { isLoading, data: userMindmap } = useQuery<MindMapDetailsProps>("mindmap", getUserMindmapById, {
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    onSuccess: (data) => {
-      // Assuming data contains the collaborators array under a property named 'collaborators'
-      setCollaborators(data.collaborators);
-    },
-  });
-
-  useEffect(() => {
-    const userId = session.data?.session?.user.id;
-    let collaborator: Collaborator;
-
-    if (userId && userMindmap) {
-      collaborator = userMindmap?.collaborators.filter((collaborator) => collaborator.userId == userId)[0];
-      setCurrentRole(collaborator.role);
-    }
-  }, [session, userMindmap]);
 
   const PERMISSIONS = userMindmap?.connectedCollaboratorPermissions;
 
@@ -93,14 +72,32 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     }
   };
 
+  useEffect(() => {
+    const userId = session.data?.session?.user.id;
+    let collaborator: Collaborator;
+
+    if (userId && userMindmap) {
+      collaborator = userMindmap?.collaborators.filter((collaborator) => collaborator.userId == userId)[0];
+      setCurrentRole(collaborator.role);
+    }
+  }, [session, userMindmap]);
+
+  // Invalidate the query when the dialog opens
+  useEffect(() => {
+    if (open) {
+      queryClient.invalidateQueries("mindmap");
+    }
+  }, [open, queryClient]);
+
   const handleClose = () => {
-    // setIsOpen(false);
+    queryClient.invalidateQueries("mindmap");
     setIsOpen(false);
   };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!modalRef.current?.contains(event.target as Node)) {
+        queryClient.invalidateQueries("mindmap");
         setIsOpen(false);
       }
     };
@@ -261,7 +258,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                 collaboratorsLength > 1 ? `collaborators` : `collaborator`,
               ).toLowerCase()}`}
         </p>
-        {isLoading ? (
+        {!userMindmap ? (
           <>
             <Skeleton className="w-full h-16 bg-slate-600" />
             <Skeleton className="w-full h-16 bg-slate-600" />
