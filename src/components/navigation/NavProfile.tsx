@@ -44,6 +44,7 @@ function NavProfile() {
         onSuccess: async () => {
           // Invalidate the query to cause a re-fetch
           await queryClient.invalidateQueries("userInvitations");
+          await queryClient.invalidateQueries("userMindmap");
           setIsAccepting(false);
         },
       });
