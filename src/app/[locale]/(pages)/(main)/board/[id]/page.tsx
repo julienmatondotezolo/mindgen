@@ -21,6 +21,7 @@ import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
   collaborateModalState,
+  collaboratorNameState,
   importModalState,
   promptResultState,
   promptValueState,
@@ -43,7 +44,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const [qa, setQa] = useRecoilState(qaState);
 
   const [currentCollaUsername, setCurrentCollaUsername] = useRecoilState(usernameState);
-  const [collaUsername, setCollaUsername] = useState("");
+  const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
 
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 

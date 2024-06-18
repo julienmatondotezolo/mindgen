@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, SetStateAction, useState } from "react";
+import { memo, SetStateAction, useEffect, useRef, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 import { useRecoilValue } from "recoil";
 
@@ -14,6 +14,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
 
   const node = getNode(id);
   const [inputText, setInputText] = useState(data.label);
+  const clickedByConnectedUserRef = useRef(true);
   const { pushToHistory } = useMindMap(undefined);
 
   const handleSize = "!w-[10px] !h-[10px]";
@@ -45,9 +46,17 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
     );
   };
 
-  const username = useRecoilValue(usernameState);
+  // const username = useRecoilValue(usernameState);
+  // const collaborateName = useRecoilValue(collaboratorNameState);
 
-  const collaborateName = useRecoilValue(collaboratorNameState);
+  // useEffect(() => {
+
+  //   if (collaborateName) {
+  //     clickedByConnectedUserRef.current = false;
+  //   } else {
+  //     clickedByConnectedUserRef.current = true;
+  //   }
+  // }, []);
 
   const scaleStyle = useRecoilValue(viewPortScaleState);
 
@@ -57,10 +66,10 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
         onResizeEnd={(e, params) => resizeNode(params)}
         minWidth={180}
         minHeight={45}
-        color={username !== collaborateName ? "#FF4DC4" : "#4D6AFF"}
+        color={clickedByConnectedUserRef.current ? "#4D6AFF" : "#FF4DC4"}
         handleStyle={{
           borderWidth: "10px",
-          borderColor: username !== collaborateName ? "#FF4DC4" : "#4D6AFF",
+          borderColor: clickedByConnectedUserRef.current ? "#4D6AFF" : "#FF4DC4",
           borderStyle: "solid",
           width: "10px",
           height: "10px",
@@ -73,7 +82,7 @@ const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNod
       >
         <input type="text" value={inputText} onChange={handleInputChange} className="nodeTextInput" />
       </div>
-      {selected && username !== collaborateName && (
+      {selected && clickedByConnectedUserRef.current && (
         <div style={scaleStyle}>
           <NodeToolbar nodeId={id} />
         </div>
