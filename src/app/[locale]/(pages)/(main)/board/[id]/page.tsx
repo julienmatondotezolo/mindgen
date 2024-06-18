@@ -112,7 +112,7 @@ export default function Board({ params }: { params: { id: string } }) {
     ["mindmap", params.id],
     getUserMindmapById,
     {
-      // refetchOnMount: "always",
+      refetchOnMount: false,
       onSuccess: async (data) => {
         if (data.messages) {
           // await joinRoom(data);
@@ -224,9 +224,9 @@ export default function Board({ params }: { params: { id: string } }) {
         <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
         <div
           style={{ left: collaCursorPos.x, top: collaCursorPos.y }}
-          className="fixed bg-[#FF4DC4] px-6 py-2 w-fit max-h-10 rounded-full z-50"
+          className="fixed bg-[#FF4DC4] px-3 py-1 w-fit max-h-10 rounded-full z-50"
         >
-          <p>{uppercaseFirstLetter(collaUsername)}</p>
+          <p className="text-xs">{uppercaseFirstLetter(collaUsername)}</p>
         </div>
         ;
       </>

@@ -1,7 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // import { toPng } from "html-to-image";
-// import { debounce } from "lodash";
-import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -230,7 +228,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
       setNodeId(userMindmapDetails.nodes.length);
       setEdges(userMindmapDetails.edges);
     }
-  }, [userMindmapDetails]);
+  }, []);
 
   // Define the mutation
   const updateMindmapMutation = useSyncMutation(updateMindmapById, {
@@ -294,12 +292,6 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
   //   }, 10000),
   //   [nodeChanges, pictureUrl],
   // );
-
-  const debouncedSaveMindMap = useCallback(debounce(saveMindMap, 1000), [saveMindMap]);
-
-  useEffect(() => {
-    debouncedSaveMindMap();
-  }, [nodes, edges]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
