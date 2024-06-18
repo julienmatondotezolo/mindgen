@@ -1,13 +1,13 @@
 "use client";
 
-import { memo, SetStateAction, useEffect, useRef, useState } from "react";
+import { memo, SetStateAction, useRef, useState } from "react";
 import { Handle, Node, NodeResizer, Position, ResizeParams, useReactFlow } from "reactflow";
 import { useRecoilValue } from "recoil";
 
 import { CustomNodeProps } from "@/_types";
 import { NodeToolbar } from "@/components";
 import { useMindMap } from "@/hooks";
-import { collaboratorNameState, usernameState, viewPortScaleState } from "@/state";
+import { viewPortScaleState } from "@/state";
 
 const CustomNode = ({ id, data, selected, setNodes, setSourceHandle }: CustomNodeProps) => {
   const { getNode } = useReactFlow();

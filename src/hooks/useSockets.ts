@@ -72,7 +72,6 @@ const useSocket = () => {
   // Handle navigation changes
   useEffect(() => {
     const handlePopState = () => {
-      console.log("Hello");
       socketOff("cursor-move"); // Optionally close the WebSocket connection on navigation change
     };
 
