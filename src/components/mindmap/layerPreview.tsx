@@ -16,7 +16,14 @@ interface LayerPreviewProps {
 
 export const LayerPreview = memo(({ id, onLayerPointerDown, selectionColor }: LayerPreviewProps) => {
   // const layer = useStorage((root) => root.layers.get(id));
-  const layer = [{}];
+  const layer = {
+    type: LayerType.Rectangle,
+    x: 200,
+    y: 200,
+    width: 100,
+    height: 100,
+    fill: null,
+  };
 
   if (!layer) return null;
 
@@ -46,5 +53,3 @@ export const LayerPreview = memo(({ id, onLayerPointerDown, selectionColor }: La
       return null;
   }
 });
-
-

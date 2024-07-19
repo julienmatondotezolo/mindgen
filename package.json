@@ -47,6 +47,7 @@
     "remark-html": "^16.0.1",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
+    "styled-components": "^6.1.12",
     "tailwind-merge": "^2.0.0",
     "tailwind-scrollbar": "^3.0.5",
     "tailwindcss-animate": "^1.0.7",

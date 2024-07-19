@@ -7,10 +7,10 @@ export type Color = {
 export type Camera = {
   x: number;
   y: number;
+  scale: number;
 };
 
 export enum LayerType {
-  Text,
   Note,
   Rectangle,
   Ellipse,
@@ -92,17 +92,12 @@ export type CanvasState =
       mode: CanvasMode.None;
     }
   | {
-      mode: CanvasMode.Pressing;
-      origin: Point;
+      mode: CanvasMode.Grab;
     }
   | {
       mode: CanvasMode.SelectionNet;
       origin: Point;
       current?: Point;
-    }
-  | {
-      mode: CanvasMode.Translating;
-      current: Point;
     }
   | {
       mode: CanvasMode.Inserting;
@@ -119,9 +114,8 @@ export type CanvasState =
 
 export enum CanvasMode {
   None,
-  Pressing,
+  Grab,
   SelectionNet,
-  Translating,
   Inserting,
   Resizing,
   Pencil,
