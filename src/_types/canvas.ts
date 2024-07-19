@@ -18,6 +18,7 @@ export enum LayerType {
 }
 
 export type RectangleLayer = {
+  id: string;
   type: LayerType.Rectangle;
   x: number;
   y: number;
@@ -28,6 +29,7 @@ export type RectangleLayer = {
 };
 
 export type EllipseLayer = {
+  id: string;
   type: LayerType.Ellipse;
   x: number;
   y: number;
@@ -38,6 +40,7 @@ export type EllipseLayer = {
 };
 
 export type PathLayer = {
+  id: string;
   type: LayerType.Path;
   x: number;
   y: number;
@@ -48,17 +51,18 @@ export type PathLayer = {
   value?: string;
 };
 
-export type TextLayer = {
-  type: LayerType.Text;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
-  value?: string;
-};
+// export type TextLayer = {
+//   type: LayerType.Text;
+//   x: number;
+//   y: number;
+//   height: number;
+//   width: number;
+//   fill: Color;
+//   value?: string;
+// };
 
 export type NoteLayer = {
+  id: string;
   type: LayerType.Note;
   x: number;
   y: number;
@@ -95,13 +99,21 @@ export type CanvasState =
       mode: CanvasMode.Grab;
     }
   | {
+      mode: CanvasMode.Pressing;
+      origin: Point;
+    }
+  | {
       mode: CanvasMode.SelectionNet;
       origin: Point;
       current?: Point;
     }
   | {
       mode: CanvasMode.Inserting;
-      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Text | LayerType.Note;
+      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note;
+    }
+  | {
+      mode: CanvasMode.Translating;
+      current: Point;
     }
   | {
       mode: CanvasMode.Resizing;
@@ -115,10 +127,12 @@ export type CanvasState =
 export enum CanvasMode {
   None,
   Grab,
+  Pressing,
   SelectionNet,
   Inserting,
+  Translating,
   Resizing,
   Pencil,
 }
 
-export type Layer = RectangleLayer | EllipseLayer | PathLayer | TextLayer | NoteLayer;
+export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;

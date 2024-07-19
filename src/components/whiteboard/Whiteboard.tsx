@@ -1,13 +1,18 @@
 // src/components/Canvas.tsx
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import { Camera, CanvasMode, CanvasState } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Color, Layer, LayerType, Point } from "@/_types";
+import { colorToCss, pointerEventToCanvasPoint } from "@/utils";
 
 import { Button } from "../ui";
+import { LayerPreview } from "./LayerPreview";
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard: React.FC = () => {
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
+
+  let nextLayerId = useRef(0);
+  const [layers, setLayers] = useState<Layer[]>([]);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
@@ -18,7 +23,100 @@ const Whiteboard: React.FC = () => {
     mode: CanvasMode.None,
   });
 
+  const [lastUsedColor, setLastUsedColor] = useState<Color>({
+    r: 50,
+    g: 20,
+    b: 188,
+  });
+
+  const MAX_LAYERS = 100;
+
   const CANVAS_TRANSITION_TIME = 500;
+
+  // ================  LAYERS  ================== //
+
+  const insertLayer = useCallback(
+    (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note, position: Point) => {
+      if (layers?.length >= MAX_LAYERS) {
+        return;
+      }
+
+      const layerId = nextLayerId.current++;
+
+      const newLayer = {
+        id: layerId.toString(),
+        type: layerType,
+        x: position.x,
+        y: position.y,
+        width: 100,
+        height: 100,
+        fill: lastUsedColor,
+      };
+
+      setLayers((layers) => [...layers, newLayer]);
+
+      setCanvasState({
+        mode: CanvasMode.None,
+      });
+    },
+    [lastUsedColor],
+  );
+
+  const handleLayerPointerDown = useCallback(
+    (e: React.PointerEvent, layerId: string) => {
+      if (canvasState.mode === CanvasMode.Pencil || canvasState.mode === CanvasMode.Inserting) {
+        return;
+      }
+
+      // history.pause();
+      e.stopPropagation();
+
+      const point = pointerEventToCanvasPoint(e, camera);
+
+      setCanvasState({
+        mode: CanvasMode.Translating,
+        current: point,
+      });
+    },
+    [setCanvasState, camera, canvasState.mode],
+  );
+
+  // ================  SVG POINTER EVENTS  ================== //
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      const point = pointerEventToCanvasPoint(e, camera);
+
+      if (canvasState.mode === CanvasMode.Inserting) return;
+
+      // setCanvasState({
+      //   origin: point,
+      //   mode: CanvasMode.Pressing,
+      // });
+    },
+    [camera, canvasState.mode, setCanvasState],
+  );
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      const point = pointerEventToCanvasPoint(e, camera);
+
+      if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
+        //
+      } else if (canvasState.mode === CanvasMode.Pencil) {
+        //
+      } else if (canvasState.mode === CanvasMode.Inserting) {
+        insertLayer(canvasState.layerType, point);
+      } else {
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      }
+    },
+    [camera, canvasState, insertLayer, setCanvasState],
+  );
+
+  // ================  CAMERA FUNCTIONS  ================== //
 
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
@@ -71,21 +169,24 @@ const Whiteboard: React.FC = () => {
     if (!svgElement || !gElement) return;
 
     const svgRect = svgElement.getBoundingClientRect();
-
     const gRect = gElement.getBBox(); // getBBox() returns the tight bounding box in local coordinates
+
     const gRectWidth = gRect.width - gRect.x;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
     const gRectHeight = gRect.height - gRect.y;
 
     // Calculate scale to fit horizontally
-    const scaleX = svgRect.width / gRect.width;
-    const scaleY = svgRect.height / gRect.height;
-    const scale = Math.max(scaleX, scaleY) / 1.8; // Use max to ensure content doesn't shrink vertically
+    const scaleX = 0;
+    const scaleY = 0;
 
-    // Calculate translation to center the content
-    const translateX = gRect.x * scale + gRectWidth / scale;
-    const translateY = -(gRect.y * (gRect.height / 2 / svgRect.height) - gRectHeight * 2);
+    const scale = Math.max(scaleX, scaleY); // Use max to ensure content doesn't shrink vertically
 
-    setCamera({ x: translateX, y: translateY, scale: scale });
+    // Calculate translation to center the content horizontally
+    const translateX = 0;
+    const translateY = 0;
+
+    setCamera({ x: 0, y: 0, scale: 1 });
 
     // Disable transition after a delay matching the transition duration
     setTimeout(() => {
@@ -202,39 +303,48 @@ const Whiteboard: React.FC = () => {
   return (
     <main className="h-full w-full relative  touch-none select-none">
       <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
-      <div className="fixed bottom-4 left-4 z-10 space-x-2">
-        <figure className="flex items-center space-x-2 float-left">
-          <Button variant="outline" onClick={zoomOut}>
-            -
+      {layers.length > 0 && (
+        <div className="fixed bottom-4 left-4 z-10 space-x-2">
+          <figure className="flex items-center space-x-2 float-left">
+            <Button variant="outline" onClick={zoomOut}>
+              -
+            </Button>
+            <p className="text-sm">{Math.round(camera.scale * 100)}%</p>
+            <Button variant="outline" onClick={zoomIn}>
+              +
+            </Button>
+          </figure>
+          <Button variant="outline" onClick={fitView}>
+            Reset content
           </Button>
-          <p className="text-sm">{Math.round(camera.scale * 100)}%</p>
-          <Button variant="outline" onClick={zoomIn}>
-            +
-          </Button>
-        </figure>
-        <Button variant="outline" onClick={fitView}>
-          Fit content
-        </Button>
-      </div>
+        </div>
+      )}
       {showResetButton && (
         <Button variant="outline" onClick={resetView} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
           Scroll back to content
         </Button>
       )}
-      <svg className="h-[100vh] w-[100vw]">
+      <svg className="h-[100vh] w-[100vw]" onPointerDown={handlePointerDown} onPointerUp={handlePointerUp}>
         <g
           style={{
             transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
             transformOrigin: "center",
             transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
-            background: "red",
           }}
         >
+          {layers.map((layer) => (
+            <LayerPreview
+              key={layer.id}
+              layer={layer}
+              onLayerPointerDown={handleLayerPointerDown}
+              selectionColor={colorToCss(lastUsedColor)}
+            />
+          ))}
           {/* SVG content goes here */}
-          <rect x="600" y="300" width="30" height="30" fill="blue" />
+          {/* <rect x="600" y="300" width="30" height="30" fill="blue" />
           <circle cx="550" cy="350" r="30" fill="red" />
           <circle cx="250" cy="450" r="30" fill="green" />
-          <circle cx="650" cy="550" r="30" fill="purple" />
+          <circle cx="650" cy="550" r="30" fill="purple" /> */}
         </g>
       </svg>
     </main>
