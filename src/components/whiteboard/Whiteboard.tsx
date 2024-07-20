@@ -1,20 +1,19 @@
 // src/components/Canvas.tsx
+import { nanoid } from "nanoid";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Camera, CanvasMode, CanvasState, Color, Layer, LayerType, Point, Side, XYWH } from "@/_types";
-import { layerAtomState, useAddElement } from "@/state";
+import { activeLayersAtom, layerAtomState, useAddElement } from "@/state";
 import { colorToCss, pointerEventToCanvasPoint } from "@/utils";
 
 import { Button } from "../ui";
 import { LayerPreview } from "./LayerPreview";
+import { SelectionBox } from "./layers/selectionBox";
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard: React.FC = () => {
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
-
-  const layers = useRecoilValue(layerAtomState);
-  let nextLayerId = useRef(0);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
@@ -37,18 +36,10 @@ const Whiteboard: React.FC = () => {
 
   // ================  LAYERS  ================== //
 
+  const layers = useRecoilValue(layerAtomState);
+  const [activeLayerIDs, setActiveLayerIDs] = useRecoilState(activeLayersAtom);
+
   const addLayer = useAddElement();
-
-  const canUndo = true;
-  const canRedo = false;
-
-  const undoAction = () => {
-    //
-  };
-
-  const redoAction = () => {
-    //
-  };
 
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note, position: Point) => {
@@ -56,7 +47,7 @@ const Whiteboard: React.FC = () => {
         return;
       }
 
-      const layerId = nextLayerId.current++;
+      const layerId = nanoid();
 
       const newLayer = {
         id: layerId.toString(),
@@ -65,10 +56,8 @@ const Whiteboard: React.FC = () => {
         y: position.y,
         width: 100,
         height: 100,
-        fill: lastUsedColor,
+        fill: { r: 255, g: 255, b: 255 },
       };
-
-      // setLayers((layers) => [...layers, newLayer]);
 
       addLayer(newLayer);
 
@@ -78,6 +67,12 @@ const Whiteboard: React.FC = () => {
     },
     [lastUsedColor],
   );
+
+  const unSelectLayer = useCallback(() => {
+    if (activeLayerIDs.length > 0) {
+      setActiveLayerIDs([]);
+    }
+  }, []);
 
   const handleLayerPointerDown = useCallback(
     (e: React.PointerEvent, layerId: string) => {
@@ -89,6 +84,15 @@ const Whiteboard: React.FC = () => {
       e.stopPropagation();
 
       const point = pointerEventToCanvasPoint(e, camera);
+
+      if (e.shiftKey) {
+        // If Shift is held, add the layerId to the activeLayerIds array without removing others
+        setActiveLayerIDs((prevActiveLayerIds) => [...prevActiveLayerIds, layerId]);
+      } else {
+        // const newActiveLayerIDs = activeLayerIDs.filter((id) => id == layerId);
+
+        setActiveLayerIDs([layerId]);
+      }
 
       setCanvasState({
         mode: CanvasMode.Translating,
@@ -128,7 +132,10 @@ const Whiteboard: React.FC = () => {
       const point = pointerEventToCanvasPoint(e, camera);
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
-        //
+        unSelectLayer();
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
       } else if (canvasState.mode === CanvasMode.Pencil) {
         //
       } else if (canvasState.mode === CanvasMode.Inserting) {
@@ -139,7 +146,7 @@ const Whiteboard: React.FC = () => {
         });
       }
     },
-    [camera, canvasState, insertLayer, setCanvasState],
+    [camera, canvasState, insertLayer, unSelectLayer, setCanvasState],
   );
 
   // ================  CAMERA FUNCTIONS  ================== //
@@ -366,6 +373,7 @@ const Whiteboard: React.FC = () => {
               selectionColor={colorToCss(lastUsedColor)}
             />
           ))}
+          <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
           {/* SVG content goes here */}
           {/* <rect x="600" y="300" width="30" height="30" fill="blue" />
           <circle cx="550" cy="350" r="30" fill="red" />

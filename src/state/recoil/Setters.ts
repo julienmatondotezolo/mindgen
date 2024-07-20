@@ -1,15 +1,17 @@
 /* eslint-disable no-undef */
 
 import { produce } from "immer";
-import { useRecoilCallback } from "recoil";
+import { nanoid } from "nanoid";
+import { useRecoilCallback, useSetRecoilState } from "recoil";
 
 import { Layer } from "@/_types";
 
-import { layerAtomState } from "./atoms";
+import { activeLayersAtom, layerAtomState } from "./atoms";
 import { useAddToHistoryPrivate } from "./History";
 
 export const useAddElement = () => {
   const addToHistory = useAddToHistoryPrivate();
+  const setActiveLayers = useSetRecoilState(activeLayersAtom);
 
   return useRecoilCallback(
     ({ set }) =>
@@ -24,45 +26,27 @@ export const useAddElement = () => {
             addToHistory,
           ),
         );
+
+        setActiveLayers([layer.id]);
       },
     [],
   );
 };
 
-export const useRemoveDesignElement = () => {
+export const useRemoveElement = () => {
   const addToHistory = useAddToHistoryPrivate();
 
   return useRecoilCallback(
     ({ set }) =>
       (id: string) => {
-        set(layerAtomState, (r) =>
+        set(layerAtomState, (currentLayers) =>
           produce(
-            r,
-            (d) => {
-              delete d.array[id];
-              const toRemoveIndesx = d.arrayIds.indexOf(id);
+            currentLayers,
+            (draft) => {
+              delete draft.array[id];
+              const toRemoveIndesx = draft.arrayIds.indexOf(id);
 
-              d.arrayIds.splice(toRemoveIndesx, 1);
-            },
-            addToHistory,
-          ),
-        );
-      },
-    [],
-  );
-};
-
-export const useUpdateRootDesignElementIncrementCount = () => {
-  const addToHistory = useAddToHistoryPrivate();
-
-  return useRecoilCallback(
-    ({ set }) =>
-      () => {
-        set(layerAtomState, (r) =>
-          produce(
-            r,
-            (d: { obj: { count: number } }) => {
-              d.obj.count += 1;
+              draft.arrayIds.splice(toRemoveIndesx, 1);
             },
             addToHistory,
           ),

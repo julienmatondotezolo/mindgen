@@ -1,13 +1,18 @@
 import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps, Layer, LayerType, QuestionAnswersProps } from "@/_types";
+import { ChatMessageProps, Layer, QuestionAnswersProps } from "@/_types";
 
-// ================   LAYER STATES & HISTORY   ================== //
+// ================   LAYER STATES   ================== //
 
 export const layerAtomState = atom<Layer[]>({
   key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
   default: [], // valeur par défaut (alias valeur initials)
+});
+
+export const activeLayersAtom = atom<string[]>({
+  key: "activeLayersAtom",
+  default: [], // Start with no active layers
 });
 
 // ================   PROMPT STATES  ================== //

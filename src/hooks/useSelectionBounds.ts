@@ -1,4 +1,7 @@
+import { useRecoilValue } from "recoil";
+
 import { Layer, XYWH } from "@/_types";
+import { activeLayersAtom, layerAtomState } from "@/state";
 
 const boundingBox = (layers: Layer[]): XYWH | null => {
   const first = layers[0];
@@ -39,18 +42,12 @@ const boundingBox = (layers: Layer[]): XYWH | null => {
 };
 
 const useSelectionBounds = () => {
-  // LOGIC FOR SOCKETS
-  const layers: Layer[] = [];
+  const layers = useRecoilValue(layerAtomState);
+  const activeLayerIDs = useRecoilValue(activeLayersAtom);
 
-  console.log("Selected layer");
+  const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
 
-  return boundingBox(layers);
-
-  //   const selection = useSelf((me) => me.presence.selection);
-  //   return useStorage((root) => {
-  //     const selectedLayers = selection.map((layerId) => root.layers.get(layerId)!).filter(Boolean);
-  //     return boundingBox(selectedLayers);
-  //   }, shallow);
+  return boundingBox(selectedLayers);
 };
 
 export { useSelectionBounds };
