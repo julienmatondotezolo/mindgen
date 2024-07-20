@@ -1,7 +1,16 @@
 import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps, HistoryState, QuestionAnswersProps } from "@/_types";
+import { ChatMessageProps, Layer, LayerType, QuestionAnswersProps } from "@/_types";
+
+// ================   LAYER STATES & HISTORY   ================== //
+
+export const layerAtomState = atom<Layer[]>({
+  key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
+  default: [], // valeur par défaut (alias valeur initials)
+});
+
+// ================   PROMPT STATES  ================== //
 
 export const promptValueState = atom({
   key: "promptValueState", // unique ID (with respect to other atoms/selectors)
@@ -11,11 +20,6 @@ export const promptValueState = atom({
 export const promptResultState = atom({
   key: "promptResultState",
   default: false,
-});
-
-export const historyState = atom<HistoryState[]>({
-  key: "historyState",
-  default: [],
 });
 
 export const historyIndexState = atom({

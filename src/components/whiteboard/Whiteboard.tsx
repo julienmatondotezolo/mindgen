@@ -1,7 +1,9 @@
 // src/components/Canvas.tsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-import { Camera, CanvasMode, CanvasState, Color, Layer, LayerType, Point } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Color, Layer, LayerType, Point, Side, XYWH } from "@/_types";
+import { layerAtomState, useAddElement } from "@/state";
 import { colorToCss, pointerEventToCanvasPoint } from "@/utils";
 
 import { Button } from "../ui";
@@ -11,8 +13,8 @@ import { Toolbar } from "./Toolbar";
 const Whiteboard: React.FC = () => {
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
 
+  const layers = useRecoilValue(layerAtomState);
   let nextLayerId = useRef(0);
-  const [layers, setLayers] = useState<Layer[]>([]);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
@@ -35,6 +37,19 @@ const Whiteboard: React.FC = () => {
 
   // ================  LAYERS  ================== //
 
+  const addLayer = useAddElement();
+
+  const canUndo = true;
+  const canRedo = false;
+
+  const undoAction = () => {
+    //
+  };
+
+  const redoAction = () => {
+    //
+  };
+
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note, position: Point) => {
       if (layers?.length >= MAX_LAYERS) {
@@ -53,7 +68,9 @@ const Whiteboard: React.FC = () => {
         fill: lastUsedColor,
       };
 
-      setLayers((layers) => [...layers, newLayer]);
+      // setLayers((layers) => [...layers, newLayer]);
+
+      addLayer(newLayer);
 
       setCanvasState({
         mode: CanvasMode.None,
@@ -80,6 +97,15 @@ const Whiteboard: React.FC = () => {
     },
     [setCanvasState, camera, canvasState.mode],
   );
+
+  const handleResizeHandlePointerDown = useCallback((corner: Side, initialBounds: XYWH) => {
+    // history.pause();
+    setCanvasState({
+      mode: CanvasMode.Resizing,
+      initialBounds,
+      corner,
+    });
+  }, []);
 
   // ================  SVG POINTER EVENTS  ================== //
 
@@ -303,7 +329,7 @@ const Whiteboard: React.FC = () => {
   return (
     <main className="h-full w-full relative  touch-none select-none">
       <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
-      {layers.length > 0 && (
+      {layers?.length > 0 && (
         <div className="fixed bottom-4 left-4 z-10 space-x-2">
           <figure className="flex items-center space-x-2 float-left">
             <Button variant="outline" onClick={zoomOut}>
@@ -332,7 +358,7 @@ const Whiteboard: React.FC = () => {
             transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
           }}
         >
-          {layers.map((layer) => (
+          {layers?.map((layer) => (
             <LayerPreview
               key={layer.id}
               layer={layer}
