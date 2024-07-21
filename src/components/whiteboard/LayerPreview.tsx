@@ -5,7 +5,7 @@ import { Ellipse, Rectangle } from "@/components/whiteboard/layers";
 
 interface LayerPreviewProps {
   layer: Layer;
-  onLayerPointerDown: (e: React.PointerEvent, layerId: string) => void;
+  onLayerPointerDown: (e: React.PointerEvent, layerId: string, origin?: Point) => void;
   selectionColor: string;
 }
 

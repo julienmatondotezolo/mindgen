@@ -1,7 +1,9 @@
 import React, { memo } from "react";
+import { useRecoilValue } from "recoil";
 
 import { Side } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
+import { activeLayersAtom } from "@/state";
 
 interface SelectionBoxProps {
   onResizeHandlePointerDown: (corner: Side, initialBounds: XYWH) => void;
@@ -10,7 +12,11 @@ interface SelectionBoxProps {
 const HANDLE_WIDTH = 8;
 
 export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxProps) => {
-  const isShowingHandles = true;
+  const activeLayerIDs = useRecoilValue(activeLayersAtom);
+
+  const soleLayerId = activeLayerIDs.length === 1 ? activeLayerIDs[0] : null;
+
+  const isShowingHandles = soleLayerId;
 
   const bounds = useSelectionBounds();
 

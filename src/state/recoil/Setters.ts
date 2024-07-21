@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 
 import { produce } from "immer";
-import { nanoid } from "nanoid";
 import { useRecoilCallback, useSetRecoilState } from "recoil";
 
 import { Layer } from "@/_types";
@@ -28,6 +27,30 @@ export const useAddElement = () => {
         );
 
         setActiveLayers([layer.id]);
+      },
+    [],
+  );
+};
+
+export const useUpdateElement = () => {
+  const addToHistory = useAddToHistoryPrivate();
+
+  return useRecoilCallback(
+    ({ set }) =>
+      (id: string, updatedLayer: Partial<Layer>) => {
+        set(layerAtomState, (currentLayers) =>
+          produce(
+            currentLayers,
+            (draft) => {
+              const index = draft.findIndex((layer) => layer.id === id);
+
+              if (index !== -1) {
+                Object.assign(draft[index], updatedLayer);
+              }
+            },
+            // addToHistory,
+          ),
+        );
       },
     [],
   );

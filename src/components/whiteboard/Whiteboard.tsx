@@ -1,11 +1,11 @@
 // src/components/Canvas.tsx
 import { nanoid } from "nanoid";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { Camera, CanvasMode, CanvasState, Color, Layer, LayerType, Point, Side, XYWH } from "@/_types";
-import { activeLayersAtom, layerAtomState, useAddElement } from "@/state";
-import { colorToCss, pointerEventToCanvasPoint } from "@/utils";
+import { Camera, CanvasMode, CanvasState, Color, LayerType, Point, Side, XYWH } from "@/_types";
+import { activeLayersAtom, layerAtomState, useAddElement, useUpdateElement } from "@/state";
+import { colorToCss, findIntersectingLayersWithRectangle, pointerEventToCanvasPoint, resizeBounds } from "@/utils";
 
 import { Button } from "../ui";
 import { LayerPreview } from "./LayerPreview";
@@ -40,6 +40,7 @@ const Whiteboard: React.FC = () => {
   const [activeLayerIDs, setActiveLayerIDs] = useRecoilState(activeLayersAtom);
 
   const addLayer = useAddElement();
+  const updateLayer = useUpdateElement();
 
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note, position: Point) => {
@@ -68,29 +69,27 @@ const Whiteboard: React.FC = () => {
     [lastUsedColor],
   );
 
-  const unSelectLayer = useCallback(() => {
-    if (activeLayerIDs.length > 0) {
-      setActiveLayerIDs([]);
-    }
-  }, []);
-
   const handleLayerPointerDown = useCallback(
-    (e: React.PointerEvent, layerId: string) => {
+    (e: React.PointerEvent, layerId: string, origin: Point) => {
       if (canvasState.mode === CanvasMode.Pencil || canvasState.mode === CanvasMode.Inserting) {
         return;
       }
 
-      // history.pause();
       e.stopPropagation();
 
       const point = pointerEventToCanvasPoint(e, camera);
 
-      if (e.shiftKey) {
+      if (e.shiftKey && !activeLayerIDs.includes(layerId)) {
         // If Shift is held, add the layerId to the activeLayerIds array without removing others
         setActiveLayerIDs((prevActiveLayerIds) => [...prevActiveLayerIds, layerId]);
-      } else {
-        // const newActiveLayerIDs = activeLayerIDs.filter((id) => id == layerId);
 
+        setCanvasState({
+          mode: CanvasMode.SelectionNet,
+          origin,
+        });
+      }
+
+      if (!activeLayerIDs.includes(layerId)) {
         setActiveLayerIDs([layerId]);
       }
 
@@ -99,16 +98,95 @@ const Whiteboard: React.FC = () => {
         current: point,
       });
     },
-    [setCanvasState, camera, canvasState.mode],
+    [canvasState.mode, camera, setActiveLayerIDs],
+  );
+
+  const translateSelectedLayer = useCallback(
+    (point: Point) => {
+      if (canvasState.mode !== CanvasMode.Translating) return;
+
+      const offset = {
+        x: point.x - canvasState.current.x,
+        y: point.y - canvasState.current.y,
+      };
+
+      const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
+
+      const updatedLayers = selectedLayers.map((layer) => ({
+        ...layer,
+        x: layer.x + offset.x,
+        y: layer.y + offset.y,
+      }));
+
+      for (const layer of updatedLayers) {
+        if (layer) {
+          updateLayer(layer.id, { x: layer.x, y: layer.y });
+        }
+      }
+
+      setCanvasState({
+        mode: CanvasMode.Translating,
+        current: point,
+      });
+    },
+    [canvasState],
+  );
+
+  const resizeSelectedLayer = useCallback(
+    (point: Point) => {
+      if (canvasState.mode !== CanvasMode.Resizing) {
+        return;
+      }
+
+      const bounds = resizeBounds(canvasState.initialBounds, canvasState.corner, point);
+
+      const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
+      const layer = selectedLayers[0];
+
+      if (layer) {
+        updateLayer(layer.id, bounds);
+      }
+    },
+    [canvasState],
   );
 
   const handleResizeHandlePointerDown = useCallback((corner: Side, initialBounds: XYWH) => {
-    // history.pause();
     setCanvasState({
       mode: CanvasMode.Resizing,
       initialBounds,
       corner,
     });
+  }, []);
+
+  // ================  LAYERS SELECTIONS  ================== //
+
+  const updateSelectionNet = useCallback(
+    (current: Point, origin: Point) => {
+      setCanvasState({
+        mode: CanvasMode.SelectionNet,
+        origin,
+        current,
+      });
+
+      const ids = findIntersectingLayersWithRectangle(layers, origin, current);
+
+      setActiveLayerIDs(ids);
+    },
+    [layers],
+  );
+
+  const startMultiSelection = useCallback((current: Point, origin: Point) => {
+    if (Math.abs(current.x - origin.x) + Math.abs(current.y - origin.y) > 5) {
+      setCanvasState({
+        mode: CanvasMode.SelectionNet,
+        origin,
+        current,
+      });
+    }
+  }, []);
+
+  const unSelectLayer = useCallback(() => {
+    setActiveLayerIDs([]);
   }, []);
 
   // ================  SVG POINTER EVENTS  ================== //
@@ -117,12 +195,12 @@ const Whiteboard: React.FC = () => {
     (e: React.PointerEvent) => {
       const point = pointerEventToCanvasPoint(e, camera);
 
-      if (canvasState.mode === CanvasMode.Inserting) return;
+      if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) return;
 
-      // setCanvasState({
-      //   origin: point,
-      //   mode: CanvasMode.Pressing,
-      // });
+      setCanvasState({
+        origin: point,
+        mode: CanvasMode.Pressing,
+      });
     },
     [camera, canvasState.mode, setCanvasState],
   );
@@ -136,6 +214,10 @@ const Whiteboard: React.FC = () => {
         setCanvasState({
           mode: CanvasMode.None,
         });
+      } else if (canvasState.mode === CanvasMode.Grab) {
+        setCanvasState({
+          mode: CanvasMode.Grab,
+        });
       } else if (canvasState.mode === CanvasMode.Pencil) {
         //
       } else if (canvasState.mode === CanvasMode.Inserting) {
@@ -148,6 +230,34 @@ const Whiteboard: React.FC = () => {
     },
     [camera, canvasState, insertLayer, unSelectLayer, setCanvasState],
   );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault();
+
+      const current = pointerEventToCanvasPoint(e, camera);
+
+      if (canvasState.mode == CanvasMode.Pressing) {
+        startMultiSelection(current, canvasState.origin);
+      } else if (canvasState.mode === CanvasMode.SelectionNet) {
+        updateSelectionNet(current, canvasState.origin);
+      } else if (canvasState.mode === CanvasMode.Translating) {
+        translateSelectedLayer(current);
+      } else if (canvasState.mode === CanvasMode.Resizing) {
+        resizeSelectedLayer(current);
+      } else if (canvasState.mode === CanvasMode.Pencil) {
+        // continueDrawing(current, e);
+      }
+
+      // setMyPresence({ cursor: current });
+    },
+    [camera, canvasState, startMultiSelection, updateSelectionNet, translateSelectedLayer, resizeSelectedLayer],
+  );
+
+  const handlePointerLeave = useCallback(() => {
+    // but cursor to null when leaving canvas
+    // setMyPresence({ cursor: null });
+  }, []);
 
   // ================  CAMERA FUNCTIONS  ================== //
 
@@ -357,7 +467,13 @@ const Whiteboard: React.FC = () => {
           Scroll back to content
         </Button>
       )}
-      <svg className="h-[100vh] w-[100vw]" onPointerDown={handlePointerDown} onPointerUp={handlePointerUp}>
+      <svg
+        className="h-[100vh] w-[100vw]"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
+      >
         <g
           style={{
             transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
@@ -374,6 +490,15 @@ const Whiteboard: React.FC = () => {
             />
           ))}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
+          {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
+            <rect
+              className="fill-blue-500/5 stroke-blue-500 stroke-1"
+              x={Math.min(canvasState.origin.x, canvasState.current.x)}
+              y={Math.min(canvasState.origin.y, canvasState.current.y)}
+              width={Math.abs(canvasState.origin.x - canvasState.current.x)}
+              height={Math.abs(canvasState.origin.y - canvasState.current.y)}
+            />
+          )}
           {/* SVG content goes here */}
           {/* <rect x="600" y="300" width="30" height="30" fill="blue" />
           <circle cx="550" cy="350" r="30" fill="red" />
