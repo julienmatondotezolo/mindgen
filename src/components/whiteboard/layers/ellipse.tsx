@@ -1,7 +1,11 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
+import { useRecoilValue } from "recoil";
 
 import { EllipseLayer } from "@/_types";
-import { useUpdateElement } from "@/state";
+import { boardIdState, useUpdateElement } from "@/state";
 import { cn, colorToCss, getContrastingTextColor } from "@/utils";
 
 interface EllipseProps {
@@ -22,8 +26,9 @@ const calculateFontSize = (width: number, height: number) => {
 
 const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => {
   const { x, y, width, height, fill, value } = layer;
+  const boardId = useRecoilValue(boardIdState);
 
-  const updateLayer = useUpdateElement();
+  const updateLayer = useUpdateElement(boardId);
 
   const handleContentChange = (e: ContentEditableEvent) => {
     updateLayer(id, { value: e.target.value });

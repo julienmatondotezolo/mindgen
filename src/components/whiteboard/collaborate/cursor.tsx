@@ -1,6 +1,6 @@
 "use client";
 
-import { Mouse, MousePointer2 } from "lucide-react";
+import { MousePointer2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 
 import { useSocket } from "@/hooks";

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 
 import { produce } from "immer";
@@ -81,8 +82,8 @@ export const useRemoveElement = (roomId: string) => {
 
               if (index !== -1) {
                 draft.splice(index, 1); // Remove the layer from the array
-                console.log("Removed layer:", draft[index]); // Log the removed layer
-                console.log("Updated layers array:", draft); // Log the updated array
+                // console.log("Removed layer:", draft[index]); // Log the removed layer
+                // console.log("Updated layers array:", draft); // Log the updated array
               }
 
               // socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });

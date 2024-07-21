@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
@@ -15,7 +16,7 @@ import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
-import { Canvas, Mindmap } from "@/components/mindmap/";
+import { Mindmap } from "@/components/mindmap/";
 import { Toolbar } from "@/components/mindmap/toolbar";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import { useSocket } from "@/hooks";

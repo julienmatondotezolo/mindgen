@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { LucideIcon } from "lucide-react";
 
 // import { Hint } from "@/components/hint";
