@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 "use client";
 
-import { memo } from "react";
+import React, { memo } from "react";
 
 // import { useStorage } from "@/liveblocks.config";
 import { LayerType } from "@/_types/canvas";

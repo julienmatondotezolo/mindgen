@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 // import { toPng } from "html-to-image";
 import { useSession } from "next-auth/react";

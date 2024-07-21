@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Circle, MousePointer2, Pencil, Redo2, Square, StickyNote, Type, Undo2 } from "lucide-react";
 
 import { CanvasMode, CanvasState, LayerType } from "@/_types/canvas";

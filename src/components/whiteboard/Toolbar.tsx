@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Circle, Hand, MousePointer2, Redo2, Square, Undo2 } from "lucide-react";
 import React from "react";
 import { useSetRecoilState } from "recoil";
