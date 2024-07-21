@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React from "react";
 import { useReactFlow } from "reactflow";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 
 import { MindMapDetailsProps } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
@@ -15,21 +15,21 @@ import redoIcon from "@/assets/icons/redo.svg";
 // import textIcon from "@/assets/icons/text.svg";
 import tileIcon from "@/assets/icons/tile.svg";
 import { useMindMap } from "@/hooks";
-import { historyIndexState, historyState } from "@/state";
+import { historyIndexState } from "@/state";
 
 const ToolBar = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) => {
   const { setEdges, setNodes } = useReactFlow();
-  const history = useRecoilValue(historyState);
+  // const history = useRecoilValue(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
   const { pushToHistory } = useMindMap(userMindmapDetails);
 
   const undo = () => {
     if (historyIndex < 0) return; // No more history to undo
     setHistoryIndex(historyIndex - 1);
-    const { nodes, edges } = history[historyIndex];
+    // const { nodes, edges } = history[historyIndex];
 
-    setNodes(nodes);
-    setEdges(edges);
+    // setNodes(nodes);
+    // setEdges(edges);
 
     pushToHistory();
   };
@@ -37,10 +37,10 @@ const ToolBar = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   const redo = () => {
     if (historyIndex >= history.length - 1) return; // No more history to redo
     setHistoryIndex(historyIndex + 1);
-    const { nodes, edges } = history[historyIndex + 1];
+    // const { nodes, edges } = history[historyIndex + 1];
 
-    setNodes(nodes);
-    setEdges(edges);
+    // setNodes(nodes);
+    // setEdges(edges);
 
     pushToHistory();
   };

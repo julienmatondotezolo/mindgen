@@ -5,3 +5,4 @@ export * from "./header";
 export * from "./mindmap";
 export * from "./profile";
 export * from "./ui";
+export * from "./whiteboard";

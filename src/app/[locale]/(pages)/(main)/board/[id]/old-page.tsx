@@ -12,11 +12,10 @@ import { generateUsername } from "unique-username-generator";
 import { getMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
-import { BackDropGradient, Spinner, Whiteboard } from "@/components";
+import { BackDropGradient, Spinner } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight, ToolBar } from "@/components/header";
-import { Canvas, Mindmap } from "@/components/mindmap/";
-import { Toolbar } from "@/components/mindmap/toolbar";
+import { Mindmap } from "@/components/mindmap/";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
@@ -33,11 +32,6 @@ import {
 } from "@/state";
 import { checkPermission, refreshPage, uppercaseFirstLetter } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
-
-interface User {
-  id: string; // Assuming IDs are strings, adjust if necessary
-  username: string;
-}
 
 export default function Board({ params }: { params: { id: string } }) {
   const text = useTranslations("Index");
@@ -75,13 +69,39 @@ export default function Board({ params }: { params: { id: string } }) {
   }, [session]);
 
   useEffect(() => {
-    const user: User = {
-      id: session.data?.session?.user?.id,
-      username: session.data?.session?.user?.username,
-    };
-
-    if (currentCollaUsername) socketJoinRoom(params.id, user.id, currentCollaUsername);
+    if (currentCollaUsername) socketJoinRoom(params.id, currentCollaUsername);
   }, [currentCollaUsername]);
+
+  useEffect(() => {
+    // Listen for cursor movements
+    socketListen("remote-cursor-move", (data) => {
+      const { cursorPos, username } = data;
+
+      setCollaUsername(username);
+      setCollaCursorPos(cursorPos);
+    });
+
+    // Cleanup
+    return () => {
+      socketOff("cursor-move");
+    };
+  }, []);
+
+  useEffect(() => {
+    if (promptResult) {
+      scrollToBottom();
+    }
+  }, [promptResult]);
+
+  function handleScrollTop() {
+    if (promptResult) {
+      scrollToTop();
+      setPromptResult(false);
+    } else {
+      scrollToBottom();
+      setPromptResult(true);
+    }
+  }
 
   const getUserMindmapById = async () => {
     const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
@@ -111,6 +131,18 @@ export default function Board({ params }: { params: { id: string } }) {
 
   const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
 
+  async function handleCursorMove(event: { clientX: any; clientY: any }) {
+    const cursorPos = { x: event.clientX, y: event.clientY };
+
+    if (checkPermission(PERMISSIONS, "UPDATE")) {
+      socketEmit("cursor-move", {
+        roomId: params.id,
+        username: currentCollaUsername,
+        cursorPos,
+      });
+    }
+  }
+
   if (isLoading)
     return (
       <div className="flex w-full h-full fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
@@ -125,11 +157,36 @@ export default function Board({ params }: { params: { id: string } }) {
   if (userMindmapDetails)
     return (
       <>
-        <main className="relative flex justify-between w-screen h-screen scroll-smooth">
+        <main onMouseMove={handleCursorMove} className="relative flex justify-between w-screen h-screen scroll-smooth">
           <BackDropGradient />
           <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
             <NavLeft userMindmapDetails={userMindmapDetails} />
+            {checkPermission(PERMISSIONS, "UPDATE") && <ToolBar userMindmapDetails={userMindmapDetails} />}
             <NavRight userMindmapDetails={userMindmapDetails} />
+          </div>
+
+          {session.data?.session && (
+            <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
+              {userMindmapDetails ? (
+                <PromptTextInput userMindmapDetails={userMindmapDetails} />
+              ) : (
+                <Skeleton className="w-full max-h-36 h-12 bg-grey-blue rounded-xl" />
+              )}
+            </div>
+          )}
+
+          <div
+            className={`fixed right-5 bottom-6 z-10 ${
+              promptValue || qa.length > 0 ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
+            }`}
+          >
+            <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
+              <Image
+                className={`${!promptResult ? "rotate-180" : "rotate-0"} transition-all duration-500`}
+                src={arrowIcon}
+                alt="Stars icon"
+              />
+            </Button>
           </div>
 
           <div className="w-full">
@@ -143,22 +200,36 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                // <Mindmap userMindmapDetails={userMindmapDetails} currentCollaUsername={currentCollaUsername} />
-                // <Canvas boardId={userMindmapDetails.id} />
-                <Whiteboard userMindmapDetails={userMindmapDetails} boardId={userMindmapDetails.id} />
+                <Mindmap userMindmapDetails={userMindmapDetails} currentCollaUsername={currentCollaUsername} />
               )}
             </div>
+            {qa.length > 0 ? (
+              <div className="relative w-full h-full flex flex-row justify-center bg-background">
+                <Answers />
+              </div>
+            ) : (
+              ""
+            )}
           </div>
         </main>
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
         <ShareDialog open={shareModal} setIsOpen={setShareModal} />
-        <CollaborateDialog
-          open={collaborateModal}
-          setIsOpen={setCollaborateModal}
-          mindmapId={params.id}
-          userMindmap={userMindmapDetails}
-        />
+        {collaborateModal && (
+          <CollaborateDialog
+            open={collaborateModal}
+            setIsOpen={setCollaborateModal}
+            mindmapId={params.id}
+            userMindmap={userMindmapDetails}
+          />
+        )}
         <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
+        <div
+          style={{ left: collaCursorPos.x, top: collaCursorPos.y }}
+          className="fixed bg-[#FF4DC4] px-3 py-1 w-fit max-h-10 rounded-full z-50"
+        >
+          <p className="text-xs">{uppercaseFirstLetter(collaUsername)}</p>
+        </div>
+        ;
       </>
     );
 

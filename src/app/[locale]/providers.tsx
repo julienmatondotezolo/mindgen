@@ -1,3 +1,4 @@
+import { enablePatches } from "immer";
 import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
@@ -30,6 +31,8 @@ function selectMessages(locale: string) {
       return enMessages; // Default to English messages
   }
 }
+
+enablePatches();
 
 export default function Providers({ children, locale }: Props): JSX.Element {
   // const messages = useMessages();

@@ -24,7 +24,7 @@ import { useRecoilState, useSetRecoilState } from "recoil";
 // import { useRecoilState } from "recoil";
 import { updateMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps } from "@/_types";
-import { historyIndexState, historyState } from "@/state";
+import { historyIndexState } from "@/state";
 import { convertToNestedArray, emptyMindMapObject, setTargetHandle } from "@/utils";
 
 import { useSyncMutation } from ".";
@@ -203,20 +203,19 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
   const [pictureUrl] = useState();
 
-  const setHistory = useSetRecoilState(historyState);
   const [historyIndex, setHistoryIndex] = useRecoilState(historyIndexState);
 
-  const pushToHistory = useCallback(() => {
-    const currentNodes = getNodes();
-    const currentEdges = getEdges();
+  // const pushToHistory = useCallback(() => {
+  //   const currentNodes = getNodes();
+  //   const currentEdges = getEdges();
 
-    setHistory((prevHistory) => {
-      const newHistory = [...prevHistory.slice(0, historyIndex + 1), { nodes: currentNodes, edges: currentEdges }];
+  //   setHistory((prevHistory) => {
+  //     const newHistory = [...prevHistory.slice(0, historyIndex + 1), { nodes: currentNodes, edges: currentEdges }];
 
-      return newHistory;
-    });
-    setHistoryIndex(historyIndex + 1);
-  }, [getNodes, getEdges, historyIndex]);
+  //     return newHistory;
+  //   });
+  //   setHistoryIndex(historyIndex + 1);
+  // }, [getNodes, getEdges, historyIndex]);
 
   useEffect(() => {
     setNodes([]);
@@ -356,7 +355,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
 
         setEdges((eds) => addEdge(params, eds));
 
-        pushToHistory();
+        // pushToHistory();
       }
     },
     [nodeId, reactFlowInstance, setNodes, sourceHandle, setEdges],
@@ -389,7 +388,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
         setNodeId((id) => id + 1);
         setNodes((nds) => [...nds, newNode]);
 
-        pushToHistory();
+        // pushToHistory();
       }
     },
     [reactFlowInstance, nodeId, setNodeId, setNodes], // Ensure all dependencies are listed
@@ -413,7 +412,7 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
         }, edges),
       );
 
-      pushToHistory();
+      // pushToHistory();
     },
     [nodes, edges],
   );
@@ -442,7 +441,6 @@ const useMindMap = (userMindmapDetails: MindMapDetailsProps | undefined) => {
     setEdges,
     setReactFlowInstance,
     mindMapArray,
-    pushToHistory,
     saveMindMap,
   };
 };

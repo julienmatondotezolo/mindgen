@@ -1,3 +1,4 @@
+export * from "./canvas";
 export * from "./ChatMessageProps";
 export * from "./Collaborator";
 export * from "./CustomNodeProps";
