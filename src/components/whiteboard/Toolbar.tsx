@@ -1,8 +1,9 @@
 import { Circle, Hand, MousePointer2, Redo2, Square, Undo2 } from "lucide-react";
 import React from "react";
+import { useSetRecoilState } from "recoil";
 
 import { CanvasMode, CanvasState, LayerType } from "@/_types";
-import { useUndoRedo } from "@/state";
+import { activeLayersAtom, useUndoRedo } from "@/state";
 
 import { ToolButton } from "./ToolButton";
 
@@ -13,6 +14,7 @@ interface ToolbarProps {
 
 const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
   const { undo, redo } = useUndoRedo();
+  const setActiveLayerIDs = useSetRecoilState(activeLayersAtom);
 
   return (
     <div className="fixed left-2/4 -translate-x-2/4 top-5 z-50">
@@ -27,6 +29,7 @@ const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
             icon={Hand}
             onClick={() => {
               setCanvasState({ mode: CanvasMode.Grab });
+              setActiveLayerIDs([]);
             }}
             isActive={canvasState.mode === CanvasMode.Grab}
           />

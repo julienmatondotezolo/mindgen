@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Camera, CanvasMode, CanvasState, Color, LayerType, Point, Side, XYWH } from "@/_types";
-import { activeLayersAtom, layerAtomState, useAddElement, useUpdateElement } from "@/state";
+import { activeLayersAtom, layerAtomState, useAddElement, useRemoveElement, useUpdateElement } from "@/state";
 import { colorToCss, findIntersectingLayersWithRectangle, pointerEventToCanvasPoint, resizeBounds } from "@/utils";
 
 import { Button } from "../ui";
@@ -41,6 +41,7 @@ const Whiteboard: React.FC = () => {
 
   const addLayer = useAddElement();
   const updateLayer = useUpdateElement();
+  const removeLayer = useRemoveElement();
 
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note, position: Point) => {
@@ -71,7 +72,11 @@ const Whiteboard: React.FC = () => {
 
   const handleLayerPointerDown = useCallback(
     (e: React.PointerEvent, layerId: string, origin: Point) => {
-      if (canvasState.mode === CanvasMode.Pencil || canvasState.mode === CanvasMode.Inserting) {
+      if (
+        canvasState.mode === CanvasMode.Grab ||
+        canvasState.mode === CanvasMode.Pencil ||
+        canvasState.mode === CanvasMode.Inserting
+      ) {
         return;
       }
 
@@ -79,7 +84,7 @@ const Whiteboard: React.FC = () => {
 
       const point = pointerEventToCanvasPoint(e, camera);
 
-      if (e.shiftKey && !activeLayerIDs.includes(layerId)) {
+      if (e.shiftKey) {
         // If Shift is held, add the layerId to the activeLayerIds array without removing others
         setActiveLayerIDs((prevActiveLayerIds) => [...prevActiveLayerIds, layerId]);
 
@@ -87,9 +92,7 @@ const Whiteboard: React.FC = () => {
           mode: CanvasMode.SelectionNet,
           origin,
         });
-      }
-
-      if (!activeLayerIDs.includes(layerId)) {
+      } else if (!activeLayerIDs.includes(layerId)) {
         setActiveLayerIDs([layerId]);
       }
 
@@ -412,6 +415,21 @@ const Whiteboard: React.FC = () => {
           mode: CanvasMode.Grab,
         });
       }
+
+      if (event.code === "Backspace" && activeLayerIDs.length > 0) {
+        const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
+
+        unSelectLayer();
+
+        for (const layer of selectedLayers) {
+          if (layer) {
+            removeLayer(layer.id);
+          }
+        }
+        // setCanvasState({
+        //   mode: CanvasMode.None,
+        // });
+      }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
@@ -428,7 +446,7 @@ const Whiteboard: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [activeLayerIDs, canvasState, layers, removeLayer, unSelectLayer]);
 
   // Hande Mouse move
   useEffect(() => {

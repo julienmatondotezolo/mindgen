@@ -66,10 +66,12 @@ export const useRemoveElement = () => {
           produce(
             currentLayers,
             (draft) => {
-              delete draft.array[id];
-              const toRemoveIndesx = draft.arrayIds.indexOf(id);
+              // Filter out the layer with the given ID
+              const index = draft.findIndex((layer) => layer.id === id);
 
-              draft.arrayIds.splice(toRemoveIndesx, 1);
+              if (index !== -1) {
+                draft.splice(index, 1); // Remove the layer from the array
+              }
             },
             addToHistory,
           ),
