@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 
 import { produce } from "immer";
-import { useRecoilCallback, useSetRecoilState } from "recoil";
+import { useRecoilCallback, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { Layer } from "@/_types";
 import { useSocket } from "@/hooks";
@@ -70,6 +70,8 @@ export const useRemoveElement = (roomId: string) => {
 
   const addToHistory = useAddToHistoryPrivate();
 
+  const layers = useRecoilValue(layerAtomState);
+
   return useRecoilCallback(
     ({ set }) =>
       (id: string) => {
@@ -79,11 +81,10 @@ export const useRemoveElement = (roomId: string) => {
             (draft) => {
               // Filter out the layer with the given ID
               const index = draft.findIndex((layer) => layer.id === id);
+              let updatedLayer: any = [];
 
               if (index !== -1) {
                 draft.splice(index, 1); // Remove the layer from the array
-                // console.log("Removed layer:", draft[index]); // Log the removed layer
-                // console.log("Updated layers array:", draft); // Log the updated array
               }
 
               // socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
@@ -92,6 +93,6 @@ export const useRemoveElement = (roomId: string) => {
           ),
         );
       },
-    [],
+    [layers],
   );
 };

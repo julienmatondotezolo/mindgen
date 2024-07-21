@@ -43,10 +43,6 @@ const Whiteboard = ({
   userMindmapDetails: MindMapDetailsProps | undefined;
   boardId: string;
 }) => {
-  const setBoardId = useSetRecoilState(boardIdState);
-
-  setBoardId(boardId);
-
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
 
   const [isMouseDown, setIsMouseDown] = useState(false);

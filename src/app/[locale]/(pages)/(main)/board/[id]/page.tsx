@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
@@ -22,6 +22,7 @@ import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, Upgrade
 import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
+  boardIdState,
   collaborateModalState,
   collaboratorNameState,
   importModalState,
@@ -54,6 +55,8 @@ export default function Board({ params }: { params: { id: string } }) {
   const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
 
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
+
+  const setBoardId = useSetRecoilState(boardIdState);
 
   const session = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
@@ -96,6 +99,7 @@ export default function Board({ params }: { params: { id: string } }) {
     {
       refetchOnMount: false,
       onSuccess: async (data) => {
+        setBoardId(params.id);
         if (data.messages) {
           // await joinRoom(data);
           setQa([]);
