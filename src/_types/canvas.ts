@@ -17,6 +17,13 @@ export enum LayerType {
   Path,
 }
 
+export enum HandlePosition {
+  Top,
+  Left,
+  Right,
+  Bottom,
+}
+
 export type RectangleLayer = {
   id: string;
   type: LayerType.Rectangle;

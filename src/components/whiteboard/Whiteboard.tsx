@@ -1,15 +1,23 @@
+/* eslint-disable no-unused-vars */
 // src/components/Canvas.tsx
 import { nanoid } from "nanoid";
 import React, { useCallback, useEffect, useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { Camera, CanvasMode, CanvasState, Color, LayerType, Point, Side, XYWH } from "@/_types";
-import { activeLayersAtom, layerAtomState, useAddElement, useRemoveElement, useUpdateElement } from "@/state";
+import { Camera, CanvasMode, CanvasState, Color, HandlePosition, LayerType, Point, Side, XYWH } from "@/_types";
+import {
+  activeLayersAtom,
+  hoveredLayerIdAtomState,
+  layerAtomState,
+  useAddElement,
+  useRemoveElement,
+  useUpdateElement,
+} from "@/state";
 import { colorToCss, findIntersectingLayersWithRectangle, pointerEventToCanvasPoint, resizeBounds } from "@/utils";
 
 import { Button } from "../ui";
 import { LayerPreview } from "./LayerPreview";
-import { SelectionBox, SelectionTools } from "./layers";
+import { LayerHandles, SelectionBox, SelectionTools } from "./layers";
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard: React.FC = () => {
@@ -17,6 +25,7 @@ const Whiteboard: React.FC = () => {
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
+  const [showLayerAddButtons, setShowLayerAddButtons] = useState(false);
   const [showResetButton, setShowResetButton] = useState(false);
   const [applyTransition, setApplyTransition] = useState(false);
 
@@ -38,6 +47,7 @@ const Whiteboard: React.FC = () => {
 
   const layers = useRecoilValue(layerAtomState);
   const [activeLayerIDs, setActiveLayerIDs] = useRecoilState(activeLayersAtom);
+  const setHoveredLayerID = useSetRecoilState(hoveredLayerIdAtomState);
 
   const addLayer = useAddElement();
   const updateLayer = useUpdateElement();
@@ -102,6 +112,90 @@ const Whiteboard: React.FC = () => {
       });
     },
     [canvasState.mode, camera, setActiveLayerIDs],
+  );
+
+  const handleLayerMouseEnter = useCallback((e: React.MouseEvent, layerId: string) => {
+    if (
+      canvasState.mode === CanvasMode.Grab ||
+      canvasState.mode === CanvasMode.Pencil ||
+      canvasState.mode === CanvasMode.Inserting
+    ) {
+      return;
+    }
+
+    e.stopPropagation();
+
+    // Do something
+    setHoveredLayerID(layerId);
+    setShowLayerAddButtons(true);
+
+    // setCanvasState({
+    //   mode: CanvasMode.None,
+    // });
+  }, []);
+
+  const handleLayerMouseLeave = useCallback((mouseEvent: React.MouseEvent) => {
+    if (
+      canvasState.mode === CanvasMode.Grab ||
+      canvasState.mode === CanvasMode.Pencil ||
+      canvasState.mode === CanvasMode.Inserting
+    ) {
+      return;
+    } else if (activeLayerIDs.length > 0) {
+      setHoveredLayerID("");
+      setShowLayerAddButtons(false);
+    }
+
+    // setCanvasState({
+    //   mode: CanvasMode.None,
+    // });
+  }, []);
+
+  const handleHandleClick = useCallback(
+    (layerId: String, position: HandlePosition) => {
+      const currentLayer = layers.find((layer) => layer.id === layerId);
+
+      if (!currentLayer) {
+        console.error("Layer not found");
+        return;
+      }
+
+      // Calculate the new position based on the clicked handle's position
+      let newLayerPosition: Point;
+
+      switch (position) {
+        case HandlePosition.Left:
+          newLayerPosition = { x: currentLayer.x - currentLayer.width - 100, y: currentLayer.y };
+          break;
+        case HandlePosition.Top:
+          newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - 100 };
+          break;
+        case HandlePosition.Right:
+          newLayerPosition = { x: currentLayer.x + currentLayer.width + 100, y: currentLayer.y };
+          break;
+        case HandlePosition.Bottom:
+          newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + 100 };
+          break;
+        default:
+          console.error("Invalid position");
+          return;
+      }
+
+      const newLayerId = nanoid();
+
+      const newLayer = {
+        id: newLayerId.toString(),
+        type: currentLayer.type,
+        x: newLayerPosition.x,
+        y: newLayerPosition.y,
+        width: 100,
+        height: 100,
+        fill: currentLayer.fill,
+      };
+
+      addLayer(newLayer);
+    },
+    [addLayer, layers],
   );
 
   const translateSelectedLayer = useCallback(
@@ -504,11 +598,14 @@ const Whiteboard: React.FC = () => {
             <LayerPreview
               key={layer.id}
               layer={layer}
-              onLayerPointerDown={handleLayerPointerDown}
+              onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
+              onLayerMouseEnter={handleLayerMouseEnter}
+              onLayerMouseLeave={handleLayerMouseLeave}
               selectionColor={colorToCss(lastUsedColor)}
             />
           ))}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
+          {showLayerAddButtons && activeLayerIDs.length <= 1 && <LayerHandles onHandleClick={handleHandleClick} />}
           {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
             <rect
               className="fill-blue-500/5 stroke-blue-500 stroke-1"

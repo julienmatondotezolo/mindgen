@@ -1,7 +1,10 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+
 import React, { memo } from "react";
 import { useRecoilValue } from "recoil";
 
-import { Side } from "@/_types";
+import { Side, XYWH } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
 import { activeLayersAtom } from "@/state";
 

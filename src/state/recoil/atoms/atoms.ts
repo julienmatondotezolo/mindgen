@@ -15,6 +15,11 @@ export const activeLayersAtom = atom<string[]>({
   default: [], // Start with no active layers
 });
 
+export const hoveredLayerIdAtomState = atom<String>({
+  key: "hoveredLayerIdAtomState", // unique ID (with respect to other atoms/selectors)
+  default: "", // valeur par défaut (alias valeur initials)
+});
+
 // ================   PROMPT STATES  ================== //
 
 export const promptValueState = atom({

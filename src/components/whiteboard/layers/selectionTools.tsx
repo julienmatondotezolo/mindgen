@@ -96,18 +96,19 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   const x = selectionBounds.width / 2 + selectionBounds.x - camera.x;
   const y = selectionBounds.y + camera.y;
 
-  return (
-    <div
-      className="absolute p-3 rounded-xl bg-white shadow-sm border flex select-none"
-      style={{
-        transform: `translate(
+  if (activeLayerIDs.length > 0)
+    return (
+      <div
+        className="absolute p-3 rounded-xl bg-white shadow-sm border flex select-none"
+        style={{
+          transform: `translate(
             calc(${x}px - 50%),
-            calc(${y - 16}px - 100%)
+            calc(${y - 64}px - 100%)
           )`,
-      }}
-    >
-      <ColorPicker onChange={handleColorChange} />
-      {/* <div className="flex flex-col gap-y-0.5">
+        }}
+      >
+        <ColorPicker onChange={handleColorChange} />
+        {/* <div className="flex flex-col gap-y-0.5">
         <Button variant="board" size="icon" onClick={handleMoveToFront}>
           <BringToFront />
         </Button>
@@ -115,13 +116,13 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
           <SendToBack />
         </Button>
       </div> */}
-      <div className="flex items-center pl-2 ml-2 border-l">
-        <Button variant="board" size="icon" onClick={handleRemoveLayer}>
-          <Trash2 />
-        </Button>
+        <div className="flex items-center pl-2 ml-2 border-l">
+          <Button variant="board" size="icon" onClick={handleRemoveLayer}>
+            <Trash2 />
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
 });
 
 SelectionTools.displayName = "SelectionTools";

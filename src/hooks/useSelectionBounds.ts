@@ -1,7 +1,7 @@
 import { useRecoilValue } from "recoil";
 
 import { Layer, XYWH } from "@/_types";
-import { activeLayersAtom, layerAtomState } from "@/state";
+import { activeLayersAtom, hoveredLayerIdAtomState, layerAtomState } from "@/state";
 
 const boundingBox = (layers: Layer[]): XYWH | null => {
   const first = layers[0];
@@ -44,10 +44,15 @@ const boundingBox = (layers: Layer[]): XYWH | null => {
 const useSelectionBounds = () => {
   const layers = useRecoilValue(layerAtomState);
   const activeLayerIDs = useRecoilValue(activeLayersAtom);
+  const hoveredLayerID = useRecoilValue(hoveredLayerIdAtomState);
 
   const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
 
-  return boundingBox(selectedLayers);
+  if (selectedLayers.length > 0) return boundingBox(selectedLayers);
+
+  const hoveredLayer = layers.filter((layer) => layer.id == hoveredLayerID);
+
+  return boundingBox(hoveredLayer);
 };
 
 export { useSelectionBounds };
