@@ -9,7 +9,7 @@ import { colorToCss, findIntersectingLayersWithRectangle, pointerEventToCanvasPo
 
 import { Button } from "../ui";
 import { LayerPreview } from "./LayerPreview";
-import { SelectionBox } from "./layers/selectionBox";
+import { SelectionBox, SelectionTools } from "./layers";
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard: React.FC = () => {
@@ -485,6 +485,7 @@ const Whiteboard: React.FC = () => {
           Scroll back to content
         </Button>
       )}
+      <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
       <svg
         className="h-[100vh] w-[100vw]"
         onPointerDown={handlePointerDown}
@@ -517,11 +518,6 @@ const Whiteboard: React.FC = () => {
               height={Math.abs(canvasState.origin.y - canvasState.current.y)}
             />
           )}
-          {/* SVG content goes here */}
-          {/* <rect x="600" y="300" width="30" height="30" fill="blue" />
-          <circle cx="550" cy="350" r="30" fill="red" />
-          <circle cx="250" cy="450" r="30" fill="green" />
-          <circle cx="650" cy="550" r="30" fill="purple" /> */}
         </g>
       </svg>
     </main>
