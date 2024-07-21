@@ -2,12 +2,30 @@ import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
 import { ChatMessageProps, Layer, QuestionAnswersProps } from "@/_types";
+import { socket } from "@/socket";
 
 // ================   LAYER STATES   ================== //
+
+const socketListenerEffect = ({ onSet, setSelf, node }: any) => {
+  // Define the event handler function outside the effect to avoid redefining it on every call
+  const handleAddLayer = (data: Layer) => {
+    // Assuming the data structure allows updating the atom state directly
+    setSelf(data);
+  };
+
+  // Attach the event listener when the effect runs
+  socket.on("remote-add-layer", handleAddLayer);
+
+  // Return a cleanup function to detach the event listener when the effect is no longer needed
+  return () => {
+    socket.off("remote-add-layer", handleAddLayer);
+  };
+};
 
 export const layerAtomState = atom<Layer[]>({
   key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
   default: [], // valeur par défaut (alias valeur initials)
+  effects: [socketListenerEffect],
 });
 
 export const activeLayersAtom = atom<string[]>({
@@ -21,6 +39,11 @@ export const hoveredLayerIdAtomState = atom<String>({
 });
 
 // ================   PROMPT STATES  ================== //
+
+export const boardIdState = atom({
+  key: "boardIdState", // unique ID (with respect to other atoms/selectors)
+  default: "", // valeur par défaut (alias valeur initials)
+});
 
 export const promptValueState = atom({
   key: "promptValueState", // unique ID (with respect to other atoms/selectors)
@@ -101,3 +124,6 @@ export const viewPortScaleState = atom({
   key: "viewPortScaleState",
   default: {},
 });
+function atomEffect(arg0: { trigger: string; setSelf: (newValue: any, { onSet }: { onSet: any }) => void }) {
+  throw new Error("Function not implemented.");
+}

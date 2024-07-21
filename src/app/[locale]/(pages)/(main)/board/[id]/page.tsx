@@ -34,6 +34,11 @@ import {
 import { checkPermission, refreshPage, uppercaseFirstLetter } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
+interface User {
+  id: string; // Assuming IDs are strings, adjust if necessary
+  username: string;
+}
+
 export default function Board({ params }: { params: { id: string } }) {
   const text = useTranslations("Index");
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
@@ -70,7 +75,12 @@ export default function Board({ params }: { params: { id: string } }) {
   }, [session]);
 
   useEffect(() => {
-    if (currentCollaUsername) socketJoinRoom(params.id, currentCollaUsername);
+    const user: User = {
+      id: session.data?.session?.user?.id,
+      username: session.data?.session?.user?.username,
+    };
+
+    if (currentCollaUsername) socketJoinRoom(params.id, user.id, currentCollaUsername);
   }, [currentCollaUsername]);
 
   const getUserMindmapById = async () => {
@@ -135,11 +145,20 @@ export default function Board({ params }: { params: { id: string } }) {
               ) : (
                 // <Mindmap userMindmapDetails={userMindmapDetails} currentCollaUsername={currentCollaUsername} />
                 // <Canvas boardId={userMindmapDetails.id} />
-                <Whiteboard />
+                <Whiteboard userMindmapDetails={userMindmapDetails} boardId={userMindmapDetails.id} />
               )}
             </div>
           </div>
         </main>
+        <ImportDialog open={importModal} setIsOpen={setImportModal} />
+        <ShareDialog open={shareModal} setIsOpen={setShareModal} />
+        <CollaborateDialog
+          open={collaborateModal}
+          setIsOpen={setCollaborateModal}
+          mindmapId={params.id}
+          userMindmap={userMindmapDetails}
+        />
+        <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
       </>
     );
 

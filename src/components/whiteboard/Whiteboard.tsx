@@ -1,26 +1,52 @@
 /* eslint-disable no-unused-vars */
 // src/components/Canvas.tsx
 import { nanoid } from "nanoid";
+import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { Camera, CanvasMode, CanvasState, Color, HandlePosition, LayerType, Point, Side, XYWH } from "@/_types";
+import {
+  Camera,
+  CanvasMode,
+  CanvasState,
+  Color,
+  HandlePosition,
+  LayerType,
+  MindMapDetailsProps,
+  Point,
+  Side,
+  XYWH,
+} from "@/_types";
+import { useSocket } from "@/hooks";
 import {
   activeLayersAtom,
+  boardIdState,
   hoveredLayerIdAtomState,
   layerAtomState,
   useAddElement,
   useRemoveElement,
+  usernameState,
   useUpdateElement,
 } from "@/state";
 import { colorToCss, findIntersectingLayersWithRectangle, pointerEventToCanvasPoint, resizeBounds } from "@/utils";
 
 import { Button } from "../ui";
+import { CursorPresence } from "./collaborate";
 import { LayerPreview } from "./LayerPreview";
 import { LayerHandles, SelectionBox, SelectionTools } from "./layers";
 import { Toolbar } from "./Toolbar";
 
-const Whiteboard: React.FC = () => {
+const Whiteboard = ({
+  userMindmapDetails,
+  boardId,
+}: {
+  userMindmapDetails: MindMapDetailsProps | undefined;
+  boardId: string;
+}) => {
+  const setBoardId = useSetRecoilState(boardIdState);
+
+  setBoardId(boardId);
+
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
 
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -43,18 +69,24 @@ const Whiteboard: React.FC = () => {
 
   const CANVAS_TRANSITION_TIME = 500;
 
+  // ================  SOCKETS  ================== //
+
+  const { socketEmit } = useSocket();
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
+
   // ================  LAYERS  ================== //
 
   const layers = useRecoilValue(layerAtomState);
   const [activeLayerIDs, setActiveLayerIDs] = useRecoilState(activeLayersAtom);
   const setHoveredLayerID = useSetRecoilState(hoveredLayerIdAtomState);
 
-  const addLayer = useAddElement();
-  const updateLayer = useUpdateElement();
-  const removeLayer = useRemoveElement();
+  const addLayer = useAddElement(boardId);
+  const updateLayer = useUpdateElement(boardId);
+  const removeLayer = useRemoveElement(boardId);
 
   const insertLayer = useCallback(
-    (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note, position: Point) => {
+    (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path, position: Point) => {
       if (layers?.length >= MAX_LAYERS) {
         return;
       }
@@ -66,8 +98,9 @@ const Whiteboard: React.FC = () => {
         type: layerType,
         x: position.x,
         y: position.y,
-        width: 100,
+        width: 200,
         height: 100,
+        value: "Type something",
         fill: { r: 255, g: 255, b: 255 },
       };
 
@@ -188,8 +221,8 @@ const Whiteboard: React.FC = () => {
         type: currentLayer.type,
         x: newLayerPosition.x,
         y: newLayerPosition.y,
-        width: 100,
-        height: 100,
+        width: currentLayer.width,
+        height: currentLayer.height,
         fill: currentLayer.fill,
       };
 
@@ -346,9 +379,24 @@ const Whiteboard: React.FC = () => {
         // continueDrawing(current, e);
       }
 
+      socketEmit("cursor-move", {
+        roomId: boardId,
+        userId: currentUserId,
+        cursor: current,
+      });
       // setMyPresence({ cursor: current });
     },
-    [camera, canvasState, startMultiSelection, updateSelectionNet, translateSelectedLayer, resizeSelectedLayer],
+    [
+      camera,
+      canvasState,
+      socketEmit,
+      boardId,
+      currentUserId,
+      startMultiSelection,
+      updateSelectionNet,
+      translateSelectedLayer,
+      resizeSelectedLayer,
+    ],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -615,6 +663,7 @@ const Whiteboard: React.FC = () => {
               height={Math.abs(canvasState.origin.y - canvasState.current.y)}
             />
           )}
+          <CursorPresence />
         </g>
       </svg>
     </main>

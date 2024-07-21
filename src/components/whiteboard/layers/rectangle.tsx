@@ -2,9 +2,10 @@
 /* eslint-disable no-undef */
 
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
+import { useRecoilValue } from "recoil";
 
 import { RectangleLayer } from "@/_types";
-import { useUpdateElement } from "@/state";
+import { boardIdState, useUpdateElement } from "@/state";
 import { cn, colorToCss, getContrastingTextColor } from "@/utils";
 
 interface RectangleProps {
@@ -27,8 +28,9 @@ const calculateFontSize = (width: number, height: number) => {
 
 const Rectangle = ({ id, layer, onPointerDown, onMouseEnter, onMouseLeave, selectionColor }: RectangleProps) => {
   const { x, y, width, height, fill, value } = layer;
+  const boardId = useRecoilValue(boardIdState);
 
-  const updateLayer = useUpdateElement();
+  const updateLayer = useUpdateElement(boardId);
 
   const handleContentChange = (e: ContentEditableEvent) => {
     updateLayer(id, { value: e.target.value });

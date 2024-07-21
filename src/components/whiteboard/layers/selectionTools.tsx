@@ -7,7 +7,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { Camera, Color, Layer } from "@/_types";
 import { Button } from "@/components/ui/button";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
-import { activeLayersAtom, layerAtomState, useRemoveElement, useUpdateElement } from "@/state";
+import { activeLayersAtom, boardIdState, layerAtomState, useRemoveElement, useUpdateElement } from "@/state";
 
 import { ColorPicker } from "../colorPicker";
 
@@ -20,8 +20,10 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   const layers = useRecoilValue(layerAtomState);
   const [activeLayerIDs, setActiveLayerIDs] = useRecoilState(activeLayersAtom);
 
-  const updateLayer = useUpdateElement();
-  const removeLayer = useRemoveElement();
+  const boardId = useRecoilValue(boardIdState);
+
+  const updateLayer = useUpdateElement(boardId);
+  const removeLayer = useRemoveElement(boardId);
 
   const selectionBounds = useSelectionBounds();
 

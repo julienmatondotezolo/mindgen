@@ -4,11 +4,14 @@ import { produce } from "immer";
 import { useRecoilCallback, useSetRecoilState } from "recoil";
 
 import { Layer } from "@/_types";
+import { useSocket } from "@/hooks";
 
 import { activeLayersAtom, layerAtomState } from "./atoms";
 import { useAddToHistoryPrivate } from "./History";
 
-export const useAddElement = () => {
+export const useAddElement = (roomId: string) => {
+  const { socketEmit } = useSocket();
+
   const addToHistory = useAddToHistoryPrivate();
   const setActiveLayers = useSetRecoilState(activeLayersAtom);
 
@@ -21,6 +24,7 @@ export const useAddElement = () => {
             (draft) => {
               // Assuming currentLayers is an array, we push the new layer to it
               draft.push(layer);
+              socketEmit("add-layer", { roomId, layer: [...currentLayers, layer] });
             },
             addToHistory,
           ),
@@ -32,7 +36,9 @@ export const useAddElement = () => {
   );
 };
 
-export const useUpdateElement = () => {
+export const useUpdateElement = (roomId: string) => {
+  const { socketEmit } = useSocket();
+
   const addToHistory = useAddToHistoryPrivate();
 
   return useRecoilCallback(
@@ -47,6 +53,8 @@ export const useUpdateElement = () => {
               if (index !== -1) {
                 Object.assign(draft[index], updatedLayer);
               }
+
+              socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
             },
             // addToHistory,
           ),
@@ -56,7 +64,9 @@ export const useUpdateElement = () => {
   );
 };
 
-export const useRemoveElement = () => {
+export const useRemoveElement = (roomId: string) => {
+  const { socketEmit } = useSocket();
+
   const addToHistory = useAddToHistoryPrivate();
 
   return useRecoilCallback(
@@ -71,7 +81,11 @@ export const useRemoveElement = () => {
 
               if (index !== -1) {
                 draft.splice(index, 1); // Remove the layer from the array
+                console.log("Removed layer:", draft[index]); // Log the removed layer
+                console.log("Updated layers array:", draft); // Log the updated array
               }
+
+              // socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
             },
             addToHistory,
           ),
