@@ -117,7 +117,7 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Inserting;
-      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note;
+      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path;
     }
   | {
       mode: CanvasMode.Translating;

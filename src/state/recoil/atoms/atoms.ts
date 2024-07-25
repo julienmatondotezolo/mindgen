@@ -2,12 +2,19 @@
 import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps, Layer, QuestionAnswersProps } from "@/_types";
+import { ChatMessageProps, Layer, QuestionAnswersProps, User } from "@/_types";
 import { socket } from "@/socket";
 
-// ================   LAYER STATES   ================== //
+// ================   USER STATE   ================== //
 
-const socketListenerEffect = ({ onSet, setSelf, node }: any) => {
+export const currentUserState = atom<User | {}>({
+  key: "currentUserState", // unique ID (with respect to other atoms/selectors)
+  default: {}, // valeur par défaut (alias valeur initials)
+});
+
+// ================   LAYER EFFECTS   ================== //
+
+const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
   const handleAddLayer = (data: Layer) => {
     // Assuming the data structure allows updating the atom state directly
@@ -23,15 +30,49 @@ const socketListenerEffect = ({ onSet, setSelf, node }: any) => {
   };
 };
 
+const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
+  // Define the event handler function outside the effect to avoid redefining it on every call
+  const handleAddActiveLayer = (data: any) => {
+    setSelf((prevLayers: any) => {
+      const otherUserSelectedLayers = data.map((dataItem: { userId: any }) => {
+        const matchingPrevItem = prevLayers.find((prevItem: { userId: any }) => prevItem.userId === dataItem.userId);
+
+        if (matchingPrevItem) {
+          return { ...dataItem, layerIds: matchingPrevItem.layerIds };
+        }
+        return dataItem;
+      });
+
+      return otherUserSelectedLayers;
+    });
+  };
+
+  // Attach the event listener when the effect runs
+  socket.on("remote-select-layer", handleAddActiveLayer);
+
+  // Return a cleanup function to detach the event listener when the effect is no longer needed
+  return () => {
+    socket.off("remote-select-layer", handleAddActiveLayer);
+  };
+};
+
+// ================   LAYER STATES   ================== //
+
+export const boardIdState = atom({
+  key: "boardIdState", // unique ID (with respect to other atoms/selectors)
+  default: "", // valeur par défaut (alias valeur initials)
+});
+
 export const layerAtomState = atom<Layer[]>({
   key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
   default: [], // valeur par défaut (alias valeur initials)
-  effects: [socketListenerEffect],
+  effects: [socketLayerEffect],
 });
 
-export const activeLayersAtom = atom<string[]>({
+export const activeLayersAtom = atom({
   key: "activeLayersAtom",
-  default: [], // Start with no active layers
+  default: [{}], // Start with no active layers
+  effects: [socketActiveLayerEffect],
 });
 
 export const hoveredLayerIdAtomState = atom<String>({
@@ -40,11 +81,6 @@ export const hoveredLayerIdAtomState = atom<String>({
 });
 
 // ================   PROMPT STATES  ================== //
-
-export const boardIdState = atom({
-  key: "boardIdState", // unique ID (with respect to other atoms/selectors)
-  default: "", // valeur par défaut (alias valeur initials)
-});
 
 export const promptValueState = atom({
   key: "promptValueState", // unique ID (with respect to other atoms/selectors)
@@ -86,6 +122,8 @@ export const qaState = atom<QuestionAnswersProps[]>({
   default: [],
 });
 
+// ================   MODAL STATES   ================== //
+
 export const modalState = atom({
   key: "modalState",
   default: false,
@@ -125,6 +163,3 @@ export const viewPortScaleState = atom({
   key: "viewPortScaleState",
   default: {},
 });
-function atomEffect(arg0: { trigger: string; setSelf: (newValue: any, { onSet }: { onSet: any }) => void }) {
-  throw new Error("Function not implemented.");
-}

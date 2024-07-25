@@ -58,7 +58,7 @@ const Rectangle = ({ id, layer, onPointerDown, onMouseEnter, onMouseLeave, selec
         stroke={selectionColor || "transparent"}
       >
         <ContentEditable
-          html={value || "Text"}
+          html={value || "Type something"}
           onChange={handleContentChange}
           className={cn("h-full w-full flex items-center justify-center outline-none")}
           style={{

@@ -2,7 +2,7 @@
 // src/components/Canvas.tsx
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import {
@@ -15,20 +15,30 @@ import {
   MindMapDetailsProps,
   Point,
   Side,
+  User,
   XYWH,
 } from "@/_types";
 import { useSocket } from "@/hooks";
 import {
   activeLayersAtom,
   boardIdState,
+  currentUserState,
   hoveredLayerIdAtomState,
   layerAtomState,
   useAddElement,
   useRemoveElement,
   usernameState,
+  useSelectElement,
+  useUnSelectElement,
   useUpdateElement,
 } from "@/state";
-import { colorToCss, findIntersectingLayersWithRectangle, pointerEventToCanvasPoint, resizeBounds } from "@/utils";
+import {
+  colorToCss,
+  connectionIdToColor,
+  findIntersectingLayersWithRectangle,
+  pointerEventToCanvasPoint,
+  resizeBounds,
+} from "@/utils";
 
 import { Button } from "../ui";
 import { CursorPresence } from "./collaborate";
@@ -65,6 +75,8 @@ const Whiteboard = ({
 
   const CANVAS_TRANSITION_TIME = 500;
 
+  const ids: string[] = [];
+
   // ================  SOCKETS  ================== //
 
   const { socketEmit } = useSocket();
@@ -74,12 +86,37 @@ const Whiteboard = ({
   // ================  LAYERS  ================== //
 
   const layers = useRecoilValue(layerAtomState);
-  const [activeLayerIDs, setActiveLayerIDs] = useRecoilState(activeLayersAtom);
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const activeLayerIDs = allActiveLayers
+    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
+    .map((item) => item.layerIds)[0];
+
+  const allOtherUsersSelections = allActiveLayers.filter((item) => item.userId !== currentUserId);
+
+  const layerIdsToColorSelection = useMemo(() => {
+    if (allOtherUsersSelections[0]?.userId == undefined) return {};
+
+    const layerIdsToColorSelection: Record<string, string> = {};
+
+    for (const otherUsersSelections of allOtherUsersSelections) {
+      let usersCount = 0;
+
+      for (const layerId of otherUsersSelections?.layerIds) {
+        layerIdsToColorSelection[layerId] = connectionIdToColor(usersCount);
+      }
+      usersCount++;
+    }
+
+    return layerIdsToColorSelection;
+  }, [allOtherUsersSelections]);
+
   const setHoveredLayerID = useSetRecoilState(hoveredLayerIdAtomState);
 
-  const addLayer = useAddElement(boardId);
-  const updateLayer = useUpdateElement(boardId);
-  const removeLayer = useRemoveElement(boardId);
+  const selectLayer = useSelectElement({ roomId: boardId });
+  const unSelectLayer = useUnSelectElement({ roomId: boardId });
+  const addLayer = useAddElement({ roomId: boardId });
+  const updateLayer = useUpdateElement({ roomId: boardId });
+  const removeLayer = useRemoveElement({ roomId: boardId });
 
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path, position: Point) => {
@@ -96,17 +133,20 @@ const Whiteboard = ({
         y: position.y,
         width: 200,
         height: 100,
-        value: "Type something",
         fill: { r: 255, g: 255, b: 255 },
       };
 
       addLayer(newLayer);
 
+      selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+      setHoveredLayerID(layerId);
+      setShowLayerAddButtons(true);
+
       setCanvasState({
         mode: CanvasMode.None,
       });
     },
-    [lastUsedColor],
+    [addLayer, currentUserId, layers, selectLayer, setHoveredLayerID],
   );
 
   const handleLayerPointerDown = useCallback(
@@ -125,14 +165,20 @@ const Whiteboard = ({
 
       if (e.shiftKey) {
         // If Shift is held, add the layerId to the activeLayerIds array without removing others
-        setActiveLayerIDs((prevActiveLayerIds) => [...prevActiveLayerIds, layerId]);
+
+        ids.push(layerId);
+
+        console.log("ids:", ids);
+
+        selectLayer({ userId: currentUserId, layerIds: ids });
 
         setCanvasState({
           mode: CanvasMode.SelectionNet,
           origin,
         });
-      } else if (!activeLayerIDs.includes(layerId)) {
-        setActiveLayerIDs([layerId]);
+      } else if (!activeLayerIDs?.includes(layerId)) {
+        // setActiveLayerIDs([layerId]);
+        selectLayer({ userId: currentUserId, layerIds: [layerId] });
       }
 
       setCanvasState({
@@ -140,45 +186,53 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [canvasState.mode, camera, setActiveLayerIDs],
+    [canvasState, camera, activeLayerIDs, ids, selectLayer, currentUserId],
   );
 
-  const handleLayerMouseEnter = useCallback((e: React.MouseEvent, layerId: string) => {
-    if (
-      canvasState.mode === CanvasMode.Grab ||
-      canvasState.mode === CanvasMode.Pencil ||
-      canvasState.mode === CanvasMode.Inserting
-    ) {
-      return;
-    }
+  const handleLayerMouseEnter = useCallback(
+    (e: React.MouseEvent, layerId: string) => {
+      if (
+        canvasState.mode === CanvasMode.Grab ||
+        canvasState.mode === CanvasMode.Pencil ||
+        canvasState.mode === CanvasMode.Inserting ||
+        activeLayerIDs?.length > 0
+      ) {
+        return;
+      }
 
-    e.stopPropagation();
+      e.stopPropagation();
 
-    // Do something
-    setHoveredLayerID(layerId);
-    setShowLayerAddButtons(true);
+      // Do something
+      setHoveredLayerID(layerId);
+      setShowLayerAddButtons(true);
 
-    // setCanvasState({
-    //   mode: CanvasMode.None,
-    // });
-  }, []);
+      // setCanvasState({
+      //   mode: CanvasMode.None,
+      // });
+    },
+    [activeLayerIDs, canvasState, setHoveredLayerID],
+  );
 
-  const handleLayerMouseLeave = useCallback((mouseEvent: React.MouseEvent) => {
-    if (
-      canvasState.mode === CanvasMode.Grab ||
-      canvasState.mode === CanvasMode.Pencil ||
-      canvasState.mode === CanvasMode.Inserting
-    ) {
-      return;
-    } else if (activeLayerIDs.length > 0) {
+  const handleLayerMouseLeave = useCallback(
+    (mouseEvent: React.MouseEvent) => {
+      if (
+        canvasState.mode === CanvasMode.Grab ||
+        canvasState.mode === CanvasMode.Pencil ||
+        canvasState.mode === CanvasMode.Inserting ||
+        activeLayerIDs?.length > 0
+      ) {
+        return;
+      }
+
       setHoveredLayerID("");
       setShowLayerAddButtons(false);
-    }
 
-    // setCanvasState({
-    //   mode: CanvasMode.None,
-    // });
-  }, []);
+      // setCanvasState({
+      //   mode: CanvasMode.None,
+      // });
+    },
+    [activeLayerIDs, canvasState, setHoveredLayerID],
+  );
 
   const handleHandleClick = useCallback(
     (layerId: String, position: HandlePosition) => {
@@ -236,7 +290,7 @@ const Whiteboard = ({
         y: point.y - canvasState.current.y,
       };
 
-      const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
+      const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
       const updatedLayers = selectedLayers.map((layer) => ({
         ...layer,
@@ -266,7 +320,7 @@ const Whiteboard = ({
 
       const bounds = resizeBounds(canvasState.initialBounds, canvasState.corner, point);
 
-      const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
+      const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
       const layer = selectedLayers[0];
 
       if (layer) {
@@ -296,9 +350,9 @@ const Whiteboard = ({
 
       const ids = findIntersectingLayersWithRectangle(layers, origin, current);
 
-      setActiveLayerIDs(ids);
+      selectLayer({ userId: currentUserId, layerIds: ids });
     },
-    [layers],
+    [currentUserId, layers, selectLayer],
   );
 
   const startMultiSelection = useCallback((current: Point, origin: Point) => {
@@ -311,9 +365,9 @@ const Whiteboard = ({
     }
   }, []);
 
-  const unSelectLayer = useCallback(() => {
-    setActiveLayerIDs([]);
-  }, []);
+  const handleUnSelectLayer = useCallback(() => {
+    unSelectLayer({ userId: currentUserId });
+  }, [currentUserId, unSelectLayer]);
 
   // ================  SVG POINTER EVENTS  ================== //
 
@@ -336,7 +390,7 @@ const Whiteboard = ({
       const point = pointerEventToCanvasPoint(e, camera);
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
-        unSelectLayer();
+        handleUnSelectLayer();
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -354,7 +408,7 @@ const Whiteboard = ({
         });
       }
     },
-    [camera, canvasState, insertLayer, unSelectLayer, setCanvasState],
+    [camera, canvasState, insertLayer, handleUnSelectLayer, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
@@ -554,10 +608,10 @@ const Whiteboard = ({
         });
       }
 
-      if (event.code === "Backspace" && activeLayerIDs.length > 0) {
-        const selectedLayers = layers.filter((layer) => activeLayerIDs.includes(layer.id));
+      if (event.code === "Backspace" && activeLayerIDs?.length > 0) {
+        const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
-        unSelectLayer();
+        handleUnSelectLayer();
 
         for (const layer of selectedLayers) {
           if (layer) {
@@ -584,7 +638,7 @@ const Whiteboard = ({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [activeLayerIDs, canvasState, layers, removeLayer, unSelectLayer]);
+  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer]);
 
   // Hande Mouse move
   useEffect(() => {
@@ -645,11 +699,11 @@ const Whiteboard = ({
               onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
               onLayerMouseEnter={handleLayerMouseEnter}
               onLayerMouseLeave={handleLayerMouseLeave}
-              selectionColor={colorToCss(lastUsedColor)}
+              selectionColor={layerIdsToColorSelection[layer.id]}
             />
           ))}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
-          {showLayerAddButtons && activeLayerIDs.length <= 1 && <LayerHandles onHandleClick={handleHandleClick} />}
+          {showLayerAddButtons && activeLayerIDs?.length <= 1 && <LayerHandles onHandleClick={handleHandleClick} />}
           {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
             <rect
               className="fill-blue-500/5 stroke-blue-500 stroke-1"

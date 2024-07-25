@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 
+import { useSession } from "next-auth/react";
 import React, { memo } from "react";
 import { useRecoilValue } from "recoil";
 
@@ -15,9 +16,16 @@ interface SelectionBoxProps {
 const HANDLE_WIDTH = 8;
 
 export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxProps) => {
-  const activeLayerIDs = useRecoilValue(activeLayersAtom);
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
 
-  const soleLayerId = activeLayerIDs.length === 1 ? activeLayerIDs[0] : null;
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
+
+  const activeLayerIDs = allActiveLayers
+    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
+    .map((item) => item.layerIds)[0];
+
+  const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
 
   const isShowingHandles = soleLayerId;
 

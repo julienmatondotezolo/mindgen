@@ -2,13 +2,22 @@
 "use client";
 
 import { BringToFront, SendToBack, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { memo, useCallback } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Camera, Color, Layer } from "@/_types";
 import { Button } from "@/components/ui/button";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
-import { activeLayersAtom, boardIdState, layerAtomState, useRemoveElement, useUpdateElement } from "@/state";
+import {
+  activeLayersAtom,
+  boardIdState,
+  layerAtomState,
+  useRemoveElement,
+  useSelectElement,
+  useUnSelectElement,
+  useUpdateElement,
+} from "@/state";
 
 import { ColorPicker } from "../colorPicker";
 
@@ -18,13 +27,21 @@ interface SelectionToolsProps {
 }
 
 export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionToolsProps) => {
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
+
   const layers = useRecoilValue(layerAtomState);
-  const [activeLayerIDs, setActiveLayerIDs] = useRecoilState(activeLayersAtom);
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
+
+  const activeLayerIDs = allActiveLayers
+    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
+    .map((item) => item.layerIds[0]);
 
   const boardId = useRecoilValue(boardIdState);
 
-  const updateLayer = useUpdateElement(boardId);
-  const removeLayer = useRemoveElement(boardId);
+  const unSelectLayer = useUnSelectElement({ roomId: boardId });
+  const updateLayer = useUpdateElement({ roomId: boardId });
+  const removeLayer = useRemoveElement({ roomId: boardId });
 
   const selectionBounds = useSelectionBounds();
 
@@ -85,14 +102,14 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   const handleRemoveLayer = useCallback(() => {
     const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
 
-    setActiveLayerIDs([]);
+    unSelectLayer({ userId: currentUserId });
 
     for (const layer of selectedLayers) {
       if (layer) {
         removeLayer(layer.id);
       }
     }
-  }, [activeLayerIDs, layers, removeLayer, setActiveLayerIDs]);
+  }, [activeLayerIDs, currentUserId, layers, removeLayer, unSelectLayer]);
 
   if (!selectionBounds) return null;
 

@@ -14,3 +14,4 @@ export * from "./ProfileProps";
 export * from "./QuestionAnswersProps";
 export * from "./ReactflowState";
 export * from "./ToolBarProps";
+export * from "./User";

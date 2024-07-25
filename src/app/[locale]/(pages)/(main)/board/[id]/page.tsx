@@ -11,7 +11,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
-import { CustomSession, MindMapDetailsProps } from "@/_types";
+import { CustomSession, MindMapDetailsProps, User } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
@@ -25,6 +25,7 @@ import {
   boardIdState,
   collaborateModalState,
   collaboratorNameState,
+  currentUserState,
   importModalState,
   promptResultState,
   promptValueState,
@@ -35,11 +36,6 @@ import {
 } from "@/state";
 import { checkPermission, refreshPage, uppercaseFirstLetter } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
-
-interface User {
-  id: string; // Assuming IDs are strings, adjust if necessary
-  username: string;
-}
 
 export default function Board({ params }: { params: { id: string } }) {
   const text = useTranslations("Index");
@@ -53,6 +49,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
   const [currentCollaUsername, setCurrentCollaUsername] = useRecoilState(usernameState);
   const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
+  const setCurrentUser = useSetRecoilState(currentUserState);
 
   const [collaCursorPos, setCollaCursorPos] = useState<any>({});
 
@@ -85,6 +82,7 @@ export default function Board({ params }: { params: { id: string } }) {
     };
 
     if (currentCollaUsername) socketJoinRoom(params.id, user.id, currentCollaUsername);
+    setCurrentUser(user);
   }, [currentCollaUsername]);
 
   const getUserMindmapById = async () => {
