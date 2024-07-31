@@ -2,10 +2,10 @@
 /* eslint-disable no-undef */
 
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { RectangleLayer } from "@/_types";
-import { boardIdState, useUpdateElement } from "@/state";
+import { CanvasMode, RectangleLayer } from "@/_types";
+import { boardIdState, canvasStateAtom, useUpdateElement } from "@/state";
 import { cn, colorToCss, getContrastingTextColor } from "@/utils";
 
 interface RectangleProps {
@@ -29,18 +29,25 @@ const calculateFontSize = (width: number, height: number) => {
 const Rectangle = ({ id, layer, onPointerDown, onMouseEnter, onMouseLeave, selectionColor }: RectangleProps) => {
   const { x, y, width, height, fill, value } = layer;
   const boardId = useRecoilValue(boardIdState);
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
 
-  const updateLayer = useUpdateElement(boardId);
+  const updateLayer = useUpdateElement({ roomId: boardId });
+
+  const handleContentClick = () => {
+    setCanvasState({
+      mode: CanvasMode.Typing,
+    });
+  };
 
   const handleContentChange = (e: ContentEditableEvent) => {
-    updateLayer(id, { value: e.target.value });
+    updateLayer(id, { value: e.target.innerText });
   };
 
   return (
     <>
       <foreignObject
         // className="drop-shadow-md"
-        className="shadow-md drop-shadow-xl"
+        className="relative shadow-md drop-shadow-xl"
         onPointerDown={(e) => onPointerDown(e, id)}
         onMouseEnter={(e) => onMouseEnter(e, id)}
         onMouseLeave={onMouseLeave}
@@ -59,8 +66,11 @@ const Rectangle = ({ id, layer, onPointerDown, onMouseEnter, onMouseLeave, selec
       >
         <ContentEditable
           html={value || "Type something"}
-          onChange={handleContentChange}
-          className={cn("h-full w-full flex items-center justify-center outline-none")}
+          onClick={handleContentClick}
+          onKeyUp={handleContentChange}
+          className={cn(
+            "w-max outline-none cursor-text inline absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2",
+          )}
           style={{
             color: fill ? getContrastingTextColor(fill) : "#000",
             fontSize: calculateFontSize(width, height),

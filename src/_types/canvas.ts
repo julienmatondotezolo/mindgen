@@ -25,6 +25,14 @@ export enum HandlePosition {
   Bottom,
 }
 
+export type Edge = {
+  id: string;
+  fromLayerId: string;
+  toLayerId: string;
+  color: Color;
+  thickness: number;
+};
+
 export type RectangleLayer = {
   id: string;
   type: LayerType.Rectangle;
@@ -107,6 +115,10 @@ export type CanvasState =
       mode: CanvasMode.Grab;
     }
   | {
+      mode: CanvasMode.Edge;
+      current: Point;
+    }
+  | {
       mode: CanvasMode.Pressing;
       origin: Point;
     }
@@ -130,6 +142,9 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Pencil;
+    }
+  | {
+      mode: CanvasMode.Typing;
     };
 
 export enum CanvasMode {
@@ -141,6 +156,8 @@ export enum CanvasMode {
   Translating,
   Resizing,
   Pencil,
+  Edge,
+  Typing,
 }
 
 export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;

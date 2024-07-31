@@ -22,6 +22,7 @@ import { useSocket } from "@/hooks";
 import {
   activeLayersAtom,
   boardIdState,
+  canvasStateAtom,
   currentUserState,
   hoveredLayerIdAtomState,
   layerAtomState,
@@ -61,9 +62,7 @@ const Whiteboard = ({
   const [showResetButton, setShowResetButton] = useState(false);
   const [applyTransition, setApplyTransition] = useState(false);
 
-  const [canvasState, setCanvasState] = useState<CanvasState>({
-    mode: CanvasMode.None,
-  });
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
   const [lastUsedColor, setLastUsedColor] = useState<Color>({
     r: 50,
@@ -86,6 +85,7 @@ const Whiteboard = ({
   // ================  LAYERS  ================== //
 
   const layers = useRecoilValue(layerAtomState);
+
   const allActiveLayers = useRecoilValue(activeLayersAtom);
   const activeLayerIDs = allActiveLayers
     .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
@@ -146,7 +146,7 @@ const Whiteboard = ({
         mode: CanvasMode.None,
       });
     },
-    [addLayer, currentUserId, layers, selectLayer, setHoveredLayerID],
+    [addLayer, currentUserId, layers, selectLayer, setCanvasState, setHoveredLayerID],
   );
 
   const handleLayerPointerDown = useCallback(
@@ -154,7 +154,8 @@ const Whiteboard = ({
       if (
         canvasState.mode === CanvasMode.Grab ||
         canvasState.mode === CanvasMode.Pencil ||
-        canvasState.mode === CanvasMode.Inserting
+        canvasState.mode === CanvasMode.Inserting ||
+        canvasState.mode === CanvasMode.Typing
       ) {
         return;
       }
@@ -186,7 +187,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [canvasState, camera, activeLayerIDs, ids, selectLayer, currentUserId],
+    [canvasState, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId],
   );
 
   const handleLayerMouseEnter = useCallback(
@@ -309,7 +310,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [canvasState],
+    [activeLayerIDs, canvasState, layers, setCanvasState, updateLayer],
   );
 
   const resizeSelectedLayer = useCallback(
@@ -327,7 +328,7 @@ const Whiteboard = ({
         updateLayer(layer.id, bounds);
       }
     },
-    [canvasState],
+    [activeLayerIDs, canvasState, layers, updateLayer],
   );
 
   const handleResizeHandlePointerDown = useCallback((corner: Side, initialBounds: XYWH) => {
@@ -352,7 +353,7 @@ const Whiteboard = ({
 
       selectLayer({ userId: currentUserId, layerIds: ids });
     },
-    [currentUserId, layers, selectLayer],
+    [currentUserId, layers, selectLayer, setCanvasState],
   );
 
   const startMultiSelection = useCallback((current: Point, origin: Point) => {
@@ -608,7 +609,7 @@ const Whiteboard = ({
         });
       }
 
-      if (event.code === "Backspace" && activeLayerIDs?.length > 0) {
+      if (event.code === "Backspace" && activeLayerIDs?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
         handleUnSelectLayer();
@@ -638,7 +639,7 @@ const Whiteboard = ({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer]);
+  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer, setCanvasState]);
 
   // Hande Mouse move
   useEffect(() => {

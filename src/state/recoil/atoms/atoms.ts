@@ -2,8 +2,21 @@
 import { Edge, Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps, Layer, QuestionAnswersProps, User } from "@/_types";
+import { CanvasMode, CanvasState, ChatMessageProps, Layer, QuestionAnswersProps, User } from "@/_types";
 import { socket } from "@/socket";
+
+// ================   CANVAS STATE   ================== //
+
+// const [canvasState, setCanvasState] = useState<CanvasState>({
+//   mode: CanvasMode.None,
+// });
+
+export const canvasStateAtom = atom<CanvasState>({
+  key: "canvasState", // unique ID (with respect to other atoms/selectors)
+  default: {
+    mode: CanvasMode.None,
+  }, // valeur par défaut (alias valeur initials)
+});
 
 // ================   USER STATE   ================== //
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Circle, Hand, MousePointer2, Redo2, Square, Undo2 } from "lucide-react";
+import { Circle, Hand, MousePointer2, Redo2, Square, Type, Undo2 } from "lucide-react";
 import React from "react";
 import { useSetRecoilState } from "recoil";
 
@@ -62,6 +62,15 @@ const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
               })
             }
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Ellipse}
+          />
+          <ToolButton
+            icon={Type}
+            onClick={() =>
+              setCanvasState({
+                mode: CanvasMode.Typing,
+              })
+            }
+            isActive={canvasState.mode === CanvasMode.Typing}
           />
         </ul>
       </div>
