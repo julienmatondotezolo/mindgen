@@ -10,6 +10,7 @@ import {
   CanvasMode,
   CanvasState,
   Color,
+  Edge,
   HandlePosition,
   LayerType,
   MindMapDetailsProps,
@@ -81,6 +82,11 @@ const Whiteboard = ({
   const { socketEmit } = useSocket();
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
+
+  // ================  EDGES  ================== //
+
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string }>({ ongoing: false });
 
   // ================  LAYERS  ================== //
 
@@ -370,6 +376,21 @@ const Whiteboard = ({
     unSelectLayer({ userId: currentUserId });
   }, [currentUserId, unSelectLayer]);
 
+  // ================  EDGES  ================== //
+
+  const drawEdgeline = useCallback(
+    (point: Point, event: React.PointerEvent) => {
+      if (canvasState.mode !== CanvasMode.Edge) return;
+
+      if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+        setEdges((prevEdges) =>
+          prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, end: point } : edge)),
+        );
+      }
+    },
+    [canvasState, drawingEdge],
+  );
+
   // ================  SVG POINTER EVENTS  ================== //
 
   const handlePointerDown = useCallback(
@@ -378,38 +399,39 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) return;
 
+      if (canvasState.mode === CanvasMode.Edge) {
+        // Create a new edge object
+        const newEdge: Edge = {
+          id: nanoid(),
+          fromLayerId: "", // Placeholder, replace with actual logic to determine fromLayerId
+          toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
+          color: { r: 255, g: 255, b: 255 }, // Placeholder, replace with actual color logic
+          thickness: 2,
+          start: {
+            x: point.x,
+            y: point.y,
+          },
+          end: {
+            x: point.x,
+            y: point.y,
+          },
+        };
+
+        // Update edges state with the new edge
+        setEdges((prevEdges) => [...prevEdges, newEdge]);
+
+        // Set drawingEdge state to indicate an edge drawing operation is ongoing
+        setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id });
+
+        return;
+      }
+
       setCanvasState({
         origin: point,
         mode: CanvasMode.Pressing,
       });
     },
-    [camera, canvasState.mode, setCanvasState],
-  );
-
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      const point = pointerEventToCanvasPoint(e, camera);
-
-      if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
-        handleUnSelectLayer();
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
-      } else if (canvasState.mode === CanvasMode.Grab) {
-        setCanvasState({
-          mode: CanvasMode.Grab,
-        });
-      } else if (canvasState.mode === CanvasMode.Pencil) {
-        //
-      } else if (canvasState.mode === CanvasMode.Inserting) {
-        insertLayer(canvasState.layerType, point);
-      } else {
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
-      }
-    },
-    [camera, canvasState, insertLayer, handleUnSelectLayer, setCanvasState],
+    [camera, canvasState, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
@@ -426,8 +448,8 @@ const Whiteboard = ({
         translateSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Resizing) {
         resizeSelectedLayer(current);
-      } else if (canvasState.mode === CanvasMode.Pencil) {
-        // continueDrawing(current, e);
+      } else if (canvasState.mode === CanvasMode.Edge) {
+        drawEdgeline(current, e);
       }
 
       socketEmit("cursor-move", {
@@ -447,7 +469,36 @@ const Whiteboard = ({
       updateSelectionNet,
       translateSelectedLayer,
       resizeSelectedLayer,
+      drawEdgeline,
     ],
+  );
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      const point = pointerEventToCanvasPoint(e, camera);
+
+      if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
+        handleUnSelectLayer();
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      } else if (canvasState.mode === CanvasMode.Grab) {
+        setCanvasState({
+          mode: CanvasMode.Grab,
+        });
+      } else if (canvasState.mode === CanvasMode.Edge) {
+        setCanvasState({
+          mode: CanvasMode.Edge,
+        });
+      } else if (canvasState.mode === CanvasMode.Inserting) {
+        insertLayer(canvasState.layerType, point);
+      } else {
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      }
+    },
+    [camera, canvasState, insertLayer, handleUnSelectLayer, setCanvasState],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -587,6 +638,8 @@ const Whiteboard = ({
     const updateCursorStyle = () => {
       if (canvasState.mode === CanvasMode.Grab) {
         document.body.style.cursor = "grab";
+      } else if (canvasState.mode === CanvasMode.Edge) {
+        document.body.style.cursor = "cell";
       } else {
         document.body.style.cursor = "default";
       }
@@ -607,6 +660,11 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.Grab,
         });
+      }
+
+      if (event.code === "Enter" && canvasState.mode === CanvasMode.Edge) {
+        // Reset drawingEdge state when pointer is released
+        setDrawingEdge({ ongoing: false });
       }
 
       if (event.code === "Backspace" && activeLayerIDs?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
@@ -701,6 +759,17 @@ const Whiteboard = ({
               onLayerMouseEnter={handleLayerMouseEnter}
               onLayerMouseLeave={handleLayerMouseLeave}
               selectionColor={layerIdsToColorSelection[layer.id]}
+            />
+          ))}
+          {edges.map((edge) => (
+            <line
+              key={edge.id}
+              x1={edge.start.x}
+              y1={edge.start.y}
+              x2={edge.end.x}
+              y2={edge.end.y}
+              stroke={colorToCss(edge.color)}
+              strokeWidth={edge.thickness}
             />
           ))}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />

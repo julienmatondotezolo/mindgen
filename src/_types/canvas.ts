@@ -27,8 +27,10 @@ export enum HandlePosition {
 
 export type Edge = {
   id: string;
-  fromLayerId: string;
-  toLayerId: string;
+  fromLayerId?: string;
+  toLayerId?: string;
+  start: Point;
+  end: Point;
   color: Color;
   thickness: number;
 };
@@ -116,7 +118,8 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Edge;
-      current: Point;
+      origin?: Point;
+      current?: Point;
     }
   | {
       mode: CanvasMode.Pressing;
