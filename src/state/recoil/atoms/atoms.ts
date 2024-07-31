@@ -88,7 +88,7 @@ export const activeLayersAtom = atom({
   effects: [socketActiveLayerEffect],
 });
 
-export const hoveredLayerIdAtomState = atom<String>({
+export const hoveredLayerIdAtomState = atom<string>({
   key: "hoveredLayerIdAtomState", // unique ID (with respect to other atoms/selectors)
   default: "", // valeur par défaut (alias valeur initials)
 });

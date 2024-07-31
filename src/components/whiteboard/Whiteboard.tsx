@@ -241,6 +241,130 @@ const Whiteboard = ({
     [activeLayerIDs, canvasState, setHoveredLayerID],
   );
 
+  const onMouseEnter = useCallback(
+    (event: React.MouseEvent) => {
+      setCanvasState({
+        mode: CanvasMode.Edge,
+      });
+    },
+    [setCanvasState],
+  );
+
+  const onMouseLeave = useCallback(
+    (event: React.MouseEvent) => {
+      setCanvasState({
+        mode: CanvasMode.None,
+      });
+    },
+    [setCanvasState],
+  );
+
+  const onHandleMouseDown = useCallback(
+    (e: React.PointerEvent, layerId: string) => {
+      if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+        setEdges((prevEdges) =>
+          prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, fromLayerId: layerId } : edge)),
+        );
+      }
+      // const point = pointerEventToCanvasPoint(e, camera);
+
+      // if (canvasState.mode === CanvasMode.Edge) {
+      //   // Create a new edge object
+      //   const newEdge: Edge = {
+      //     id: nanoid().toString(),
+      //     fromLayerId: layerId, // Placeholder, replace with actual logic to determine fromLayerId
+      //     toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
+      //     color: { r: 255, g: 0, b: 0 }, // Placeholder, replace with actual color logic
+      //     thickness: 2,
+      //     start: {
+      //       x: point.x,
+      //       y: point.y,
+      //     },
+      //     end: {
+      //       x: point.x,
+      //       y: point.y,
+      //     },
+      //   };
+
+      //   // Update edges state with the new edge
+      //   setEdges((prevEdges) => [...prevEdges, newEdge]);
+
+      //   // Set drawingEdge state to indicate an edge drawing operation is ongoing
+      //   setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id });
+
+      //   return;
+      // }
+    },
+    [drawingEdge],
+  );
+
+  const onHandleMouseMove = useCallback((point: Point) => {
+    // console.log("point:", point);
+  }, []);
+
+  const onHandleMouseUp = useCallback(
+    (layerId: String, position: HandlePosition) => {
+      const currentLayer = layers.find((layer) => layer.id === layerId);
+      const AMOUNT_TO_ADD = 100;
+
+      if (!currentLayer) {
+        console.error("Layer not found");
+        return;
+      }
+
+      // Calculate the new position based on the clicked handle's position
+      let newLayerPosition: Point;
+      let newEdgePosition: Point;
+
+      switch (position) {
+        case HandlePosition.Left:
+          newLayerPosition = { x: currentLayer.x - currentLayer.width - AMOUNT_TO_ADD, y: currentLayer.y };
+          break;
+        case HandlePosition.Top:
+          newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - AMOUNT_TO_ADD };
+          newEdgePosition = {
+            x: currentLayer.x + currentLayer.width / 2,
+            y: currentLayer.y - currentLayer.height,
+          };
+          break;
+        case HandlePosition.Right:
+          newLayerPosition = { x: currentLayer.x + currentLayer.width + AMOUNT_TO_ADD, y: currentLayer.y };
+          break;
+        case HandlePosition.Bottom:
+          newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + AMOUNT_TO_ADD };
+          break;
+        default:
+          console.error("Invalid position");
+          return;
+      }
+
+      const newLayerId = nanoid();
+
+      const newLayer = {
+        id: newLayerId.toString(),
+        type: currentLayer.type,
+        x: newLayerPosition.x,
+        y: newLayerPosition.y,
+        width: currentLayer.width,
+        height: currentLayer.height,
+        fill: currentLayer.fill,
+      };
+
+      addLayer(newLayer);
+
+      if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+        setEdges((prevEdges) =>
+          prevEdges.map((edge) =>
+            edge.id === drawingEdge.lastEdgeId ? { ...edge, toLayerId: newLayer.id, end: newEdgePosition } : edge,
+          ),
+        );
+      }
+
+      setDrawingEdge({ ongoing: false });
+    },
+    [addLayer, drawingEdge, layers],
+  );
+
   const handleHandleClick = useCallback(
     (layerId: String, position: HandlePosition) => {
       const currentLayer = layers.find((layer) => layer.id === layerId);
@@ -379,7 +503,7 @@ const Whiteboard = ({
   // ================  EDGES  ================== //
 
   const drawEdgeline = useCallback(
-    (point: Point, event: React.PointerEvent) => {
+    (point: Point) => {
       if (canvasState.mode !== CanvasMode.Edge) return;
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
@@ -402,10 +526,10 @@ const Whiteboard = ({
       if (canvasState.mode === CanvasMode.Edge) {
         // Create a new edge object
         const newEdge: Edge = {
-          id: nanoid(),
+          id: nanoid().toString(),
           fromLayerId: "", // Placeholder, replace with actual logic to determine fromLayerId
           toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
-          color: { r: 255, g: 255, b: 255 }, // Placeholder, replace with actual color logic
+          color: { r: 255, g: 0, b: 0 }, // Placeholder, replace with actual color logic
           thickness: 2,
           start: {
             x: point.x,
@@ -449,7 +573,7 @@ const Whiteboard = ({
       } else if (canvasState.mode === CanvasMode.Resizing) {
         resizeSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Edge) {
-        drawEdgeline(current, e);
+        drawEdgeline(current);
       }
 
       socketEmit("cursor-move", {
@@ -740,8 +864,8 @@ const Whiteboard = ({
       <svg
         className="h-[100vh] w-[100vw]"
         onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
         onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerLeave}
       >
         <g
@@ -773,7 +897,16 @@ const Whiteboard = ({
             />
           ))}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
-          {showLayerAddButtons && activeLayerIDs?.length <= 1 && <LayerHandles onHandleClick={handleHandleClick} />}
+          {showLayerAddButtons && activeLayerIDs?.length <= 1 && (
+            <LayerHandles
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+              onHandleClick={handleHandleClick}
+              onPointerDown={onHandleMouseDown}
+              onPointerMove={onHandleMouseMove}
+              onPointerUp={onHandleMouseUp}
+            />
+          )}
           {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
             <rect
               className="fill-blue-500/5 stroke-blue-500 stroke-1"
