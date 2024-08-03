@@ -25,6 +25,7 @@ import {
   boardIdState,
   canvasStateAtom,
   currentUserState,
+  getLayerById,
   hoveredLayerIdAtomState,
   layerAtomState,
   useAddElement,
@@ -264,34 +265,6 @@ const Whiteboard = ({
           prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, fromLayerId: layerId } : edge)),
         );
       }
-      // const point = pointerEventToCanvasPoint(e, camera);
-
-      // if (canvasState.mode === CanvasMode.Edge) {
-      //   // Create a new edge object
-      //   const newEdge: Edge = {
-      //     id: nanoid().toString(),
-      //     fromLayerId: layerId, // Placeholder, replace with actual logic to determine fromLayerId
-      //     toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
-      //     color: { r: 255, g: 0, b: 0 }, // Placeholder, replace with actual color logic
-      //     thickness: 2,
-      //     start: {
-      //       x: point.x,
-      //       y: point.y,
-      //     },
-      //     end: {
-      //       x: point.x,
-      //       y: point.y,
-      //     },
-      //   };
-
-      //   // Update edges state with the new edge
-      //   setEdges((prevEdges) => [...prevEdges, newEdge]);
-
-      //   // Set drawingEdge state to indicate an edge drawing operation is ongoing
-      //   setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id });
-
-      //   return;
-      // }
     },
     [drawingEdge],
   );
@@ -355,8 +328,12 @@ const Whiteboard = ({
       }
 
       setDrawingEdge({ ongoing: false });
+
+      setCanvasState({
+        mode: CanvasMode.None,
+      });
     },
-    [addLayer, drawingEdge, layers],
+    [addLayer, drawingEdge, layers, setCanvasState],
   );
 
   const handleHandleClick = useCallback(
@@ -429,12 +406,41 @@ const Whiteboard = ({
         }
       }
 
+      // Find edges connected to the selected layers
+      const affectedEdges = edges.filter((edge) =>
+        selectedLayers.some((layer) => layer.id === edge.fromLayerId || layer.id === edge.toLayerId),
+      );
+
+      // Update the start and/or end points of the affected edges
+      const updatedEdges = affectedEdges.map((edge) => {
+        // Determine if the layer being moved is the source or target of the edge
+        const isSource = selectedLayers.some((layer) => layer.id === edge.fromLayerId);
+        const isTarget = selectedLayers.some((layer) => layer.id === edge.toLayerId);
+
+        // Update the start point if the layer is the source
+        const updatedStart = isSource
+          ? { ...edge.start, x: edge.start.x + offset.x, y: edge.start.y + offset.y }
+          : edge.start;
+
+        // Update the end point if the layer is the target
+        const updatedEnd = isTarget ? { ...edge.end, x: edge.end.x + offset.x, y: edge.end.y + offset.y } : edge.end;
+
+        return {
+          ...edge,
+          start: updatedStart,
+          end: updatedEnd,
+        };
+      });
+
+      // Update the edges state with the updated edges
+      setEdges(updatedEdges);
+
       setCanvasState({
         mode: CanvasMode.Translating,
         current: point,
       });
     },
-    [activeLayerIDs, canvasState, layers, setCanvasState, updateLayer],
+    [activeLayerIDs, canvasState, edges, layers, setCanvasState, updateLayer],
   );
 
   const resizeSelectedLayer = useCallback(
@@ -517,11 +523,15 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) return;
 
-      if (canvasState.mode === CanvasMode.Edge) {
+      if (canvasState.mode === CanvasMode.Edge || allActiveLayers.length !== -1) {
+        const selectedLayerId = allActiveLayers[0].layerIds ? allActiveLayers[0].layerIds[0] : "";
+
+        const selectedLayer = layers.find((layer) => layer.id === selectedLayerId);
+
         // Create a new edge object
         const newEdge: Edge = {
           id: nanoid().toString(),
-          fromLayerId: "", // Placeholder, replace with actual logic to determine fromLayerId
+          fromLayerId: selectedLayerId,
           toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
           color: { r: 255, g: 0, b: 0 }, // Placeholder, replace with actual color logic
           thickness: 2,
@@ -549,7 +559,7 @@ const Whiteboard = ({
         mode: CanvasMode.Pressing,
       });
     },
-    [camera, canvasState, setCanvasState],
+    [allActiveLayers, camera, canvasState, layers, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
