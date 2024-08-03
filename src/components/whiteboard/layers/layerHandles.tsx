@@ -15,7 +15,6 @@ interface LayerHandlesProps {
   onMouseLeave: (e: React.MouseEvent) => void;
   onHandleClick: (layerId: String, position: HandlePosition) => void;
   onPointerDown: (e: React.PointerEvent, layerId: string) => void;
-  onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: (layerId: String, position: HandlePosition) => void;
 }
 
@@ -23,7 +22,7 @@ const HANDLE_WIDTH = 20;
 const HANDLE_DISTANCE = 30;
 
 export const LayerHandles = memo(
-  ({ onHandleClick, onMouseEnter, onMouseLeave, onPointerDown, onPointerMove, onPointerUp }: LayerHandlesProps) => {
+  ({ onHandleClick, onMouseEnter, onMouseLeave, onPointerDown, onPointerUp }: LayerHandlesProps) => {
     const setHoveredLayerID = useRecoilValue(hoveredLayerIdAtomState);
 
     const bounds = useSelectionBounds();
@@ -46,7 +45,6 @@ export const LayerHandles = memo(
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
           onPointerDown={(e) => onPointerDown(e, setHoveredLayerID)}
-          onPointerMove={onPointerMove}
           onPointerUp={() => onPointerUp(setHoveredLayerID, HandlePosition.Top)}
         />
         <rect

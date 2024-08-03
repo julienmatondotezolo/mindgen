@@ -175,8 +175,6 @@ const Whiteboard = ({
 
         ids.push(layerId);
 
-        console.log("ids:", ids);
-
         selectLayer({ userId: currentUserId, layerIds: ids });
 
         setCanvasState({
@@ -297,10 +295,6 @@ const Whiteboard = ({
     },
     [drawingEdge],
   );
-
-  const onHandleMouseMove = useCallback((point: Point) => {
-    // console.log("point:", point);
-  }, []);
 
   const onHandleMouseUp = useCallback(
     (layerId: String, position: HandlePosition) => {
@@ -903,7 +897,6 @@ const Whiteboard = ({
               onMouseLeave={onMouseLeave}
               onHandleClick={handleHandleClick}
               onPointerDown={onHandleMouseDown}
-              onPointerMove={onHandleMouseMove}
               onPointerUp={onHandleMouseUp}
             />
           )}
