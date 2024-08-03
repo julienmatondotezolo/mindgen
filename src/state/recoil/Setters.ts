@@ -23,7 +23,7 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
 
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, (currentActiveLayers) => {
-          if (currentActiveLayers[0].userId == undefined) {
+          if (currentActiveLayers[0]?.userId == undefined) {
             socketEmit("select-layer", { roomId, selectedLayer: [userActiveLayers] });
             return [userActiveLayers];
           }
@@ -99,7 +99,7 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (id: string, updatedLayer: Partial<Layer>) => {
+      (id: string, updatedElementLayer: any) => {
         set(layerAtomState, (currentLayers) =>
           produce(
             currentLayers,
@@ -107,16 +107,36 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
               const index = draft.findIndex((layer) => layer.id === id);
 
               if (index !== -1) {
-                Object.assign(draft[index], updatedLayer);
+                Object.assign(draft[index], updatedElementLayer);
               }
 
-              socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
+              const mergedLayer = currentLayers.map((item: Layer) => {
+                if (item.id === id) {
+                  // Create a copy of the current item to avoid mutating the original object
+                  let updatedItem: any = { ...item };
+
+                  // Iterate over the keys of the updatedLayer object
+                  Object.keys(updatedElementLayer).forEach((key) => {
+                    // Dynamically add/update properties from updatedLayer to the updatedItem object
+                    updatedItem[key] = updatedElementLayer[key];
+                  });
+
+                  // Return the updated item with merged properties from updatedLayer
+                  return updatedItem;
+                } else {
+                  return item;
+                }
+              });
+
+              const updatedLayers = currentLayers.filter((item: Layer) => item.id == mergedLayer[0].id);
+
+              socketEmit("add-layer", { roomId, layer: mergedLayer });
             },
             // addToHistory,
           ),
         );
       },
-    [],
+    [roomId, socketEmit],
   );
 };
 
@@ -148,6 +168,6 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
           ),
         );
       },
-    [layers],
+    [addToHistory, roomId, socketEmit],
   );
 };
