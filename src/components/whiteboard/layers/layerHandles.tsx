@@ -23,8 +23,6 @@ const HANDLE_DISTANCE = 30;
 
 export const LayerHandles = memo(
   ({ onHandleClick, onMouseEnter, onMouseLeave, onPointerDown, onPointerUp }: LayerHandlesProps) => {
-    const setHoveredLayerID = useRecoilValue(hoveredLayerIdAtomState);
-
     const session = useSession();
     const currentUserId = session.data?.session?.user?.id;
 
@@ -59,8 +57,8 @@ export const LayerHandles = memo(
           }}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
-          onPointerDown={(e) => onPointerDown(e, setHoveredLayerID)}
-          onPointerUp={() => onPointerUp(setHoveredLayerID, HandlePosition.Top)}
+          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Top)}
         />
         <rect
           className="fill-white stroke-1 stroke-blue-500"
@@ -75,10 +73,10 @@ export const LayerHandles = memo(
                     ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px
                 )`,
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onHandleClick(setHoveredLayerID, HandlePosition.Right);
-          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Right)}
         />
         <rect
           className="fill-white stroke-1 stroke-blue-500"
@@ -93,10 +91,10 @@ export const LayerHandles = memo(
                     ${bounds.y + bounds.height - HANDLE_WIDTH / 2 + HANDLE_DISTANCE}px
                 )`,
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onHandleClick(setHoveredLayerID, HandlePosition.Bottom);
-          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Bottom)}
         />
         <rect
           className="fill-white stroke-1 stroke-blue-500"
@@ -111,10 +109,10 @@ export const LayerHandles = memo(
                     ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px
                 )`,
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onHandleClick(setHoveredLayerID, HandlePosition.Left);
-          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Left)}
         />
       </>
     );

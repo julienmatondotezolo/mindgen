@@ -22,15 +22,10 @@ import {
 import { useSocket } from "@/hooks";
 import {
   activeLayersAtom,
-  boardIdState,
   canvasStateAtom,
-  currentUserState,
-  getLayerById,
-  hoveredLayerIdAtomState,
   layerAtomState,
   useAddElement,
   useRemoveElement,
-  usernameState,
   useSelectElement,
   useUnSelectElement,
   useUpdateElement,
@@ -117,8 +112,6 @@ const Whiteboard = ({
     return layerIdsToColorSelection;
   }, [allOtherUsersSelections]);
 
-  const setHoveredLayerID = useSetRecoilState(hoveredLayerIdAtomState);
-
   const selectLayer = useSelectElement({ roomId: boardId });
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
   const addLayer = useAddElement({ roomId: boardId });
@@ -146,14 +139,13 @@ const Whiteboard = ({
       addLayer(newLayer);
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
-      setHoveredLayerID(layerId);
       setShowLayerAddButtons(true);
 
       setCanvasState({
         mode: CanvasMode.None,
       });
     },
-    [addLayer, currentUserId, layers, selectLayer, setCanvasState, setHoveredLayerID],
+    [addLayer, currentUserId, layers, selectLayer, setCanvasState],
   );
 
   const handleLayerPointerDown = useCallback(
@@ -237,10 +229,16 @@ const Whiteboard = ({
       // Calculate the new position based on the clicked handle's position
       let newLayerPosition: Point;
       let newEdgePosition: Point;
+      // ${bounds.x - HANDLE_WIDTH / 2}px,
+      // ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}p
 
       switch (position) {
         case HandlePosition.Left:
           newLayerPosition = { x: currentLayer.x - currentLayer.width - AMOUNT_TO_ADD, y: currentLayer.y };
+          newEdgePosition = {
+            x: currentLayer.x - currentLayer.width / 2,
+            y: currentLayer.y + currentLayer.height / 2,
+          };
           break;
         case HandlePosition.Top:
           newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - AMOUNT_TO_ADD };
@@ -251,9 +249,17 @@ const Whiteboard = ({
           break;
         case HandlePosition.Right:
           newLayerPosition = { x: currentLayer.x + currentLayer.width + AMOUNT_TO_ADD, y: currentLayer.y };
+          newEdgePosition = {
+            x: currentLayer.x + currentLayer.width * 1.5,
+            y: currentLayer.y + currentLayer.height / 2,
+          };
           break;
         case HandlePosition.Bottom:
           newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + AMOUNT_TO_ADD };
+          newEdgePosition = {
+            x: currentLayer.x + currentLayer.width / 2,
+            y: currentLayer.y + currentLayer.height * 2,
+          };
           break;
         default:
           console.error("Invalid position");
@@ -294,6 +300,8 @@ const Whiteboard = ({
   const handleHandleClick = useCallback(
     (layerId: String, position: HandlePosition) => {
       const currentLayer = layers.find((layer) => layer.id === layerId);
+
+      console.log("currentLayer:", currentLayer);
 
       if (!currentLayer) {
         console.error("Layer not found");

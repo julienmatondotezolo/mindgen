@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import { useRecoilValue } from "recoil";
 
 import { Layer, XYWH } from "@/_types";
-import { activeLayersAtom, hoveredLayerIdAtomState, layerAtomState } from "@/state";
+import { activeLayersAtom, layerAtomState } from "@/state";
 
 const boundingBox = (layers: Layer[]): XYWH | null => {
   const first = layers[0];
@@ -54,15 +54,9 @@ const useSelectionBounds = () => {
     .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
     .map((item) => item.layerIds)[0];
 
-  // const hoveredLayerID = useRecoilValue(hoveredLayerIdAtomState);
-
   const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
   if (selectedLayers.length > 0) return boundingBox(selectedLayers);
-
-  // const hoveredLayer = layers.filter((layer) => layer.id == hoveredLayerID);
-
-  // return boundingBox(hoveredLayer);
 };
 
 export { useSelectionBounds };

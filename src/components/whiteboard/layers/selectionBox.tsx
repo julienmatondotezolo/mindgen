@@ -64,6 +64,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
               onResizeHandlePointerDown(Side.Top + Side.Left, bounds);
             }}
           />
+          {/* TOP */}
           <rect
             className="fill-white stroke-1 stroke-blue-500"
             x={0}
@@ -98,6 +99,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
               onResizeHandlePointerDown(Side.Top + Side.Right, bounds);
             }}
           />
+          {/* RIGHT */}
           <rect
             className="fill-white stroke-1 stroke-blue-500"
             x={0}
@@ -134,6 +136,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
               onResizeHandlePointerDown(Side.Bottom + Side.Right, bounds);
             }}
           />
+          {/* BOTTOM */}
           <rect
             className="fill-white stroke-1 stroke-blue-500"
             x={0}
@@ -170,6 +173,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
               onResizeHandlePointerDown(Side.Bottom + Side.Left, bounds);
             }}
           />
+          {/* LEFT */}
           <rect
             className="fill-white stroke-1 stroke-blue-500"
             x={0}
