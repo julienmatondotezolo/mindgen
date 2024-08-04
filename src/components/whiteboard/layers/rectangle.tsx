@@ -12,8 +12,6 @@ interface RectangleProps {
   id: string;
   layer: RectangleLayer;
   onPointerDown: (e: React.PointerEvent, id: string) => void;
-  onMouseEnter: (e: React.MouseEvent, id: string) => void;
-  onMouseLeave: (mouseEvent: React.MouseEvent) => void;
   selectionColor?: string;
 }
 
@@ -26,7 +24,7 @@ const calculateFontSize = (width: number, height: number) => {
   return Math.min(maxFontSize, fontSizeBasedOnHeight, fontSizeBasedOnWidth);
 };
 
-const Rectangle = ({ id, layer, onPointerDown, onMouseEnter, onMouseLeave, selectionColor }: RectangleProps) => {
+const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
   const { x, y, width, height, fill, value } = layer;
   const boardId = useRecoilValue(boardIdState);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
@@ -49,8 +47,6 @@ const Rectangle = ({ id, layer, onPointerDown, onMouseEnter, onMouseLeave, selec
         // className="drop-shadow-md"
         className="relative shadow-md drop-shadow-xl"
         onPointerDown={(e) => onPointerDown(e, id)}
-        onMouseEnter={(e) => onMouseEnter(e, id)}
-        onMouseLeave={onMouseLeave}
         style={{
           transform: `translate(${x}px, ${y}px)`,
           outline: selectionColor ? `1px solid ${selectionColor}` : "none",

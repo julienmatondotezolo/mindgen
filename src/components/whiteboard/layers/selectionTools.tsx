@@ -35,7 +35,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
   const activeLayerIDs = allActiveLayers
     .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds[0]);
+    .map((item) => item.layerIds)[0];
 
   const boardId = useRecoilValue(boardIdState);
 
@@ -83,20 +83,11 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     (fill: Color) => {
       setLastUsedColor(fill);
 
-      const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
-
-      const updatedLayers = selectedLayers.map((layer) => ({
-        ...layer,
-        fill: fill,
-      }));
-
-      for (const layer of updatedLayers) {
-        if (layer) {
-          updateLayer(layer.id, { fill: layer.fill });
-        }
+      for (const layerId of activeLayerIDs) {
+        updateLayer(layerId, { fill: fill });
       }
     },
-    [activeLayerIDs, layers, setLastUsedColor, updateLayer],
+    [activeLayerIDs, setLastUsedColor, updateLayer],
   );
 
   const handleRemoveLayer = useCallback(() => {
@@ -116,19 +107,18 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   const x = selectionBounds.width / 2 + selectionBounds.x - camera.x;
   const y = selectionBounds.y + camera.y;
 
-  if (activeLayerIDs.length > 0)
-    return (
-      <div
-        className="absolute p-3 rounded-xl bg-white shadow-sm border flex select-none"
-        style={{
-          transform: `translate(
+  return (
+    <div
+      className="absolute p-3 rounded-xl bg-white shadow-sm border flex select-none"
+      style={{
+        transform: `translate(
             calc(${x}px - 50%),
             calc(${y - 64}px - 100%)
           )`,
-        }}
-      >
-        <ColorPicker onChange={handleColorChange} />
-        {/* <div className="flex flex-col gap-y-0.5">
+      }}
+    >
+      <ColorPicker onChange={handleColorChange} />
+      {/* <div className="flex flex-col gap-y-0.5">
         <Button variant="board" size="icon" onClick={handleMoveToFront}>
           <BringToFront />
         </Button>
@@ -136,13 +126,13 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
           <SendToBack />
         </Button>
       </div> */}
-        <div className="flex items-center pl-2 ml-2 border-l">
-          <Button variant="board" size="icon" onClick={handleRemoveLayer}>
-            <Trash2 />
-          </Button>
-        </div>
+      <div className="flex items-center pl-2 ml-2 border-l">
+        <Button variant="board" size="icon" onClick={handleRemoveLayer}>
+          <Trash2 />
+        </Button>
       </div>
-    );
+    </div>
+  );
 });
 
 SelectionTools.displayName = "SelectionTools";

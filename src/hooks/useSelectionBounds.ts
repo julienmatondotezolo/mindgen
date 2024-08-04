@@ -54,15 +54,15 @@ const useSelectionBounds = () => {
     .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
     .map((item) => item.layerIds)[0];
 
-  const hoveredLayerID = useRecoilValue(hoveredLayerIdAtomState);
+  // const hoveredLayerID = useRecoilValue(hoveredLayerIdAtomState);
 
   const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
   if (selectedLayers.length > 0) return boundingBox(selectedLayers);
 
-  const hoveredLayer = layers.filter((layer) => layer.id == hoveredLayerID);
+  // const hoveredLayer = layers.filter((layer) => layer.id == hoveredLayerID);
 
-  return boundingBox(hoveredLayer);
+  // return boundingBox(hoveredLayer);
 };
 
 export { useSelectionBounds };

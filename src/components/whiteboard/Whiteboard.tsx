@@ -195,51 +195,6 @@ const Whiteboard = ({
     [canvasState, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId],
   );
 
-  const handleLayerMouseEnter = useCallback(
-    (e: React.MouseEvent, layerId: string) => {
-      if (
-        canvasState.mode === CanvasMode.Grab ||
-        canvasState.mode === CanvasMode.Pencil ||
-        canvasState.mode === CanvasMode.Inserting ||
-        activeLayerIDs?.length > 0
-      ) {
-        return;
-      }
-
-      e.stopPropagation();
-
-      // Do something
-      setHoveredLayerID(layerId);
-      setShowLayerAddButtons(true);
-
-      // setCanvasState({
-      //   mode: CanvasMode.None,
-      // });
-    },
-    [activeLayerIDs, canvasState, setHoveredLayerID],
-  );
-
-  const handleLayerMouseLeave = useCallback(
-    (mouseEvent: React.MouseEvent) => {
-      if (
-        canvasState.mode === CanvasMode.Grab ||
-        canvasState.mode === CanvasMode.Pencil ||
-        canvasState.mode === CanvasMode.Inserting ||
-        activeLayerIDs?.length > 0
-      ) {
-        return;
-      }
-
-      setHoveredLayerID("");
-      setShowLayerAddButtons(false);
-
-      // setCanvasState({
-      //   mode: CanvasMode.None,
-      // });
-    },
-    [activeLayerIDs, canvasState, setHoveredLayerID],
-  );
-
   const onMouseEnter = useCallback(
     (event: React.MouseEvent) => {
       setCanvasState({
@@ -486,15 +441,18 @@ const Whiteboard = ({
     [currentUserId, layers, selectLayer, setCanvasState],
   );
 
-  const startMultiSelection = useCallback((current: Point, origin: Point) => {
-    if (Math.abs(current.x - origin.x) + Math.abs(current.y - origin.y) > 5) {
-      setCanvasState({
-        mode: CanvasMode.SelectionNet,
-        origin,
-        current,
-      });
-    }
-  }, []);
+  const startMultiSelection = useCallback(
+    (current: Point, origin: Point) => {
+      if (Math.abs(current.x - origin.x) + Math.abs(current.y - origin.y) > 5) {
+        setCanvasState({
+          mode: CanvasMode.SelectionNet,
+          origin,
+          current,
+        });
+      }
+    },
+    [setCanvasState],
+  );
 
   const handleUnSelectLayer = useCallback(() => {
     unSelectLayer({ userId: currentUserId });
@@ -523,7 +481,7 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) return;
 
-      if (canvasState.mode === CanvasMode.Edge || allActiveLayers.length !== -1) {
+      if (canvasState.mode === CanvasMode.Edge) {
         const selectedLayerId = allActiveLayers[0].layerIds ? allActiveLayers[0].layerIds[0] : "";
 
         const selectedLayer = layers.find((layer) => layer.id === selectedLayerId);
@@ -884,8 +842,6 @@ const Whiteboard = ({
               key={layer.id}
               layer={layer}
               onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
-              onLayerMouseEnter={handleLayerMouseEnter}
-              onLayerMouseLeave={handleLayerMouseLeave}
               selectionColor={layerIdsToColorSelection[layer.id]}
             />
           ))}
@@ -901,15 +857,13 @@ const Whiteboard = ({
             />
           ))}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
-          {showLayerAddButtons && activeLayerIDs?.length <= 1 && (
-            <LayerHandles
-              onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave}
-              onHandleClick={handleHandleClick}
-              onPointerDown={onHandleMouseDown}
-              onPointerUp={onHandleMouseUp}
-            />
-          )}
+          <LayerHandles
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            onHandleClick={handleHandleClick}
+            onPointerDown={onHandleMouseDown}
+            onPointerUp={onHandleMouseUp}
+          />
           {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
             <rect
               className="fill-blue-500/5 stroke-blue-500 stroke-1"
