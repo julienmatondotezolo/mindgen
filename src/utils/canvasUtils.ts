@@ -85,6 +85,19 @@ export function getContrastingTextColor(color: Color) {
   return luminance > 182 ? "black" : "white";
 }
 
+export const calculateControlPoints = (start: Point, end: Point) => {
+  const midX = (start.x + end.x) / 2;
+  const midY = (start.y + end.y) / 2;
+
+  const offsetX = 30; // Adjust this value to change the curvature
+  const offsetY = 30; // Adjust this value to change the curvature
+
+  return [
+    { x: midX - offsetX, y: midY + offsetY },
+    { x: midX + offsetX, y: midY - offsetY },
+  ];
+};
+
 export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
   if (points.length < 2) {
     throw new Error("Cannot transform points with less than 2 points");

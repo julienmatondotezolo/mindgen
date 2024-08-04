@@ -31,6 +31,7 @@ import {
   useUpdateElement,
 } from "@/state";
 import {
+  calculateControlPoints,
   colorToCss,
   connectionIdToColor,
   findIntersectingLayersWithRectangle,
@@ -854,14 +855,25 @@ const Whiteboard = ({
             />
           ))}
           {edges.map((edge) => (
-            <line
+            // <line
+            //   key={edge.id}
+            //   x1={edge.start.x}
+            //   y1={edge.start.y}
+            //   x2={edge.end.x}
+            //   y2={edge.end.y}
+            //   stroke={colorToCss(edge.color)}
+            //   strokeWidth={edge.thickness}
+            // />
+            <path
               key={edge.id}
-              x1={edge.start.x}
-              y1={edge.start.y}
-              x2={edge.end.x}
-              y2={edge.end.y}
+              d={`M${edge.start.x} ${edge.start.y} C ${calculateControlPoints(edge.start, edge.end)[0].x} ${
+                calculateControlPoints(edge.start, edge.end)[0].y
+              }, ${calculateControlPoints(edge.start, edge.end)[1].x} ${
+                calculateControlPoints(edge.start, edge.end)[1].y
+              }, ${edge.end.x} ${edge.end.y}`}
               stroke={colorToCss(edge.color)}
               strokeWidth={edge.thickness}
+              fill="transparent"
             />
           ))}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
