@@ -83,7 +83,9 @@ const Whiteboard = ({
   // ================  EDGES  ================== //
 
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string }>({ ongoing: false });
+  const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
+    ongoing: false,
+  });
 
   // ================  LAYERS  ================== //
 
@@ -212,6 +214,7 @@ const Whiteboard = ({
         setEdges((prevEdges) =>
           prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, fromLayerId: layerId } : edge)),
         );
+        setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId }));
       }
     },
     [drawingEdge],
@@ -281,7 +284,7 @@ const Whiteboard = ({
 
       addLayer(newLayer);
 
-      if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+      if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
         setEdges((prevEdges) =>
           prevEdges.map((edge) =>
             edge.id === drawingEdge.lastEdgeId ? { ...edge, toLayerId: newLayer.id, end: newEdgePosition } : edge,
@@ -289,7 +292,7 @@ const Whiteboard = ({
         );
       }
 
-      setDrawingEdge({ ongoing: false });
+      setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
 
       setCanvasState({
         mode: CanvasMode.None,
@@ -370,23 +373,19 @@ const Whiteboard = ({
         }
       }
 
-      // Find edges connected to the selected layers
-      const affectedEdges = edges.filter((edge) =>
-        selectedLayers.some((layer) => layer.id === edge.fromLayerId || layer.id === edge.toLayerId),
-      );
+      // Update all edges
+      const updatedEdges = edges.map((edge) => {
+        const isSource = selectedLayers.find((layer) => layer.id === edge.fromLayerId);
+        const isTarget = selectedLayers.find((layer) => layer.id === edge.toLayerId);
 
-      // Update the start and/or end points of the affected edges
-      const updatedEdges = affectedEdges.map((edge) => {
-        // Determine if the layer being moved is the source or target of the edge
-        const isSource = selectedLayers.some((layer) => layer.id === edge.fromLayerId);
-        const isTarget = selectedLayers.some((layer) => layer.id === edge.toLayerId);
+        if (!isSource && !isTarget) {
+          return edge;
+        }
 
-        // Update the start point if the layer is the source
         const updatedStart = isSource
           ? { ...edge.start, x: edge.start.x + offset.x, y: edge.start.y + offset.y }
           : edge.start;
 
-        // Update the end point if the layer is the target
         const updatedEnd = isTarget ? { ...edge.end, x: edge.end.x + offset.x, y: edge.end.y + offset.y } : edge.end;
 
         return {
@@ -516,7 +515,7 @@ const Whiteboard = ({
         setEdges((prevEdges) => [...prevEdges, newEdge]);
 
         // Set drawingEdge state to indicate an edge drawing operation is ongoing
-        setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id });
+        setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayerId });
 
         return;
       }
@@ -855,15 +854,6 @@ const Whiteboard = ({
             />
           ))}
           {edges.map((edge) => (
-            // <line
-            //   key={edge.id}
-            //   x1={edge.start.x}
-            //   y1={edge.start.y}
-            //   x2={edge.end.x}
-            //   y2={edge.end.y}
-            //   stroke={colorToCss(edge.color)}
-            //   strokeWidth={edge.thickness}
-            // />
             <path
               key={edge.id}
               d={`M${edge.start.x} ${edge.start.y} C ${calculateControlPoints(edge.start, edge.end)[0].x} ${
