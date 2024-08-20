@@ -121,6 +121,13 @@ const Whiteboard = ({
   const updateLayer = useUpdateElement({ roomId: boardId });
   const removeLayer = useRemoveElement({ roomId: boardId });
 
+  const removeEdgesConnectedToLayer = useCallback(
+    (layerId: string) => {
+      setEdges((prevEdges) => prevEdges.filter((edge) => edge.fromLayerId !== layerId && edge.toLayerId !== layerId));
+    },
+    [setEdges],
+  );
+
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path, position: Point) => {
       if (layers?.length >= MAX_LAYERS) {
@@ -223,7 +230,7 @@ const Whiteboard = ({
   const onHandleMouseUp = useCallback(
     (layerId: String, position: HandlePosition) => {
       const currentLayer = layers.find((layer) => layer.id === layerId);
-      const AMOUNT_TO_ADD = 100;
+      const LAYER_SPACING = 150; // Adjust this value to control the space between layers
 
       if (!currentLayer) {
         console.error("Layer not found");
@@ -233,33 +240,31 @@ const Whiteboard = ({
       // Calculate the new position based on the clicked handle's position
       let newLayerPosition: Point;
       let newEdgePosition: Point;
-      // ${bounds.x - HANDLE_WIDTH / 2}px,
-      // ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}p
 
       switch (position) {
         case HandlePosition.Left:
-          newLayerPosition = { x: currentLayer.x - currentLayer.width - AMOUNT_TO_ADD, y: currentLayer.y };
+          newLayerPosition = { x: currentLayer.x - currentLayer.width - LAYER_SPACING, y: currentLayer.y };
           newEdgePosition = {
             x: currentLayer.x - currentLayer.width / 2,
             y: currentLayer.y + currentLayer.height / 2,
           };
           break;
         case HandlePosition.Top:
-          newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - AMOUNT_TO_ADD };
+          newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
           newEdgePosition = {
             x: currentLayer.x + currentLayer.width / 2,
             y: currentLayer.y - currentLayer.height,
           };
           break;
         case HandlePosition.Right:
-          newLayerPosition = { x: currentLayer.x + currentLayer.width + AMOUNT_TO_ADD, y: currentLayer.y };
+          newLayerPosition = { x: currentLayer.x + currentLayer.width + LAYER_SPACING, y: currentLayer.y };
           newEdgePosition = {
             x: currentLayer.x + currentLayer.width * 1.5,
             y: currentLayer.y + currentLayer.height / 2,
           };
           break;
         case HandlePosition.Bottom:
-          newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + AMOUNT_TO_ADD };
+          newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
           newEdgePosition = {
             x: currentLayer.x + currentLayer.width / 2,
             y: currentLayer.y + currentLayer.height * 2,
@@ -304,8 +309,6 @@ const Whiteboard = ({
   const handleHandleClick = useCallback(
     (layerId: String, position: HandlePosition) => {
       const currentLayer = layers.find((layer) => layer.id === layerId);
-
-      console.log("currentLayer:", currentLayer);
 
       if (!currentLayer) {
         console.error("Layer not found");
@@ -769,6 +772,7 @@ const Whiteboard = ({
         for (const layer of selectedLayers) {
           if (layer) {
             removeLayer(layer.id);
+            removeEdgesConnectedToLayer(layer.id);
           }
         }
         // setCanvasState({
@@ -791,7 +795,15 @@ const Whiteboard = ({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer, setCanvasState]);
+  }, [
+    activeLayerIDs,
+    canvasState,
+    layers,
+    removeLayer,
+    handleUnSelectLayer,
+    setCanvasState,
+    removeEdgesConnectedToLayer,
+  ]);
 
   // Hande Mouse move
   useEffect(() => {
