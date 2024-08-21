@@ -3,7 +3,7 @@
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import {
   Camera,
@@ -23,6 +23,7 @@ import { useSocket } from "@/hooks";
 import {
   activeLayersAtom,
   canvasStateAtom,
+  edgesAtomState,
   layerAtomState,
   useAddElement,
   useRemoveElement,
@@ -82,10 +83,17 @@ const Whiteboard = ({
 
   // ================  EDGES  ================== //
 
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
     ongoing: false,
   });
+
+  const removeEdgesConnectedToLayer = useCallback(
+    (layerId: string) => {
+      setEdges((prevEdges) => prevEdges.filter((edge) => edge.fromLayerId !== layerId && edge.toLayerId !== layerId));
+    },
+    [setEdges],
+  );
 
   // ================  LAYERS  ================== //
 
@@ -120,13 +128,6 @@ const Whiteboard = ({
   const addLayer = useAddElement({ roomId: boardId });
   const updateLayer = useUpdateElement({ roomId: boardId });
   const removeLayer = useRemoveElement({ roomId: boardId });
-
-  const removeEdgesConnectedToLayer = useCallback(
-    (layerId: string) => {
-      setEdges((prevEdges) => prevEdges.filter((edge) => edge.fromLayerId !== layerId && edge.toLayerId !== layerId));
-    },
-    [setEdges],
-  );
 
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path, position: Point) => {
@@ -645,9 +646,7 @@ const Whiteboard = ({
     setIsMouseDown(false);
   };
 
-  // Fit content to view
   const fitView = () => {
-    // Enable transition
     setApplyTransition(true);
 
     const svgElement = document.querySelector("svg");
@@ -655,27 +654,20 @@ const Whiteboard = ({
 
     if (!svgElement || !gElement) return;
 
-    const svgRect = svgElement.getBoundingClientRect();
-    const gRect = gElement.getBBox(); // getBBox() returns the tight bounding box in local coordinates
-
-    const gRectWidth = gRect.width - gRect.x;
+    const gRect = gElement.getBBox();
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
-    const gRectHeight = gRect.height - gRect.y;
+    const scaleX = (viewportWidth * 0.8) / gRect.width;
+    const scaleY = (viewportHeight * 0.8) / gRect.height;
 
-    // Calculate scale to fit horizontally
-    const scaleX = 0;
-    const scaleY = 0;
+    const scale = Math.min(scaleX, scaleY, 1);
 
-    const scale = Math.max(scaleX, scaleY); // Use max to ensure content doesn't shrink vertically
+    const translateX = (viewportWidth - gRect.width * scale) / 2 - gRect.x * scale;
+    const translateY = (viewportHeight - gRect.height * scale) / 2 - gRect.y * scale;
 
-    // Calculate translation to center the content horizontally
-    const translateX = 0;
-    const translateY = 0;
+    setCamera({ x: translateX, y: translateY, scale: scale });
 
-    setCamera({ x: 0, y: 0, scale: 1 });
-
-    // Disable transition after a delay matching the transition duration
     setTimeout(() => {
       setApplyTransition(false);
     }, CANVAS_TRANSITION_TIME);

@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
-import { Edge, Node } from "reactflow";
+import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import { CanvasMode, CanvasState, ChatMessageProps, Layer, QuestionAnswersProps, User } from "@/_types";
+import { CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
 import { socket } from "@/socket";
 
 // ================   CANVAS STATE   ================== //
@@ -93,6 +93,13 @@ export const hoveredLayerIdAtomState = atom<string>({
   default: "", // valeur par défaut (alias valeur initials)
 });
 
+// ================   EDGES STATES   ================== //
+
+export const edgesAtomState = atom<Edge[]>({
+  key: "edgesAtomState", // unique ID (with respect to other atoms/selectors)
+  default: [], // valeur par défaut (alias valeur initials)
+});
+
 // ================   PROMPT STATES  ================== //
 
 export const promptValueState = atom({
@@ -120,10 +127,10 @@ export const nodesState = atom<Node[]>({
   default: [],
 });
 
-export const edgesState = atom<Edge[]>({
-  key: "edgesState",
-  default: [],
-});
+// export const edgesState = atom<Edge[]>({
+//   key: "edgesState",
+//   default: [],
+// });
 
 export const streamedAnswersState = atom<ChatMessageProps[]>({
   key: "streamedAnswersState",

@@ -104,8 +104,26 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
   if (!selectionBounds) return null;
 
-  const x = selectionBounds.width / 2 + selectionBounds.x - camera.x;
-  const y = selectionBounds.y + camera.y;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  const selectionToolsWidth = 200;
+  const selectionToolsHeight = 60;
+
+  // const x = selectionBounds.width / 2 + selectionBounds.x - camera.x;
+  // const y = selectionBounds.y + camera.y;
+
+  // const x = (selectionBounds.width / 2 + selectionBounds.x) * camera.scale + camera.x;
+  // const y = selectionBounds.y * camera.scale + camera.y;
+
+  const x = Math.min(
+    Math.max((selectionBounds.width / 2 + selectionBounds.x) * camera.scale + camera.x, 0),
+    viewportWidth - selectionToolsWidth,
+  );
+  const y = Math.min(
+    Math.max(selectionBounds.y * camera.scale + camera.y - selectionToolsHeight, 0),
+    viewportHeight - selectionToolsHeight,
+  );
 
   return (
     <div
@@ -113,7 +131,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       style={{
         transform: `translate(
             calc(${x}px - 50%),
-            calc(${y - 64}px - 100%)
+            calc(${y}px - 100%)
           )`,
       }}
     >
