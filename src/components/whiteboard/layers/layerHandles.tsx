@@ -13,7 +13,6 @@ import { HandleButton } from "../HandleButton";
 interface LayerHandlesProps {
   onMouseEnter: (e: React.MouseEvent) => void;
   onMouseLeave: (e: React.MouseEvent) => void;
-  onHandleClick: (layerId: String, position: HandlePosition) => void;
   onPointerDown: (e: React.PointerEvent, layerId: string) => void;
   onPointerUp: (layerId: String, position: HandlePosition) => void;
 }
@@ -21,102 +20,100 @@ interface LayerHandlesProps {
 const HANDLE_WIDTH = 20;
 const HANDLE_DISTANCE = 30;
 
-export const LayerHandles = memo(
-  ({ onHandleClick, onMouseEnter, onMouseLeave, onPointerDown, onPointerUp }: LayerHandlesProps) => {
-    const session = useSession();
-    const currentUserId = session.data?.session?.user?.id;
+export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, onPointerUp }: LayerHandlesProps) => {
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
 
-    const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
 
-    const activeLayerIDs = allActiveLayers
-      .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-      .map((item) => item.layerIds)[0];
+  const activeLayerIDs = allActiveLayers
+    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
+    .map((item) => item.layerIds)[0];
 
-    const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
+  const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
 
-    const isShowingHandles = soleLayerId;
+  const isShowingHandles = soleLayerId;
 
-    const bounds = useSelectionBounds();
+  const bounds = useSelectionBounds();
 
-    if (!bounds) return null;
+  if (!bounds) return null;
 
-    if (!isShowingHandles) return null;
+  if (!isShowingHandles) return null;
 
-    return (
-      <>
-        <rect
-          className="fill-white stroke-1 stroke-blue-500"
-          x={0}
-          y={0}
-          style={{
-            width: `${HANDLE_WIDTH}px`,
-            height: `${HANDLE_WIDTH}px`,
-            transform: `translate(
+  return (
+    <>
+      <rect
+        className="fill-white stroke-1 stroke-blue-500"
+        x={0}
+        y={0}
+        style={{
+          width: `${HANDLE_WIDTH}px`,
+          height: `${HANDLE_WIDTH}px`,
+          transform: `translate(
                 ${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, 
                    ${bounds.y - HANDLE_WIDTH / 2 - HANDLE_DISTANCE}px)`,
-          }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Top)}
-        />
-        <rect
-          className="fill-white stroke-1 stroke-blue-500"
-          x={0}
-          y={0}
-          style={{
-            cursor: "pointer",
-            width: `${HANDLE_WIDTH}px`,
-            height: `${HANDLE_WIDTH}px`,
-            transform: `translate(
+        }}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Top)}
+      />
+      <rect
+        className="fill-white stroke-1 stroke-blue-500"
+        x={0}
+        y={0}
+        style={{
+          cursor: "pointer",
+          width: `${HANDLE_WIDTH}px`,
+          height: `${HANDLE_WIDTH}px`,
+          transform: `translate(
                     ${bounds.x - HANDLE_WIDTH / 2 + bounds.width + HANDLE_DISTANCE}px, 
                     ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px
                 )`,
-          }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Right)}
-        />
-        <rect
-          className="fill-white stroke-1 stroke-blue-500"
-          x={0}
-          y={0}
-          style={{
-            cursor: "pointer",
-            width: `${HANDLE_WIDTH}px`,
-            height: `${HANDLE_WIDTH}px`,
-            transform: `translate(
+        }}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Right)}
+      />
+      <rect
+        className="fill-white stroke-1 stroke-blue-500"
+        x={0}
+        y={0}
+        style={{
+          cursor: "pointer",
+          width: `${HANDLE_WIDTH}px`,
+          height: `${HANDLE_WIDTH}px`,
+          transform: `translate(
                     ${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, 
                     ${bounds.y + bounds.height - HANDLE_WIDTH / 2 + HANDLE_DISTANCE}px
                 )`,
-          }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Bottom)}
-        />
-        <rect
-          className="fill-white stroke-1 stroke-blue-500"
-          x={0}
-          y={0}
-          style={{
-            cursor: "pointer",
-            width: `${HANDLE_WIDTH}px`,
-            height: `${HANDLE_WIDTH}px`,
-            transform: `translate(
+        }}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Bottom)}
+      />
+      <rect
+        className="fill-white stroke-1 stroke-blue-500"
+        x={0}
+        y={0}
+        style={{
+          cursor: "pointer",
+          width: `${HANDLE_WIDTH}px`,
+          height: `${HANDLE_WIDTH}px`,
+          transform: `translate(
                     ${bounds.x - HANDLE_WIDTH / 2 - HANDLE_DISTANCE}px, 
                     ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px
                 )`,
-          }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-          onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Left)}
-        />
-      </>
-    );
-  },
-);
+        }}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
+        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Left)}
+      />
+    </>
+  );
+});
 
 LayerHandles.displayName = "SelectionBox";

@@ -25,14 +25,19 @@ export enum HandlePosition {
   Bottom,
 }
 
+export type EdgeOrientation = "auto" | "0" | "90" | "-180" | "180" | "270";
+
 export type Edge = {
   id: string;
+  handleStart?: HandlePosition;
+  handleEnd?: HandlePosition;
   fromLayerId?: string;
   toLayerId?: string;
   start: Point;
   end: Point;
   color: Color;
   thickness: number;
+  orientation: EdgeOrientation;
 };
 
 export type RectangleLayer = {

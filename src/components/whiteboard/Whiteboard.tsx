@@ -36,6 +36,8 @@ import {
   colorToCss,
   connectionIdToColor,
   findIntersectingLayersWithRectangle,
+  findNonOverlappingPosition,
+  getOrientationFromPosition,
   pointerEventToCanvasPoint,
   resizeBounds,
 } from "@/utils";
@@ -87,6 +89,8 @@ const Whiteboard = ({
   const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
     ongoing: false,
   });
+
+  const ARROW_SIZE = 5;
 
   const removeEdgesConnectedToLayer = useCallback(
     (layerId: string) => {
@@ -198,7 +202,7 @@ const Whiteboard = ({
     [canvasState, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId],
   );
 
-  const onMouseEnter = useCallback(
+  const onHandleMouseEnter = useCallback(
     (event: React.MouseEvent) => {
       setCanvasState({
         mode: CanvasMode.Edge,
@@ -207,7 +211,7 @@ const Whiteboard = ({
     [setCanvasState],
   );
 
-  const onMouseLeave = useCallback(
+  const onHandleMouseLeave = useCallback(
     (event: React.MouseEvent) => {
       setCanvasState({
         mode: CanvasMode.None,
@@ -225,7 +229,7 @@ const Whiteboard = ({
         setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId }));
       }
     },
-    [drawingEdge],
+    [drawingEdge, setEdges],
   );
 
   const onHandleMouseUp = useCallback(
@@ -276,6 +280,14 @@ const Whiteboard = ({
           return;
       }
 
+      // Find a non-overlapping position for the new layer
+      const adjustedPosition = findNonOverlappingPosition({
+        newPosition: newLayerPosition,
+        layers,
+        currentLayer,
+        LAYER_SPACING,
+      });
+
       const newLayerId = nanoid();
 
       const newLayer = {
@@ -293,7 +305,15 @@ const Whiteboard = ({
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
         setEdges((prevEdges) =>
           prevEdges.map((edge) =>
-            edge.id === drawingEdge.lastEdgeId ? { ...edge, toLayerId: newLayer.id, end: newEdgePosition } : edge,
+            edge.id === drawingEdge.lastEdgeId
+              ? {
+                ...edge,
+                toLayerId: newLayer.id,
+                end: newEdgePosition,
+                handleStart: position,
+                orientation: getOrientationFromPosition(position),
+              }
+              : edge,
           ),
         );
       }
@@ -304,7 +324,7 @@ const Whiteboard = ({
         mode: CanvasMode.None,
       });
     },
-    [addLayer, drawingEdge, layers, setCanvasState],
+    [addLayer, drawingEdge, layers, setCanvasState, setEdges],
   );
 
   const handleHandleClick = useCallback(
@@ -407,7 +427,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [activeLayerIDs, canvasState, edges, layers, setCanvasState, updateLayer],
+    [activeLayerIDs, canvasState, edges, layers, setCanvasState, setEdges, updateLayer],
   );
 
   const resizeSelectedLayer = useCallback(
@@ -482,7 +502,7 @@ const Whiteboard = ({
         );
       }
     },
-    [canvasState, drawingEdge],
+    [canvasState.mode, drawingEdge, setEdges],
   );
 
   // ================  SVG POINTER EVENTS  ================== //
@@ -529,7 +549,7 @@ const Whiteboard = ({
         mode: CanvasMode.Pressing,
       });
     },
-    [allActiveLayers, camera, canvasState, layers, setCanvasState],
+    [allActiveLayers, camera, canvasState, layers, setCanvasState, setEdges],
   );
 
   const handlePointerMove = useCallback(
@@ -857,24 +877,43 @@ const Whiteboard = ({
               selectionColor={layerIdsToColorSelection[layer.id]}
             />
           ))}
-          {edges.map((edge) => (
-            <path
-              key={edge.id}
-              d={`M${edge.start.x} ${edge.start.y} C ${calculateControlPoints(edge.start, edge.end)[0].x} ${
-                calculateControlPoints(edge.start, edge.end)[0].y
-              }, ${calculateControlPoints(edge.start, edge.end)[1].x} ${
-                calculateControlPoints(edge.start, edge.end)[1].y
-              }, ${edge.end.x} ${edge.end.y}`}
-              stroke={colorToCss(edge.color)}
-              strokeWidth={edge.thickness}
-              fill="transparent"
-            />
-          ))}
+          <defs>
+            {edges.map((edge) => (
+              <marker
+                key={`arrow-${edge.id}`}
+                id={`arrowhead-${edge.id}`}
+                markerWidth={ARROW_SIZE}
+                markerHeight={ARROW_SIZE}
+                refX={ARROW_SIZE / 4}
+                refY={ARROW_SIZE / 2}
+                orient={edge.orientation}
+              >
+                <polygon
+                  points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
+                  fill={colorToCss(edge.color)}
+                />
+              </marker>
+            ))}
+          </defs>
+          {edges.map((edge) => {
+            const [controlPoint1, controlPoint2] = calculateControlPoints(edge.start, edge.end, edge.handleStart);
+
+            return (
+              <path
+                key={edge.id}
+                d={`M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`}
+                stroke={colorToCss(edge.color)}
+                strokeWidth={edge.thickness}
+                markerEnd={`url(#arrowhead-${edge.id})`}
+                fill="transparent"
+              />
+            );
+          })}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
           <LayerHandles
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            onHandleClick={handleHandleClick}
+            onMouseEnter={onHandleMouseEnter}
+            onMouseLeave={onHandleMouseLeave}
+            // onHandleClick={handleHandleClick}
             onPointerDown={onHandleMouseDown}
             onPointerUp={onHandleMouseUp}
           />

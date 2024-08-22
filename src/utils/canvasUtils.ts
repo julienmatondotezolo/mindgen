@@ -2,7 +2,18 @@ import { type ClassValue, clsx } from "clsx";
 import React from "react";
 import { twMerge } from "tailwind-merge";
 
-import { Camera, Color, Layer, LayerType, PathLayer, Point, Side, XYWH } from "@/_types/canvas";
+import {
+  Camera,
+  Color,
+  EdgeOrientation,
+  HandlePosition,
+  Layer,
+  LayerType,
+  PathLayer,
+  Point,
+  Side,
+  XYWH,
+} from "@/_types/canvas";
 
 const COLORS = ["#DC2626", "#D97706", "#059669", "#7C3AED", "#DB2777"];
 
@@ -22,6 +33,41 @@ export function colorToCss(color: Color) {
     .toString(16)
     .padStart(2, "0")}`;
 }
+
+export const findNonOverlappingPosition = ({
+  newPosition,
+  layers,
+  currentLayer,
+  LAYER_SPACING,
+}: {
+  newPosition: Point;
+  layers: Layer[];
+  currentLayer: Layer;
+  LAYER_SPACING: number;
+}): Point => {
+  const OVERLAP_THRESHOLD = 10; // Minimum distance between layers
+  let adjustedPosition = { ...newPosition };
+  let overlapping = true;
+
+  while (overlapping) {
+    overlapping = false;
+    for (const layer of layers) {
+      if (layer.id === currentLayer.id) continue;
+
+      const xOverlap = Math.abs(adjustedPosition.x - layer.x) < currentLayer.width + OVERLAP_THRESHOLD;
+      const yOverlap = Math.abs(adjustedPosition.y - layer.y) < currentLayer.height + OVERLAP_THRESHOLD;
+
+      if (xOverlap && yOverlap) {
+        overlapping = true;
+        adjustedPosition.x += LAYER_SPACING;
+        adjustedPosition.y += LAYER_SPACING;
+        break;
+      }
+    }
+  }
+
+  return adjustedPosition;
+};
 
 export function resizeBounds(bounds: XYWH, corner: Side, point: Point): XYWH {
   const result = {
@@ -85,17 +131,60 @@ export function getContrastingTextColor(color: Color) {
   return luminance > 182 ? "black" : "white";
 }
 
-export const calculateControlPoints = (start: Point, end: Point) => {
-  const midX = (start.x + end.x) / 2;
-  const midY = (start.y + end.y) / 2;
+export const getOrientationFromPosition = (position: HandlePosition): EdgeOrientation => {
+  switch (position) {
+    case HandlePosition.Left:
+      return "180";
+    case HandlePosition.Right:
+      return "0";
+    case HandlePosition.Top:
+      return "270";
+    case HandlePosition.Bottom:
+      return "90";
+    default:
+      return "auto";
+  }
+};
 
-  const offsetX = 30; // Adjust this value to change the curvature
-  const offsetY = 30; // Adjust this value to change the curvature
+export const calculateControlPoints = (start: Point, end: Point, fromPosition: HandlePosition | undefined) => {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
 
-  return [
-    { x: midX - offsetX, y: midY + offsetY },
-    { x: midX + offsetX, y: midY - offsetY },
-  ];
+  // Determine if the edge is more horizontal or vertical
+  const isHorizontal = fromPosition === HandlePosition.Left || fromPosition === HandlePosition.Right;
+
+  // Calculate the length of the straight segment (e.g., 30% of the total distance)
+  const straightLength = distance * 0.5;
+
+  // Calculate the curve strength (adjust as needed)
+  const curveStrength = distance * 0.1;
+
+  let controlPoint1, controlPoint2;
+
+  if (isHorizontal) {
+    // Horizontal edge
+    controlPoint1 = {
+      x: start.x + Math.sign(dx) * straightLength,
+      y: start.y,
+    };
+    controlPoint2 = {
+      x: end.x - Math.sign(dx) * straightLength,
+      y: end.y + Math.sign(dy) * curveStrength,
+    };
+  } else {
+    // Vertical edge
+    controlPoint1 = {
+      x: start.x,
+      y: start.y + Math.sign(dy) * straightLength,
+    };
+    controlPoint2 = {
+      x: end.x + Math.sign(dx) * curveStrength,
+      y: end.y - Math.sign(dy) * straightLength,
+    };
+  }
+
+  return [controlPoint1, controlPoint2];
 };
 
 export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
