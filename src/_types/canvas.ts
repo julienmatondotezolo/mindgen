@@ -123,6 +123,9 @@ export type CanvasState =
       mode: CanvasMode.Grab;
     }
   | {
+      mode: CanvasMode.EdgeActive;
+    }
+  | {
       mode: CanvasMode.Edge;
       origin?: Point;
       current?: Point;
@@ -166,6 +169,7 @@ export enum CanvasMode {
   Resizing,
   Pencil,
   Edge,
+  EdgeActive,
   Typing,
 }
 

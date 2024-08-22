@@ -3,7 +3,7 @@
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import {
   Camera,
@@ -21,6 +21,7 @@ import {
 } from "@/_types";
 import { useSocket } from "@/hooks";
 import {
+  activeEdgeIdAtom,
   activeLayersAtom,
   canvasStateAtom,
   edgesAtomState,
@@ -45,6 +46,7 @@ import {
 
 import { Button } from "../ui";
 import { CursorPresence } from "./collaborate";
+import { EdgeSelectionTools } from "./edges";
 import { LayerPreview } from "./LayerPreview";
 import { LayerHandles, SelectionBox, SelectionTools } from "./layers";
 import { Toolbar } from "./Toolbar";
@@ -88,6 +90,7 @@ const Whiteboard = ({
 
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
+  const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
 
   const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
     ongoing: false,
@@ -194,6 +197,7 @@ const Whiteboard = ({
         });
       } else if (!activeLayerIDs?.includes(layerId)) {
         // setActiveLayerIDs([layerId]);
+        setActiveEdgeId(null);
         selectLayer({ userId: currentUserId, layerIds: [layerId] });
       }
 
@@ -202,7 +206,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [canvasState, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId],
+    [canvasState.mode, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -593,6 +597,7 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
         handleUnSelectLayer();
+        setActiveEdgeId(null);
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -612,7 +617,7 @@ const Whiteboard = ({
         });
       }
     },
-    [camera, canvasState, insertLayer, handleUnSelectLayer, setCanvasState],
+    [camera, canvasState, insertLayer, handleUnSelectLayer, setCanvasState, setActiveEdgeId],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -851,6 +856,7 @@ const Whiteboard = ({
         </Button>
       )}
       <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
+      <EdgeSelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
       <svg
         className="h-[100vh] w-[100vw]"
         onPointerDown={handlePointerDown}
@@ -875,14 +881,14 @@ const Whiteboard = ({
           ))}
           {edges.map((edge) => {
             const [controlPoint1, controlPoint2] = calculateControlPoints(edge.start, edge.end, edge.handleStart);
-            const isHovered = edge.id === hoveredEdgeId;
+            const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId;
             const pathString = `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`;
 
             return (
               <g key={edge.id}>
                 <path
                   d={pathString}
-                  stroke={colorToCss(isHovered ? edge.hoverColor : edge.color)}
+                  stroke={colorToCss(isActive ? edge.hoverColor : edge.color)}
                   strokeWidth={edge.thickness}
                   markerEnd={`url(#arrowhead-${edge.id})`}
                   fill="transparent"
@@ -892,8 +898,16 @@ const Whiteboard = ({
                   stroke="transparent"
                   strokeWidth={40}
                   fill="transparent"
-                  onMouseEnter={() => setHoveredEdgeId(edge.id)}
-                  onMouseLeave={() => setHoveredEdgeId(null)}
+                  onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => {
+                    setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredEdgeId(null), setCanvasState({ mode: CanvasMode.None });
+                  }}
+                  onClick={() => {
+                    setActiveEdgeId(edge.id);
+                    setCanvasState({ mode: CanvasMode.EdgeActive });
+                  }}
                   style={{ cursor: "pointer" }}
                 />
                 <marker
@@ -907,7 +921,7 @@ const Whiteboard = ({
                 >
                   <polygon
                     points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
-                    fill={colorToCss(isHovered ? edge.hoverColor : edge.color)}
+                    fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
                   />
                 </marker>
               </g>
@@ -917,7 +931,6 @@ const Whiteboard = ({
           <LayerHandles
             onMouseEnter={onHandleMouseEnter}
             onMouseLeave={onHandleMouseLeave}
-            // onHandleClick={handleHandleClick}
             onPointerDown={onHandleMouseDown}
             onPointerUp={onHandleMouseUp}
           />

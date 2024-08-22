@@ -1,0 +1,101 @@
+import { ArrowUpDown, Edit, Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
+import { memo, useCallback, useEffect, useState } from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+
+import { Camera, Color, Edge } from "@/_types";
+import { ToolButton } from "@/components/mindmap/toolButton";
+import { Button } from "@/components/ui/button";
+import {
+  activeEdgeIdAtom,
+  boardIdState,
+  edgesAtomState,
+  hoveredEdgeIdAtom,
+  useRemoveEdge,
+  useUpdateEdge,
+} from "@/state";
+
+import { ColorPicker } from "../colorPicker";
+
+interface EdgeSelectionToolsProps {
+  camera: Camera;
+  setLastUsedColor: (color: Color) => void;
+}
+
+export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelectionToolsProps) => {
+  const edges = useRecoilValue(edgesAtomState);
+  const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
+  const setHoveredEdgeId = useSetRecoilState(hoveredEdgeIdAtom);
+
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  const boardId = useRecoilValue(boardIdState);
+
+  const removeEdge = useRemoveEdge({ roomId: boardId });
+  const updateEdge = useUpdateEdge({ roomId: boardId });
+
+  const selectedEdge = edges.find((edge) => edge.id === activeEdgeId);
+
+  const handleColorChange = useCallback(
+    (color: Color) => {
+      setLastUsedColor(color);
+      if (selectedEdge) {
+        updateEdge(selectedEdge.id, { color });
+        setShowColorPicker(false);
+      }
+    },
+    [selectedEdge, setLastUsedColor, updateEdge],
+  );
+
+  const handleRemoveEdge = useCallback(() => {
+    if (selectedEdge) {
+      removeEdge(selectedEdge.id);
+      setHoveredEdgeId(null);
+    }
+  }, [selectedEdge, removeEdge, setHoveredEdgeId]);
+
+  if (!selectedEdge) return null;
+
+  const x = (selectedEdge.start.x + selectedEdge.end.x) / 2.5 + camera.x;
+  const y = (selectedEdge.start.y + selectedEdge.end.y) / 2.5 + camera.y;
+
+  return (
+    <>
+      {showColorPicker && (
+        <div
+          className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+          style={{
+            transform: `translate(${x - 50}px, ${y - 150}px)`,
+          }}
+        >
+          <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
+        </div>
+      )}
+      <div
+        className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+        style={{
+          transform: `translate(${x}px, ${y}px)`,
+        }}
+      >
+        <ul className="flex flex-row space-x-2 items-center justify-between">
+          <ToolButton
+            icon={PaintBucket}
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            isActive={showColorPicker}
+          />
+          <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+          <ToolButton icon={Minus} onClick={() => {}} />
+          <ToolButton icon={Ellipsis} onClick={() => {}} />
+          <Button variant="board" size="icon">
+            <div className="w-[20px] h-[5px] dark:bg-slate-200 bg-slate-950"></div>
+          </Button>
+          <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+          <Button variant="board" size="icon" onClick={handleRemoveEdge}>
+            <Trash2 />
+          </Button>
+        </ul>
+      </div>
+    </>
+  );
+});
+
+EdgeSelectionTools.displayName = "EdgeSelectionTools";

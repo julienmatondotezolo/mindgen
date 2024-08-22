@@ -100,6 +100,11 @@ export const edgesAtomState = atom<Edge[]>({
   default: [], // valeur par défaut (alias valeur initials)
 });
 
+export const activeEdgeIdAtom = atom<string | null>({
+  key: "activeEdgeIdAtom",
+  default: null,
+});
+
 export const hoveredEdgeIdAtom = atom<string | null>({
   key: "hoveredEdgeIdAtom",
   default: null,

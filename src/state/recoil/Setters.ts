@@ -4,10 +4,10 @@
 import { produce } from "immer";
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, useSetRecoilState } from "recoil";
 
-import { Layer, User } from "@/_types";
+import { Edge, Layer, User } from "@/_types";
 import { useSocket } from "@/hooks";
 
-import { activeLayersAtom, layerAtomState } from "./atoms";
+import { activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
 import { useAddToHistoryPrivate } from "./History";
 
 export const useSelectElement = ({ roomId }: { roomId: string }) => {
@@ -169,5 +169,85 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
         );
       },
     [addToHistory, roomId, socketEmit],
+  );
+};
+
+export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
+  const { socketEmit } = useSocket();
+
+  const addToHistory = useAddToHistoryPrivate();
+
+  return useRecoilCallback(
+    ({ set }) =>
+      (id: string, updatedElementEdge: any) => {
+        set(edgesAtomState, (currentEdges) =>
+          produce(
+            currentEdges,
+            (draft) => {
+              const index = draft.findIndex((layer) => layer.id === id);
+
+              if (index !== -1) {
+                Object.assign(draft[index], updatedElementEdge);
+              }
+
+              const mergedEdge = currentEdges.map((item: Edge) => {
+                if (item.id === id) {
+                  // Create a copy of the current item to avoid mutating the original object
+                  let updatedItem: any = { ...item };
+
+                  // Iterate over the keys of the updatedLayer object
+                  Object.keys(updatedElementEdge).forEach((key) => {
+                    // Dynamically add/update properties from updatedLayer to the updatedItem object
+                    updatedItem[key] = updatedElementEdge[key];
+                  });
+
+                  // Return the updated item with merged properties from updatedLayer
+                  return updatedItem;
+                } else {
+                  return item;
+                }
+              });
+
+              const updatedEdge = currentEdges.filter((item: Edge) => item.id == mergedEdge[0].id);
+
+              socketEmit("add-layer", { roomId, layer: mergedEdge });
+            },
+            // addToHistory,
+          ),
+        );
+      },
+    [roomId, socketEmit],
+  );
+};
+
+export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
+  const { socketEmit } = useSocket();
+
+  const addToHistory = useAddToHistoryPrivate();
+
+  const layers = useRecoilValue(edgesAtomState);
+
+  return useRecoilCallback(
+    ({ set }) =>
+      (id: string) => {
+        set(edgesAtomState, (currentEdges) =>
+          produce(
+            currentEdges,
+            (draft) => {
+              // Filter out the layer with the given ID
+              const index = draft.findIndex((edge) => edge.id === id);
+              const updatedEdges = currentEdges.filter((edge) => edge.id !== id);
+
+              if (index !== -1) {
+                // Remove the edge from the array in th atom state
+                draft.splice(index, 1);
+                // socketEmit("add-edge", { roomId, layer: [...currentEdges, updatedEdges] });
+              }
+            },
+            addToHistory,
+          ),
+        );
+      },
+    [addToHistory],
   );
 };
