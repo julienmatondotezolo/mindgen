@@ -327,53 +327,6 @@ const Whiteboard = ({
     [addLayer, drawingEdge, layers, setCanvasState, setEdges],
   );
 
-  const handleHandleClick = useCallback(
-    (layerId: String, position: HandlePosition) => {
-      const currentLayer = layers.find((layer) => layer.id === layerId);
-
-      if (!currentLayer) {
-        console.error("Layer not found");
-        return;
-      }
-
-      // Calculate the new position based on the clicked handle's position
-      let newLayerPosition: Point;
-
-      switch (position) {
-        case HandlePosition.Left:
-          newLayerPosition = { x: currentLayer.x - currentLayer.width - 100, y: currentLayer.y };
-          break;
-        case HandlePosition.Top:
-          newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - 100 };
-          break;
-        case HandlePosition.Right:
-          newLayerPosition = { x: currentLayer.x + currentLayer.width + 100, y: currentLayer.y };
-          break;
-        case HandlePosition.Bottom:
-          newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + 100 };
-          break;
-        default:
-          console.error("Invalid position");
-          return;
-      }
-
-      const newLayerId = nanoid();
-
-      const newLayer = {
-        id: newLayerId.toString(),
-        type: currentLayer.type,
-        x: newLayerPosition.x,
-        y: newLayerPosition.y,
-        width: currentLayer.width,
-        height: currentLayer.height,
-        fill: currentLayer.fill,
-      };
-
-      addLayer(newLayer);
-    },
-    [addLayer, layers],
-  );
-
   const translateSelectedLayer = useCallback(
     (point: Point) => {
       if (canvasState.mode !== CanvasMode.Translating) return;
@@ -515,31 +468,65 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.Edge) {
         const selectedLayerId = allActiveLayers[0].layerIds ? allActiveLayers[0].layerIds[0] : "";
-
         const selectedLayer = layers.find((layer) => layer.id === selectedLayerId);
+        const HANDLE_DISTANCE = 30;
 
-        // Create a new edge object
-        const newEdge: Edge = {
-          id: nanoid().toString(),
-          fromLayerId: selectedLayerId,
-          toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
-          color: { r: 255, g: 0, b: 0 }, // Placeholder, replace with actual color logic
-          thickness: 2,
-          start: {
-            x: point.x,
-            y: point.y,
-          },
-          end: {
-            x: point.x,
-            y: point.y,
-          },
-        };
+        if (selectedLayer) {
+          // Determine which handle was clicked based on the pointer position
+          let handlePosition: HandlePosition;
 
-        // Update edges state with the new edge
-        setEdges((prevEdges) => [...prevEdges, newEdge]);
+          if (point.x <= selectedLayer.x) {
+            handlePosition = HandlePosition.Left;
+          } else if (point.x >= selectedLayer.x + selectedLayer.width) {
+            handlePosition = HandlePosition.Right;
+          } else if (point.y <= selectedLayer.y) {
+            handlePosition = HandlePosition.Top;
+          } else {
+            handlePosition = HandlePosition.Bottom;
+          }
 
-        // Set drawingEdge state to indicate an edge drawing operation is ongoing
-        setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayerId });
+          // Calculate the start point based on the handle position
+          let startPoint: Point;
+
+          switch (handlePosition) {
+            case HandlePosition.Left:
+              startPoint = { x: selectedLayer.x - HANDLE_DISTANCE, y: selectedLayer.y + selectedLayer.height / 2 };
+              break;
+            case HandlePosition.Right:
+              startPoint = {
+                x: selectedLayer.x + selectedLayer.width + HANDLE_DISTANCE,
+                y: selectedLayer.y + selectedLayer.height / 2,
+              };
+              break;
+            case HandlePosition.Top:
+              startPoint = { x: selectedLayer.x + selectedLayer.width / 2, y: selectedLayer.y - HANDLE_DISTANCE };
+              break;
+            case HandlePosition.Bottom:
+              startPoint = {
+                x: selectedLayer.x + selectedLayer.width / 2,
+                y: selectedLayer.y + selectedLayer.height + HANDLE_DISTANCE,
+              };
+              break;
+          }
+
+          // Create a new edge object
+          const newEdge: Edge = {
+            id: nanoid().toString(),
+            fromLayerId: selectedLayerId,
+            toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
+            color: { r: 180, g: 191, b: 204 }, // Placeholder, replace with actual color logic
+            thickness: 2,
+            start: startPoint,
+            end: point,
+            orientation: "auto",
+          };
+
+          // Update edges state with the new edge
+          setEdges((prevEdges) => [...prevEdges, newEdge]);
+
+          // Set drawingEdge state to indicate an edge drawing operation is ongoing
+          setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayerId });
+        }
 
         return;
       }

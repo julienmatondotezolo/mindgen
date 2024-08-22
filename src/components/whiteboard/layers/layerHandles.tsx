@@ -42,6 +42,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   return (
     <>
+      {/* TOP */}
       <rect
         className="fill-white stroke-1 stroke-blue-500"
         x={0}
@@ -58,6 +59,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         onPointerDown={(e) => onPointerDown(e, soleLayerId)}
         onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Top)}
       />
+      {/* RIGHT */}
       <rect
         className="fill-white stroke-1 stroke-blue-500"
         x={0}
@@ -76,6 +78,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         onPointerDown={(e) => onPointerDown(e, soleLayerId)}
         onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Right)}
       />
+      {/* BOTTOM */}
       <rect
         className="fill-white stroke-1 stroke-blue-500"
         x={0}
@@ -94,6 +97,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         onPointerDown={(e) => onPointerDown(e, soleLayerId)}
         onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Bottom)}
       />
+      {/* LEFT */}
       <rect
         className="fill-white stroke-1 stroke-blue-500"
         x={0}
