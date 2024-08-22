@@ -36,6 +36,7 @@ export type Edge = {
   start: Point;
   end: Point;
   color: Color;
+  hoverColor: Color;
   thickness: number;
   orientation: EdgeOrientation;
 };

@@ -24,6 +24,7 @@ import {
   activeLayersAtom,
   canvasStateAtom,
   edgesAtomState,
+  hoveredEdgeIdAtom,
   layerAtomState,
   useAddElement,
   useRemoveElement,
@@ -86,6 +87,8 @@ const Whiteboard = ({
   // ================  EDGES  ================== //
 
   const [edges, setEdges] = useRecoilState(edgesAtomState);
+  const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
+
   const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
     ongoing: false,
   });
@@ -444,7 +447,7 @@ const Whiteboard = ({
     unSelectLayer({ userId: currentUserId });
   }, [currentUserId, unSelectLayer]);
 
-  // ================  EDGES  ================== //
+  // ================  DRAWING EDGES  ================== //
 
   const drawEdgeline = useCallback(
     (point: Point) => {
@@ -520,6 +523,11 @@ const Whiteboard = ({
             start: startPoint,
             end: point,
             orientation: "auto",
+            hoverColor: {
+              r: 77,
+              g: 106,
+              b: 255,
+            },
           };
 
           // Update edges state with the new edge
@@ -865,36 +873,44 @@ const Whiteboard = ({
               selectionColor={layerIdsToColorSelection[layer.id]}
             />
           ))}
-          <defs>
-            {edges.map((edge) => (
-              <marker
-                key={`arrow-${edge.id}`}
-                id={`arrowhead-${edge.id}`}
-                markerWidth={ARROW_SIZE}
-                markerHeight={ARROW_SIZE}
-                refX={ARROW_SIZE / 4}
-                refY={ARROW_SIZE / 2}
-                orient={edge.orientation}
-              >
-                <polygon
-                  points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
-                  fill={colorToCss(edge.color)}
-                />
-              </marker>
-            ))}
-          </defs>
           {edges.map((edge) => {
             const [controlPoint1, controlPoint2] = calculateControlPoints(edge.start, edge.end, edge.handleStart);
+            const isHovered = edge.id === hoveredEdgeId;
+            const pathString = `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`;
 
             return (
-              <path
-                key={edge.id}
-                d={`M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`}
-                stroke={colorToCss(edge.color)}
-                strokeWidth={edge.thickness}
-                markerEnd={`url(#arrowhead-${edge.id})`}
-                fill="transparent"
-              />
+              <g key={edge.id}>
+                <path
+                  d={pathString}
+                  stroke={colorToCss(isHovered ? edge.hoverColor : edge.color)}
+                  strokeWidth={edge.thickness}
+                  markerEnd={`url(#arrowhead-${edge.id})`}
+                  fill="transparent"
+                />
+                <path
+                  d={pathString}
+                  stroke="transparent"
+                  strokeWidth={40}
+                  fill="transparent"
+                  onMouseEnter={() => setHoveredEdgeId(edge.id)}
+                  onMouseLeave={() => setHoveredEdgeId(null)}
+                  style={{ cursor: "pointer" }}
+                />
+                <marker
+                  key={`arrow-${edge.id}`}
+                  id={`arrowhead-${edge.id}`}
+                  markerWidth={ARROW_SIZE}
+                  markerHeight={ARROW_SIZE}
+                  refX={ARROW_SIZE / 4}
+                  refY={ARROW_SIZE / 2}
+                  orient={edge.orientation}
+                >
+                  <polygon
+                    points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
+                    fill={colorToCss(isHovered ? edge.hoverColor : edge.color)}
+                  />
+                </marker>
+              </g>
             );
           })}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
