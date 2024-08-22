@@ -27,6 +27,11 @@ export enum HandlePosition {
 
 export type EdgeOrientation = "auto" | "0" | "90" | "-180" | "180" | "270";
 
+export enum EdgeType {
+  Solid,
+  Dashed,
+}
+
 export type Edge = {
   id: string;
   handleStart?: HandlePosition;
@@ -39,6 +44,7 @@ export type Edge = {
   hoverColor: Color;
   thickness: number;
   orientation: EdgeOrientation;
+  type: EdgeType;
 };
 
 export type RectangleLayer = {

@@ -11,6 +11,7 @@ import {
   CanvasState,
   Color,
   Edge,
+  EdgeType,
   HandlePosition,
   LayerType,
   MindMapDetailsProps,
@@ -532,6 +533,7 @@ const Whiteboard = ({
               g: 106,
               b: 255,
             },
+            type: EdgeType.Solid,
           };
 
           // Update edges state with the new edge
@@ -890,9 +892,14 @@ const Whiteboard = ({
                   d={pathString}
                   stroke={colorToCss(isActive ? edge.hoverColor : edge.color)}
                   strokeWidth={edge.thickness}
+                  strokeDasharray={edge.type === EdgeType.Dashed ? "5,5" : "none"}
                   markerEnd={`url(#arrowhead-${edge.id})`}
                   fill="transparent"
-                />
+                >
+                  {edge.type === EdgeType.Dashed && (
+                    <animate attributeName="stroke-dashoffset" values="10;0" dur="0.5s" repeatCount="indefinite" />
+                  )}
+                </path>
                 <path
                   d={pathString}
                   stroke="transparent"

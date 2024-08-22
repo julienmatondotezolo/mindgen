@@ -1,8 +1,8 @@
-import { ArrowUpDown, Edit, Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
+import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { Camera, Color, Edge } from "@/_types";
+import { Camera, Color, EdgeType } from "@/_types";
 import { ToolButton } from "@/components/mindmap/toolButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,7 @@ import { ColorPicker } from "../colorPicker";
 
 interface EdgeSelectionToolsProps {
   camera: Camera;
+  // eslint-disable-next-line no-unused-vars
   setLastUsedColor: (color: Color) => void;
 }
 
@@ -53,6 +54,21 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
     }
   }, [selectedEdge, removeEdge, setHoveredEdgeId]);
 
+  const handleChangeStrokeWidth = useCallback(
+    (number: number) => {
+      if (selectedEdge) {
+        updateEdge(selectedEdge.id, { thickness: number });
+      }
+    },
+    [selectedEdge, updateEdge],
+  );
+
+  const handleChangeToDashedLine = useCallback(() => {
+    if (selectedEdge) {
+      updateEdge(selectedEdge.id, { type: EdgeType.Dashed });
+    }
+  }, [selectedEdge, updateEdge]);
+
   if (!selectedEdge) return null;
 
   const x = (selectedEdge.start.x + selectedEdge.end.x) / 2.5 + camera.x;
@@ -83,9 +99,17 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
             isActive={showColorPicker}
           />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton icon={Minus} onClick={() => {}} />
-          <ToolButton icon={Ellipsis} onClick={() => {}} />
-          <Button variant="board" size="icon">
+          <ToolButton icon={Minus} onClick={() => handleChangeStrokeWidth(2)} isActive={selectedEdge.thickness === 2} />
+          <ToolButton
+            icon={Ellipsis}
+            onClick={handleChangeToDashedLine}
+            isActive={selectedEdge.type === EdgeType.Dashed}
+          />
+          <Button
+            variant={selectedEdge.thickness === 4 ? "boardActive" : "board"}
+            size="icon"
+            onClick={() => handleChangeStrokeWidth(4)}
+          >
             <div className="w-[20px] h-[5px] dark:bg-slate-200 bg-slate-950"></div>
           </Button>
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
