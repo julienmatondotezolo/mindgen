@@ -236,6 +236,7 @@ const Whiteboard = ({
     (layerId: String, position: HandlePosition) => {
       const currentLayer = layers.find((layer) => layer.id === layerId);
       const LAYER_SPACING = 150; // Adjust this value to control the space between layers
+      const HANDLE_DISTANCE = 20;
 
       if (!currentLayer) {
         console.error("Layer not found");
@@ -250,7 +251,7 @@ const Whiteboard = ({
         case HandlePosition.Left:
           newLayerPosition = { x: currentLayer.x - currentLayer.width - LAYER_SPACING, y: currentLayer.y };
           newEdgePosition = {
-            x: currentLayer.x - currentLayer.width / 2,
+            x: currentLayer.x - currentLayer.width / 2 - HANDLE_DISTANCE,
             y: currentLayer.y + currentLayer.height / 2,
           };
           break;
@@ -258,13 +259,13 @@ const Whiteboard = ({
           newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
           newEdgePosition = {
             x: currentLayer.x + currentLayer.width / 2,
-            y: currentLayer.y - currentLayer.height,
+            y: currentLayer.y - currentLayer.height - HANDLE_DISTANCE,
           };
           break;
         case HandlePosition.Right:
           newLayerPosition = { x: currentLayer.x + currentLayer.width + LAYER_SPACING, y: currentLayer.y };
           newEdgePosition = {
-            x: currentLayer.x + currentLayer.width * 1.5,
+            x: currentLayer.x + currentLayer.width * 1.5 + HANDLE_DISTANCE,
             y: currentLayer.y + currentLayer.height / 2,
           };
           break;
@@ -272,7 +273,7 @@ const Whiteboard = ({
           newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
           newEdgePosition = {
             x: currentLayer.x + currentLayer.width / 2,
-            y: currentLayer.y + currentLayer.height * 2,
+            y: currentLayer.y + currentLayer.height * 2 + HANDLE_DISTANCE,
           };
           break;
         default:
