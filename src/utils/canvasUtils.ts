@@ -187,6 +187,23 @@ export const calculateControlPoints = (start: Point, end: Point, fromPosition: H
   return [controlPoint1, controlPoint2];
 };
 
+export const calculateBezierPoint = (t: number, p0: Point, p1: Point, p2: Point, p3: Point): Point => {
+  const oneMinusT = 1 - t;
+
+  return {
+    x:
+      Math.pow(oneMinusT, 3) * p0.x +
+      3 * Math.pow(oneMinusT, 2) * t * p1.x +
+      3 * oneMinusT * Math.pow(t, 2) * p2.x +
+      Math.pow(t, 3) * p3.x,
+    y:
+      Math.pow(oneMinusT, 3) * p0.y +
+      3 * Math.pow(oneMinusT, 2) * t * p1.y +
+      3 * oneMinusT * Math.pow(t, 2) * p2.y +
+      Math.pow(t, 3) * p3.y,
+  };
+};
+
 export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
   if (points.length < 2) {
     throw new Error("Cannot transform points with less than 2 points");

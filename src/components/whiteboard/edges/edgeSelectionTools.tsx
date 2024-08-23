@@ -110,7 +110,11 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
             size="icon"
             onClick={() => handleChangeStrokeWidth(4)}
           >
-            <div className="w-[20px] h-[5px] dark:bg-slate-200 bg-slate-950"></div>
+            <div
+              className={`w-[20px] h-[5px] dark:bg-slate-200 ${
+                selectedEdge.thickness === 4 ? "bg-slate-200" : "bg-slate-950"
+              }`}
+            ></div>
           </Button>
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <Button variant="board" size="icon" onClick={handleRemoveEdge}>

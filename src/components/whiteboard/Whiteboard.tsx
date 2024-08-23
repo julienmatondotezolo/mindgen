@@ -48,7 +48,7 @@ import {
 
 import { Button } from "../ui";
 import { CursorPresence } from "./collaborate";
-import { EdgeSelectionTools } from "./edges";
+import { EdgeSelectionBox, EdgeSelectionTools } from "./edges";
 import { LayerPreview } from "./LayerPreview";
 import { LayerHandles, SelectionBox, SelectionTools } from "./layers";
 import { Toolbar } from "./Toolbar";
@@ -106,6 +106,59 @@ const Whiteboard = ({
       setEdges((prevEdges) => prevEdges.filter((edge) => edge.fromLayerId !== layerId && edge.toLayerId !== layerId));
     },
     [setEdges],
+  );
+
+  const handleEdgeHandlePointerDown = useCallback(
+    (position: "start" | "middle" | "end", point: Point) => {
+      setCanvasState({
+        mode: CanvasMode.EdgeEditing,
+        editingEdge: {
+          id: activeEdgeId!,
+          handlePosition: position,
+          startPoint: point,
+        },
+      });
+    },
+    [setCanvasState, activeEdgeId],
+  );
+
+  const updateEdgePosition = useCallback(
+    (point: Point) => {
+      if (canvasState.mode !== CanvasMode.EdgeEditing || !canvasState.editingEdge) return;
+
+      const { id, handlePosition, startPoint } = canvasState.editingEdge;
+      const edge = edges.find((e) => e.id === id);
+
+      if (!edge) return;
+
+      const dx = point.x - startPoint.x;
+      const dy = point.y - startPoint.y;
+
+      let updatedEdge: Edge;
+
+      switch (handlePosition) {
+        case "start":
+          updatedEdge = { ...edge, start: { x: edge.start.x + dx, y: edge.start.y + dy } };
+          break;
+        case "end":
+          updatedEdge = { ...edge, end: { x: edge.end.x + dx, y: edge.end.y + dy } };
+          break;
+        case "middle":
+          updatedEdge = {
+            ...edge,
+            start: { x: edge.start.x + dx, y: edge.start.y + dy },
+            end: { x: edge.end.x + dx, y: edge.end.y + dy },
+          };
+          break;
+      }
+
+      setEdges(edges.map((e) => (e.id === id ? updatedEdge : e)));
+      setCanvasState({
+        ...canvasState,
+        editingEdge: { ...canvasState.editingEdge, startPoint: point },
+      });
+    },
+    [canvasState, edges, setEdges, setCanvasState],
   );
 
   // ================  LAYERS  ================== //
@@ -572,6 +625,8 @@ const Whiteboard = ({
         resizeSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Edge) {
         drawEdgeline(current);
+      } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+        updateEdgePosition(current);
       }
 
       socketEmit("cursor-move", {
@@ -592,6 +647,7 @@ const Whiteboard = ({
       translateSelectedLayer,
       resizeSelectedLayer,
       drawEdgeline,
+      updateEdgePosition,
     ],
   );
 
@@ -612,6 +668,10 @@ const Whiteboard = ({
       } else if (canvasState.mode === CanvasMode.Edge) {
         setCanvasState({
           mode: CanvasMode.Edge,
+        });
+      } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+        setCanvasState({
+          mode: CanvasMode.None,
         });
       } else if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
@@ -942,6 +1002,12 @@ const Whiteboard = ({
               </g>
             );
           })}
+          {activeEdgeId && (
+            <EdgeSelectionBox
+              edge={edges.find((edge) => edge.id === activeEdgeId)!}
+              onHandlePointerDown={handleEdgeHandlePointerDown}
+            />
+          )}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
           <LayerHandles
             onMouseEnter={onHandleMouseEnter}
