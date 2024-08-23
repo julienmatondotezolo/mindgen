@@ -509,7 +509,7 @@ const Whiteboard = ({
         case "start":
           updatedEdge = {
             ...edge,
-            start: nearestHandle ? nearestHandle : point,
+            start: nearestHandle ? { x: nearestHandle.x, y: nearestHandle.y } : point,
             fromLayerId: nearestHandle ? nearestHandle.layerId : undefined,
             handleStart: nearestHandle ? nearestHandle.position : edge.handleStart,
           };
@@ -517,7 +517,7 @@ const Whiteboard = ({
         case "end":
           updatedEdge = {
             ...edge,
-            end: nearestHandle ? nearestHandle : point,
+            end: nearestHandle ? { x: nearestHandle.x, y: nearestHandle.y } : point,
             toLayerId: nearestHandle ? nearestHandle.layerId : undefined,
             handleEnd: nearestHandle ? nearestHandle.position : edge.handleEnd,
             orientation: nearestHandle ? getOrientationFromPosition(nearestHandle.position, true) : edge.orientation,

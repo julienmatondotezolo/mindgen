@@ -126,7 +126,6 @@ export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b
 }
 
 export function findNearestLayerHandle(point: Point, layers: Layer[], threshold: number) {
-  const HANDLE_WIDTH = 20;
   const HANDLE_DISTANCE = 30;
 
   let nearestHandle: { x: number; y: number; layerId: string; position: HandlePosition } | null = null;
@@ -142,23 +141,23 @@ export function findNearestLayerHandle(point: Point, layers: Layer[], threshold:
 
     const handlePositions = [
       {
-        x: bounds.x + bounds.width / 2,
-        y: bounds.y - HANDLE_WIDTH / 2 - HANDLE_DISTANCE,
+        x: layer.x + layer.width / 2,
+        y: layer.y - HANDLE_DISTANCE,
         position: HandlePosition.Top,
       },
       {
-        x: bounds.x - HANDLE_WIDTH / 2 + bounds.width + HANDLE_DISTANCE,
+        x: bounds.x + bounds.width + HANDLE_DISTANCE,
         y: bounds.y + bounds.height / 2,
         position: HandlePosition.Right,
       },
       {
         x: bounds.x + bounds.width / 2,
-        y: bounds.y + bounds.height - HANDLE_WIDTH / 2 + HANDLE_DISTANCE,
+        y: bounds.y + bounds.height + HANDLE_DISTANCE,
         position: HandlePosition.Bottom,
       },
       {
-        x: bounds.x - HANDLE_WIDTH / 2 - HANDLE_DISTANCE,
-        y: bounds.y + bounds.height / 2,
+        x: layer.x - HANDLE_DISTANCE,
+        y: layer.y + layer.height / 2,
         position: HandlePosition.Left,
       },
     ];
@@ -168,7 +167,12 @@ export function findNearestLayerHandle(point: Point, layers: Layer[], threshold:
 
       if (distance < minDistance && distance <= threshold) {
         minDistance = distance;
-        nearestHandle = { x: handle.x, y: handle.y, layerId: layer.id, position: handle.position };
+        nearestHandle = {
+          x: handle.x,
+          y: handle.y,
+          layerId: layer.id,
+          position: handle.position,
+        };
       }
     }
   }
