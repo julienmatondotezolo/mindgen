@@ -40,6 +40,7 @@ import {
   colorToCss,
   connectionIdToColor,
   findIntersectingLayersWithRectangle,
+  findNearestLayerHandle,
   findNonOverlappingPosition,
   getOrientationFromPosition,
   pointerEventToCanvasPoint,
@@ -488,12 +489,26 @@ const Whiteboard = ({
 
       let updatedEdge: Edge;
 
+      const snapThreshold = 30; // Adjust this value to change the snapping sensitivity
+      const nearestHandle = findNearestLayerHandle(point, layers, snapThreshold);
+
       switch (handlePosition) {
         case "start":
-          updatedEdge = { ...edge, start: { x: edge.start.x + dx, y: edge.start.y + dy } };
+          updatedEdge = {
+            ...edge,
+            start: nearestHandle ? nearestHandle : { x: edge.start.x + dx, y: edge.start.y + dy },
+            fromLayerId: nearestHandle ? nearestHandle.layerId : edge.fromLayerId,
+            handleStart: nearestHandle ? nearestHandle.position : edge.handleStart,
+          };
           break;
         case "end":
-          updatedEdge = { ...edge, end: { x: edge.end.x + dx, y: edge.end.y + dy } };
+          updatedEdge = {
+            ...edge,
+            end: nearestHandle ? nearestHandle : { x: edge.end.x + dx, y: edge.end.y + dy },
+            toLayerId: nearestHandle ? nearestHandle.layerId : edge.toLayerId,
+            handleEnd: nearestHandle ? nearestHandle.position : edge.handleEnd,
+            orientation: nearestHandle ? getOrientationFromPosition(nearestHandle.position, true) : edge.orientation,
+          };
           break;
         case "middle": {
           // If control points don't exist, initialize them
@@ -1033,7 +1048,8 @@ const Whiteboard = ({
                       canvasState.mode === CanvasMode.Grab ||
                       canvasState.mode === CanvasMode.SelectionNet ||
                       canvasState.mode === CanvasMode.EdgeEditing ||
-                      canvasState.mode === CanvasMode.Translating
+                      canvasState.mode === CanvasMode.Translating ||
+                      canvasState.mode === CanvasMode.Inserting
                     )
                       return;
                     setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
@@ -1044,6 +1060,7 @@ const Whiteboard = ({
                       canvasState.mode === CanvasMode.SelectionNet ||
                       canvasState.mode === CanvasMode.EdgeEditing ||
                       canvasState.mode === CanvasMode.Translating ||
+                      canvasState.mode === CanvasMode.Inserting ||
                       activeEdgeId
                     )
                       return;

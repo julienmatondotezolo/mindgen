@@ -125,22 +125,73 @@ export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b
   return ids;
 }
 
+export function findNearestLayerHandle(point: Point, layers: Layer[], threshold: number) {
+  const HANDLE_WIDTH = 20;
+  const HANDLE_DISTANCE = 30;
+
+  let nearestHandle: { x: number; y: number; layerId: string; position: HandlePosition } | null = null;
+  let minDistance = Infinity;
+
+  for (const layer of layers) {
+    const bounds = {
+      x: layer.x,
+      y: layer.y,
+      width: layer.width,
+      height: layer.height,
+    };
+
+    const handlePositions = [
+      {
+        x: bounds.x + bounds.width / 2,
+        y: bounds.y - HANDLE_WIDTH / 2 - HANDLE_DISTANCE,
+        position: HandlePosition.Top,
+      },
+      {
+        x: bounds.x - HANDLE_WIDTH / 2 + bounds.width + HANDLE_DISTANCE,
+        y: bounds.y + bounds.height / 2,
+        position: HandlePosition.Right,
+      },
+      {
+        x: bounds.x + bounds.width / 2,
+        y: bounds.y + bounds.height - HANDLE_WIDTH / 2 + HANDLE_DISTANCE,
+        position: HandlePosition.Bottom,
+      },
+      {
+        x: bounds.x - HANDLE_WIDTH / 2 - HANDLE_DISTANCE,
+        y: bounds.y + bounds.height / 2,
+        position: HandlePosition.Left,
+      },
+    ];
+
+    for (const handle of handlePositions) {
+      const distance = Math.sqrt(Math.pow(point.x - handle.x, 2) + Math.pow(point.y - handle.y, 2));
+
+      if (distance < minDistance && distance <= threshold) {
+        minDistance = distance;
+        nearestHandle = { x: handle.x, y: handle.y, layerId: layer.id, position: handle.position };
+      }
+    }
+  }
+
+  return nearestHandle;
+}
+
 export function getContrastingTextColor(color: Color) {
   const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
 
   return luminance > 182 ? "black" : "white";
 }
 
-export const getOrientationFromPosition = (position: HandlePosition): EdgeOrientation => {
+export const getOrientationFromPosition = (position: HandlePosition, inversed?: boolean): EdgeOrientation => {
   switch (position) {
     case HandlePosition.Left:
-      return "180";
+      return inversed ? "0" : "180";
     case HandlePosition.Right:
-      return "0";
+      return inversed ? "180" : "0";
     case HandlePosition.Top:
-      return "270";
+      return inversed ? "90" : "270";
     case HandlePosition.Bottom:
-      return "90";
+      return inversed ? "270" : "90";
     default:
       return "auto";
   }
