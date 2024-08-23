@@ -60,6 +60,8 @@ const Whiteboard = ({
   userMindmapDetails: MindMapDetailsProps | undefined;
   boardId: string;
 }) => {
+  const DEBUG_MODE = true;
+
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
 
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -601,6 +603,12 @@ const Whiteboard = ({
         return;
       }
 
+      if (canvasState.mode === CanvasMode.EdgeActive) {
+        setCanvasState({
+          mode: CanvasMode.EdgeActive,
+        });
+      }
+
       setCanvasState({
         origin: point,
         mode: CanvasMode.Pressing,
@@ -668,6 +676,10 @@ const Whiteboard = ({
       } else if (canvasState.mode === CanvasMode.Edge) {
         setCanvasState({
           mode: CanvasMode.Edge,
+        });
+      } else if (canvasState.mode === CanvasMode.EdgeActive) {
+        setCanvasState({
+          mode: CanvasMode.EdgeActive,
         });
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
         setCanvasState({
@@ -897,6 +909,15 @@ const Whiteboard = ({
 
   return (
     <main className="h-full w-full relative  touch-none select-none">
+      {DEBUG_MODE && (
+        <div className="fixed bottom-4 right-4 z-[9999] bg-white border border-gray-300 p-2 rounded shadow-md">
+          <h3 className="font-bold mb-1">Canvas State:</h3>
+          <p className="text-sm mb-1">
+            <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
+          </p>
+          <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(canvasState, null, 2)}</pre>
+        </div>
+      )}
       <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
       {layers?.length > 0 && (
         <div className="fixed bottom-4 left-4 z-10 space-x-2">
@@ -974,9 +995,11 @@ const Whiteboard = ({
                   strokeWidth={40}
                   fill="transparent"
                   onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => {
+                    if (canvasState.mode === CanvasMode.Grab || canvasState.mode === CanvasMode.SelectionNet) return;
                     setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
                   }}
                   onMouseLeave={() => {
+                    if (canvasState.mode === CanvasMode.Grab) return;
                     setHoveredEdgeId(null), setCanvasState({ mode: CanvasMode.None });
                   }}
                   onClick={() => {
@@ -1005,7 +1028,7 @@ const Whiteboard = ({
           {activeEdgeId && (
             <EdgeSelectionBox
               edge={edges.find((edge) => edge.id === activeEdgeId)!}
-              onHandlePointerDown={handleEdgeHandlePointerDown}
+              onHandlePointerDown={() => handleEdgeHandlePointerDown}
             />
           )}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />

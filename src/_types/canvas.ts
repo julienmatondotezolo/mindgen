@@ -130,6 +130,7 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.EdgeActive;
+      origin?: Point;
     }
   | {
       mode: CanvasMode.Edge;
