@@ -27,7 +27,9 @@ import {
   canvasStateAtom,
   edgesAtomState,
   hoveredEdgeIdAtom,
+  isEdgeNearLayerAtom,
   layerAtomState,
+  nearestLayerAtom,
   useAddEdgeElement,
   useAddElement,
   useRemoveElement,
@@ -131,6 +133,9 @@ const Whiteboard = ({
   const addEdge = useAddEdgeElement({ roomId: boardId });
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+
+  const setIsEdgeNearLayer = useSetRecoilState(isEdgeNearLayerAtom);
+  const setNearestLayer = useSetRecoilState(nearestLayerAtom);
 
   const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
     ongoing: false,
@@ -489,8 +494,14 @@ const Whiteboard = ({
 
       let updatedEdge: Edge;
 
-      const snapThreshold = 30; // Adjust this value to change the snapping sensitivity
+      const snapThreshold = 40; // Adjust this value to change the snapping sensitivity
       const nearestHandle = findNearestLayerHandle(point, layers, snapThreshold);
+
+      const layerThreshold = 80; // Adjust this value to change the snapping sensitivity
+      const nearestLayer = findNearestLayerHandle(point, layers, layerThreshold);
+
+      setIsEdgeNearLayer(!!nearestLayer);
+      setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
 
       switch (handlePosition) {
         case "start":
@@ -537,7 +548,7 @@ const Whiteboard = ({
         editingEdge: { ...canvasState.editingEdge, startPoint: point },
       });
     },
-    [canvasState, edges, setEdges, setCanvasState],
+    [canvasState, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
   );
 
   const handleEdgeClick = useCallback(
