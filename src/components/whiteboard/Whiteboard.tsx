@@ -28,6 +28,7 @@ import {
   edgesAtomState,
   hoveredEdgeIdAtom,
   layerAtomState,
+  useAddEdgeElement,
   useAddElement,
   useRemoveElement,
   useSelectElement,
@@ -90,6 +91,7 @@ const Whiteboard = ({
   // ================  EDGES  ================== //
 
   const [edges, setEdges] = useRecoilState(edgesAtomState);
+  const addEdge = useAddEdgeElement({ roomId: boardId });
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
 
@@ -537,7 +539,7 @@ const Whiteboard = ({
           };
 
           // Update edges state with the new edge
-          setEdges((prevEdges) => [...prevEdges, newEdge]);
+          addEdge(newEdge);
 
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayerId });
@@ -551,7 +553,7 @@ const Whiteboard = ({
         mode: CanvasMode.Pressing,
       });
     },
-    [allActiveLayers, camera, canvasState, layers, setCanvasState, setEdges],
+    [addEdge, allActiveLayers, camera, canvasState, layers, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
@@ -900,6 +902,12 @@ const Whiteboard = ({
                     <animate attributeName="stroke-dashoffset" values="10;0" dur="0.5s" repeatCount="indefinite" />
                   )}
                 </path>
+                <circle
+                  cx={edge.start.x}
+                  cy={edge.start.y}
+                  r={3} // Adjust the radius as needed
+                  fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
+                />
                 <path
                   d={pathString}
                   stroke="transparent"

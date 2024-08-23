@@ -7,7 +7,7 @@ import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, useSetRecoil
 import { Edge, Layer, User } from "@/_types";
 import { useSocket } from "@/hooks";
 
-import { activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
+import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
 import { useAddToHistoryPrivate } from "./History";
 
 export const useSelectElement = ({ roomId }: { roomId: string }) => {
@@ -169,6 +169,35 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
         );
       },
     [addToHistory, roomId, socketEmit],
+  );
+};
+
+/* ----------------- EDGES ----------------- */
+
+export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
+  const { socketEmit } = useSocket();
+
+  const addToHistory = useAddToHistoryPrivate();
+  const setActiveLayers = useSetRecoilState(activeEdgeIdAtom);
+
+  return useRecoilCallback(
+    ({ set }) =>
+      (edge: Edge) => {
+        set(edgesAtomState, (currentEdges) =>
+          produce(
+            currentEdges,
+            (draft) => {
+              // Assuming currentLayers is an array, we push the new layer to it
+              draft.push(edge);
+              socketEmit("add-edge", { roomId, edge: [...currentEdges, edge] });
+            },
+            addToHistory,
+          ),
+        );
+
+        setActiveLayers(edge.id);
+      },
+    [],
   );
 };
 
