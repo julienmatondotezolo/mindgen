@@ -90,80 +90,7 @@ const Whiteboard = ({
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
-  // ================  EDGES  ================== //
-
-  const [edges, setEdges] = useRecoilState(edgesAtomState);
-  const addEdge = useAddEdgeElement({ roomId: boardId });
-  const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
-  const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
-
-  const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
-    ongoing: false,
-  });
-
-  const ARROW_SIZE = 5;
-
-  const removeEdgesConnectedToLayer = useCallback(
-    (layerId: string) => {
-      setEdges((prevEdges) => prevEdges.filter((edge) => edge.fromLayerId !== layerId && edge.toLayerId !== layerId));
-    },
-    [setEdges],
-  );
-
-  const handleEdgeHandlePointerDown = useCallback(
-    (position: "start" | "middle" | "end", point: Point) => {
-      setCanvasState({
-        mode: CanvasMode.EdgeEditing,
-        editingEdge: {
-          id: activeEdgeId!,
-          handlePosition: position,
-          startPoint: point,
-        },
-      });
-    },
-    [setCanvasState, activeEdgeId],
-  );
-
-  const updateEdgePosition = useCallback(
-    (point: Point) => {
-      if (canvasState.mode !== CanvasMode.EdgeEditing || !canvasState.editingEdge) return;
-
-      const { id, handlePosition, startPoint } = canvasState.editingEdge;
-      const edge = edges.find((e) => e.id === id);
-
-      if (!edge) return;
-
-      const dx = point.x - startPoint.x;
-      const dy = point.y - startPoint.y;
-
-      let updatedEdge: Edge;
-
-      switch (handlePosition) {
-        case "start":
-          updatedEdge = { ...edge, start: { x: edge.start.x + dx, y: edge.start.y + dy } };
-          break;
-        case "end":
-          updatedEdge = { ...edge, end: { x: edge.end.x + dx, y: edge.end.y + dy } };
-          break;
-        case "middle":
-          updatedEdge = {
-            ...edge,
-            start: { x: edge.start.x + dx, y: edge.start.y + dy },
-            end: { x: edge.end.x + dx, y: edge.end.y + dy },
-          };
-          break;
-      }
-
-      setEdges(edges.map((e) => (e.id === id ? updatedEdge : e)));
-      setCanvasState({
-        ...canvasState,
-        editingEdge: { ...canvasState.editingEdge, startPoint: point },
-      });
-    },
-    [canvasState, edges, setEdges, setCanvasState],
-  );
-
-  // ================  LAYERS  ================== //
+  // ================  CONSTANT LAYERS  ================== //
 
   const layers = useRecoilValue(layerAtomState);
 
@@ -196,6 +123,21 @@ const Whiteboard = ({
   const addLayer = useAddElement({ roomId: boardId });
   const updateLayer = useUpdateElement({ roomId: boardId });
   const removeLayer = useRemoveElement({ roomId: boardId });
+
+  // ================  CONSTANT EDGES  ================== //
+
+  const [edges, setEdges] = useRecoilState(edgesAtomState);
+  const addEdge = useAddEdgeElement({ roomId: boardId });
+  const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
+  const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+
+  const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
+    ongoing: false,
+  });
+
+  const ARROW_SIZE = 5;
+
+  // ================  LAYERS  ================== //
 
   const insertLayer = useCallback(
     (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path, position: Point) => {
@@ -255,8 +197,8 @@ const Whiteboard = ({
         });
       } else if (!activeLayerIDs?.includes(layerId)) {
         // setActiveLayerIDs([layerId]);
-        setActiveEdgeId(null);
         selectLayer({ userId: currentUserId, layerIds: [layerId] });
+        setActiveEdgeId(null);
       }
 
       setCanvasState({
@@ -264,7 +206,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [canvasState.mode, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId, setActiveEdgeId],
+    [canvasState, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -509,6 +451,79 @@ const Whiteboard = ({
     unSelectLayer({ userId: currentUserId });
   }, [currentUserId, unSelectLayer]);
 
+  // ================  EDGES  ================== //
+
+  const removeEdgesConnectedToLayer = useCallback(
+    (layerId: string) => {
+      setEdges((prevEdges) => prevEdges.filter((edge) => edge.fromLayerId !== layerId && edge.toLayerId !== layerId));
+    },
+    [setEdges],
+  );
+
+  const handleEdgeHandlePointerDown = useCallback(
+    (position: "start" | "middle" | "end", point: Point) => {
+      setCanvasState({
+        mode: CanvasMode.EdgeEditing,
+        editingEdge: {
+          id: activeEdgeId!,
+          handlePosition: position,
+          startPoint: point,
+        },
+      });
+    },
+    [setCanvasState, activeEdgeId],
+  );
+
+  const updateEdgePosition = useCallback(
+    (point: Point) => {
+      if (canvasState.mode !== CanvasMode.EdgeEditing || !canvasState.editingEdge) return;
+
+      const { id, handlePosition, startPoint } = canvasState.editingEdge;
+      const edge = edges.find((e) => e.id === id);
+
+      if (!edge) return;
+
+      const dx = point.x - startPoint.x;
+      const dy = point.y - startPoint.y;
+
+      let updatedEdge: Edge;
+
+      switch (handlePosition) {
+        case "start":
+          updatedEdge = { ...edge, start: { x: edge.start.x + dx, y: edge.start.y + dy } };
+          break;
+        case "end":
+          updatedEdge = { ...edge, end: { x: edge.end.x + dx, y: edge.end.y + dy } };
+          break;
+        case "middle":
+          updatedEdge = {
+            ...edge,
+            start: { x: edge.start.x + dx, y: edge.start.y + dy },
+            end: { x: edge.end.x + dx, y: edge.end.y + dy },
+          };
+          break;
+      }
+
+      setEdges(edges.map((e) => (e.id === id ? updatedEdge : e)));
+      setCanvasState({
+        ...canvasState,
+        editingEdge: { ...canvasState.editingEdge, startPoint: point },
+      });
+    },
+    [canvasState, edges, setEdges, setCanvasState],
+  );
+
+  const handleEdgeClick = useCallback(
+    (edgeId: string) => {
+      setActiveEdgeId(edgeId);
+      handleUnSelectLayer();
+      setCanvasState({
+        mode: CanvasMode.EdgeActive,
+      });
+    },
+    [handleUnSelectLayer, setActiveEdgeId, setCanvasState],
+  );
+
   // ================  DRAWING EDGES  ================== //
 
   const drawEdgeline = useCallback(
@@ -530,9 +545,9 @@ const Whiteboard = ({
     (e: React.PointerEvent) => {
       const point = pointerEventToCanvasPoint(e, camera);
 
-      if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) return;
-
-      if (canvasState.mode === CanvasMode.Edge) {
+      if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) {
+        return;
+      } else if (canvasState.mode === CanvasMode.Edge) {
         const selectedLayerId = allActiveLayers[0].layerIds ? allActiveLayers[0].layerIds[0] : "";
         const selectedLayer = layers.find((layer) => layer.id === selectedLayerId);
         const HANDLE_DISTANCE = 30;
@@ -601,20 +616,14 @@ const Whiteboard = ({
         }
 
         return;
-      }
-
-      if (canvasState.mode === CanvasMode.EdgeActive) {
+      } else {
         setCanvasState({
-          mode: CanvasMode.EdgeActive,
+          origin: point,
+          mode: CanvasMode.Pressing,
         });
       }
-
-      setCanvasState({
-        origin: point,
-        mode: CanvasMode.Pressing,
-      });
     },
-    [addEdge, allActiveLayers, camera, canvasState, layers, setCanvasState],
+    [addEdge, allActiveLayers, camera, canvasState.mode, layers, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
@@ -665,7 +674,7 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
         handleUnSelectLayer();
-        setActiveEdgeId(null);
+        // setActiveEdgeId(null);
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -677,7 +686,7 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.Edge,
         });
-      } else if (canvasState.mode === CanvasMode.EdgeActive) {
+      } else if (canvasState.mode === CanvasMode.EdgeActive || activeEdgeId) {
         setCanvasState({
           mode: CanvasMode.EdgeActive,
         });
@@ -693,7 +702,7 @@ const Whiteboard = ({
         });
       }
     },
-    [camera, canvasState, insertLayer, handleUnSelectLayer, setCanvasState, setActiveEdgeId],
+    [camera, canvasState, activeEdgeId, handleUnSelectLayer, setCanvasState, insertLayer],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -916,6 +925,12 @@ const Whiteboard = ({
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
           </p>
           <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(canvasState, null, 2)}</pre>
+          <p className="text-sm mb-1">
+            <strong>Active Edge ID:</strong> {activeEdgeId || "None"}
+          </p>
+          <p className="text-sm mb-1">
+            <strong>Hovered Edge ID:</strong> {hoveredEdgeId || "None"}
+          </p>
         </div>
       )}
       <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
@@ -999,12 +1014,17 @@ const Whiteboard = ({
                     setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
                   }}
                   onMouseLeave={() => {
-                    if (canvasState.mode === CanvasMode.Grab) return;
+                    if (
+                      canvasState.mode === CanvasMode.Grab ||
+                      canvasState.mode === CanvasMode.SelectionNet ||
+                      activeEdgeId
+                    )
+                      return;
                     setHoveredEdgeId(null), setCanvasState({ mode: CanvasMode.None });
                   }}
-                  onClick={() => {
-                    setActiveEdgeId(edge.id);
-                    setCanvasState({ mode: CanvasMode.EdgeActive });
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    handleEdgeClick(edge.id);
                   }}
                   style={{ cursor: "pointer" }}
                 />
@@ -1028,7 +1048,7 @@ const Whiteboard = ({
           {activeEdgeId && (
             <EdgeSelectionBox
               edge={edges.find((edge) => edge.id === activeEdgeId)!}
-              onHandlePointerDown={() => handleEdgeHandlePointerDown}
+              onHandlePointerDown={handleEdgeHandlePointerDown}
             />
           )}
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
