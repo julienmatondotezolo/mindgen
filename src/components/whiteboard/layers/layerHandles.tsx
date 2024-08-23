@@ -6,7 +6,7 @@ import { useRecoilValue } from "recoil";
 
 import { HandlePosition, Point } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import { activeLayersAtom, hoveredLayerIdAtomState } from "@/state";
+import { activeLayersAtom, hoveredLayerIdAtomState, isEdgeNearLayerAtom, nearestLayerAtom } from "@/state";
 
 import { HandleButton } from "../HandleButton";
 
@@ -32,13 +32,18 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
 
-  const isShowingHandles = soleLayerId;
+  const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
+  const nearestLayer = useRecoilValue(nearestLayerAtom);
 
   const bounds = useSelectionBounds();
 
   if (!bounds) return null;
 
+  const isShowingHandles = soleLayerId || isEdgeNearLayer;
+
   if (!isShowingHandles) return null;
+
+  const handleLayerId = soleLayerId || (nearestLayer ? nearestLayer.id : null);
 
   return (
     <>
@@ -56,8 +61,8 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         }}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Top)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Top)}
       />
       {/* RIGHT */}
       <rect
@@ -75,8 +80,8 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         }}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Right)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Right)}
       />
       {/* BOTTOM */}
       <rect
@@ -94,8 +99,8 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         }}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Bottom)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Bottom)}
       />
       {/* LEFT */}
       <rect
@@ -113,8 +118,8 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         }}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, soleLayerId)}
-        onPointerUp={() => onPointerUp(soleLayerId, HandlePosition.Left)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Left)}
       />
     </>
   );

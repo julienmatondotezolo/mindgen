@@ -110,6 +110,16 @@ export const hoveredEdgeIdAtom = atom<string | null>({
   default: null,
 });
 
+export const isEdgeNearLayerAtom = atom<boolean>({
+  key: "isEdgeNearLayerAtom",
+  default: true,
+});
+
+export const nearestLayerAtom = atom<Layer | null>({
+  key: "nearestLayerAtom",
+  default: null,
+});
+
 // ================   PROMPT STATES  ================== //
 
 export const promptValueState = atom({
