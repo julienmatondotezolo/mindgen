@@ -616,6 +616,9 @@ const Whiteboard = ({
         }
 
         return;
+      } else if (canvasState.mode === CanvasMode.EdgeActive) {
+        setActiveEdgeId(null);
+        setHoveredEdgeId(null);
       } else {
         setCanvasState({
           origin: point,
@@ -623,7 +626,7 @@ const Whiteboard = ({
         });
       }
     },
-    [addEdge, allActiveLayers, camera, canvasState.mode, layers, setCanvasState],
+    [addEdge, allActiveLayers, camera, canvasState, layers, setActiveEdgeId, setHoveredEdgeId, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
@@ -969,6 +972,7 @@ const Whiteboard = ({
             transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
             transformOrigin: "center",
             transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
+            cursor: "pointer",
           }}
         >
           {layers?.map((layer) => (
