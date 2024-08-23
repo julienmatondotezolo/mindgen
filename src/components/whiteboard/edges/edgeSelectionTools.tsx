@@ -82,7 +82,7 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
   if (!selectedEdge) return null;
 
   const x = (selectedEdge.start.x + selectedEdge.end.x) / 2.5 + camera.x;
-  const y = (selectedEdge.start.y + selectedEdge.end.y) / 3 + camera.y;
+  const y = (selectedEdge.start.y + selectedEdge.end.y) / 4 + camera.y;
 
   return (
     <>
