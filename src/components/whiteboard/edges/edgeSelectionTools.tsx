@@ -63,9 +63,19 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
     [selectedEdge, updateEdge],
   );
 
-  const handleChangeToDashedLine = useCallback(() => {
+  const handleToggleEdgeType = useCallback(() => {
     if (selectedEdge) {
-      updateEdge(selectedEdge.id, { type: EdgeType.Dashed });
+      const newType = selectedEdge.type === EdgeType.Dashed ? EdgeType.Solid : EdgeType.Dashed;
+
+      updateEdge(selectedEdge.id, { type: newType });
+    }
+  }, [selectedEdge, updateEdge]);
+
+  const handleToggleThickness = useCallback(() => {
+    if (selectedEdge) {
+      const newThickness = selectedEdge.thickness === 2 ? 4 : 2;
+
+      updateEdge(selectedEdge.id, { thickness: newThickness });
     }
   }, [selectedEdge, updateEdge]);
 
@@ -100,15 +110,11 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
           />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <ToolButton icon={Minus} onClick={() => handleChangeStrokeWidth(2)} isActive={selectedEdge.thickness === 2} />
-          <ToolButton
-            icon={Ellipsis}
-            onClick={handleChangeToDashedLine}
-            isActive={selectedEdge.type === EdgeType.Dashed}
-          />
+          <ToolButton icon={Ellipsis} onClick={handleToggleEdgeType} isActive={selectedEdge.type === EdgeType.Dashed} />
           <Button
             variant={selectedEdge.thickness === 4 ? "boardActive" : "board"}
             size="icon"
-            onClick={() => handleChangeStrokeWidth(4)}
+            onClick={handleToggleThickness}
           >
             <div
               className={`w-[20px] h-[5px] dark:bg-slate-200 ${
