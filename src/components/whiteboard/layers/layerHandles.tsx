@@ -4,9 +4,15 @@ import { useSession } from "next-auth/react";
 import React, { memo } from "react";
 import { useRecoilValue } from "recoil";
 
-import { HandlePosition, Point } from "@/_types";
+import { CanvasMode, HandlePosition, Point } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import { activeLayersAtom, hoveredLayerIdAtomState, isEdgeNearLayerAtom, nearestLayerAtom } from "@/state";
+import {
+  activeLayersAtom,
+  canvasStateAtom,
+  hoveredLayerIdAtomState,
+  isEdgeNearLayerAtom,
+  nearestLayerAtom,
+} from "@/state";
 
 import { HandleButton } from "../HandleButton";
 
@@ -34,6 +40,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
   const nearestLayer = useRecoilValue(nearestLayerAtom);
+  const canvasState = useRecoilValue(canvasStateAtom);
 
   const bounds = useSelectionBounds();
 
@@ -45,16 +52,25 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   const handleLayerId = soleLayerId || (nearestLayer ? nearestLayer.id : null);
 
+  const isEdgeEditing = canvasState.mode === CanvasMode.EdgeEditing;
+
+  const handleStyle = {
+    cursor: "pointer",
+    width: `${HANDLE_WIDTH}px`,
+    height: `${HANDLE_WIDTH}px`,
+    fill: isEdgeEditing ? "#4d6aff" : "white",
+    fillOpacity: isEdgeEditing ? 0.3 : 1,
+  };
+
   return (
     <>
       {/* TOP */}
       <rect
-        className="fill-white stroke-1 stroke-blue-500"
+        className="stroke-1 stroke-blue-500"
         x={0}
         y={0}
         style={{
-          width: `${HANDLE_WIDTH}px`,
-          height: `${HANDLE_WIDTH}px`,
+          ...handleStyle,
           transform: `translate(
                 ${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, 
                    ${bounds.y - HANDLE_WIDTH / 2 - HANDLE_DISTANCE}px)`,
@@ -66,13 +82,11 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
       />
       {/* RIGHT */}
       <rect
-        className="fill-white stroke-1 stroke-blue-500"
+        className="stroke-1 stroke-blue-500"
         x={0}
         y={0}
         style={{
-          cursor: "pointer",
-          width: `${HANDLE_WIDTH}px`,
-          height: `${HANDLE_WIDTH}px`,
+          ...handleStyle,
           transform: `translate(
                     ${bounds.x - HANDLE_WIDTH / 2 + bounds.width + HANDLE_DISTANCE}px, 
                     ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px
@@ -85,13 +99,11 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
       />
       {/* BOTTOM */}
       <rect
-        className="fill-white stroke-1 stroke-blue-500"
+        className="stroke-1 stroke-blue-500"
         x={0}
         y={0}
         style={{
-          cursor: "pointer",
-          width: `${HANDLE_WIDTH}px`,
-          height: `${HANDLE_WIDTH}px`,
+          ...handleStyle,
           transform: `translate(
                     ${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, 
                     ${bounds.y + bounds.height - HANDLE_WIDTH / 2 + HANDLE_DISTANCE}px
@@ -104,13 +116,11 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
       />
       {/* LEFT */}
       <rect
-        className="fill-white stroke-1 stroke-blue-500"
+        className="stroke-1 stroke-blue-500"
         x={0}
         y={0}
         style={{
-          cursor: "pointer",
-          width: `${HANDLE_WIDTH}px`,
-          height: `${HANDLE_WIDTH}px`,
+          ...handleStyle,
           transform: `translate(
                     ${bounds.x - HANDLE_WIDTH / 2 - HANDLE_DISTANCE}px, 
                     ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px

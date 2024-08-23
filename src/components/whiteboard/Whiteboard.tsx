@@ -217,20 +217,22 @@ const Whiteboard = ({
 
   const onHandleMouseEnter = useCallback(
     (event: React.MouseEvent) => {
+      if (canvasState.mode === CanvasMode.EdgeEditing) return;
       setCanvasState({
         mode: CanvasMode.Edge,
       });
     },
-    [setCanvasState],
+    [canvasState.mode, setCanvasState],
   );
 
   const onHandleMouseLeave = useCallback(
     (event: React.MouseEvent) => {
+      if (canvasState.mode === CanvasMode.EdgeEditing) return;
       setCanvasState({
         mode: CanvasMode.None,
       });
     },
-    [setCanvasState],
+    [canvasState.mode, setCanvasState],
   );
 
   const onHandleMouseDown = useCallback(
@@ -507,7 +509,7 @@ const Whiteboard = ({
         case "start":
           updatedEdge = {
             ...edge,
-            start: nearestHandle ? nearestHandle : { x: edge.start.x + dx, y: edge.start.y + dy },
+            start: nearestHandle ? nearestHandle : point,
             fromLayerId: nearestHandle ? nearestHandle.layerId : edge.fromLayerId,
             handleStart: nearestHandle ? nearestHandle.position : edge.handleStart,
           };
@@ -515,7 +517,7 @@ const Whiteboard = ({
         case "end":
           updatedEdge = {
             ...edge,
-            end: nearestHandle ? nearestHandle : { x: edge.end.x + dx, y: edge.end.y + dy },
+            end: nearestHandle ? nearestHandle : point,
             toLayerId: nearestHandle ? nearestHandle.layerId : edge.toLayerId,
             handleEnd: nearestHandle ? nearestHandle.position : edge.handleEnd,
             orientation: nearestHandle ? getOrientationFromPosition(nearestHandle.position, true) : edge.orientation,
@@ -972,6 +974,10 @@ const Whiteboard = ({
           <p className="text-sm mb-1">
             <strong>Hovered Edge ID:</strong> {hoveredEdgeId || "None"}
           </p>
+          <div className="text-sm mb-1">
+            <strong>Active Layers:</strong>
+            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre>
+          </div>
         </div>
       )}
       <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
