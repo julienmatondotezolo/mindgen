@@ -495,13 +495,25 @@ const Whiteboard = ({
         case "end":
           updatedEdge = { ...edge, end: { x: edge.end.x + dx, y: edge.end.y + dy } };
           break;
-        case "middle":
+        case "middle": {
+          // If control points don't exist, initialize them
+          const controlPoint1 = edge.controlPoint1 || {
+            x: edge.start.x + (edge.end.x - edge.start.x) / 3,
+            y: edge.start.y + (edge.end.y - edge.start.y) / 3,
+          };
+          const controlPoint2 = edge.controlPoint2 || {
+            x: edge.start.x + (2 * (edge.end.x - edge.start.x)) / 3,
+            y: edge.start.y + (2 * (edge.end.y - edge.start.y)) / 3,
+          };
+
+          // Move both control points by the same amount as the middle handle
           updatedEdge = {
             ...edge,
-            start: { x: edge.start.x + dx, y: edge.start.y + dy },
-            end: { x: edge.end.x + dx, y: edge.end.y + dy },
+            controlPoint1: { x: controlPoint1.x + dx, y: controlPoint1.y + dy },
+            controlPoint2: { x: controlPoint2.x + dx, y: controlPoint2.y + dy },
           };
           break;
+        }
       }
 
       setEdges(edges.map((e) => (e.id === id ? updatedEdge : e)));
@@ -922,7 +934,7 @@ const Whiteboard = ({
   return (
     <main className="h-full w-full relative  touch-none select-none">
       {DEBUG_MODE && (
-        <div className="fixed bottom-4 right-4 z-[9999] bg-white border border-gray-300 p-2 rounded shadow-md">
+        <div className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-black border border-gray-300 p-2 rounded shadow-md dark:text-primary-color">
           <h3 className="font-bold mb-1">Canvas State:</h3>
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
@@ -984,7 +996,10 @@ const Whiteboard = ({
             />
           ))}
           {edges.map((edge) => {
-            const [controlPoint1, controlPoint2] = calculateControlPoints(edge.start, edge.end, edge.handleStart);
+            const [controlPoint1, controlPoint2] =
+              edge.controlPoint1 && edge.controlPoint2
+                ? [edge.controlPoint1, edge.controlPoint2]
+                : calculateControlPoints(edge.start, edge.end, edge.handleStart);
             const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId;
             const pathString = `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`;
 
@@ -1014,13 +1029,21 @@ const Whiteboard = ({
                   strokeWidth={40}
                   fill="transparent"
                   onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => {
-                    if (canvasState.mode === CanvasMode.Grab || canvasState.mode === CanvasMode.SelectionNet) return;
+                    if (
+                      canvasState.mode === CanvasMode.Grab ||
+                      canvasState.mode === CanvasMode.SelectionNet ||
+                      canvasState.mode === CanvasMode.EdgeEditing ||
+                      canvasState.mode === CanvasMode.Translating
+                    )
+                      return;
                     setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
                   }}
                   onMouseLeave={() => {
                     if (
                       canvasState.mode === CanvasMode.Grab ||
                       canvasState.mode === CanvasMode.SelectionNet ||
+                      canvasState.mode === CanvasMode.EdgeEditing ||
+                      canvasState.mode === CanvasMode.Translating ||
                       activeEdgeId
                     )
                       return;

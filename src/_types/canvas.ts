@@ -40,6 +40,8 @@ export type Edge = {
   toLayerId?: string;
   start: Point;
   end: Point;
+  controlPoint1?: Point;
+  controlPoint2?: Point;
   color: Color;
   hoverColor: Color;
   thickness: number;

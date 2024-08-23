@@ -22,7 +22,10 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
   //   y: (edge.start.y + edge.end.y) / 2,
   // };
 
-  const [controlPoint1, controlPoint2] = calculateControlPoints(edge.start, edge.end, edge.handleStart);
+  const [controlPoint1, controlPoint2] =
+    edge.controlPoint1 && edge.controlPoint2
+      ? [edge.controlPoint1, edge.controlPoint2]
+      : calculateControlPoints(edge.start, edge.end, edge.handleStart);
 
   // Calculate the middle point using the Bezier curve formula
   const middlePoint = calculateBezierPoint(0.5, edge.start, controlPoint1, controlPoint2, edge.end);
