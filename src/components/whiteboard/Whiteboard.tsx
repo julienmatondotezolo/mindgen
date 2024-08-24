@@ -35,6 +35,7 @@ import {
   useRemoveElement,
   useSelectElement,
   useUnSelectElement,
+  useUpdateEdge,
   useUpdateElement,
 } from "@/state";
 import {
@@ -131,6 +132,7 @@ const Whiteboard = ({
 
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const addEdge = useAddEdgeElement({ roomId: boardId });
+  const updateEdge = useUpdateEdge({ roomId: boardId });
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
 
@@ -322,19 +324,12 @@ const Whiteboard = ({
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
-        setEdges((prevEdges) =>
-          prevEdges.map((edge) =>
-            edge.id === drawingEdge.lastEdgeId
-              ? {
-                ...edge,
-                toLayerId: newLayer.id,
-                end: newEdgePosition,
-                handleStart: position,
-                orientation: getOrientationFromPosition(position),
-              }
-              : edge,
-          ),
-        );
+        updateEdge(drawingEdge.lastEdgeId, {
+          toLayerId: newLayer.id,
+          end: newEdgePosition,
+          handleStart: position,
+          orientation: getOrientationFromPosition(position),
+        });
       }
 
       setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
@@ -343,7 +338,7 @@ const Whiteboard = ({
         mode: CanvasMode.None,
       });
     },
-    [addLayer, canvasState.mode, drawingEdge, layers, setCanvasState, setEdges],
+    [addLayer, canvasState.mode, currentUserId, drawingEdge, layers, selectLayer, setCanvasState, updateEdge],
   );
 
   const translateSelectedLayer = useCallback(
@@ -507,6 +502,9 @@ const Whiteboard = ({
 
       setIsEdgeNearLayer(!nearestHandle);
       setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
+
+      // Set drawingEdge state to indicate an edge drawing operation is ongoing
+      setDrawingEdge({ ongoing: true, lastEdgeId: id, fromLayerId: edge.fromLayerId });
 
       let controlPoint1, controlPoint2;
 
@@ -751,11 +749,21 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.Edge,
         });
-      } else if (canvasState.mode === CanvasMode.EdgeActive || activeEdgeId) {
+      } else if (canvasState.mode === CanvasMode.EdgeActive) {
         setCanvasState({
           mode: CanvasMode.EdgeActive,
         });
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+          const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
+
+          if (lastUpdatedEdge) {
+            const { id, ...updatedProperties } = lastUpdatedEdge;
+
+            updateEdge(id, updatedProperties);
+          }
+        }
+        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
         setActiveEdgeId(null);
         setCanvasState({
           mode: CanvasMode.None,
@@ -768,7 +776,17 @@ const Whiteboard = ({
         });
       }
     },
-    [camera, canvasState, activeEdgeId, handleUnSelectLayer, setCanvasState, setActiveEdgeId, insertLayer],
+    [
+      camera,
+      canvasState,
+      handleUnSelectLayer,
+      setCanvasState,
+      drawingEdge,
+      setActiveEdgeId,
+      updateEdge,
+      insertLayer,
+      edges,
+    ],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -1052,11 +1070,19 @@ const Whiteboard = ({
           ))}
           {edges.map((edge) => {
             const [controlPoint1, controlPoint2] =
-              edge.controlPoint1 && edge.controlPoint2
-                ? [edge.controlPoint1, edge.controlPoint2]
-                : calculateControlPoints(edge.start, edge.end, edge.handleStart);
+              edge.start && edge.end
+                ? edge.controlPoint1 && edge.controlPoint2
+                  ? [edge.controlPoint1, edge.controlPoint2]
+                  : calculateControlPoints(edge.start, edge.end, edge.handleStart)
+                : [
+                  { x: 0, y: 0 },
+                  { x: 0, y: 0 },
+                ];
             const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId;
-            const pathString = `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`;
+            const pathString =
+              edge.start && edge.end
+                ? `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`
+                : "";
 
             return (
               <g key={edge.id}>
