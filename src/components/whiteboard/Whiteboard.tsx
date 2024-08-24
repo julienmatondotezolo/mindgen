@@ -218,7 +218,7 @@ const Whiteboard = ({
 
   const onHandleMouseEnter = useCallback(
     (event: React.MouseEvent) => {
-      if (canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.SelectionNet) return;
+      if (canvasState.mode === CanvasMode.EdgeDrawing || canvasState.mode === CanvasMode.SelectionNet) return;
       setCanvasState({
         mode: CanvasMode.Edge,
       });
@@ -229,7 +229,7 @@ const Whiteboard = ({
   const onHandleMouseLeave = useCallback(
     (event: React.MouseEvent) => {
       if (
-        canvasState.mode === CanvasMode.EdgeEditing ||
+        canvasState.mode === CanvasMode.EdgeDrawing ||
         canvasState.mode === CanvasMode.SelectionNet ||
         drawingEdge.ongoing
       )
@@ -483,7 +483,7 @@ const Whiteboard = ({
         },
       });
     },
-    [setCanvasState, drawingEdge, activeEdgeId],
+    [drawingEdge, setCanvasState, activeEdgeId],
   );
 
   const updateEdgePosition = useCallback(
@@ -575,7 +575,7 @@ const Whiteboard = ({
         editingEdge: { ...canvasState.editingEdge, startPoint: point },
       });
     },
-    [canvasState, drawingEdge, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
+    [canvasState, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
   );
 
   const handleEdgeClick = useCallback(
@@ -594,7 +594,6 @@ const Whiteboard = ({
   const drawEdgeline = useCallback(
     (point: Point) => {
       if (canvasState.mode !== CanvasMode.Edge && canvasState.mode == CanvasMode.EdgeActive) {
-        console.log("NOT THE GOOD MODE");
         {
           CanvasMode[canvasState.mode];
         }
@@ -606,24 +605,17 @@ const Whiteboard = ({
 
         if (!lastUpdatedEdge) return;
 
-        console.log("DRAWING....");
-
+        setActiveEdgeId(lastUpdatedEdge.id);
         setEdges((prevEdges) =>
           prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, end: point } : edge)),
         );
-        // setCanvasState({
-        //   mode: CanvasMode.EdgeEditing,
-        //   editingEdge: {
-        //     id: activeEdgeId!,
-        //     handlePosition: "end",
-        //     startPoint: lastUpdatedEdge?.start,
-        //   },
-        // });
+        setCanvasState({
+          mode: CanvasMode.EdgeDrawing,
+        });
       }
-
-      console.log("drawEdgeLine");
     },
-    [canvasState.mode, drawingEdge.ongoing, drawingEdge.lastEdgeId, setEdges, setCanvasState, activeEdgeId, edges],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [canvasState, drawingEdge, setEdges, setCanvasState, activeEdgeId, edges],
   );
 
   // ================  SVG POINTER EVENTS  ================== //
@@ -756,9 +748,9 @@ const Whiteboard = ({
         translateSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Resizing) {
         resizeSelectedLayer(current);
-      } else if (canvasState.mode === CanvasMode.Edge) {
+      } else if (canvasState.mode === CanvasMode.Edge || canvasState.mode == CanvasMode.EdgeDrawing) {
         drawEdgeline(current);
-      } else if (canvasState.mode === CanvasMode.EdgeEditing || !drawingEdge.ongoing) {
+      } else if (canvasState.mode === CanvasMode.EdgeEditing && !drawingEdge.ongoing) {
         updateEdgePosition(current);
       }
 
@@ -802,27 +794,11 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.Edge,
         });
-
-        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
-          const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
-
-          if (lastUpdatedEdge) {
-            const { id, ...updatedProperties } = lastUpdatedEdge;
-
-            updateEdge(id, updatedProperties);
-          }
-
-          setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
-          setActiveEdgeId(null);
-          setCanvasState({
-            mode: CanvasMode.None,
-          });
-        }
       } else if (canvasState.mode === CanvasMode.EdgeActive) {
         setCanvasState({
           mode: CanvasMode.EdgeActive,
         });
-      } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+      } else if (canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.EdgeDrawing) {
         if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
           const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
@@ -1182,7 +1158,7 @@ const Whiteboard = ({
                     if (
                       canvasState.mode === CanvasMode.Grab ||
                       canvasState.mode === CanvasMode.SelectionNet ||
-                      canvasState.mode === CanvasMode.EdgeEditing ||
+                      canvasState.mode === CanvasMode.EdgeDrawing ||
                       canvasState.mode === CanvasMode.Translating ||
                       canvasState.mode === CanvasMode.Inserting ||
                       drawingEdge.ongoing
@@ -1194,7 +1170,7 @@ const Whiteboard = ({
                     if (
                       canvasState.mode === CanvasMode.Grab ||
                       canvasState.mode === CanvasMode.SelectionNet ||
-                      canvasState.mode === CanvasMode.EdgeEditing ||
+                      canvasState.mode === CanvasMode.EdgeDrawing ||
                       canvasState.mode === CanvasMode.Translating ||
                       canvasState.mode === CanvasMode.Inserting ||
                       drawingEdge.ongoing ||

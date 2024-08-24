@@ -71,7 +71,7 @@ const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
                 mode: CanvasMode.Edge,
               })
             }
-            isActive={canvasState.mode === CanvasMode.Edge || activeEdgeId}
+            isActive={canvasState.mode === CanvasMode.Edge || activeEdgeId === ""}
           />
           <ToolButton
             icon={Type}

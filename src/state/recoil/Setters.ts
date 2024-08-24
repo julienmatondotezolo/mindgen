@@ -201,7 +201,7 @@ export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
 
         setActiveLayers(edge.id);
       },
-    [],
+    [addToHistory, roomId, setActiveLayers, socketEmit],
   );
 };
 

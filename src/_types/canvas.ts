@@ -140,6 +140,9 @@ export type CanvasState =
       current?: Point;
     }
   | {
+      mode: CanvasMode.EdgeDrawing;
+    }
+  | {
       mode: CanvasMode.EdgeEditing;
       editingEdge: { id: string; handlePosition: "start" | "middle" | "end"; startPoint: Point };
     }
@@ -183,6 +186,7 @@ export enum CanvasMode {
   Pencil,
   Edge,
   EdgeActive,
+  EdgeDrawing,
   EdgeEditing,
   Typing,
 }
