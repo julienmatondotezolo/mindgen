@@ -316,3 +316,56 @@ export function getSvgPathFromStroke(stroke: number[][]) {
   d.push("Z");
   return d.join(" ");
 }
+
+export function calculateNewLayerPositions(
+  currentLayer: Layer,
+  position: HandlePosition,
+  LAYER_SPACING: number,
+  HANDLE_DISTANCE: number,
+  endPoint?: Point,
+) {
+  let newLayerPosition: Point;
+  let newEdgePosition: Point;
+
+  if (endPoint) {
+    newLayerPosition = endPoint;
+    newEdgePosition = endPoint;
+
+    return { newLayerPosition, newEdgePosition };
+  }
+
+  switch (position) {
+    case HandlePosition.Left:
+      newLayerPosition = { x: currentLayer.x - currentLayer.width - LAYER_SPACING, y: currentLayer.y };
+      newEdgePosition = {
+        x: currentLayer.x - currentLayer.width / 2 - HANDLE_DISTANCE,
+        y: currentLayer.y + currentLayer.height / 2,
+      };
+      break;
+    case HandlePosition.Top:
+      newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
+      newEdgePosition = {
+        x: currentLayer.x + currentLayer.width / 2,
+        y: currentLayer.y - currentLayer.height - HANDLE_DISTANCE,
+      };
+      break;
+    case HandlePosition.Right:
+      newLayerPosition = { x: currentLayer.x + currentLayer.width + LAYER_SPACING, y: currentLayer.y };
+      newEdgePosition = {
+        x: currentLayer.x + currentLayer.width * 1.5 + HANDLE_DISTANCE,
+        y: currentLayer.y + currentLayer.height / 2,
+      };
+      break;
+    case HandlePosition.Bottom:
+      newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
+      newEdgePosition = {
+        x: currentLayer.x + currentLayer.width / 2,
+        y: currentLayer.y + currentLayer.height * 2 + HANDLE_DISTANCE,
+      };
+      break;
+    default:
+      throw new Error("Invalid position");
+  }
+
+  return { newLayerPosition, newEdgePosition };
+}

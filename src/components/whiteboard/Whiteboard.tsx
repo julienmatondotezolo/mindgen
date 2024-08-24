@@ -13,6 +13,7 @@ import {
   Edge,
   EdgeType,
   HandlePosition,
+  Layer,
   LayerType,
   MindMapDetailsProps,
   Point,
@@ -40,6 +41,7 @@ import {
 } from "@/state";
 import {
   calculateControlPoints,
+  calculateNewLayerPositions,
   colorToCss,
   connectionIdToColor,
   findIntersectingLayersWithRectangle,
@@ -139,7 +141,12 @@ const Whiteboard = ({
   const setIsEdgeNearLayer = useSetRecoilState(isEdgeNearLayerAtom);
   const setNearestLayer = useSetRecoilState(nearestLayerAtom);
 
-  const [drawingEdge, setDrawingEdge] = useState<{ ongoing: boolean; lastEdgeId?: string; fromLayerId?: string }>({
+  const [drawingEdge, setDrawingEdge] = useState<{
+    ongoing: boolean;
+    lastEdgeId?: string;
+    fromLayerId?: string;
+    endPoint?: Point;
+  }>({
     ongoing: false,
   });
 
@@ -266,42 +273,12 @@ const Whiteboard = ({
       }
 
       // Calculate the new position based on the clicked handle's position
-      let newLayerPosition: Point;
-      let newEdgePosition: Point;
-
-      switch (position) {
-        case HandlePosition.Left:
-          newLayerPosition = { x: currentLayer.x - currentLayer.width - LAYER_SPACING, y: currentLayer.y };
-          newEdgePosition = {
-            x: currentLayer.x - currentLayer.width / 2 - HANDLE_DISTANCE,
-            y: currentLayer.y + currentLayer.height / 2,
-          };
-          break;
-        case HandlePosition.Top:
-          newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
-          newEdgePosition = {
-            x: currentLayer.x + currentLayer.width / 2,
-            y: currentLayer.y - currentLayer.height - HANDLE_DISTANCE,
-          };
-          break;
-        case HandlePosition.Right:
-          newLayerPosition = { x: currentLayer.x + currentLayer.width + LAYER_SPACING, y: currentLayer.y };
-          newEdgePosition = {
-            x: currentLayer.x + currentLayer.width * 1.5 + HANDLE_DISTANCE,
-            y: currentLayer.y + currentLayer.height / 2,
-          };
-          break;
-        case HandlePosition.Bottom:
-          newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
-          newEdgePosition = {
-            x: currentLayer.x + currentLayer.width / 2,
-            y: currentLayer.y + currentLayer.height * 2 + HANDLE_DISTANCE,
-          };
-          break;
-        default:
-          console.error("Invalid position");
-          return;
-      }
+      const { newLayerPosition, newEdgePosition } = calculateNewLayerPositions(
+        currentLayer,
+        position,
+        LAYER_SPACING,
+        HANDLE_DISTANCE,
+      );
 
       // Find a non-overlapping position for the new layer
       const adjustedPosition = findNonOverlappingPosition({
@@ -472,8 +449,6 @@ const Whiteboard = ({
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "start" | "middle" | "end", point: Point) => {
-      // if (drawingEdge.ongoing && drawingEdge.lastEdgeId) return;
-
       setCanvasState({
         mode: CanvasMode.EdgeEditing,
         editingEdge: {
@@ -483,7 +458,7 @@ const Whiteboard = ({
         },
       });
     },
-    [drawingEdge, setCanvasState, activeEdgeId],
+    [setCanvasState, activeEdgeId],
   );
 
   const updateEdgePosition = useCallback(
@@ -606,6 +581,10 @@ const Whiteboard = ({
         if (!lastUpdatedEdge) return;
 
         setActiveEdgeId(lastUpdatedEdge.id);
+        setDrawingEdge({
+          ...drawingEdge,
+          endPoint: point,
+        });
         setEdges((prevEdges) =>
           prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, end: point } : edge)),
         );
@@ -802,7 +781,54 @@ const Whiteboard = ({
         if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
           const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
-          if (lastUpdatedEdge) {
+          if (!lastUpdatedEdge) return;
+
+          if (lastUpdatedEdge.fromLayerId) {
+            const currentLayer = layers.find((layer) => layer.id === lastUpdatedEdge.fromLayerId);
+            const LAYER_SPACING = 150; // Adjust this value to control the space between layers
+            const HANDLE_DISTANCE = 20;
+            const position = lastUpdatedEdge.handleStart || HandlePosition.Left;
+            const endPoint = drawingEdge.endPoint;
+
+            if (!currentLayer) {
+              console.error("Layer not found");
+              return;
+            }
+
+            // Calculate the new position based on the clicked handle's position
+            const { newLayerPosition, newEdgePosition } = calculateNewLayerPositions(
+              currentLayer,
+              position,
+              LAYER_SPACING,
+              HANDLE_DISTANCE,
+              endPoint,
+            );
+
+            const newLayerId = nanoid();
+
+            const newLayer = {
+              id: newLayerId.toString(),
+              type: currentLayer.type,
+              x: newLayerPosition.x,
+              y: newLayerPosition.y,
+              width: currentLayer.width,
+              height: currentLayer.height,
+              fill: currentLayer.fill,
+            };
+
+            addLayer(newLayer);
+
+            selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+
+            if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
+              updateEdge(drawingEdge.lastEdgeId, {
+                toLayerId: newLayer.id,
+                end: newEdgePosition,
+                handleStart: position,
+                orientation: getOrientationFromPosition(position),
+              });
+            }
+          } else {
             const { id, ...updatedProperties } = lastUpdatedEdge;
 
             updateEdge(id, updatedProperties);
@@ -828,9 +854,13 @@ const Whiteboard = ({
       setCanvasState,
       drawingEdge,
       setActiveEdgeId,
+      edges,
+      layers,
+      addLayer,
+      selectLayer,
+      currentUserId,
       updateEdge,
       insertLayer,
-      edges,
     ],
   );
 
@@ -1234,3 +1264,11 @@ const Whiteboard = ({
 };
 
 export { Whiteboard };
+function calculateNewPositions(
+  currentLayer: Layer,
+  position: HandlePosition,
+  LAYER_SPACING: number,
+  HANDLE_DISTANCE: number,
+): { newLayerPosition: any; newEdgePosition: any } {
+  throw new Error("Function not implemented.");
+}
