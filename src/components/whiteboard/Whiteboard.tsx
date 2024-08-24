@@ -228,12 +228,17 @@ const Whiteboard = ({
 
   const onHandleMouseLeave = useCallback(
     (event: React.MouseEvent) => {
-      if (canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.SelectionNet) return;
+      if (
+        canvasState.mode === CanvasMode.EdgeEditing ||
+        canvasState.mode === CanvasMode.SelectionNet ||
+        drawingEdge.ongoing
+      )
+        return;
       setCanvasState({
         mode: CanvasMode.None,
       });
     },
-    [canvasState.mode, setCanvasState],
+    [canvasState, drawingEdge, setCanvasState],
   );
 
   const onHandleMouseDown = useCallback(
@@ -467,6 +472,8 @@ const Whiteboard = ({
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "start" | "middle" | "end", point: Point) => {
+      if (drawingEdge.ongoing && drawingEdge.lastEdgeId) return;
+
       setCanvasState({
         mode: CanvasMode.EdgeEditing,
         editingEdge: {
@@ -476,7 +483,7 @@ const Whiteboard = ({
         },
       });
     },
-    [setCanvasState, activeEdgeId],
+    [setCanvasState, drawingEdge, activeEdgeId],
   );
 
   const updateEdgePosition = useCallback(
@@ -568,7 +575,7 @@ const Whiteboard = ({
         editingEdge: { ...canvasState.editingEdge, startPoint: point },
       });
     },
-    [canvasState, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
+    [canvasState, drawingEdge, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
   );
 
   const handleEdgeClick = useCallback(
@@ -586,25 +593,35 @@ const Whiteboard = ({
 
   const drawEdgeline = useCallback(
     (point: Point) => {
-      if (canvasState.mode !== CanvasMode.Edge && canvasState.mode == CanvasMode.EdgeActive) return;
+      if (canvasState.mode !== CanvasMode.Edge && canvasState.mode == CanvasMode.EdgeActive) {
+        console.log("NOT THE GOOD MODE");
+        {
+          CanvasMode[canvasState.mode];
+        }
+        return;
+      }
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
         const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
         if (!lastUpdatedEdge) return;
 
+        console.log("DRAWING....");
+
         setEdges((prevEdges) =>
           prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, end: point } : edge)),
         );
-        setCanvasState({
-          mode: CanvasMode.EdgeEditing,
-          editingEdge: {
-            id: activeEdgeId!,
-            handlePosition: "end",
-            startPoint: lastUpdatedEdge?.start,
-          },
-        });
+        // setCanvasState({
+        //   mode: CanvasMode.EdgeEditing,
+        //   editingEdge: {
+        //     id: activeEdgeId!,
+        //     handlePosition: "end",
+        //     startPoint: lastUpdatedEdge?.start,
+        //   },
+        // });
       }
+
+      console.log("drawEdgeLine");
     },
     [canvasState.mode, drawingEdge.ongoing, drawingEdge.lastEdgeId, setEdges, setCanvasState, activeEdgeId, edges],
   );
@@ -741,7 +758,7 @@ const Whiteboard = ({
         resizeSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Edge) {
         drawEdgeline(current);
-      } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+      } else if (canvasState.mode === CanvasMode.EdgeEditing || !drawingEdge.ongoing) {
         updateEdgePosition(current);
       }
 
@@ -755,6 +772,7 @@ const Whiteboard = ({
     [
       camera,
       canvasState,
+      drawingEdge,
       socketEmit,
       boardId,
       currentUserId,
@@ -784,6 +802,22 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.Edge,
         });
+
+        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+          const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
+
+          if (lastUpdatedEdge) {
+            const { id, ...updatedProperties } = lastUpdatedEdge;
+
+            updateEdge(id, updatedProperties);
+          }
+
+          setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
+          setActiveEdgeId(null);
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+        }
       } else if (canvasState.mode === CanvasMode.EdgeActive) {
         setCanvasState({
           mode: CanvasMode.EdgeActive,

@@ -14,7 +14,7 @@ interface EdgeSelectionBoxProps {
 export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHandlePointerDown }) => {
   const canvasState = useRecoilValue(canvasStateAtom);
 
-  if (!edge || canvasState.mode !== CanvasMode.EdgeActive) return;
+  if (!edge || (canvasState.mode !== CanvasMode.EdgeActive && canvasState.mode !== CanvasMode.EdgeEditing)) return;
 
   const circleSize = 5;
   const circleBorderColor = "#4d6aff";
