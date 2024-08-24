@@ -239,13 +239,12 @@ const Whiteboard = ({
   const onHandleMouseDown = useCallback(
     (e: React.PointerEvent, layerId: string) => {
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
-        setEdges((prevEdges) =>
-          prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, fromLayerId: layerId } : edge)),
-        );
+        updateEdge(drawingEdge.lastEdgeId, { fromLayerId: layerId });
+
         setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId }));
       }
     },
-    [drawingEdge, setEdges],
+    [drawingEdge, updateEdge],
   );
 
   const onHandleMouseUp = useCallback(
@@ -587,15 +586,27 @@ const Whiteboard = ({
 
   const drawEdgeline = useCallback(
     (point: Point) => {
-      if (canvasState.mode !== CanvasMode.Edge) return;
+      if (canvasState.mode !== CanvasMode.Edge && canvasState.mode == CanvasMode.EdgeActive) return;
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+        const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
+
+        if (!lastUpdatedEdge) return;
+
         setEdges((prevEdges) =>
           prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, end: point } : edge)),
         );
+        setCanvasState({
+          mode: CanvasMode.EdgeEditing,
+          editingEdge: {
+            id: activeEdgeId!,
+            handlePosition: "end",
+            startPoint: lastUpdatedEdge?.start,
+          },
+        });
       }
     },
-    [canvasState.mode, drawingEdge, setEdges],
+    [canvasState.mode, drawingEdge.ongoing, drawingEdge.lastEdgeId, setEdges, setCanvasState, activeEdgeId, edges],
   );
 
   // ================  SVG POINTER EVENTS  ================== //
@@ -674,6 +685,30 @@ const Whiteboard = ({
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayerId });
 
           setActiveEdgeId(null);
+        } else {
+          // Create a new edge object
+          const newEdge: Edge = {
+            id: nanoid().toString(),
+            fromLayerId: selectedLayerId,
+            toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
+            color: { r: 180, g: 191, b: 204 }, // Placeholder, replace with actual color logic
+            thickness: 2,
+            start: point,
+            end: point,
+            orientation: "auto",
+            hoverColor: {
+              r: 77,
+              g: 106,
+              b: 255,
+            },
+            type: EdgeType.Solid,
+          };
+
+          // Update edges state with the new edge
+          addEdge(newEdge);
+
+          // Set drawingEdge state to indicate an edge drawing operation is ongoing
+          setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: undefined });
         }
 
         return;
@@ -1115,7 +1150,8 @@ const Whiteboard = ({
                       canvasState.mode === CanvasMode.SelectionNet ||
                       canvasState.mode === CanvasMode.EdgeEditing ||
                       canvasState.mode === CanvasMode.Translating ||
-                      canvasState.mode === CanvasMode.Inserting
+                      canvasState.mode === CanvasMode.Inserting ||
+                      drawingEdge.ongoing
                     )
                       return;
                     setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
@@ -1127,6 +1163,7 @@ const Whiteboard = ({
                       canvasState.mode === CanvasMode.EdgeEditing ||
                       canvasState.mode === CanvasMode.Translating ||
                       canvasState.mode === CanvasMode.Inserting ||
+                      drawingEdge.ongoing ||
                       activeEdgeId
                     )
                       return;
