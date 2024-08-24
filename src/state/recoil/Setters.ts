@@ -82,7 +82,9 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
               draft.push(layer);
               socketEmit("add-layer", { roomId, layer: [...currentLayers, layer] });
             },
-            addToHistory,
+            (patches, inversePatches) => {
+              addToHistory(patches, inversePatches, "layer");
+            },
           ),
         );
 
@@ -187,11 +189,13 @@ export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
           produce(
             currentEdges,
             (draft) => {
-              // Assuming currentLayers is an array, we push the new layer to it
+              // Assuming currentEdges is an array, we push the new layer to it
               draft.push(edge);
               socketEmit("add-edge", { roomId, edge: [...currentEdges, edge] });
             },
-            addToHistory,
+            (patches, inversePatches) => {
+              addToHistory(patches, inversePatches, "edge");
+            },
           ),
         );
 
@@ -216,36 +220,19 @@ export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
               const index = draft.findIndex((layer) => layer.id === id);
 
               if (index !== -1) {
-                Object.assign(draft[index], updatedElementEdge);
+                draft[index] = mergeDeep(draft[index], updatedElementEdge);
               }
+              const updatedEdge = draft[index];
 
-              const mergedEdge = currentEdges.map((item: Edge) => {
-                if (item.id === id) {
-                  // Create a copy of the current item to avoid mutating the original object
-                  let updatedItem: any = { ...item };
-
-                  // Iterate over the keys of the updatedLayer object
-                  Object.keys(updatedElementEdge).forEach((key) => {
-                    // Dynamically add/update properties from updatedLayer to the updatedItem object
-                    updatedItem[key] = updatedElementEdge[key];
-                  });
-
-                  // Return the updated item with merged properties from updatedLayer
-                  return updatedItem;
-                } else {
-                  return item;
-                }
-              });
-
-              const updatedEdge = currentEdges.filter((item: Edge) => item.id == mergedEdge[0].id);
-
-              socketEmit("add-layer", { roomId, layer: mergedEdge });
+              socketEmit("add-edge", { roomId, layer: updatedEdge });
             },
-            // addToHistory,
+            (patches, inversePatches) => {
+              addToHistory(patches, inversePatches, "edge");
+            },
           ),
         );
       },
-    [roomId, socketEmit],
+    [addToHistory, roomId, socketEmit],
   );
 };
 
@@ -280,3 +267,24 @@ export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
     [addToHistory],
   );
 };
+
+// Helper function for deep merging objects
+function mergeDeep(target: any, source: any) {
+  const output = Object.assign({}, target);
+
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach((key) => {
+      if (isObject(source[key])) {
+        if (!(key in target)) Object.assign(output, { [key]: source[key] });
+        else output[key] = mergeDeep(target[key], source[key]);
+      } else {
+        Object.assign(output, { [key]: source[key] });
+      }
+    });
+  }
+  return output;
+}
+
+function isObject(item: any) {
+  return item && typeof item === "object" && !Array.isArray(item);
+}

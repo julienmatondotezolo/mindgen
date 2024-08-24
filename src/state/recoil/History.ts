@@ -1,11 +1,12 @@
 import { applyPatches, Patch, produce } from "immer";
 import { atom, selector, useRecoilTransaction_UNSTABLE, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { layerAtomState } from "./atoms";
+import { edgesAtomState, layerAtomState } from "./atoms";
 
 type HistoryUR = {
   undoPatches: Patch[];
   redoPatches: Patch[];
+  type: "layer" | "edge";
 };
 
 export const historyAtom = atom<{
@@ -34,12 +35,13 @@ export const historyCanRedoUndo = selector<{ redo: boolean; undo: boolean }>({
 export const useAddToHistoryPrivate = () => {
   const setHistory = useSetRecoilState(historyAtom);
 
-  return (p: Patch[], ip: Patch[]) => {
+  return (p: Patch[], ip: Patch[], type: "layer" | "edge") => {
     setHistory(
       produce((h) => {
         h.undo.push({
           redoPatches: p,
           undoPatches: ip,
+          type,
         });
         h.redo = [];
       }),
@@ -59,13 +61,19 @@ const useUndo = () =>
         h.redo.push(toUndo);
       }),
     );
-    set(layerAtomState, (r) => applyPatches(r, toUndo.undoPatches));
+    if (toUndo.type === "layer") {
+      set(layerAtomState, (r) => applyPatches(r, toUndo.undoPatches));
+    } else {
+      set(edgesAtomState, (r) => applyPatches(r, toUndo.undoPatches));
+    }
   });
 
 const useRedo = () =>
   useRecoilTransaction_UNSTABLE(({ get, set }) => () => {
     const history = get(historyAtom);
     const toRedo = history.redo[history.redo.length - 1];
+
+    if (!toRedo) return; // Exit if there's nothing to redo
 
     set(
       historyAtom,
@@ -74,7 +82,11 @@ const useRedo = () =>
         h.undo.push(toRedo);
       }),
     );
-    set(layerAtomState, (r) => applyPatches(r, toRedo.redoPatches));
+    if (toRedo.type === "layer") {
+      set(layerAtomState, (r) => applyPatches(r, toRedo.redoPatches));
+    } else if (toRedo.type === "edge") {
+      set(edgesAtomState, (r) => applyPatches(r, toRedo.redoPatches));
+    }
   });
 
 export const useUndoRedo = () => {
