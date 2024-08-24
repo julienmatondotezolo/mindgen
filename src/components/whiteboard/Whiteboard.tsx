@@ -472,7 +472,7 @@ const Whiteboard = ({
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "start" | "middle" | "end", point: Point) => {
-      if (drawingEdge.ongoing && drawingEdge.lastEdgeId) return;
+      // if (drawingEdge.ongoing && drawingEdge.lastEdgeId) return;
 
       setCanvasState({
         mode: CanvasMode.EdgeEditing,
@@ -750,7 +750,7 @@ const Whiteboard = ({
         resizeSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Edge || canvasState.mode == CanvasMode.EdgeDrawing) {
         drawEdgeline(current);
-      } else if (canvasState.mode === CanvasMode.EdgeEditing && !drawingEdge.ongoing) {
+      } else if (canvasState.mode === CanvasMode.EdgeEditing) {
         updateEdgePosition(current);
       }
 
@@ -764,7 +764,6 @@ const Whiteboard = ({
     [
       camera,
       canvasState,
-      drawingEdge,
       socketEmit,
       boardId,
       currentUserId,
@@ -798,6 +797,7 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.EdgeActive,
         });
+        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
       } else if (canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.EdgeDrawing) {
         if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
           const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
@@ -1158,10 +1158,11 @@ const Whiteboard = ({
                     if (
                       canvasState.mode === CanvasMode.Grab ||
                       canvasState.mode === CanvasMode.SelectionNet ||
+                      canvasState.mode === CanvasMode.EdgeEditing ||
                       canvasState.mode === CanvasMode.EdgeDrawing ||
                       canvasState.mode === CanvasMode.Translating ||
-                      canvasState.mode === CanvasMode.Inserting ||
-                      drawingEdge.ongoing
+                      canvasState.mode === CanvasMode.Inserting
+                      // drawingEdge.ongoing
                     )
                       return;
                     setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
@@ -1170,10 +1171,11 @@ const Whiteboard = ({
                     if (
                       canvasState.mode === CanvasMode.Grab ||
                       canvasState.mode === CanvasMode.SelectionNet ||
+                      canvasState.mode === CanvasMode.EdgeEditing ||
                       canvasState.mode === CanvasMode.EdgeDrawing ||
                       canvasState.mode === CanvasMode.Translating ||
                       canvasState.mode === CanvasMode.Inserting ||
-                      drawingEdge.ongoing ||
+                      // drawingEdge.ongoing ||
                       activeEdgeId
                     )
                       return;
