@@ -6,12 +6,13 @@ import { useSession } from "next-auth/react";
 import { memo, useCallback } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { Camera, Color, Layer } from "@/_types";
+import { Camera, CanvasMode, Color, Layer } from "@/_types";
 import { Button } from "@/components/ui/button";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
 import {
   activeLayersAtom,
   boardIdState,
+  canvasStateAtom,
   layerAtomState,
   useRemoveElement,
   useSelectElement,
@@ -38,6 +39,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     .map((item) => item.layerIds)[0];
 
   const boardId = useRecoilValue(boardIdState);
+  const canvasState = useRecoilValue(canvasStateAtom);
 
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
   const updateLayer = useUpdateElement({ roomId: boardId });
@@ -102,7 +104,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     }
   }, [activeLayerIDs, currentUserId, layers, removeLayer, unSelectLayer]);
 
-  if (!selectionBounds) return null;
+  if (!selectionBounds || canvasState.mode === CanvasMode.EdgeEditing) return null;
 
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;

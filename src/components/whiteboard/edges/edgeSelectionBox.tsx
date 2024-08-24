@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
+import { useRecoilValue } from "recoil";
 
-import { Edge, Point } from "@/_types";
+import { CanvasMode, Edge, Point } from "@/_types";
+import { canvasStateAtom } from "@/state";
 import { calculateBezierPoint, calculateControlPoints, colorToCss } from "@/utils";
 
 interface EdgeSelectionBoxProps {
@@ -10,7 +12,9 @@ interface EdgeSelectionBoxProps {
 }
 
 export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHandlePointerDown }) => {
-  if (!edge) return;
+  const canvasState = useRecoilValue(canvasStateAtom);
+
+  if (!edge || canvasState.mode !== CanvasMode.EdgeActive) return;
 
   const circleSize = 5;
   const circleBorderColor = "#4d6aff";

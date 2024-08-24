@@ -166,7 +166,6 @@ const Whiteboard = ({
       addLayer(newLayer);
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
-      setShowLayerAddButtons(true);
 
       setCanvasState({
         mode: CanvasMode.None,
@@ -217,7 +216,7 @@ const Whiteboard = ({
 
   const onHandleMouseEnter = useCallback(
     (event: React.MouseEvent) => {
-      if (canvasState.mode === CanvasMode.EdgeEditing) return;
+      if (canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.SelectionNet) return;
       setCanvasState({
         mode: CanvasMode.Edge,
       });
@@ -227,7 +226,7 @@ const Whiteboard = ({
 
   const onHandleMouseLeave = useCallback(
     (event: React.MouseEvent) => {
-      if (canvasState.mode === CanvasMode.EdgeEditing) return;
+      if (canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.SelectionNet) return;
       setCanvasState({
         mode: CanvasMode.None,
       });
@@ -319,6 +318,8 @@ const Whiteboard = ({
       };
 
       addLayer(newLayer);
+
+      selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
         setEdges((prevEdges) =>
@@ -498,13 +499,13 @@ const Whiteboard = ({
 
       let updatedEdge: Edge;
 
-      const snapThreshold = 40;
+      const snapThreshold = 20;
       const nearestHandle = findNearestLayerHandle(point, layers, snapThreshold);
 
       const layerThreshold = 80;
       const nearestLayer = findNearestLayerHandle(point, layers, layerThreshold);
 
-      setIsEdgeNearLayer(!!nearestLayer);
+      setIsEdgeNearLayer(!nearestHandle);
       setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
 
       let controlPoint1, controlPoint2;
@@ -534,7 +535,7 @@ const Whiteboard = ({
               end: { x: nearestHandle.x, y: nearestHandle.y },
               toLayerId: nearestHandle.layerId,
               handleEnd: nearestHandle.position,
-              orientation: getOrientationFromPosition(nearestHandle.position, true),
+              orientation: getOrientationFromPosition(nearestHandle.position, false),
             };
           } else {
             updatedEdge = {
@@ -673,6 +674,8 @@ const Whiteboard = ({
 
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayerId });
+
+          setActiveEdgeId(null);
         }
 
         return;
@@ -737,7 +740,6 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
         handleUnSelectLayer();
-        // setActiveEdgeId(null);
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -754,7 +756,10 @@ const Whiteboard = ({
           mode: CanvasMode.EdgeActive,
         });
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
-        return;
+        setActiveEdgeId(null);
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
       } else if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
       } else {
@@ -763,7 +768,7 @@ const Whiteboard = ({
         });
       }
     },
-    [camera, canvasState, activeEdgeId, handleUnSelectLayer, setCanvasState, insertLayer],
+    [camera, canvasState, activeEdgeId, handleUnSelectLayer, setCanvasState, setActiveEdgeId, insertLayer],
   );
 
   const handlePointerLeave = useCallback(() => {
