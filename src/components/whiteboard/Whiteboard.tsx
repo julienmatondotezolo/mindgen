@@ -249,6 +249,8 @@ const Whiteboard = ({
 
   const onHandleMouseUp = useCallback(
     (layerId: String, position: HandlePosition) => {
+      if (canvasState.mode === CanvasMode.EdgeEditing) return;
+
       const currentLayer = layers.find((layer) => layer.id === layerId);
       const LAYER_SPACING = 150; // Adjust this value to control the space between layers
       const HANDLE_DISTANCE = 20;
@@ -340,7 +342,7 @@ const Whiteboard = ({
         mode: CanvasMode.None,
       });
     },
-    [addLayer, drawingEdge, layers, setCanvasState, setEdges],
+    [addLayer, canvasState.mode, drawingEdge, layers, setCanvasState, setEdges],
   );
 
   const translateSelectedLayer = useCallback(
@@ -496,52 +498,70 @@ const Whiteboard = ({
 
       let updatedEdge: Edge;
 
-      const snapThreshold = 40; // Adjust this value to change the snapping sensitivity
+      const snapThreshold = 40;
       const nearestHandle = findNearestLayerHandle(point, layers, snapThreshold);
 
-      const layerThreshold = 80; // Adjust this value to change the snapping sensitivity
+      const layerThreshold = 80;
       const nearestLayer = findNearestLayerHandle(point, layers, layerThreshold);
 
       setIsEdgeNearLayer(!!nearestLayer);
       setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
 
+      let controlPoint1, controlPoint2;
+
       switch (handlePosition) {
         case "start":
-          updatedEdge = {
-            ...edge,
-            start: nearestHandle ? { x: nearestHandle.x, y: nearestHandle.y } : point,
-            fromLayerId: nearestHandle ? nearestHandle.layerId : undefined,
-            handleStart: nearestHandle ? nearestHandle.position : edge.handleStart,
-          };
+          if (nearestHandle && nearestHandle.layerId !== edge.toLayerId) {
+            updatedEdge = {
+              ...edge,
+              start: { x: nearestHandle.x, y: nearestHandle.y },
+              fromLayerId: nearestHandle.layerId,
+              handleStart: nearestHandle.position,
+            };
+          } else {
+            updatedEdge = {
+              ...edge,
+              start: point,
+              fromLayerId: undefined,
+              handleStart: edge.handleStart,
+            };
+          }
           break;
         case "end":
-          updatedEdge = {
-            ...edge,
-            end: nearestHandle ? { x: nearestHandle.x, y: nearestHandle.y } : point,
-            toLayerId: nearestHandle ? nearestHandle.layerId : undefined,
-            handleEnd: nearestHandle ? nearestHandle.position : edge.handleEnd,
-            orientation: nearestHandle ? getOrientationFromPosition(nearestHandle.position, true) : edge.orientation,
-          };
+          if (nearestHandle && nearestHandle.layerId !== edge.fromLayerId) {
+            updatedEdge = {
+              ...edge,
+              end: { x: nearestHandle.x, y: nearestHandle.y },
+              toLayerId: nearestHandle.layerId,
+              handleEnd: nearestHandle.position,
+              orientation: getOrientationFromPosition(nearestHandle.position, true),
+            };
+          } else {
+            updatedEdge = {
+              ...edge,
+              end: point,
+              toLayerId: undefined,
+              handleEnd: edge.handleEnd,
+              orientation: edge.orientation,
+            };
+          }
           break;
-        case "middle": {
-          // If control points don't exist, initialize them
-          const controlPoint1 = edge.controlPoint1 || {
+        case "middle":
+          controlPoint1 = edge.controlPoint1 || {
             x: edge.start.x + (edge.end.x - edge.start.x) / 3,
             y: edge.start.y + (edge.end.y - edge.start.y) / 3,
           };
-          const controlPoint2 = edge.controlPoint2 || {
+          controlPoint2 = edge.controlPoint2 || {
             x: edge.start.x + (2 * (edge.end.x - edge.start.x)) / 3,
             y: edge.start.y + (2 * (edge.end.y - edge.start.y)) / 3,
           };
 
-          // Move both control points by the same amount as the middle handle
           updatedEdge = {
             ...edge,
             controlPoint1: { x: controlPoint1.x + dx, y: controlPoint1.y + dy },
             controlPoint2: { x: controlPoint2.x + dx, y: controlPoint2.y + dy },
           };
           break;
-        }
       }
 
       setEdges(edges.map((e) => (e.id === id ? updatedEdge : e)));
@@ -734,9 +754,7 @@ const Whiteboard = ({
           mode: CanvasMode.EdgeActive,
         });
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
+        return;
       } else if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
       } else {
