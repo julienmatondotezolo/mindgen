@@ -1149,7 +1149,7 @@ const Whiteboard = ({
         <g
           style={{
             transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
-            transformOrigin: "0 0",
+            transformOrigin: "center",
             transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
             cursor: "pointer",
           }}
