@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 "use client";
 
-import { BringToFront, SendToBack, Trash2 } from "lucide-react";
+import { Bold, BringToFront, CaseSensitive, CaseUpper, Ellipsis, PaintBucket, SendToBack, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Camera, CanvasMode, Color, Layer } from "@/_types";
@@ -21,6 +21,7 @@ import {
 } from "@/state";
 
 import { ColorPicker } from "../colorPicker";
+import { ToolButton } from "../ToolButton";
 
 interface SelectionToolsProps {
   camera: Camera;
@@ -47,39 +48,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
   const selectionBounds = useSelectionBounds();
 
-  //   const handleMoveToBack = useCallback(() => {
-  //     const indices: number[] = [];
-
-  //     const arr = layers;
-
-  //     for (let i = 0; i < arr.length; i++) {
-  //       if (activeLayerIDs.includes(layers[i].id)) {
-  //         indices.push(i);
-  //       }
-  //     }
-
-  //     for (let i = 0; i < indices.length; i++) {
-  //       liveLayerIds.move(indices[i], i);
-  //     }
-  //   }, [selection]);
-
-  //   const handleMoveToFront = useCallback(() => {
-  //     const liveLayerIds = storage.get("layerIds");
-
-  //     const indices: number[] = [];
-
-  //     const arr = liveLayerIds.toImmutable();
-
-  //     for (let i = 0; i < arr.length; i++) {
-  //       if (selection.includes(arr[i])) {
-  //         indices.push(i);
-  //       }
-  //     }
-
-  //     for (let i = indices.length - 1; i >= 0; i--) {
-  //       liveLayerIds.move(indices[i], arr.length - 1 - (indices.length - 1 - i));
-  //     }
-  //   }, [selection]);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const handleColorChange = useCallback(
     (fill: Color) => {
@@ -88,6 +57,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       for (const layerId of activeLayerIDs) {
         updateLayer(layerId, { fill: fill });
       }
+      setShowColorPicker(false);
     },
     [activeLayerIDs, setLastUsedColor, updateLayer],
   );
@@ -128,30 +98,77 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   );
 
   return (
-    <div
-      className="absolute p-3 rounded-xl bg-white shadow-sm border flex select-none"
-      style={{
-        transform: `translate(
+    <>
+      {showColorPicker && (
+        <div
+          className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+          // style={{
+          //   transform: `translate(${x - 50}px, ${y - 150}px)`,
+          // }}
+          style={{
+            transform: `translate(
+            calc(${x}px - 50%),
+            calc(${y}px - 160%)
+          )`,
+          }}
+        >
+          <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
+        </div>
+      )}
+      <div
+        className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+        style={{
+          transform: `translate(
             calc(${x}px - 50%),
             calc(${y}px - 100%)
           )`,
-      }}
-    >
-      <ColorPicker onChange={handleColorChange} />
-      {/* <div className="flex flex-col gap-y-0.5">
-        <Button variant="board" size="icon" onClick={handleMoveToFront}>
-          <BringToFront />
-        </Button>
-        <Button variant="board" size="icon" onClick={handleMoveToBack}>
-          <SendToBack />
-        </Button>
-      </div> */}
-      <div className="flex items-center pl-2 ml-2 border-l">
-        <Button variant="board" size="icon" onClick={handleRemoveLayer}>
-          <Trash2 />
-        </Button>
+        }}
+      >
+        <ul className="flex flex-row space-x-2 items-center justify-between">
+          <ToolButton
+            icon={PaintBucket}
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            isActive={showColorPicker}
+          />
+          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+          <ToolButton
+            icon={Ellipsis}
+            onClick={() => {
+              ("");
+            }}
+            isActive={false}
+          />
+          <Button
+            variant={false ? "boardActive" : "board"}
+            size="icon"
+            onClick={() => {
+              ("");
+            }}
+          >
+            <div className={`w-[20px] h-[5px] dark:bg-slate-200 ${false ? "bg-slate-200" : "bg-slate-950"}`}></div>
+          </Button>
+          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+          <ToolButton
+            icon={CaseUpper}
+            onClick={() => {
+              ("");
+            }}
+            isActive={false}
+          />
+          <ToolButton
+            icon={Bold}
+            onClick={() => {
+              ("");
+            }}
+            isActive={false}
+          />
+          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+          <Button variant="board" size="icon" onClick={handleRemoveLayer}>
+            <Trash2 />
+          </Button>
+        </ul>
       </div>
-    </div>
+    </>
   );
 });
 
