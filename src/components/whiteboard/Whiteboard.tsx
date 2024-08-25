@@ -33,6 +33,7 @@ import {
   nearestLayerAtom,
   useAddEdgeElement,
   useAddElement,
+  useRemoveEdge,
   useRemoveElement,
   useSelectElement,
   useUnSelectElement,
@@ -136,6 +137,8 @@ const Whiteboard = ({
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const addEdge = useAddEdgeElement({ roomId: boardId });
   const updateEdge = useUpdateEdge({ roomId: boardId });
+  const removeEdge = useRemoveEdge({ roomId: boardId });
+
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
 
@@ -443,9 +446,13 @@ const Whiteboard = ({
 
   const removeEdgesConnectedToLayer = useCallback(
     (layerId: string) => {
-      setEdges((prevEdges) => prevEdges.filter((edge) => edge.fromLayerId !== layerId && edge.toLayerId !== layerId));
+      edges.forEach((edge) => {
+        if (edge.fromLayerId === layerId || edge.toLayerId === layerId) {
+          removeEdge(edge.id);
+        }
+      });
     },
-    [setEdges],
+    [edges, removeEdge],
   );
 
   const handleEdgeHandlePointerDown = useCallback(
@@ -560,12 +567,13 @@ const Whiteboard = ({
   const handleEdgeClick = useCallback(
     (edgeId: string) => {
       setActiveEdgeId(edgeId);
+      setHoveredEdgeId(null);
       handleUnSelectLayer();
       setCanvasState({
         mode: CanvasMode.EdgeActive,
       });
     },
-    [handleUnSelectLayer, setActiveEdgeId, setCanvasState],
+    [handleUnSelectLayer, setActiveEdgeId, setCanvasState, setHoveredEdgeId],
   );
 
   // ================  DRAWING EDGES  ================== //
@@ -1096,9 +1104,14 @@ const Whiteboard = ({
             removeEdgesConnectedToLayer(layer.id);
           }
         }
-        // setCanvasState({
-        //   mode: CanvasMode.None,
-        // });
+      }
+
+      if (event.code === "Backspace" && activeEdgeId && canvasState.mode === CanvasMode.EdgeActive) {
+        removeEdge(activeEdgeId);
+        setActiveEdgeId(null);
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
       }
     };
 
@@ -1124,6 +1137,8 @@ const Whiteboard = ({
     handleUnSelectLayer,
     setCanvasState,
     removeEdgesConnectedToLayer,
+    activeEdgeId,
+    removeEdge,
   ]);
 
   // Hande Mouse move

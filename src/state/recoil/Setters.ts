@@ -257,14 +257,16 @@ export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
               if (index !== -1) {
                 // Remove the edge from the array in th atom state
                 draft.splice(index, 1);
-                // socketEmit("add-edge", { roomId, layer: [...currentEdges, updatedEdges] });
+                socketEmit("add-edge", { roomId, layer: [...currentEdges, updatedEdges] });
               }
             },
-            addToHistory,
+            (patches, inversePatches) => {
+              addToHistory(patches, inversePatches, "edge");
+            },
           ),
         );
       },
-    [addToHistory],
+    [addToHistory, roomId, socketEmit],
   );
 };
 

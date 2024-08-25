@@ -2,17 +2,10 @@ import { Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { Camera, Color, EdgeType } from "@/_types";
+import { Camera, CanvasMode, Color, EdgeType } from "@/_types";
 import { ToolButton } from "@/components/mindmap/toolButton";
 import { Button } from "@/components/ui/button";
-import {
-  activeEdgeIdAtom,
-  boardIdState,
-  edgesAtomState,
-  hoveredEdgeIdAtom,
-  useRemoveEdge,
-  useUpdateEdge,
-} from "@/state";
+import { activeEdgeIdAtom, boardIdState, canvasStateAtom, edgesAtomState, useRemoveEdge, useUpdateEdge } from "@/state";
 
 import { ColorPicker } from "../colorPicker";
 
@@ -25,8 +18,8 @@ interface EdgeSelectionToolsProps {
 export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelectionToolsProps) => {
   const edges = useRecoilValue(edgesAtomState);
   const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
-  const setHoveredEdgeId = useSetRecoilState(hoveredEdgeIdAtom);
-
+  const setActiveEdgeId = useSetRecoilState(activeEdgeIdAtom);
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const boardId = useRecoilValue(boardIdState);
@@ -50,9 +43,12 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
   const handleRemoveEdge = useCallback(() => {
     if (selectedEdge) {
       removeEdge(selectedEdge.id);
-      setHoveredEdgeId(null);
+      setActiveEdgeId(null);
+      setCanvasState({
+        mode: CanvasMode.None,
+      });
     }
-  }, [selectedEdge, removeEdge, setHoveredEdgeId]);
+  }, [selectedEdge, removeEdge, setActiveEdgeId, setCanvasState]);
 
   const handleChangeStrokeWidth = useCallback(
     (number: number) => {
