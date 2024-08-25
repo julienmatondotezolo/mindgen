@@ -144,6 +144,8 @@ export function findNearestLayerHandle(point: Point, layers: Layer[], threshold:
   let nearestHandle: { x: number; y: number; layerId: string; position: HandlePosition } | null = null;
   let minDistance = Infinity;
 
+  if (layers.length === 0) return null;
+
   for (const layer of layers) {
     const bounds = {
       x: layer.x,

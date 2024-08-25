@@ -477,10 +477,13 @@ const Whiteboard = ({
       let updatedEdge: Edge;
 
       const snapThreshold = 20;
-      const nearestHandle = findNearestLayerHandle(point, layers, snapThreshold);
-
       const layerThreshold = 80;
-      const nearestLayer = findNearestLayerHandle(point, layers, layerThreshold);
+
+      // Exclude the layer we're dragging from
+      const filteredLayers = layers.filter((layer) => layer.id !== drawingEdge.fromLayerId);
+
+      const nearestHandle = findNearestLayerHandle(point, filteredLayers, snapThreshold);
+      const nearestLayer = findNearestLayerHandle(point, filteredLayers, layerThreshold);
 
       setIsEdgeNearLayer(!nearestHandle);
       setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
@@ -551,7 +554,7 @@ const Whiteboard = ({
         editingEdge: { ...canvasState.editingEdge, startPoint: point },
       });
     },
-    [canvasState, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
+    [canvasState, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState, drawingEdge],
   );
 
   const handleEdgeClick = useCallback(
@@ -569,36 +572,57 @@ const Whiteboard = ({
 
   const drawEdgeline = useCallback(
     (point: Point) => {
-      if (canvasState.mode !== CanvasMode.Edge && canvasState.mode == CanvasMode.EdgeActive) {
-        {
-          CanvasMode[canvasState.mode];
-        }
-        return;
-      }
+      if (canvasState.mode !== CanvasMode.Edge && canvasState.mode == CanvasMode.EdgeActive) return;
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+        handleUnSelectLayer();
+
         const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
         if (!lastUpdatedEdge) return;
 
         setActiveEdgeId(lastUpdatedEdge.id);
 
-        const snapThreshold = 20;
-        const nearestHandle = findNearestLayerHandle(point, layers, snapThreshold);
+        let updatedEdge: Edge;
 
+        const snapThreshold = 20;
         const layerThreshold = 80;
-        const nearestLayer = findNearestLayerHandle(point, layers, layerThreshold);
+
+        // Exclude the layer we're dragging from
+        const filteredLayers = layers.filter((layer) => layer.id !== drawingEdge.fromLayerId);
+
+        const nearestHandle = findNearestLayerHandle(point, filteredLayers, snapThreshold);
+        const nearestLayer = findNearestLayerHandle(point, filteredLayers, layerThreshold);
 
         setIsEdgeNearLayer(!nearestHandle);
-        setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
+        setNearestLayer(
+          nearestLayer ? filteredLayers.find((layer) => layer.id === nearestLayer.layerId) || null : null,
+        );
 
         setDrawingEdge({
           ...drawingEdge,
           endPoint: point,
         });
-        setEdges((prevEdges) =>
-          prevEdges.map((edge) => (edge.id === drawingEdge.lastEdgeId ? { ...edge, end: point } : edge)),
-        );
+
+        if (nearestHandle && nearestHandle.layerId !== lastUpdatedEdge.fromLayerId) {
+          updatedEdge = {
+            ...lastUpdatedEdge,
+            end: { x: nearestHandle.x, y: nearestHandle.y },
+            toLayerId: nearestHandle.layerId,
+            handleEnd: nearestHandle.position,
+            orientation: getOrientationFromPosition(nearestHandle.position, true),
+          };
+        } else {
+          updatedEdge = {
+            ...lastUpdatedEdge,
+            end: point,
+            toLayerId: undefined,
+            handleEnd: lastUpdatedEdge.handleEnd,
+            orientation: lastUpdatedEdge.orientation,
+          };
+        }
+
+        setEdges(edges.map((e) => (e.id === drawingEdge.lastEdgeId ? updatedEdge : e)));
         setCanvasState({
           mode: CanvasMode.EdgeDrawing,
         });
@@ -614,6 +638,7 @@ const Whiteboard = ({
       setNearestLayer,
       setEdges,
       setCanvasState,
+      handleUnSelectLayer,
     ],
   );
 
