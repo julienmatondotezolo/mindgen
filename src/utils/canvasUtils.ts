@@ -23,10 +23,16 @@ export function cn(...inputs: ClassValue[]) {
 
 export const connectionIdToColor = (connectionId: number) => COLORS[connectionId % COLORS.length];
 
-export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera) => ({
-  x: Math.round(e.clientX) - camera.x,
-  y: Math.round(e.clientY) - camera.y,
-});
+export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera, svgElement: SVGSVGElement | null) => {
+  if (!svgElement) return { x: 0, y: 0 };
+
+  const svgRect = svgElement.getBoundingClientRect();
+
+  return {
+    x: (e.clientX - svgRect.left - camera.x) / camera.scale,
+    y: (e.clientY - svgRect.top - camera.y) / camera.scale,
+  };
+};
 
 export function colorToCss(color: Color) {
   return `#${color.r.toString(16).padStart(2, "0")}${color.g.toString(16).padStart(2, "0")}${color.b

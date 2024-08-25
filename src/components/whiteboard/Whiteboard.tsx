@@ -2,7 +2,7 @@
 // src/components/Canvas.tsx
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import {
@@ -69,6 +69,7 @@ const Whiteboard = ({
   const DEBUG_MODE = true;
 
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
@@ -196,7 +197,7 @@ const Whiteboard = ({
 
       e.stopPropagation();
 
-      const point = pointerEventToCanvasPoint(e, camera);
+      const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       if (e.shiftKey) {
         // If Shift is held, add the layerId to the activeLayerIds array without removing others
@@ -601,7 +602,7 @@ const Whiteboard = ({
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
-      const point = pointerEventToCanvasPoint(e, camera);
+      const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) {
         return;
@@ -717,7 +718,7 @@ const Whiteboard = ({
     (e: React.PointerEvent) => {
       e.preventDefault();
 
-      const current = pointerEventToCanvasPoint(e, camera);
+      const current = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       if (canvasState.mode == CanvasMode.Pressing) {
         startMultiSelection(current, canvasState.origin);
@@ -757,7 +758,7 @@ const Whiteboard = ({
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
-      const point = pointerEventToCanvasPoint(e, camera);
+      const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
         handleUnSelectLayer();
@@ -1138,6 +1139,7 @@ const Whiteboard = ({
       <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
       <EdgeSelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
       <svg
+        ref={svgRef}
         className="h-[100vh] w-[100vw]"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -1147,7 +1149,7 @@ const Whiteboard = ({
         <g
           style={{
             transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
-            transformOrigin: "center",
+            transformOrigin: "0 0",
             transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
             cursor: "pointer",
           }}
@@ -1281,11 +1283,3 @@ const Whiteboard = ({
 };
 
 export { Whiteboard };
-function calculateNewPositions(
-  currentLayer: Layer,
-  position: HandlePosition,
-  LAYER_SPACING: number,
-  HANDLE_DISTANCE: number,
-): { newLayerPosition: any; newEdgePosition: any } {
-  throw new Error("Function not implemented.");
-}
