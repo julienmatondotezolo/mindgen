@@ -777,7 +777,7 @@ const Whiteboard = ({
           mode: CanvasMode.EdgeActive,
         });
         setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
-      } else if (canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.EdgeDrawing) {
+      } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
         if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
           const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
@@ -834,6 +834,23 @@ const Whiteboard = ({
             updateEdge(id, updatedProperties);
           }
         }
+
+        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
+        setActiveEdgeId(null);
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+          const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
+
+          if (!lastUpdatedEdge) return;
+
+          const { id, ...updatedProperties } = lastUpdatedEdge;
+
+          updateEdge(id, updatedProperties);
+        }
+
         setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
         setActiveEdgeId(null);
         setCanvasState({
