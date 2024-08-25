@@ -342,43 +342,59 @@ export function calculateNewLayerPositions(
   let newEdgePosition: Point;
 
   if (endPoint) {
-    newLayerPosition = endPoint;
-    newEdgePosition = endPoint;
-
-    return { newLayerPosition, newEdgePosition };
-  }
-
-  switch (position) {
-    case HandlePosition.Left:
-      newLayerPosition = { x: currentLayer.x - currentLayer.width - LAYER_SPACING, y: currentLayer.y };
-      newEdgePosition = {
-        x: currentLayer.x - currentLayer.width / 2 - HANDLE_DISTANCE,
-        y: currentLayer.y + currentLayer.height / 2,
-      };
-      break;
-    case HandlePosition.Top:
-      newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
-      newEdgePosition = {
-        x: currentLayer.x + currentLayer.width / 2,
-        y: currentLayer.y - currentLayer.height - HANDLE_DISTANCE,
-      };
-      break;
-    case HandlePosition.Right:
-      newLayerPosition = { x: currentLayer.x + currentLayer.width + LAYER_SPACING, y: currentLayer.y };
-      newEdgePosition = {
-        x: currentLayer.x + currentLayer.width * 1.5 + HANDLE_DISTANCE,
-        y: currentLayer.y + currentLayer.height / 2,
-      };
-      break;
-    case HandlePosition.Bottom:
-      newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
-      newEdgePosition = {
-        x: currentLayer.x + currentLayer.width / 2,
-        y: currentLayer.y + currentLayer.height * 2 + HANDLE_DISTANCE,
-      };
-      break;
-    default:
-      throw new Error("Invalid position");
+    switch (position) {
+      case HandlePosition.Left:
+        newLayerPosition = { x: endPoint.x - currentLayer.width, y: endPoint.y - currentLayer.height / 2 };
+        newEdgePosition = { x: endPoint.x + HANDLE_DISTANCE, y: endPoint.y };
+        break;
+      case HandlePosition.Right:
+        newLayerPosition = { x: endPoint.x, y: endPoint.y - currentLayer.height / 2 };
+        newEdgePosition = { x: endPoint.x - HANDLE_DISTANCE, y: endPoint.y };
+        break;
+      case HandlePosition.Top:
+        newLayerPosition = { x: endPoint.x - currentLayer.width / 2, y: endPoint.y - currentLayer.height };
+        newEdgePosition = { x: endPoint.x, y: endPoint.y + HANDLE_DISTANCE };
+        break;
+      case HandlePosition.Bottom:
+        newLayerPosition = { x: endPoint.x - currentLayer.width / 2, y: endPoint.y };
+        newEdgePosition = { x: endPoint.x, y: endPoint.y - HANDLE_DISTANCE };
+        break;
+      default:
+        throw new Error("[calculateNewLayerPositions] Invalid position");
+    }
+  } else {
+    switch (position) {
+      case HandlePosition.Left:
+        newLayerPosition = { x: currentLayer.x - currentLayer.width - LAYER_SPACING, y: currentLayer.y };
+        newEdgePosition = {
+          x: currentLayer.x - currentLayer.width / 2 - HANDLE_DISTANCE,
+          y: currentLayer.y + currentLayer.height / 2,
+        };
+        break;
+      case HandlePosition.Top:
+        newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
+        newEdgePosition = {
+          x: currentLayer.x + currentLayer.width / 2,
+          y: currentLayer.y - currentLayer.height - HANDLE_DISTANCE,
+        };
+        break;
+      case HandlePosition.Right:
+        newLayerPosition = { x: currentLayer.x + currentLayer.width + LAYER_SPACING, y: currentLayer.y };
+        newEdgePosition = {
+          x: currentLayer.x + currentLayer.width * 1.5 + HANDLE_DISTANCE,
+          y: currentLayer.y + currentLayer.height / 2,
+        };
+        break;
+      case HandlePosition.Bottom:
+        newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
+        newEdgePosition = {
+          x: currentLayer.x + currentLayer.width / 2,
+          y: currentLayer.y + currentLayer.height * 2 + HANDLE_DISTANCE,
+        };
+        break;
+      default:
+        throw new Error("Invalid position");
+    }
   }
 
   return { newLayerPosition, newEdgePosition };

@@ -701,6 +701,7 @@ const Whiteboard = ({
             color: { r: 180, g: 191, b: 204 }, // Placeholder, replace with actual color logic
             thickness: 2,
             start: startPoint,
+            handleStart: handlePosition,
             end: point,
             orientation: "auto",
             hoverColor: {
@@ -828,7 +829,8 @@ const Whiteboard = ({
 
           if (!lastUpdatedEdge) return;
 
-          if (lastUpdatedEdge.fromLayerId) {
+          // ON EDGE DROP CREATE A LAYER
+          if (lastUpdatedEdge.fromLayerId && !lastUpdatedEdge.toLayerId) {
             const currentLayer = layers.find((layer) => layer.id === lastUpdatedEdge.fromLayerId);
             const LAYER_SPACING = 150; // Adjust this value to control the space between layers
             const HANDLE_DISTANCE = 20;
