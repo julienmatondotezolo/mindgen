@@ -515,7 +515,7 @@ const Whiteboard = ({
               end: { x: nearestHandle.x, y: nearestHandle.y },
               toLayerId: nearestHandle.layerId,
               handleEnd: nearestHandle.position,
-              orientation: getOrientationFromPosition(nearestHandle.position, false),
+              orientation: getOrientationFromPosition(nearestHandle.position, true),
             };
           } else {
             updatedEdge = {
@@ -582,6 +582,16 @@ const Whiteboard = ({
         if (!lastUpdatedEdge) return;
 
         setActiveEdgeId(lastUpdatedEdge.id);
+
+        const snapThreshold = 20;
+        const nearestHandle = findNearestLayerHandle(point, layers, snapThreshold);
+
+        const layerThreshold = 80;
+        const nearestLayer = findNearestLayerHandle(point, layers, layerThreshold);
+
+        setIsEdgeNearLayer(!nearestHandle);
+        setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
+
         setDrawingEdge({
           ...drawingEdge,
           endPoint: point,
@@ -594,8 +604,17 @@ const Whiteboard = ({
         });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [canvasState, drawingEdge, setEdges, setCanvasState, activeEdgeId, edges],
+    [
+      canvasState,
+      drawingEdge,
+      edges,
+      setActiveEdgeId,
+      layers,
+      setIsEdgeNearLayer,
+      setNearestLayer,
+      setEdges,
+      setCanvasState,
+    ],
   );
 
   // ================  SVG POINTER EVENTS  ================== //
@@ -1101,7 +1120,7 @@ const Whiteboard = ({
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
           </p>
-          <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(canvasState, null, 2)}</pre>
+          {/* <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(canvasState, null, 2)}</pre> */}
           <p className="text-sm mb-1">
             <strong>Active Edge ID:</strong> {activeEdgeId || "None"}
           </p>

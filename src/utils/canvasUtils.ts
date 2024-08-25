@@ -189,7 +189,6 @@ export function findNearestLayerHandle(point: Point, layers: Layer[], threshold:
       }
     }
   }
-
   return nearestHandle;
 }
 

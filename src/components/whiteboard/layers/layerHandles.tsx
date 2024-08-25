@@ -52,7 +52,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   const handleLayerId = soleLayerId || (nearestLayer ? nearestLayer.id : null);
 
-  const isEdgeEditing = canvasState.mode === CanvasMode.EdgeEditing;
+  const isEdgeEditing = canvasState.mode === CanvasMode.EdgeEditing || canvasState.mode === CanvasMode.EdgeDrawing;
 
   const handleStyle = {
     cursor: "pointer",
