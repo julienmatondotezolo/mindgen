@@ -23,7 +23,7 @@ interface LayerHandlesProps {
   onPointerUp: (layerId: String, position: HandlePosition) => void;
 }
 
-const HANDLE_WIDTH = 20;
+const HANDLE_WIDTH = 25;
 const HANDLE_DISTANCE = 30;
 
 export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, onPointerUp }: LayerHandlesProps) => {
@@ -58,74 +58,59 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
     cursor: "pointer",
     width: `${HANDLE_WIDTH}px`,
     height: `${HANDLE_WIDTH}px`,
-    fill: isEdgeEditing ? "#4d6aff" : "white",
+    fill: isEdgeEditing ? "#4d6aff" : "#FFFFFF00",
     fillOpacity: isEdgeEditing ? 0.3 : 1,
   };
+
+  const handeStrokeClass = isEdgeEditing
+    ? "stroke-4 stroke-blue-500"
+    : "stroke-4 stroke-primary-color dark:stroke-slate-600";
 
   return (
     <>
       {/* TOP */}
-      <rect
-        className="stroke-1 stroke-blue-500"
-        x={0}
-        y={0}
-        style={{
-          ...handleStyle,
-          transform: `translate(
-                ${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, 
-                   ${bounds.y - HANDLE_WIDTH / 2 - HANDLE_DISTANCE}px)`,
-        }}
+      <circle
+        className={handeStrokeClass}
+        cx={bounds.x + bounds.width / 2}
+        cy={bounds.y - HANDLE_DISTANCE}
+        r={HANDLE_WIDTH / 2}
+        style={handleStyle}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Top)}
       />
       {/* RIGHT */}
-      <rect
-        className="stroke-1 stroke-blue-500"
-        x={0}
-        y={0}
-        style={{
-          ...handleStyle,
-          transform: `translate(
-                    ${bounds.x - HANDLE_WIDTH / 2 + bounds.width + HANDLE_DISTANCE}px, 
-                    ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px
-                )`,
-        }}
+      <circle
+        className={handeStrokeClass}
+        cx={bounds.x + bounds.width + HANDLE_DISTANCE}
+        cy={bounds.y + bounds.height / 2}
+        r={HANDLE_WIDTH / 2}
+        style={handleStyle}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Right)}
       />
       {/* BOTTOM */}
-      <rect
-        className="stroke-1 stroke-blue-500"
-        x={0}
-        y={0}
-        style={{
-          ...handleStyle,
-          transform: `translate(
-                    ${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, 
-                    ${bounds.y + bounds.height - HANDLE_WIDTH / 2 + HANDLE_DISTANCE}px
-                )`,
-        }}
+      <circle
+        className={handeStrokeClass}
+        cx={bounds.x + bounds.width / 2}
+        cy={bounds.y + bounds.height + HANDLE_DISTANCE}
+        r={HANDLE_WIDTH / 2}
+        style={handleStyle}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Bottom)}
       />
       {/* LEFT */}
-      <rect
-        className="stroke-1 stroke-blue-500"
-        x={0}
-        y={0}
-        style={{
-          ...handleStyle,
-          transform: `translate(
-                    ${bounds.x - HANDLE_WIDTH / 2 - HANDLE_DISTANCE}px, 
-                    ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px
-                )`,
-        }}
+      <circle
+        className={handeStrokeClass}
+        cx={bounds.x - HANDLE_DISTANCE}
+        cy={bounds.y + bounds.height / 2}
+        r={HANDLE_WIDTH / 2}
+        style={handleStyle}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
