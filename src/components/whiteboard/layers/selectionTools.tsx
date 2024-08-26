@@ -13,7 +13,9 @@ import {
   activeLayersAtom,
   boardIdState,
   canvasStateAtom,
+  edgesAtomState,
   layerAtomState,
+  useRemoveEdge,
   useRemoveElement,
   useSelectElement,
   useUnSelectElement,
@@ -41,7 +43,9 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
   const boardId = useRecoilValue(boardIdState);
   const canvasState = useRecoilValue(canvasStateAtom);
+  const edges = useRecoilValue(edgesAtomState);
 
+  const removeEdge = useRemoveEdge({ roomId: boardId });
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
   const updateLayer = useUpdateElement({ roomId: boardId });
   const removeLayer = useRemoveElement({ roomId: boardId });
@@ -70,9 +74,15 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     for (const layer of selectedLayers) {
       if (layer) {
         removeLayer(layer.id);
+
+        edges.forEach((edge) => {
+          if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
+            removeEdge(edge.id);
+          }
+        });
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, removeLayer, unSelectLayer]);
+  }, [activeLayerIDs, currentUserId, edges, layers, removeEdge, removeLayer, unSelectLayer]);
 
   if (!selectionBounds || canvasState.mode === CanvasMode.EdgeEditing) return null;
 
