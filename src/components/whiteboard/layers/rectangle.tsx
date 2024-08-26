@@ -2,13 +2,11 @@
 /* eslint-disable no-undef */
 
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
-import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 
-import { CanvasMode, Color, RectangleLayer } from "@/_types";
-import { boardIdState, canvasStateAtom, useUpdateElement } from "@/state";
-import { cn, getContrastingTextColor } from "@/utils";
+import { Color, RectangleLayer } from "@/_types";
+import { boardIdState, useUpdateElement } from "@/state";
+import { getContrastingTextColor } from "@/utils";
 
 import { CustomContentEditable } from "./customContentEditable";
 
@@ -21,7 +19,7 @@ interface RectangleProps {
 
 const calculateFontSize = (width: number, height: number) => {
   const maxFontSize = 96;
-  const scaleFactor = 0.25;
+  const scaleFactor = 0.2;
   const fontSizeBasedOnHeight = height * scaleFactor;
   const fontSizeBasedOnWidth = width * scaleFactor;
 
@@ -43,40 +41,15 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
   const { x, y, width, height, fill, value } = layer;
   const boardId = useRecoilValue(boardIdState);
 
-  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
-
   const updateLayer = useUpdateElement({ roomId: boardId });
-
-  const contentEditableRef = useRef<HTMLElement>(null);
 
   const handleContentChange = (newValue: string) => {
     updateLayer(id, { value: newValue });
   };
 
-  useEffect(() => {
-    if (contentEditableRef.current && canvasState.mode === CanvasMode.Typing) {
-      const { scrollWidth, scrollHeight } = contentEditableRef.current;
-      const padding = 20;
-      const minWidth = 100;
-      const minHeight = 40;
-
-      let newWidth = Math.max(minWidth, scrollWidth + padding);
-      let newHeight = Math.max(minHeight, scrollHeight + padding);
-
-      if (scrollWidth + padding < width && newWidth < width) {
-        newWidth = Math.max(minWidth, scrollWidth + padding);
-      }
-
-      if (newWidth !== width || newHeight !== height) {
-        updateLayer(id, { width: newWidth, height: newHeight });
-      }
-    }
-  }, [value, canvasState.mode, width, height, id, updateLayer]);
-
   return (
     <>
       <foreignObject
-        // className="drop-shadow-md"
         className={`relative shadow-md drop-shadow-xl`}
         onPointerDown={(e) => onPointerDown(e, id)}
         style={{

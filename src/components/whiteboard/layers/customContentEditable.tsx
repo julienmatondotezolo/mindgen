@@ -4,7 +4,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useSetRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types";
@@ -51,19 +51,6 @@ const CustomContentEditable = ({ value, onChange, style }: CustomEditableProps) 
       onChange(editableRef.current.innerText);
     }
   };
-
-  useEffect(() => {
-    if (isEditing && editableRef.current) {
-      editableRef.current.focus();
-      const range = document.createRange();
-      const sel = window.getSelection();
-
-      range.selectNodeContents(editableRef.current);
-      range.collapse(false);
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditing]);
 
   return (
     <div

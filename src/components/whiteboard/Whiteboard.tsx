@@ -173,8 +173,8 @@ const Whiteboard = ({
         type: layerType,
         x: position.x,
         y: position.y,
-        width: 200,
-        height: 60,
+        width: layerType === LayerType.Rectangle ? 200 : 150,
+        height: layerType === LayerType.Rectangle ? 60 : 150,
         fill: { r: 77, g: 106, b: 255 },
         value: whiteboardText("typeSomething"),
       };
