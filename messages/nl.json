@@ -113,7 +113,10 @@
     "inviteCollaborator": "Medewerker uitnodigen",
     "admin": "Beheerder",
     "contributor": "Contributor",
-    "eigenaar": "Eigenaar",
+    "owner": "Eigenaar",
     "viewer": "Bezoeker"
+  },
+  "Whiteboard": {
+    "typeSomething": "Schrijf iets..."
   }
 }

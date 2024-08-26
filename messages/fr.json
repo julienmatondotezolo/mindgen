@@ -115,5 +115,8 @@
     "contributor": "Contributor",
     "owner": "Propriétaire",
     "viewer": "Visiteur"
+  },
+  "Whiteboard": {
+    "typeSomething": "Tapez quelque chose..."
   }
 }

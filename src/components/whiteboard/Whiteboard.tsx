@@ -2,6 +2,7 @@
 // src/components/Canvas.tsx
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -69,6 +70,7 @@ const Whiteboard = ({
 }) => {
   const DEBUG_MODE = true;
 
+  const whiteboardText = useTranslations("Whiteboard");
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -174,6 +176,7 @@ const Whiteboard = ({
         width: 200,
         height: 60,
         fill: { r: 77, g: 106, b: 255 },
+        value: whiteboardText("typeSomething"),
       };
 
       addLayer(newLayer);
@@ -184,7 +187,7 @@ const Whiteboard = ({
         mode: CanvasMode.None,
       });
     },
-    [addLayer, currentUserId, layers, selectLayer, setCanvasState],
+    [addLayer, currentUserId, layers, selectLayer, setCanvasState, whiteboardText],
   );
 
   const handleLayerPointerDown = useCallback(

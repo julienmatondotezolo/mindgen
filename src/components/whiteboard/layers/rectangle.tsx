@@ -7,7 +7,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { CanvasMode, Color, RectangleLayer } from "@/_types";
 import { boardIdState, canvasStateAtom, useUpdateElement } from "@/state";
-import { cn, colorToCss, getContrastingTextColor } from "@/utils";
+import { cn, getContrastingTextColor } from "@/utils";
 
 interface RectangleProps {
   id: string;
@@ -18,18 +18,20 @@ interface RectangleProps {
 
 const calculateFontSize = (width: number, height: number) => {
   const maxFontSize = 96;
-  const scaleFactor = 0.15;
+  const scaleFactor = 0.25;
   const fontSizeBasedOnHeight = height * scaleFactor;
   const fontSizeBasedOnWidth = width * scaleFactor;
 
   return Math.min(maxFontSize, fontSizeBasedOnHeight, fontSizeBasedOnWidth);
 };
 
-const fillRGBA = (fill: Color) => {
+const fillRGBA = (fill: Color, theme: string | undefined) => {
   if (!fill) return "rgba(0, 0, 0, 0.5)";
   const { r, g, b } = fill;
 
-  return `rgba(${r}, ${g}, ${b}, 0.7)`;
+  const opacity = theme === "dark" ? 0.7 : 1.0;
+
+  return `rgba(${r}, ${g}, ${b}, 0.9)`;
 };
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
@@ -60,7 +62,7 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
         style={{
           transform: `translate(${x}px, ${y}px)`,
           outline: selectionColor ? `1px solid ${selectionColor}` : "none",
-          backgroundColor: fillRGBA(fill),
+          backgroundColor: fillRGBA(fill, theme),
           backdropFilter: "blur(5px)",
           WebkitBackdropFilter: "blur(5px)",
           border: `3px solid ${theme === "dark" ? "#b4bfcc" : "#475569"}`,
@@ -72,7 +74,6 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
         width={width}
         height={height}
         strokeWidth={1}
-        // fill={fill ? colorToCss(fill) : "#000"}
         stroke={selectionColor || "transparent"}
       >
         <ContentEditable
