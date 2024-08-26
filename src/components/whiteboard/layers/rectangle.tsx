@@ -2,12 +2,15 @@
 /* eslint-disable no-undef */
 
 import { useTheme } from "next-themes";
+import { useEffect, useRef, useState } from "react";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import { CanvasMode, Color, RectangleLayer } from "@/_types";
 import { boardIdState, canvasStateAtom, useUpdateElement } from "@/state";
 import { cn, getContrastingTextColor } from "@/utils";
+
+import { CustomContentEditable } from "./customContentEditable";
 
 interface RectangleProps {
   id: string;
@@ -31,7 +34,7 @@ const fillRGBA = (fill: Color, theme: string | undefined) => {
 
   const opacity = theme === "dark" ? 0.7 : 1.0;
 
-  return `rgba(${r}, ${g}, ${b}, 0.9)`;
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
@@ -39,19 +42,36 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
 
   const { x, y, width, height, fill, value } = layer;
   const boardId = useRecoilValue(boardIdState);
-  const setCanvasState = useSetRecoilState(canvasStateAtom);
+
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
   const updateLayer = useUpdateElement({ roomId: boardId });
 
-  const handleContentClick = () => {
-    setCanvasState({
-      mode: CanvasMode.Typing,
-    });
+  const contentEditableRef = useRef<HTMLElement>(null);
+
+  const handleContentChange = (newValue: string) => {
+    updateLayer(id, { value: newValue });
   };
 
-  const handleContentChange = (e: ContentEditableEvent) => {
-    updateLayer(id, { value: e.target.innerText });
-  };
+  useEffect(() => {
+    if (contentEditableRef.current && canvasState.mode === CanvasMode.Typing) {
+      const { scrollWidth, scrollHeight } = contentEditableRef.current;
+      const padding = 20;
+      const minWidth = 100;
+      const minHeight = 40;
+
+      let newWidth = Math.max(minWidth, scrollWidth + padding);
+      let newHeight = Math.max(minHeight, scrollHeight + padding);
+
+      if (scrollWidth + padding < width && newWidth < width) {
+        newWidth = Math.max(minWidth, scrollWidth + padding);
+      }
+
+      if (newWidth !== width || newHeight !== height) {
+        updateLayer(id, { width: newWidth, height: newHeight });
+      }
+    }
+  }, [value, canvasState.mode, width, height, id, updateLayer]);
 
   return (
     <>
@@ -76,16 +96,21 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
         strokeWidth={1}
         stroke={selectionColor || "transparent"}
       >
-        <ContentEditable
-          html={value || ""}
-          onClick={handleContentClick}
-          onKeyUp={handleContentChange}
-          className={cn(
-            "w-max outline-none cursor-text inline absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2",
-          )}
+        <CustomContentEditable
+          value={value || ""}
+          onChange={handleContentChange}
           style={{
+            width: "99%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            justifyItems: "center",
+            textAlign: "center",
             color: fill ? getContrastingTextColor(fill) : "#000",
             fontSize: calculateFontSize(width, height),
+            wordBreak: "break-word",
+            outline: "none",
           }}
         />
       </foreignObject>

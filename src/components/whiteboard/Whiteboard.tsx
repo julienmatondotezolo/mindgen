@@ -760,6 +760,8 @@ const Whiteboard = ({
       } else if (canvasState.mode === CanvasMode.EdgeActive) {
         setActiveEdgeId(null);
         setHoveredEdgeId(null);
+      } else if (canvasState.mode === CanvasMode.Typing) {
+        return;
       } else {
         setCanvasState({
           origin: point,
@@ -1086,6 +1088,7 @@ const Whiteboard = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
+        if (canvasState.mode === CanvasMode.Typing) return;
         setCanvasState({
           mode: CanvasMode.Grab,
         });
@@ -1120,6 +1123,7 @@ const Whiteboard = ({
 
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.code === "Space") {
+        if (canvasState.mode === CanvasMode.Typing) return;
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1142,6 +1146,7 @@ const Whiteboard = ({
     removeEdgesConnectedToLayer,
     activeEdgeId,
     removeEdge,
+    setActiveEdgeId,
   ]);
 
   // Hande Mouse move
