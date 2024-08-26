@@ -386,7 +386,7 @@ const Whiteboard = ({
   );
 
   const resizeSelectedLayer = useCallback(
-    (point: Point) => {
+    (point: Point, isShiftPressed: boolean) => {
       if (canvasState.mode !== CanvasMode.Resizing) {
         return;
       }
@@ -401,6 +401,30 @@ const Whiteboard = ({
 
       const initialBounds = canvasState.initialBounds;
       let newBounds = resizeBounds(initialBounds, canvasState.corner, point);
+
+      // Shift key is pressed, maintain aspect ratio
+      if (isShiftPressed) {
+        // Calculate aspect ratio
+        const aspectRatio = initialBounds.width / initialBounds.height;
+
+        // Determine which dimension to adjust based on which changed more
+        const widthChange = Math.abs(newBounds.width - initialBounds.width);
+        const heightChange = Math.abs(newBounds.height - initialBounds.height);
+
+        if (widthChange > heightChange) {
+          newBounds.height = newBounds.width / aspectRatio;
+        } else {
+          newBounds.width = newBounds.height * aspectRatio;
+        }
+
+        // Adjust position if resizing from top or left
+        if (canvasState.corner & Side.Left) {
+          newBounds.x = initialBounds.x + initialBounds.width - newBounds.width;
+        }
+        if (canvasState.corner & Side.Top) {
+          newBounds.y = initialBounds.y + initialBounds.height - newBounds.height;
+        }
+      }
 
       // Prevent resizing below minimum dimensions
       if (newBounds.width < MIN_WIDTH) {
@@ -803,7 +827,7 @@ const Whiteboard = ({
       } else if (canvasState.mode === CanvasMode.Translating) {
         translateSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Resizing) {
-        resizeSelectedLayer(current);
+        resizeSelectedLayer(current, e.shiftKey);
       } else if (canvasState.mode === CanvasMode.Edge || canvasState.mode == CanvasMode.EdgeDrawing) {
         drawEdgeline(current);
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
