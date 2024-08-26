@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 
+import { useTheme } from "next-themes";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -32,6 +33,8 @@ const fillRGBA = (fill: Color) => {
 };
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
+  const { theme } = useTheme();
+
   const { x, y, width, height, fill, value } = layer;
   const boardId = useRecoilValue(boardIdState);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
@@ -60,6 +63,9 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
           backgroundColor: fillRGBA(fill),
           backdropFilter: "blur(5px)",
           WebkitBackdropFilter: "blur(5px)",
+          border: `3px solid ${theme === "dark" ? "#b4bfcc" : "#475569"}`,
+          borderRadius: "30px",
+          overflow: "hidden",
         }}
         x={0}
         y={0}
