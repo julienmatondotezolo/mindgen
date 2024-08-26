@@ -11,13 +11,6 @@ export type Camera = {
   scale: number;
 };
 
-export enum LayerType {
-  Note,
-  Rectangle,
-  Ellipse,
-  Path,
-}
-
 export enum HandlePosition {
   Top,
   Left,
@@ -48,6 +41,13 @@ export type Edge = {
   orientation: EdgeOrientation;
   type: EdgeType;
 };
+
+export enum LayerType {
+  Note,
+  Rectangle,
+  Ellipse,
+  Path,
+}
 
 export type RectangleLayer = {
   id: string;

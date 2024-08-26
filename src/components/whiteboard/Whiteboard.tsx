@@ -172,8 +172,8 @@ const Whiteboard = ({
         x: position.x,
         y: position.y,
         width: 200,
-        height: 100,
-        fill: { r: 255, g: 255, b: 255 },
+        height: 60,
+        fill: { r: 77, g: 106, b: 255 },
       };
 
       addLayer(newLayer);
@@ -1215,14 +1215,6 @@ const Whiteboard = ({
             cursor: "pointer",
           }}
         >
-          {layers?.map((layer) => (
-            <LayerPreview
-              key={layer.id}
-              layer={layer}
-              onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
-              selectionColor={layerIdsToColorSelection[layer.id]}
-            />
-          ))}
           {edges.map((edge) => {
             const [controlPoint1, controlPoint2] =
               edge.start && edge.end
@@ -1314,6 +1306,14 @@ const Whiteboard = ({
               </g>
             );
           })}
+          {layers?.map((layer) => (
+            <LayerPreview
+              key={layer.id}
+              layer={layer}
+              onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
+              selectionColor={layerIdsToColorSelection[layer.id]}
+            />
+          ))}
           {activeEdgeId && (
             <EdgeSelectionBox
               edge={edges.find((edge) => edge.id === activeEdgeId)!}

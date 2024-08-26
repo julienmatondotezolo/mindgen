@@ -4,7 +4,7 @@
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { CanvasMode, RectangleLayer } from "@/_types";
+import { CanvasMode, Color, RectangleLayer } from "@/_types";
 import { boardIdState, canvasStateAtom, useUpdateElement } from "@/state";
 import { cn, colorToCss, getContrastingTextColor } from "@/utils";
 
@@ -22,6 +22,13 @@ const calculateFontSize = (width: number, height: number) => {
   const fontSizeBasedOnWidth = width * scaleFactor;
 
   return Math.min(maxFontSize, fontSizeBasedOnHeight, fontSizeBasedOnWidth);
+};
+
+const fillRGBA = (fill: Color) => {
+  if (!fill) return "rgba(0, 0, 0, 0.5)";
+  const { r, g, b } = fill;
+
+  return `rgba(${r}, ${g}, ${b}, 0.7)`;
 };
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
@@ -45,12 +52,14 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
     <>
       <foreignObject
         // className="drop-shadow-md"
-        className="relative shadow-md drop-shadow-xl"
+        className={`relative shadow-md drop-shadow-xl`}
         onPointerDown={(e) => onPointerDown(e, id)}
         style={{
           transform: `translate(${x}px, ${y}px)`,
           outline: selectionColor ? `1px solid ${selectionColor}` : "none",
-          backgroundColor: fill ? colorToCss(fill) : "#000",
+          backgroundColor: fillRGBA(fill),
+          backdropFilter: "blur(5px)",
+          WebkitBackdropFilter: "blur(5px)",
         }}
         x={0}
         y={0}
@@ -61,7 +70,7 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
         stroke={selectionColor || "transparent"}
       >
         <ContentEditable
-          html={value || "Type something"}
+          html={value || ""}
           onClick={handleContentClick}
           onKeyUp={handleContentChange}
           className={cn(
