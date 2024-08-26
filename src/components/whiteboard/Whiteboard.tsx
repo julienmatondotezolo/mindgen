@@ -391,14 +391,32 @@ const Whiteboard = ({
         return;
       }
 
-      const bounds = resizeBounds(canvasState.initialBounds, canvasState.corner, point);
+      const MIN_WIDTH = 100; // Minimum width in pixels
+      const MIN_HEIGHT = 50; // Minimum height in pixels
 
       const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
       const layer = selectedLayers[0];
 
-      if (layer) {
-        updateLayer(layer.id, bounds);
+      if (!layer) return;
+
+      const initialBounds = canvasState.initialBounds;
+      let newBounds = resizeBounds(initialBounds, canvasState.corner, point);
+
+      // Prevent resizing below minimum dimensions
+      if (newBounds.width < MIN_WIDTH) {
+        if (canvasState.corner & Side.Left) {
+          newBounds.x = initialBounds.x + initialBounds.width - MIN_WIDTH;
+        }
+        newBounds.width = MIN_WIDTH;
       }
+      if (newBounds.height < MIN_HEIGHT) {
+        if (canvasState.corner & Side.Top) {
+          newBounds.y = initialBounds.y + initialBounds.height - MIN_HEIGHT;
+        }
+        newBounds.height = MIN_HEIGHT;
+      }
+
+      updateLayer(layer.id, newBounds);
     },
     [activeLayerIDs, canvasState, layers, updateLayer],
   );
