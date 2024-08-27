@@ -52,6 +52,7 @@ import {
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   findNonOverlappingPosition,
+  getHandlePosition,
   getOrientationFromPosition,
   pointerEventToCanvasPoint,
   resizeBounds,
@@ -395,6 +396,7 @@ const Whiteboard = ({
         return;
       }
 
+      const HANDLE_DISTANCE = 30;
       const MIN_WIDTH = 100; // Minimum width in pixels
       const MIN_HEIGHT = 50; // Minimum height in pixels
 
@@ -445,6 +447,36 @@ const Whiteboard = ({
       }
 
       updateLayer(layer.id, newBounds);
+
+      // Update connected edges
+      const updatedEdges = edges.map((edge) => {
+        const isSource = edge.fromLayerId === layer.id;
+        const isTarget = edge.toLayerId === layer.id;
+
+        if (!isSource && !isTarget) {
+          return edge;
+        }
+
+        let updatedStart = edge.start;
+        let updatedEnd = edge.end;
+
+        if (isSource) {
+          updatedStart = getHandlePosition(newBounds, edge.handleStart);
+        }
+
+        if (isTarget) {
+          updatedEnd = getHandlePosition(newBounds, edge.handleEnd);
+        }
+
+        return {
+          ...edge,
+          start: updatedStart,
+          end: updatedEnd,
+        };
+      });
+
+      // Update the edges state with the updated edges
+      setEdges(updatedEdges);
     },
     [activeLayerIDs, canvasState, layers, updateLayer],
   );
@@ -500,7 +532,6 @@ const Whiteboard = ({
 
     return aSelected - bSelected;
   }), [activeLayerIDs]);
-
 
   // ================  EDGES  ================== //
 

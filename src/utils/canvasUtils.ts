@@ -273,6 +273,23 @@ export const calculateBezierPoint = (t: number, p0: Point, p1: Point, p2: Point,
   };
 };
 
+export function getSvgPathFromStroke(stroke: number[][]) {
+  if (!stroke.length) return "";
+
+  const d = stroke.reduce(
+    (acc, [x0, y0], i, arr) => {
+      const [x1, y1] = arr[(i + 1) % arr.length];
+
+      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
+      return acc;
+    },
+    ["M", ...stroke[0], "Q"],
+  );
+
+  d.push("Z");
+  return d.join(" ");
+}
+
 export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
   if (points.length < 2) {
     throw new Error("Cannot transform points with less than 2 points");
@@ -312,23 +329,6 @@ export function penPointsToPathLayer(points: number[][], color: Color): PathLaye
     fill: color,
     points: points.map(([x, y, pressure]) => [x - left, y - top, pressure]),
   };
-}
-
-export function getSvgPathFromStroke(stroke: number[][]) {
-  if (!stroke.length) return "";
-
-  const d = stroke.reduce(
-    (acc, [x0, y0], i, arr) => {
-      const [x1, y1] = arr[(i + 1) % arr.length];
-
-      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-      return acc;
-    },
-    ["M", ...stroke[0], "Q"],
-  );
-
-  d.push("Z");
-  return d.join(" ");
 }
 
 export function calculateNewLayerPositions(
@@ -399,3 +399,21 @@ export function calculateNewLayerPositions(
 
   return { newLayerPosition, newEdgePosition };
 }
+
+// Helper function to get handle position
+export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition | undefined): Point => {
+  const HANDLE_DISTANCE = 30;
+
+  switch (handlePosition) {
+    case HandlePosition.Top:
+      return { x: bounds.x + bounds.width / 2, y: bounds.y - HANDLE_DISTANCE };
+    case HandlePosition.Right:
+      return { x: bounds.x + bounds.width + HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
+    case HandlePosition.Bottom:
+      return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height + HANDLE_DISTANCE };
+    case HandlePosition.Left:
+      return { x: bounds.x - HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
+    default:
+      return { x: bounds.x, y: bounds.y };
+  }
+};
