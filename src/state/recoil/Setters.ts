@@ -207,7 +207,7 @@ export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
               }
               const updatedEdge = draft[index];
 
-              socketEmit("add-edge", { roomId, layer: updatedEdge });
+              socketEmit("add-edge", { roomId, edge: updatedEdge });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "edge");
