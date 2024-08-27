@@ -37,7 +37,7 @@ const fillRGBA = (fill: Color, theme: string | undefined) => {
 const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => {
   const { theme } = useTheme();
 
-  const { x, y, width, height, fill, value } = layer;
+  const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType } = layer;
   const boardId = useRecoilValue(boardIdState);
 
   const updateLayer = useUpdateElement({ roomId: boardId });
@@ -62,7 +62,9 @@ const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => 
             backgroundColor: fillRGBA(fill, theme),
             backdropFilter: "blur(5px)",
             WebkitBackdropFilter: "blur(5px)",
-            border: `3px solid ${theme === "dark" ? "#b4bfcc" : "#475569"}`,
+            borderColor: theme === "dark" ? "#b4bfcc" : "#475569",
+            borderWidth: borderWidth ? borderWidth : 2,
+            borderStyle: borderType ? borderType : "solid",
             borderRadius: "50%",
             overflow: "hidden",
           }}
@@ -79,6 +81,8 @@ const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => 
               textAlign: "center",
               color: fill ? getContrastingTextColor(fill) : "#000",
               fontSize: calculateFontSize(width, height),
+              fontWeight: valueStyle?.fontWeight,
+              textTransform: valueStyle?.textTransform,
               wordBreak: "break-word",
               outline: "none",
             }}

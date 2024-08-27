@@ -84,6 +84,56 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     }
   }, [activeLayerIDs, currentUserId, edges, layers, removeEdge, removeLayer, unSelectLayer]);
 
+  const handleToggleBorderType = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        updateLayer(layerId, { borderType: layer.borderType === "dashed" ? "solid" : "dashed" });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleBorderWidth = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        updateLayer(layerId, { borderWidth: layer.borderWidth === 4 ? 2 : 4 });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleTextTransform = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        updateLayer(layerId, {
+          valueStyle: {
+            ...layer.valueStyle,
+            textTransform: layer.valueStyle?.textTransform === "uppercase" ? "none" : "uppercase",
+          },
+        });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleFontWeight = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        updateLayer(layerId, {
+          valueStyle: {
+            ...layer.valueStyle,
+            fontWeight: layer.valueStyle?.fontWeight === "900" ? "400" : "900",
+          },
+        });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
   if (!selectionBounds || canvasState.mode === CanvasMode.EdgeEditing) return null;
 
   const viewportWidth = window.innerWidth;
@@ -141,37 +191,13 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
             isActive={showColorPicker}
           />
           <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton
-            icon={Ellipsis}
-            onClick={() => {
-              ("");
-            }}
-            isActive={false}
-          />
-          <Button
-            variant={false ? "boardActive" : "board"}
-            size="icon"
-            onClick={() => {
-              ("");
-            }}
-          >
-            <div className={`w-[20px] h-[5px] dark:bg-slate-200 ${false ? "bg-slate-200" : "bg-slate-950"}`}></div>
+          <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={false} />
+          <Button variant="board" size="icon" onClick={handleToggleBorderWidth}>
+            <div className={`w-[20px] h-[5px] dark:bg-slate-200 bg-slate-950`}></div>
           </Button>
           <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton
-            icon={CaseUpper}
-            onClick={() => {
-              ("");
-            }}
-            isActive={false}
-          />
-          <ToolButton
-            icon={Bold}
-            onClick={() => {
-              ("");
-            }}
-            isActive={false}
-          />
+          <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={false} />
+          <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={false} />
           <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
           <Button variant="board" size="icon" onClick={handleRemoveLayer}>
             <Trash2 />

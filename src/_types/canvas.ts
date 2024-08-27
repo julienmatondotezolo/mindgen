@@ -49,38 +49,46 @@ export enum LayerType {
   Path,
 }
 
-export type RectangleLayer = {
+export type LayerBorderType = "solid" | "dashed";
+
+export type ValueStyle = {
+  // fontSize: number;
+  // fontFamily: string;
+  // fontStyle: string;
+  fontWeight: string;
+  textTransform: string;
+};
+
+export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;
+
+export type LayerWithGeometry = {
   id: string;
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+  fill: Color;
+  value?: string;
+  valueStyle?: ValueStyle;
+  borderWidth?: number;
+  borderType?: LayerBorderType;
+};
+
+export type RectangleLayer = LayerWithGeometry & {
   type: LayerType.Rectangle;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
-  value?: string;
 };
 
-export type EllipseLayer = {
-  id: string;
+export type EllipseLayer = LayerWithGeometry & {
   type: LayerType.Ellipse;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
-  value?: string;
 };
 
-export type PathLayer = {
-  id: string;
+export type PathLayer = LayerWithGeometry & {
   type: LayerType.Path;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
   points: number[][];
-  value?: string;
+};
+
+export type NoteLayer = LayerWithGeometry & {
+  type: LayerType.Note;
 };
 
 // export type TextLayer = {
@@ -92,17 +100,6 @@ export type PathLayer = {
 //   fill: Color;
 //   value?: string;
 // };
-
-export type NoteLayer = {
-  id: string;
-  type: LayerType.Note;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
-  value?: string;
-};
 
 export type Point = {
   x: number;
@@ -190,5 +187,3 @@ export enum CanvasMode {
   EdgeEditing,
   Typing,
 }
-
-export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;
