@@ -1,9 +1,22 @@
 /* eslint-disable no-unused-vars */
-import { Edge, Node } from "reactflow";
+import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps, Layer, QuestionAnswersProps, User } from "@/_types";
+import { CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
 import { socket } from "@/socket";
+
+// ================   CANVAS STATE   ================== //
+
+// const [canvasState, setCanvasState] = useState<CanvasState>({
+//   mode: CanvasMode.None,
+// });
+
+export const canvasStateAtom = atom<CanvasState>({
+  key: "canvasState", // unique ID (with respect to other atoms/selectors)
+  default: {
+    mode: CanvasMode.None,
+  }, // valeur par défaut (alias valeur initials)
+});
 
 // ================   USER STATE   ================== //
 
@@ -75,9 +88,36 @@ export const activeLayersAtom = atom({
   effects: [socketActiveLayerEffect],
 });
 
-export const hoveredLayerIdAtomState = atom<String>({
+export const hoveredLayerIdAtomState = atom<string>({
   key: "hoveredLayerIdAtomState", // unique ID (with respect to other atoms/selectors)
   default: "", // valeur par défaut (alias valeur initials)
+});
+
+// ================   EDGES STATES   ================== //
+
+export const edgesAtomState = atom<Edge[]>({
+  key: "edgesAtomState", // unique ID (with respect to other atoms/selectors)
+  default: [], // valeur par défaut (alias valeur initials)
+});
+
+export const activeEdgeIdAtom = atom<string | null>({
+  key: "activeEdgeIdAtom",
+  default: null,
+});
+
+export const hoveredEdgeIdAtom = atom<string | null>({
+  key: "hoveredEdgeIdAtom",
+  default: null,
+});
+
+export const isEdgeNearLayerAtom = atom<boolean>({
+  key: "isEdgeNearLayerAtom",
+  default: true,
+});
+
+export const nearestLayerAtom = atom<Layer | null>({
+  key: "nearestLayerAtom",
+  default: null,
 });
 
 // ================   PROMPT STATES  ================== //
@@ -107,10 +147,10 @@ export const nodesState = atom<Node[]>({
   default: [],
 });
 
-export const edgesState = atom<Edge[]>({
-  key: "edgesState",
-  default: [],
-});
+// export const edgesState = atom<Edge[]>({
+//   key: "edgesState",
+//   default: [],
+// });
 
 export const streamedAnswersState = atom<ChatMessageProps[]>({
   key: "streamedAnswersState",

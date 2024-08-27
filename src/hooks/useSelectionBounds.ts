@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import { useRecoilValue } from "recoil";
 
 import { Layer, XYWH } from "@/_types";
-import { activeLayersAtom, hoveredLayerIdAtomState, layerAtomState } from "@/state";
+import { activeLayersAtom, isEdgeNearLayerAtom, layerAtomState, nearestLayerAtom } from "@/state";
 
 const boundingBox = (layers: Layer[]): XYWH | null => {
   const first = layers[0];
@@ -47,22 +47,27 @@ const useSelectionBounds = () => {
   const currentUserId = session.data?.session?.user?.id;
 
   const layers = useRecoilValue(layerAtomState);
-
   const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
+  const nearestLayer = useRecoilValue(nearestLayerAtom);
 
   const activeLayerIDs = allActiveLayers
     .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
     .map((item) => item.layerIds)[0];
 
-  const hoveredLayerID = useRecoilValue(hoveredLayerIdAtomState);
-
   const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
   if (selectedLayers.length > 0) return boundingBox(selectedLayers);
 
-  const hoveredLayer = layers.filter((layer) => layer.id == hoveredLayerID);
-
-  return boundingBox(hoveredLayer);
+  // Return the bounds of the nearest layer when an edge is near it
+  if (isEdgeNearLayer && nearestLayer) {
+    return {
+      x: nearestLayer.x,
+      y: nearestLayer.y,
+      width: nearestLayer.width,
+      height: nearestLayer.height,
+    };
+  }
 };
 
 export { useSelectionBounds };

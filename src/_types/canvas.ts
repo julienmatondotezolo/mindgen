@@ -11,13 +11,6 @@ export type Camera = {
   scale: number;
 };
 
-export enum LayerType {
-  Note,
-  Rectangle,
-  Ellipse,
-  Path,
-}
-
 export enum HandlePosition {
   Top,
   Left,
@@ -25,38 +18,77 @@ export enum HandlePosition {
   Bottom,
 }
 
-export type RectangleLayer = {
+export type EdgeOrientation = "auto" | "0" | "90" | "-180" | "180" | "270";
+
+export enum EdgeType {
+  Solid,
+  Dashed,
+}
+
+export type Edge = {
   id: string;
+  handleStart?: HandlePosition;
+  handleEnd?: HandlePosition;
+  fromLayerId?: string;
+  toLayerId?: string;
+  start: Point;
+  end: Point;
+  controlPoint1?: Point;
+  controlPoint2?: Point;
+  color: Color;
+  hoverColor: Color;
+  thickness: number;
+  orientation: EdgeOrientation;
+  type: EdgeType;
+};
+
+export enum LayerType {
+  Note,
+  Rectangle,
+  Ellipse,
+  Path,
+}
+
+export type LayerBorderType = "solid" | "dashed";
+
+export type ValueStyle = {
+  // fontSize: number;
+  // fontFamily: string;
+  // fontStyle: string;
+  fontWeight: string;
+  textTransform: string;
+};
+
+export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;
+
+export type LayerWithGeometry = {
+  id: string;
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+  fill: Color;
+  value?: string;
+  valueStyle?: ValueStyle;
+  borderWidth?: number;
+  borderType?: LayerBorderType;
+};
+
+export type RectangleLayer = LayerWithGeometry & {
   type: LayerType.Rectangle;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
-  value?: string;
 };
 
-export type EllipseLayer = {
-  id: string;
+export type EllipseLayer = LayerWithGeometry & {
   type: LayerType.Ellipse;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
-  value?: string;
 };
 
-export type PathLayer = {
-  id: string;
+export type PathLayer = LayerWithGeometry & {
   type: LayerType.Path;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
   points: number[][];
-  value?: string;
+};
+
+export type NoteLayer = LayerWithGeometry & {
+  type: LayerType.Note;
 };
 
 // export type TextLayer = {
@@ -68,17 +100,6 @@ export type PathLayer = {
 //   fill: Color;
 //   value?: string;
 // };
-
-export type NoteLayer = {
-  id: string;
-  type: LayerType.Note;
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-  fill: Color;
-  value?: string;
-};
 
 export type Point = {
   x: number;
@@ -107,6 +128,22 @@ export type CanvasState =
       mode: CanvasMode.Grab;
     }
   | {
+      mode: CanvasMode.EdgeActive;
+      origin?: Point;
+    }
+  | {
+      mode: CanvasMode.Edge;
+      origin?: Point;
+      current?: Point;
+    }
+  | {
+      mode: CanvasMode.EdgeDrawing;
+    }
+  | {
+      mode: CanvasMode.EdgeEditing;
+      editingEdge: { id: string; handlePosition: "start" | "middle" | "end"; startPoint: Point };
+    }
+  | {
       mode: CanvasMode.Pressing;
       origin: Point;
     }
@@ -130,6 +167,9 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Pencil;
+    }
+  | {
+      mode: CanvasMode.Typing;
     };
 
 export enum CanvasMode {
@@ -141,6 +181,9 @@ export enum CanvasMode {
   Translating,
   Resizing,
   Pencil,
+  Edge,
+  EdgeActive,
+  EdgeDrawing,
+  EdgeEditing,
+  Typing,
 }
-
-export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;

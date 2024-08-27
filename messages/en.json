@@ -115,5 +115,8 @@
     "contributor": "Contributor",
     "owner": "Owner",
     "viewer": "Viewer"
+  },
+  "Whiteboard": {
+    "typeSomething": "Type something..."
   }
 }

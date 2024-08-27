@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
-import { Circle, Hand, MousePointer2, Redo2, Square, Undo2 } from "lucide-react";
+import { Circle, Hand, MousePointer2, MoveRight, Redo2, Square, Type, Undo2 } from "lucide-react";
 import React from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { CanvasMode, CanvasState, LayerType } from "@/_types";
-import { activeLayersAtom, useUndoRedo } from "@/state";
+import { activeEdgeIdAtom, activeLayersAtom, useUndoRedo } from "@/state";
 
 import { ToolButton } from "./ToolButton";
 
@@ -16,6 +16,7 @@ interface ToolbarProps {
 const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
   const { undo, redo } = useUndoRedo();
   const setActiveLayerIDs = useSetRecoilState(activeLayersAtom);
+  const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
 
   return (
     <div className="fixed left-2/4 -translate-x-2/4 top-5 z-50">
@@ -62,6 +63,24 @@ const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
               })
             }
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Ellipse}
+          />
+          <ToolButton
+            icon={MoveRight}
+            onClick={() =>
+              setCanvasState({
+                mode: CanvasMode.Edge,
+              })
+            }
+            isActive={canvasState.mode === CanvasMode.Edge || activeEdgeId === ""}
+          />
+          <ToolButton
+            icon={Type}
+            onClick={() =>
+              setCanvasState({
+                mode: CanvasMode.Typing,
+              })
+            }
+            isActive={canvasState.mode === CanvasMode.Typing}
           />
         </ul>
       </div>

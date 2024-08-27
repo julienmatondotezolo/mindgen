@@ -1,18 +1,21 @@
 /* eslint-disable no-unused-vars */
 "use client";
 
-import { BringToFront, SendToBack, Trash2 } from "lucide-react";
+import { Bold, BringToFront, CaseSensitive, CaseUpper, Ellipsis, PaintBucket, SendToBack, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { Camera, Color, Layer } from "@/_types";
+import { Camera, CanvasMode, Color, Layer } from "@/_types";
 import { Button } from "@/components/ui/button";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
 import {
   activeLayersAtom,
   boardIdState,
+  canvasStateAtom,
+  edgesAtomState,
   layerAtomState,
+  useRemoveEdge,
   useRemoveElement,
   useSelectElement,
   useUnSelectElement,
@@ -20,6 +23,7 @@ import {
 } from "@/state";
 
 import { ColorPicker } from "../colorPicker";
+import { ToolButton } from "../ToolButton";
 
 interface SelectionToolsProps {
   camera: Camera;
@@ -35,68 +39,31 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
   const activeLayerIDs = allActiveLayers
     .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds[0]);
+    .map((item) => item.layerIds)[0];
 
   const boardId = useRecoilValue(boardIdState);
+  const canvasState = useRecoilValue(canvasStateAtom);
+  const edges = useRecoilValue(edgesAtomState);
 
+  const removeEdge = useRemoveEdge({ roomId: boardId });
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
   const updateLayer = useUpdateElement({ roomId: boardId });
   const removeLayer = useRemoveElement({ roomId: boardId });
 
   const selectionBounds = useSelectionBounds();
 
-  //   const handleMoveToBack = useCallback(() => {
-  //     const indices: number[] = [];
-
-  //     const arr = layers;
-
-  //     for (let i = 0; i < arr.length; i++) {
-  //       if (activeLayerIDs.includes(layers[i].id)) {
-  //         indices.push(i);
-  //       }
-  //     }
-
-  //     for (let i = 0; i < indices.length; i++) {
-  //       liveLayerIds.move(indices[i], i);
-  //     }
-  //   }, [selection]);
-
-  //   const handleMoveToFront = useCallback(() => {
-  //     const liveLayerIds = storage.get("layerIds");
-
-  //     const indices: number[] = [];
-
-  //     const arr = liveLayerIds.toImmutable();
-
-  //     for (let i = 0; i < arr.length; i++) {
-  //       if (selection.includes(arr[i])) {
-  //         indices.push(i);
-  //       }
-  //     }
-
-  //     for (let i = indices.length - 1; i >= 0; i--) {
-  //       liveLayerIds.move(indices[i], arr.length - 1 - (indices.length - 1 - i));
-  //     }
-  //   }, [selection]);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const handleColorChange = useCallback(
     (fill: Color) => {
       setLastUsedColor(fill);
 
-      const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
-
-      const updatedLayers = selectedLayers.map((layer) => ({
-        ...layer,
-        fill: fill,
-      }));
-
-      for (const layer of updatedLayers) {
-        if (layer) {
-          updateLayer(layer.id, { fill: layer.fill });
-        }
+      for (const layerId of activeLayerIDs) {
+        updateLayer(layerId, { fill: fill });
       }
+      setShowColorPicker(false);
     },
-    [activeLayerIDs, layers, setLastUsedColor, updateLayer],
+    [activeLayerIDs, setLastUsedColor, updateLayer],
   );
 
   const handleRemoveLayer = useCallback(() => {
@@ -107,42 +74,138 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     for (const layer of selectedLayers) {
       if (layer) {
         removeLayer(layer.id);
+
+        edges.forEach((edge) => {
+          if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
+            removeEdge(edge.id);
+          }
+        });
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, removeLayer, unSelectLayer]);
+  }, [activeLayerIDs, currentUserId, edges, layers, removeEdge, removeLayer, unSelectLayer]);
 
-  if (!selectionBounds) return null;
+  const handleToggleBorderType = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
 
-  const x = selectionBounds.width / 2 + selectionBounds.x - camera.x;
-  const y = selectionBounds.y + camera.y;
+      if (layer) {
+        updateLayer(layerId, { borderType: layer.borderType === "dashed" ? "solid" : "dashed" });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
 
-  if (activeLayerIDs.length > 0)
-    return (
+  const handleToggleBorderWidth = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        updateLayer(layerId, { borderWidth: layer.borderWidth === 4 ? 2 : 4 });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleTextTransform = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        updateLayer(layerId, {
+          valueStyle: {
+            ...layer.valueStyle,
+            textTransform: layer.valueStyle?.textTransform === "uppercase" ? "none" : "uppercase",
+          },
+        });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleFontWeight = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        updateLayer(layerId, {
+          valueStyle: {
+            ...layer.valueStyle,
+            fontWeight: layer.valueStyle?.fontWeight === "900" ? "400" : "900",
+          },
+        });
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  if (!selectionBounds || canvasState.mode === CanvasMode.EdgeEditing) return null;
+
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  const selectionToolsWidth = 200;
+  const selectionToolsHeight = 60;
+
+  // const x = selectionBounds.width / 2 + selectionBounds.x - camera.x;
+  // const y = selectionBounds.y + camera.y;
+
+  // const x = (selectionBounds.width / 2 + selectionBounds.x) * camera.scale + camera.x;
+  // const y = selectionBounds.y * camera.scale + camera.y;
+
+  const x = Math.min(
+    Math.max((selectionBounds.width / 2 + selectionBounds.x) * camera.scale + camera.x, 0),
+    viewportWidth - selectionToolsWidth,
+  );
+  const y = Math.min(
+    Math.max(selectionBounds.y * camera.scale + camera.y - selectionToolsHeight, 0),
+    viewportHeight - selectionToolsHeight,
+  );
+
+  return (
+    <>
+      {showColorPicker && (
+        <div
+          className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+          // style={{
+          //   transform: `translate(${x - 50}px, ${y - 150}px)`,
+          // }}
+          style={{
+            transform: `translate(
+            calc(${x}px - 50%),
+            calc(${y}px - 160%)
+          )`,
+          }}
+        >
+          <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
+        </div>
+      )}
       <div
-        className="absolute p-3 rounded-xl bg-white shadow-sm border flex select-none"
+        className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
         style={{
           transform: `translate(
             calc(${x}px - 50%),
-            calc(${y - 64}px - 100%)
+            calc(${y}px - 100%)
           )`,
         }}
       >
-        <ColorPicker onChange={handleColorChange} />
-        {/* <div className="flex flex-col gap-y-0.5">
-        <Button variant="board" size="icon" onClick={handleMoveToFront}>
-          <BringToFront />
-        </Button>
-        <Button variant="board" size="icon" onClick={handleMoveToBack}>
-          <SendToBack />
-        </Button>
-      </div> */}
-        <div className="flex items-center pl-2 ml-2 border-l">
+        <ul className="flex flex-row space-x-2 items-center justify-between">
+          <ToolButton
+            icon={PaintBucket}
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            isActive={showColorPicker}
+          />
+          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+          <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={false} />
+          <Button variant="board" size="icon" onClick={handleToggleBorderWidth}>
+            <div className={`w-[20px] h-[5px] dark:bg-slate-200 bg-slate-950`}></div>
+          </Button>
+          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+          <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={false} />
+          <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={false} />
+          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
           <Button variant="board" size="icon" onClick={handleRemoveLayer}>
             <Trash2 />
           </Button>
-        </div>
+        </ul>
       </div>
-    );
+    </>
+  );
 });
 
 SelectionTools.displayName = "SelectionTools";
