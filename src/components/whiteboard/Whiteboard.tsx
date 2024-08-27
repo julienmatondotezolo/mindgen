@@ -212,6 +212,7 @@ const Whiteboard = ({
         // If Shift is held, add the layerId to the activeLayerIds array without removing others
 
         ids.push(layerId);
+        console.log('ids:', ids);
 
         selectLayer({ userId: currentUserId, layerIds: ids });
 
@@ -230,7 +231,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [canvasState, camera, activeLayerIDs, setCanvasState, ids, selectLayer, currentUserId, setActiveEdgeId],
+    [canvasState, camera, activeLayerIDs, setCanvasState, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -492,6 +493,14 @@ const Whiteboard = ({
   const handleUnSelectLayer = useCallback(() => {
     unSelectLayer({ userId: currentUserId });
   }, [currentUserId, unSelectLayer]);
+
+  const sortLayersBySelection = useCallback((layersToSort: Layer[]) => [...layersToSort].sort((a, b) => {
+    const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
+    const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
+
+    return aSelected - bSelected;
+  }), [activeLayerIDs]);
+
 
   // ================  EDGES  ================== //
 
@@ -1362,7 +1371,7 @@ const Whiteboard = ({
               </g>
             );
           })}
-          {layers?.map((layer) => (
+          {sortLayersBySelection(layers).map((layer) => (
             <LayerPreview
               key={layer.id}
               layer={layer}

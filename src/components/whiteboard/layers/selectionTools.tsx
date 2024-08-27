@@ -54,6 +54,11 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
   const [showColorPicker, setShowColorPicker] = useState(false);
 
+  const [isDashed, setIsDashed] = useState(false);
+  const [isThickBorder, setIsThickBorder] = useState(false);
+  const [isUppercase, setIsUppercase] = useState(false);
+  const [isBold, setIsBold] = useState(false);
+
   const handleColorChange = useCallback(
     (fill: Color) => {
       setLastUsedColor(fill);
@@ -65,6 +70,69 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     },
     [activeLayerIDs, setLastUsedColor, updateLayer],
   );
+
+  const handleToggleBorderType = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        const newBorderType = layer.borderType === "dashed" ? "solid" : "dashed";
+
+        updateLayer(layerId, { borderType: newBorderType });
+
+        setIsDashed(newBorderType === "dashed");
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleBorderWidth = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        const newBorderWidth = layer.borderWidth === 4 ? 2 : 4;
+
+        updateLayer(layerId, { borderWidth: newBorderWidth });
+        setIsThickBorder(newBorderWidth === 4);
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleTextTransform = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        const newTextTransform = layer.valueStyle?.textTransform === "uppercase" ? "none" : "uppercase";
+
+        updateLayer(layerId, {
+          valueStyle: {
+            ...layer.valueStyle,
+            textTransform: newTextTransform,
+          },
+        });
+        setIsUppercase(newTextTransform === "uppercase");
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
+
+  const handleToggleFontWeight = useCallback(() => {
+    for (const layerId of activeLayerIDs) {
+      const layer = layers.find((l) => l.id === layerId);
+
+      if (layer) {
+        const newFontWeight = layer.valueStyle?.fontWeight === "900" ? "400" : "900";
+
+        updateLayer(layerId, {
+          valueStyle: {
+            ...layer.valueStyle,
+            fontWeight: newFontWeight,
+          },
+        });
+        setIsBold(newFontWeight === "900");
+      }
+    }
+  }, [activeLayerIDs, layers, updateLayer]);
 
   const handleRemoveLayer = useCallback(() => {
     const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
@@ -83,56 +151,6 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       }
     }
   }, [activeLayerIDs, currentUserId, edges, layers, removeEdge, removeLayer, unSelectLayer]);
-
-  const handleToggleBorderType = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
-      const layer = layers.find((l) => l.id === layerId);
-
-      if (layer) {
-        updateLayer(layerId, { borderType: layer.borderType === "dashed" ? "solid" : "dashed" });
-      }
-    }
-  }, [activeLayerIDs, layers, updateLayer]);
-
-  const handleToggleBorderWidth = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
-      const layer = layers.find((l) => l.id === layerId);
-
-      if (layer) {
-        updateLayer(layerId, { borderWidth: layer.borderWidth === 4 ? 2 : 4 });
-      }
-    }
-  }, [activeLayerIDs, layers, updateLayer]);
-
-  const handleToggleTextTransform = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
-      const layer = layers.find((l) => l.id === layerId);
-
-      if (layer) {
-        updateLayer(layerId, {
-          valueStyle: {
-            ...layer.valueStyle,
-            textTransform: layer.valueStyle?.textTransform === "uppercase" ? "none" : "uppercase",
-          },
-        });
-      }
-    }
-  }, [activeLayerIDs, layers, updateLayer]);
-
-  const handleToggleFontWeight = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
-      const layer = layers.find((l) => l.id === layerId);
-
-      if (layer) {
-        updateLayer(layerId, {
-          valueStyle: {
-            ...layer.valueStyle,
-            fontWeight: layer.valueStyle?.fontWeight === "900" ? "400" : "900",
-          },
-        });
-      }
-    }
-  }, [activeLayerIDs, layers, updateLayer]);
 
   if (!selectionBounds || canvasState.mode === CanvasMode.EdgeEditing) return null;
 
@@ -191,13 +209,13 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
             isActive={showColorPicker}
           />
           <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={false} />
-          <Button variant="board" size="icon" onClick={handleToggleBorderWidth}>
+          <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={isDashed} />
+          <Button variant={isThickBorder ? "boardActive" : "board"} size="icon" onClick={handleToggleBorderWidth}>
             <div className={`w-[20px] h-[5px] dark:bg-slate-200 bg-slate-950`}></div>
           </Button>
           <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={false} />
-          <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={false} />
+          <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={isUppercase} />
+          <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={isBold} />
           <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
           <Button variant="board" size="icon" onClick={handleRemoveLayer}>
             <Trash2 />
