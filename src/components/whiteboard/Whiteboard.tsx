@@ -106,7 +106,7 @@ const Whiteboard = ({
 
   // ================  CONSTANT LAYERS  ================== //
 
-  const layers = useRecoilValue(layerAtomState);
+  const [layers, setLayers] = useRecoilState(layerAtomState);
 
   const allActiveLayers = useRecoilValue(activeLayersAtom);
   const activeLayerIDs = allActiveLayers
@@ -343,24 +343,23 @@ const Whiteboard = ({
         y: point.y - canvasState.current.y,
       };
 
-      const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
-
-      const updatedLayers = selectedLayers.map((layer) => ({
-        ...layer,
-        x: layer.x + offset.x,
-        y: layer.y + offset.y,
-      }));
-
-      for (const layer of updatedLayers) {
-        if (layer) {
-          updateLayer(layer.id, { x: layer.x, y: layer.y });
-        }
-      }
+      setLayers((prevLayers) => 
+        prevLayers.map((layer) => {
+          if (activeLayerIDs?.includes(layer.id)) {
+            return {
+              ...layer,
+              x: layer.x + offset.x,
+              y: layer.y + offset.y,
+            };
+          }
+          return layer;
+        })
+      );
 
       // Update all edges
       const updatedEdges = edges.map((edge) => {
-        const isSource = selectedLayers.find((layer) => layer.id === edge.fromLayerId);
-        const isTarget = selectedLayers.find((layer) => layer.id === edge.toLayerId);
+        const isSource = activeLayerIDs?.includes(edge.fromLayerId);
+        const isTarget = activeLayerIDs?.includes(edge.toLayerId);
 
         if (!isSource && !isTarget) {
           return edge;
@@ -387,7 +386,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [activeLayerIDs, canvasState, edges, layers, setCanvasState, setEdges, updateLayer],
+    [activeLayerIDs, canvasState, edges, setLayers, setEdges, setCanvasState],
   );
 
   const resizeSelectedLayer = useCallback(
@@ -400,58 +399,59 @@ const Whiteboard = ({
       const MIN_WIDTH = 100; // Minimum width in pixels
       const MIN_HEIGHT = 50; // Minimum height in pixels
 
-      const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
-      const layer = selectedLayers[0];
-
-      if (!layer) return;
-
-      const initialBounds = canvasState.initialBounds;
-      let newBounds = resizeBounds(initialBounds, canvasState.corner, point);
-
-      // Shift key is pressed, maintain aspect ratio
-      if (isShiftPressed) {
-        // Calculate aspect ratio
-        const aspectRatio = initialBounds.width / initialBounds.height;
-
-        // Determine which dimension to adjust based on which changed more
-        const widthChange = Math.abs(newBounds.width - initialBounds.width);
-        const heightChange = Math.abs(newBounds.height - initialBounds.height);
-
-        if (widthChange > heightChange) {
-          newBounds.height = newBounds.width / aspectRatio;
-        } else {
-          newBounds.width = newBounds.height * aspectRatio;
+      setLayers((prevLayers) => prevLayers.map((layer) => {
+        if (!activeLayerIDs?.includes(layer.id)) {
+          return layer;
         }
 
-        // Adjust position if resizing from top or left
-        if (canvasState.corner & Side.Left) {
-          newBounds.x = initialBounds.x + initialBounds.width - newBounds.width;
-        }
-        if (canvasState.corner & Side.Top) {
-          newBounds.y = initialBounds.y + initialBounds.height - newBounds.height;
-        }
-      }
+        const initialBounds = canvasState.initialBounds;
+        let newBounds = resizeBounds(initialBounds, canvasState.corner, point);
 
-      // Prevent resizing below minimum dimensions
-      if (newBounds.width < MIN_WIDTH) {
-        if (canvasState.corner & Side.Left) {
-          newBounds.x = initialBounds.x + initialBounds.width - MIN_WIDTH;
-        }
-        newBounds.width = MIN_WIDTH;
-      }
-      if (newBounds.height < MIN_HEIGHT) {
-        if (canvasState.corner & Side.Top) {
-          newBounds.y = initialBounds.y + initialBounds.height - MIN_HEIGHT;
-        }
-        newBounds.height = MIN_HEIGHT;
-      }
+        // Shift key is pressed, maintain aspect ratio
+        if (isShiftPressed) {
+          // Calculate aspect ratio
+          const aspectRatio = initialBounds.width / initialBounds.height;
 
-      updateLayer(layer.id, newBounds);
+          // Determine which dimension to adjust based on which changed more
+          const widthChange = Math.abs(newBounds.width - initialBounds.width);
+          const heightChange = Math.abs(newBounds.height - initialBounds.height);
+
+          if (widthChange > heightChange) {
+            newBounds.height = newBounds.width / aspectRatio;
+          } else {
+            newBounds.width = newBounds.height * aspectRatio;
+          }
+
+          // Adjust position if resizing from top or left
+          if (canvasState.corner & Side.Left) {
+            newBounds.x = initialBounds.x + initialBounds.width - newBounds.width;
+          }
+          if (canvasState.corner & Side.Top) {
+            newBounds.y = initialBounds.y + initialBounds.height - newBounds.height;
+          }
+        }
+
+        // Prevent resizing below minimum dimensions
+        if (newBounds.width < MIN_WIDTH) {
+          if (canvasState.corner & Side.Left) {
+            newBounds.x = initialBounds.x + initialBounds.width - MIN_WIDTH;
+          }
+          newBounds.width = MIN_WIDTH;
+        }
+        if (newBounds.height < MIN_HEIGHT) {
+          if (canvasState.corner & Side.Top) {
+            newBounds.y = initialBounds.y + initialBounds.height - MIN_HEIGHT;
+          }
+          newBounds.height = MIN_HEIGHT;
+        }
+
+        return { ...layer, ...newBounds };
+      }));
 
       // Update connected edges
       const updatedEdges = edges.map((edge) => {
-        const isSource = edge.fromLayerId === layer.id;
-        const isTarget = edge.toLayerId === layer.id;
+        const isSource = activeLayerIDs?.includes(edge.fromLayerId);
+        const isTarget = activeLayerIDs?.includes(edge.toLayerId);
 
         if (!isSource && !isTarget) {
           return edge;
@@ -478,7 +478,7 @@ const Whiteboard = ({
       // Update the edges state with the updated edges
       setEdges(updatedEdges);
     },
-    [activeLayerIDs, canvasState, layers, updateLayer],
+    [activeLayerIDs, canvasState, edges, setLayers, setEdges],
   );
 
   const handleResizeHandlePointerDown = useCallback(
@@ -749,6 +749,9 @@ const Whiteboard = ({
 
       if (canvasState.mode === CanvasMode.Inserting || canvasState.mode === CanvasMode.Grab) {
         return;
+      } else if (canvasState.mode === CanvasMode.Resizing) {
+        // If we're already in resizing mode, do nothing
+        return;
       } else if (canvasState.mode === CanvasMode.Edge) {
         const selectedLayerId = allActiveLayers[0].layerIds ? allActiveLayers[0].layerIds[0] : "";
         const selectedLayer = layers.find((layer) => layer.id === selectedLayerId);
@@ -911,6 +914,58 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.None,
         });
+      } else if (canvasState.mode === CanvasMode.Translating) {
+        // Update all selected layers
+        const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+        
+        for (const layer of selectedLayers) {
+          updateLayer(layer.id, { x: layer.x, y: layer.y });
+        }
+
+        // Update all edges connected to selected layers
+        const updatedEdges = edges.map((edge) => {
+          const isSource = activeLayerIDs?.includes(edge.fromLayerId);
+          const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+
+          if (!isSource && !isTarget) {
+            return edge;
+          }
+
+          const { id, ...updatedEdge } = edge;
+
+          updateEdge(id, updatedEdge);
+          return edge;
+        });
+
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      } else if (canvasState.mode === CanvasMode.Resizing) {
+        // Update all selected layers
+        const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+        
+        for (const layer of selectedLayers) {
+          updateLayer(layer.id, { x: layer.x, y: layer.y, width: layer.width, height: layer.height });
+        }
+
+        // Update all edges connected to selected layers
+        const updatedEdges = edges.map((edge) => {
+          const isSource = activeLayerIDs?.includes(edge.fromLayerId);
+          const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+
+          if (!isSource && !isTarget) {
+            return edge;
+          }
+
+          const { id, ...updatedEdge } = edge;
+
+          updateEdge(id, updatedEdge);
+          return edge;
+        });
+
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
       } else if (canvasState.mode === CanvasMode.Grab) {
         setCanvasState({
           mode: CanvasMode.Grab,
@@ -1021,10 +1076,12 @@ const Whiteboard = ({
       setActiveEdgeId,
       edges,
       layers,
+      activeLayerIDs,
+      updateLayer,
+      updateEdge,
       addLayer,
       selectLayer,
       currentUserId,
-      updateEdge,
       insertLayer,
     ],
   );
