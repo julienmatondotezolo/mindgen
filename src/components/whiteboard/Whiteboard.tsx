@@ -1,5 +1,8 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-unsafe-optional-chaining */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-// src/components/Canvas.tsx
+
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -445,13 +448,16 @@ const Whiteboard = ({
     [activeLayerIDs, canvasState, layers, updateLayer],
   );
 
-  const handleResizeHandlePointerDown = useCallback((corner: Side, initialBounds: XYWH) => {
-    setCanvasState({
-      mode: CanvasMode.Resizing,
-      initialBounds,
-      corner,
-    });
-  }, []);
+  const handleResizeHandlePointerDown = useCallback(
+    (corner: Side, initialBounds: XYWH) => {
+      setCanvasState({
+        mode: CanvasMode.Resizing,
+        initialBounds,
+        corner,
+      });
+    },
+    [setCanvasState],
+  );
 
   // ================  LAYERS SELECTIONS  ================== //
 
