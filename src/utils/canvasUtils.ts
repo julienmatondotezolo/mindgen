@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import {
   Camera,
   Color,
+  Edge,
   EdgeOrientation,
   HandlePosition,
   Layer,
@@ -273,62 +274,28 @@ export const calculateBezierPoint = (t: number, p0: Point, p1: Point, p2: Point,
   };
 };
 
-export function getSvgPathFromStroke(stroke: number[][]) {
-  if (!stroke.length) return "";
+export function isEdgeCloseToLayer(edge: Edge, layer: Layer, threshold: number): boolean {
+  const edgeStart = edge.start;
+  const edgeEnd = edge.end;
+  const HANDLE_DISTANCE = 30;
 
-  const d = stroke.reduce(
-    (acc, [x0, y0], i, arr) => {
-      const [x1, y1] = arr[(i + 1) % arr.length];
+  const layerHandles = [
+    { x: layer.x + layer.width / 2, y: layer.y - HANDLE_DISTANCE },
+    { x: layer.x + layer.width + HANDLE_DISTANCE, y: layer.y + layer.height / 2 },
+    { x: layer.x + layer.width / 2, y: layer.y + layer.height + HANDLE_DISTANCE },
+    { x: layer.x - HANDLE_DISTANCE, y: layer.y + layer.height / 2 },
+  ];
 
-      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-      return acc;
-    },
-    ["M", ...stroke[0], "Q"],
-  );
+  for (const handle of layerHandles) {
+    const distanceStart = Math.sqrt(Math.pow(edgeStart.x - handle.x, 2) + Math.pow(edgeStart.y - handle.y, 2));
+    const distanceEnd = Math.sqrt(Math.pow(edgeEnd.x - handle.x, 2) + Math.pow(edgeEnd.y - handle.y, 2));
 
-  d.push("Z");
-  return d.join(" ");
-}
-
-export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
-  if (points.length < 2) {
-    throw new Error("Cannot transform points with less than 2 points");
-  }
-
-  let left = Number.POSITIVE_INFINITY;
-  let top = Number.POSITIVE_INFINITY;
-  let right = Number.NEGATIVE_INFINITY;
-  let bottom = Number.NEGATIVE_INFINITY;
-
-  for (const point of points) {
-    const [x, y] = point;
-
-    if (left > x) {
-      left = x;
-    }
-
-    if (top > y) {
-      top = y;
-    }
-
-    if (right < x) {
-      right = x;
-    }
-
-    if (bottom < y) {
-      bottom = y;
+    if (distanceStart <= threshold || distanceEnd <= threshold) {
+      return true;
     }
   }
 
-  return {
-    type: LayerType.Path,
-    x: left,
-    y: top,
-    width: right - left,
-    height: bottom - top,
-    fill: color,
-    points: points.map(([x, y, pressure]) => [x - left, y - top, pressure]),
-  };
+  return false;
 }
 
 export function calculateNewLayerPositions(
@@ -417,3 +384,61 @@ export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition |
       return { x: bounds.x, y: bounds.y };
   }
 };
+
+export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
+  if (points.length < 2) {
+    throw new Error("Cannot transform points with less than 2 points");
+  }
+
+  let left = Number.POSITIVE_INFINITY;
+  let top = Number.POSITIVE_INFINITY;
+  let right = Number.NEGATIVE_INFINITY;
+  let bottom = Number.NEGATIVE_INFINITY;
+
+  for (const point of points) {
+    const [x, y] = point;
+
+    if (left > x) {
+      left = x;
+    }
+
+    if (top > y) {
+      top = y;
+    }
+
+    if (right < x) {
+      right = x;
+    }
+
+    if (bottom < y) {
+      bottom = y;
+    }
+  }
+
+  return {
+    type: LayerType.Path,
+    x: left,
+    y: top,
+    width: right - left,
+    height: bottom - top,
+    fill: color,
+    points: points.map(([x, y, pressure]) => [x - left, y - top, pressure]),
+  };
+}
+
+export function getSvgPathFromStroke(stroke: number[][]) {
+  if (!stroke.length) return "";
+
+  const d = stroke.reduce(
+    (acc, [x0, y0], i, arr) => {
+      const [x1, y1] = arr[(i + 1) % arr.length];
+
+      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
+      return acc;
+    },
+    ["M", ...stroke[0], "Q"],
+  );
+
+  d.push("Z");
+  return d.join(" ");
+}
