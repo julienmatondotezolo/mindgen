@@ -19,7 +19,7 @@ import {
 import { HandleButton } from "../HandleButton";
 
 interface LayerHandlesProps {
-  onMouseEnter: (e: React.MouseEvent) => void;
+  onMouseEnter: (e: React.MouseEvent, layerId: string, position: HandlePosition) => void;
   onMouseLeave: (e: React.MouseEvent) => void;
   onPointerDown: (e: React.PointerEvent, layerId: string) => void;
   onPointerUp: (layerId: String, position: HandlePosition) => void;
@@ -93,7 +93,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         y={bounds.y - HANDLE_DISTANCE - HANDLE_WIDTH / 2}
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Top)}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Top)}
@@ -109,7 +109,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         y={bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Right)}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Right)}
@@ -125,7 +125,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         y={bounds.y + bounds.height + HANDLE_DISTANCE - HANDLE_WIDTH / 2}
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Bottom)}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Bottom)}
@@ -141,7 +141,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         y={bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Left)}
         onMouseLeave={onMouseLeave}
         onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Left)}

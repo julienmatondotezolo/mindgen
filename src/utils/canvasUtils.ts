@@ -43,10 +43,21 @@ export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera,
 };
 
 export function colorToCss(color: Color) {
+  if (!color) return "#ff0000";
+
   return `#${color.r.toString(16).padStart(2, "0")}${color.g.toString(16).padStart(2, "0")}${color.b
     .toString(16)
     .padStart(2, "0")}`;
 }
+
+export const fillRGBA = (fill: Color, theme: string | undefined) => {
+  if (!fill) return "rgba(0, 0, 0, 0.5)";
+  const { r, g, b } = fill;
+
+  const opacity = theme === "dark" ? 0.7 : 1.0;
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 
 export const findNonOverlappingPosition = ({
   newPosition,
