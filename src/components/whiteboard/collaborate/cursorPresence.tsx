@@ -22,7 +22,7 @@ const Cursors = () => {
     socketListen("connected-users", (data) => {
       setConnectedUsers(data); // Update state instead of ref
     });
-  }, []);
+  }, [socketListen]);
 
   return (
     <>

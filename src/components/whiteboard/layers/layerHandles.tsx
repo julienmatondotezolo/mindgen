@@ -21,7 +21,7 @@ import { HandleButton } from "../HandleButton";
 interface LayerHandlesProps {
   onMouseEnter: (e: React.MouseEvent, layerId: string, position: HandlePosition) => void;
   onMouseLeave: (e: React.MouseEvent) => void;
-  onPointerDown: (e: React.PointerEvent, layerId: string) => void;
+  onPointerDown: (e: React.PointerEvent, layerId: string, position: HandlePosition) => void;
   onPointerUp: (layerId: String, position: HandlePosition) => void;
 }
 
@@ -95,7 +95,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         height={HANDLE_WIDTH}
         onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Top)}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!, HandlePosition.Top)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Top)}
       >
         <div style={handleStyle} className={handleStyleHover}>
@@ -111,7 +111,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         height={HANDLE_WIDTH}
         onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Right)}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!, HandlePosition.Right)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Right)}
       >
         <div style={handleStyle} className={handleStyleHover}>
@@ -127,7 +127,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         height={HANDLE_WIDTH}
         onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Bottom)}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!, HandlePosition.Bottom)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Bottom)}
       >
         <div style={handleStyle} className={handleStyleHover}>
@@ -143,7 +143,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
         height={HANDLE_WIDTH}
         onMouseEnter={(e) => onMouseEnter(e, handleLayerId!, HandlePosition.Left)}
         onMouseLeave={onMouseLeave}
-        onPointerDown={(e) => onPointerDown(e, handleLayerId!)}
+        onPointerDown={(e) => onPointerDown(e, handleLayerId!, HandlePosition.Left)}
         onPointerUp={() => onPointerUp(handleLayerId!, HandlePosition.Left)}
       >
         <div style={handleStyle} className={handleStyleHover}>

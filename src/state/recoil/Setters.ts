@@ -1,10 +1,7 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
-
 import { produce } from "immer";
-import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, useSetRecoilState } from "recoil";
+import { useRecoilCallback, useSetRecoilState } from "recoil";
 
-import { Edge, Layer, User } from "@/_types";
+import { Edge, Layer } from "@/_types";
 import { useSocket } from "@/hooks";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
@@ -61,7 +58,7 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
           return updatedActiveLayers;
         });
       },
-    [],
+    [roomId, socketEmit],
   );
 };
 
@@ -90,7 +87,7 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 
         setActiveLayers([layer.id]);
       },
-    [],
+    [addToHistory, roomId, setActiveLayers, socketEmit],
   );
 };
 
@@ -130,8 +127,6 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
 
   const addToHistory = useAddToHistoryPrivate();
 
-  const layers = useRecoilValue(layerAtomState);
-
   return useRecoilCallback(
     ({ set }) =>
       (id: string) => {
@@ -149,7 +144,9 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
                 socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
               }
             },
-            addToHistory,
+            (patches, inversePatches) => {
+              addToHistory(patches, inversePatches, "layer");
+            },
           ),
         );
       },
@@ -223,8 +220,6 @@ export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
   const { socketEmit } = useSocket();
 
   const addToHistory = useAddToHistoryPrivate();
-
-  const layers = useRecoilValue(edgesAtomState);
 
   return useRecoilCallback(
     ({ set }) =>

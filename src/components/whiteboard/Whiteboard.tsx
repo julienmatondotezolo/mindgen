@@ -1,3 +1,4 @@
+/* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable prettier/prettier */
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
@@ -78,7 +79,7 @@ const Whiteboard = ({
 
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
-  const [lastUsedColor, setLastUsedColor] = useState<Color>({
+  const [, setLastUsedColor] = useState<Color>({
     r: 50,
     g: 20,
     b: 188,
@@ -164,6 +165,7 @@ const Whiteboard = ({
   const [drawingEdge, setDrawingEdge] = useState<{
     ongoing: boolean;
     lastEdgeId?: string;
+    fromHandlePosition?: HandlePosition;
     fromLayerId?: string;
     endPoint?: Point;
   }>({
@@ -223,7 +225,6 @@ const Whiteboard = ({
         // If Shift is held, add the layerId to the activeLayerIds array without removing others
 
         ids.push(layerId);
-        console.log("ids:", ids);
 
         selectLayer({ userId: currentUserId, layerIds: ids });
 
@@ -242,7 +243,7 @@ const Whiteboard = ({
         current: point,
       });
     },
-    [canvasState, camera, activeLayerIDs, setCanvasState, selectLayer, currentUserId, setActiveEdgeId],
+    [canvasState, camera, activeLayerIDs, ids, setCanvasState, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -284,7 +285,7 @@ const Whiteboard = ({
   );
 
   const onHandleMouseLeave = useCallback(
-    (event: React.MouseEvent) => {
+    () => {
       if (
         canvasState.mode === CanvasMode.EdgeDrawing ||
         canvasState.mode === CanvasMode.SelectionNet ||
@@ -309,11 +310,11 @@ const Whiteboard = ({
   );
 
   const onHandleMouseDown = useCallback(
-    (e: React.PointerEvent, layerId: string) => {
+    (e: React.PointerEvent, layerId: string, position: HandlePosition) => {
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
         updateEdge(drawingEdge.lastEdgeId, { fromLayerId: layerId });
 
-        setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId }));
+        setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId, fromHandlePosition: position }));
       }
     },
     [drawingEdge, updateEdge],
@@ -382,7 +383,7 @@ const Whiteboard = ({
         });
       }
 
-      setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
+      setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined, fromHandlePosition: undefined });
 
       setCanvasState({
         mode: CanvasMode.None,
@@ -452,18 +453,18 @@ const Whiteboard = ({
         return;
       }
 
-      const HANDLE_DISTANCE = 30;
+      // const HANDLE_DISTANCE = 30;
       const MIN_WIDTH = 100; // Minimum width in pixels
       const MIN_HEIGHT = 50; // Minimum height in pixels
+      
+      const initialBounds = canvasState.initialBounds;
+      let newBounds = resizeBounds(initialBounds, canvasState.corner, point);
 
       setLayers((prevLayers) =>
         prevLayers.map((layer) => {
           if (!activeLayerIDs?.includes(layer.id)) {
             return layer;
           }
-
-          const initialBounds = canvasState.initialBounds;
-          let newBounds = resizeBounds(initialBounds, canvasState.corner, point);
 
           // Shift key is pressed, maintain aspect ratio
           if (isShiftPressed) {
@@ -753,6 +754,27 @@ const Whiteboard = ({
         // Exclude the layer we're dragging from
         const filteredLayers = layers.filter((layer) => layer.id !== drawingEdge.fromLayerId);
 
+        const drawingFromLayer = layers.find((layer) => layer.id === drawingEdge.fromLayerId);
+
+        if(drawingFromLayer && drawingEdge.fromHandlePosition) {
+          const { newLayerPosition } = calculateNewLayerPositions(
+            drawingFromLayer,
+            drawingEdge.fromHandlePosition,
+            150, // LAYER_SPACING
+            20, // HANDLE_DISTANCE
+            point
+          );
+
+          setShadowState({
+            showShadow: true,
+            startPosition: null,
+            fromHandlePosition: lastUpdatedEdge.handleStart,
+            layerPosition: newLayerPosition,
+            edgePosition: null,
+            layer: drawingFromLayer,
+          });
+        }
+
         const nearestHandle = findNearestLayerHandle(point, filteredLayers, snapThreshold);
         const nearestLayer = findNearestLayerHandle(point, filteredLayers, layerThreshold);
 
@@ -801,6 +823,7 @@ const Whiteboard = ({
       setEdges,
       setCanvasState,
       handleUnSelectLayer,
+      setShadowState,
     ],
   );
 
@@ -986,19 +1009,19 @@ const Whiteboard = ({
         }
 
         // Update all edges connected to selected layers
-        const updatedEdges = edges.map((edge) => {
-          const isSource = activeLayerIDs?.includes(edge.fromLayerId);
-          const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+        // const updatedEdges = edges.map((edge) => {
+        //   const isSource = activeLayerIDs?.includes(edge.fromLayerId);
+        //   const isTarget = activeLayerIDs?.includes(edge.toLayerId);
 
-          if (!isSource && !isTarget) {
-            return edge;
-          }
+        //   if (!isSource && !isTarget) {
+        //     return edge;
+        //   }
 
-          const { id, ...updatedEdge } = edge;
+        //   const { id, ...updatedEdge } = edge;
 
-          updateEdge(id, updatedEdge);
-          return edge;
-        });
+        //   updateEdge(id, updatedEdge);
+        //   return edge;
+        // });
 
         setCanvasState({
           mode: CanvasMode.None,
@@ -1012,19 +1035,19 @@ const Whiteboard = ({
         }
 
         // Update all edges connected to selected layers
-        const updatedEdges = edges.map((edge) => {
-          const isSource = activeLayerIDs?.includes(edge.fromLayerId);
-          const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+        // const updatedEdges = edges.map((edge) => {
+        //   const isSource = activeLayerIDs?.includes(edge.fromLayerId);
+        //   const isTarget = activeLayerIDs?.includes(edge.toLayerId);
 
-          if (!isSource && !isTarget) {
-            return edge;
-          }
+        //   if (!isSource && !isTarget) {
+        //     return edge;
+        //   }
 
-          const { id, ...updatedEdge } = edge;
+        //   const { id, ...updatedEdge } = edge;
 
-          updateEdge(id, updatedEdge);
-          return edge;
-        });
+        //   updateEdge(id, updatedEdge);
+        //   return edge;
+        // });
 
         setCanvasState({
           mode: CanvasMode.None,
@@ -1041,9 +1064,9 @@ const Whiteboard = ({
         setCanvasState({
           mode: CanvasMode.EdgeActive,
         });
-        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
+        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined, fromHandlePosition: undefined });
       } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
-        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
+        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {      
           const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
           if (!lastUpdatedEdge) return;
@@ -1101,7 +1124,16 @@ const Whiteboard = ({
           }
         }
 
-        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
+        setShadowState({
+          showShadow: false,
+          startPosition: null,
+          fromHandlePosition: undefined,
+          layerPosition: null,
+          edgePosition: null,
+          layer: null,
+        });
+
+        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined, fromHandlePosition: undefined });
         setActiveEdgeId(null);
         setCanvasState({
           mode: CanvasMode.None,
@@ -1117,7 +1149,7 @@ const Whiteboard = ({
           updateEdge(id, updatedProperties);
         }
 
-        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined });
+        setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined, fromHandlePosition: undefined });
         setActiveEdgeId(null);
         setCanvasState({
           mode: CanvasMode.None,
@@ -1431,22 +1463,6 @@ const Whiteboard = ({
             cursor: "pointer",
           }}
         >
-          {shadowState.showShadow && shadowState.edgePosition && shadowState.layerPosition && (
-            <>
-              <ShadowEdge
-                start={shadowState.startPosition}
-                end={shadowState.edgePosition}
-                fromPosition={shadowState.fromHandlePosition}
-              />
-              <ShadowLayer
-                type={shadowState.layer!.type}
-                position={shadowState.layerPosition}
-                width={shadowState.layer!.width}
-                height={shadowState.layer!.height}
-                fill={shadowState.layer!.fill}
-              />
-            </>
-          )}
           {edges.map((edge) => {
             const [controlPoint1, controlPoint2] =
               edge.start && edge.end
@@ -1488,7 +1504,7 @@ const Whiteboard = ({
                   stroke="transparent"
                   strokeWidth={40}
                   fill="transparent"
-                  onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => {
+                  onMouseEnter={() => {
                     if (
                       canvasState.mode === CanvasMode.Grab ||
                       canvasState.mode === CanvasMode.SelectionNet ||
@@ -1546,6 +1562,22 @@ const Whiteboard = ({
               selectionColor={layerIdsToColorSelection[layer.id]}
             />
           ))}
+          {shadowState.showShadow && shadowState.edgePosition && (
+            <ShadowEdge
+              start={shadowState.startPosition}
+              end={shadowState.edgePosition}
+              fromPosition={shadowState.fromHandlePosition}
+            />
+          )}
+          {shadowState.showShadow && shadowState.layerPosition && (
+            <ShadowLayer
+              type={shadowState.layer!.type}
+              position={shadowState.layerPosition}
+              width={shadowState.layer!.width}
+              height={shadowState.layer!.height}
+              fill={shadowState.layer!.fill}
+            />
+          )}
           {activeEdgeId && (
             <EdgeSelectionBox
               edge={edges.find((edge) => edge.id === activeEdgeId)!}
