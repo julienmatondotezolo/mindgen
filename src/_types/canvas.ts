@@ -70,6 +70,7 @@ export type LayerWithGeometry = {
   fill: Color;
   value?: string;
   valueStyle?: ValueStyle;
+  borderColor?: Color;
   borderWidth?: number;
   borderType?: LayerBorderType;
 };

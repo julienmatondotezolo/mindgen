@@ -1499,6 +1499,12 @@ const Whiteboard = ({
                   r={3} // Adjust the radius as needed
                   fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
                 />
+                <circle
+                  cx={edge.end.x}
+                  cy={edge.end.y}
+                  r={3} // Adjust the radius as needed
+                  fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
+                />
                 <path
                   d={pathString}
                   stroke="transparent"
@@ -1537,7 +1543,7 @@ const Whiteboard = ({
                   }}
                   style={{ cursor: "pointer" }}
                 />
-                <marker
+                {/* <marker
                   key={`arrow-${edge.id}`}
                   id={`arrowhead-${edge.id}`}
                   markerWidth={ARROW_SIZE}
@@ -1550,7 +1556,7 @@ const Whiteboard = ({
                     points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
                     fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
                   />
-                </marker>
+                </marker> */}
               </g>
             );
           })}

@@ -6,7 +6,7 @@ import { useRecoilValue } from "recoil";
 
 import { Color, RectangleLayer } from "@/_types";
 import { boardIdState, useUpdateElement } from "@/state";
-import { fillRGBA, getContrastingTextColor } from "@/utils";
+import { colorToCss, fillRGBA, getContrastingTextColor } from "@/utils";
 
 import { CustomContentEditable } from "./customContentEditable";
 
@@ -29,7 +29,7 @@ const calculateFontSize = (width: number, height: number) => {
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
   const { theme } = useTheme();
 
-  const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType } = layer;
+  const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType, borderColor } = layer;
 
   const boardId = useRecoilValue(boardIdState);
 
@@ -38,6 +38,33 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
   const handleContentChange = (newValue: string) => {
     updateLayer(id, { value: newValue });
   };
+
+  const newBorderColor = borderColor
+    ? colorToCss(borderColor)
+    : theme === "dark"
+      ? "rgb(127, 17, 224)"
+      : "rgb(71, 85, 105)";
+
+  // const newBorderColor = () => {
+  //   let newBorderColor: Color;
+
+  //   if (borderColor) {
+  //     newBorderColor = borderColor;
+  //   } else if (theme === "dark") {
+  //     newBorderColor = {
+  //       r: 127,
+  //       g: 17,
+  //       b: 224,
+  //     };
+  //   } else {
+  //     newBorderColor = {
+  //       r: 71,
+  //       g: 85,
+  //       b: 105,
+  //     };
+  //   }
+  //   return newBorderColor;
+  // };
 
   return (
     <>
@@ -50,7 +77,8 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
           backgroundColor: fillRGBA(fill, theme),
           backdropFilter: "blur(5px)",
           WebkitBackdropFilter: "blur(5px)",
-          borderColor: theme === "dark" ? "#b4bfcc" : "#475569",
+          // borderColor: theme === "dark" ? "#b4bfcc" : "#475569",
+          borderColor: newBorderColor,
           borderWidth: borderWidth ? borderWidth : 2,
           borderStyle: borderType ? borderType : "solid",
           borderRadius: "30px",
