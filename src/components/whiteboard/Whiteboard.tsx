@@ -1487,6 +1487,7 @@ const Whiteboard = ({
                   strokeWidth={edge.thickness}
                   strokeDasharray={edge.type === EdgeType.Dashed ? "5,5" : "none"}
                   markerEnd={`url(#arrowhead-${edge.id})`}
+                  markerStart={`url(#arrowheadstart-${edge.id})`}
                   fill="transparent"
                 >
                   {edge.type === EdgeType.Dashed && (
@@ -1496,13 +1497,13 @@ const Whiteboard = ({
                 <circle
                   cx={edge.start.x}
                   cy={edge.start.y}
-                  r={3} // Adjust the radius as needed
+                  r={1 + edge.thickness } // Adjust the radius as needed
                   fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
                 />
                 <circle
                   cx={edge.end.x}
                   cy={edge.end.y}
-                  r={3} // Adjust the radius as needed
+                  r={1 + edge.thickness} // Adjust the radius as needed
                   fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
                 />
                 <path
@@ -1543,20 +1544,38 @@ const Whiteboard = ({
                   }}
                   style={{ cursor: "pointer" }}
                 />
-                {/* <marker
-                  key={`arrow-${edge.id}`}
-                  id={`arrowhead-${edge.id}`}
-                  markerWidth={ARROW_SIZE}
-                  markerHeight={ARROW_SIZE}
-                  refX={ARROW_SIZE / 4}
-                  refY={ARROW_SIZE / 2}
-                  orient={edge.orientation}
-                >
-                  <polygon
-                    points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
-                    fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
-                  />
-                </marker> */}
+                {edge.arrowEnd && (
+                  <marker
+                    key={`arrow-${edge.id}`}
+                    id={`arrowhead-${edge.id}`}
+                    markerWidth={ARROW_SIZE}
+                    markerHeight={ARROW_SIZE}
+                    refX={ARROW_SIZE / 4}
+                    refY={ARROW_SIZE / 2}
+                    orient={edge.orientation}
+                  >
+                    <polygon
+                      points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
+                      fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
+                    />
+                  </marker>
+                )}
+                {edge.arrowStart && (
+                  <marker
+                    key={`arrowheadstart-${edge.id}`}
+                    id={`arrowheadstart-${edge.id}`}
+                    markerWidth={ARROW_SIZE}
+                    markerHeight={ARROW_SIZE}
+                    refX={ARROW_SIZE / 4}
+                    refY={ARROW_SIZE / 2}
+                    orient={parseInt(edge.orientation) * 2}
+                  >
+                    <polygon
+                      points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
+                      fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
+                    />
+                  </marker>
+                )}
               </g>
             );
           })}

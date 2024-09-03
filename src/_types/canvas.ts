@@ -27,6 +27,8 @@ export enum EdgeType {
 
 export type Edge = {
   id: string;
+  arrowStart?: boolean;
+  arrowEnd?: boolean;
   handleStart?: HandlePosition;
   handleEnd?: HandlePosition;
   fromLayerId?: string;

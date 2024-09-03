@@ -1,4 +1,4 @@
-import { Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -75,6 +75,24 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
     }
   }, [selectedEdge, updateEdge]);
 
+  const handleToggleArrow = useCallback(
+    (arrow: string) => {
+      if (arrow == "left" && selectedEdge) {
+        const newArrowEnd = selectedEdge.arrowEnd ? false : true;
+
+        updateEdge(selectedEdge.id, { arrowEnd: newArrowEnd });
+      } else if (arrow == "right" && selectedEdge) {
+        const newArrowStart = selectedEdge.arrowStart ? false : true;
+
+        updateEdge(selectedEdge.id, { arrowStart: newArrowStart });
+      }
+    },
+    [selectedEdge, updateEdge],
+  );
+
+  console.log("arrowEnd:", selectedEdge?.arrowEnd);
+  console.log("arrowStart:", selectedEdge?.arrowStart);
+
   if (!selectedEdge) return null;
 
   const x = (selectedEdge.start.x + selectedEdge.end.x) / 2.5 + camera.x;
@@ -118,6 +136,9 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
               }`}
             ></div>
           </Button>
+          <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+          <ToolButton icon={ArrowLeft} onClick={() => handleToggleArrow("left")} isActive={selectedEdge.arrowEnd} />
+          <ToolButton icon={ArrowRight} onClick={() => handleToggleArrow("right")} isActive={selectedEdge.arrowStart} />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <Button variant="board" size="icon" onClick={handleRemoveEdge}>
             <Trash2 />
