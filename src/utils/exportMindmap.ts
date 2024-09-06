@@ -1,16 +1,15 @@
 import { toLower } from "lodash";
-import { Edge, Node } from "reactflow";
 
-import { MindMapDetailsProps } from "@/_types";
+import { Edge, Layer } from "@/_types";
 
-export async function exportMindmap(edges: Edge[], nodes: Node[]) {
+export async function exportMindmap(edges: Edge[], layer: Layer[]) {
   try {
     // azerty
-    const mindmapObject: MindMapDetailsProps = {};
-    const filename = toLower(nodes[0].data.label);
+    const mindmapObject: any = {};
+    const filename = toLower(layer[0].value);
 
     mindmapObject.edges = edges;
-    mindmapObject.nodes = nodes;
+    mindmapObject.layer = layer;
 
     // Convert the mindmapObject to a JSON string
     const jsonString = JSON.stringify(mindmapObject, null, 2);
