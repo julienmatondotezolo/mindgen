@@ -7,6 +7,7 @@ import {
   Color,
   Edge,
   EdgeOrientation,
+  EdgeType,
   HandlePosition,
   Layer,
   LayerType,
@@ -452,4 +453,13 @@ export function getSvgPathFromStroke(stroke: number[][]) {
 
   d.push("Z");
   return d.join(" ");
+}
+
+//
+export function generateMermaidFlowchart(edges: Edge[], layers: Layer[]): string {
+  const nodes = layers.map((layer) => `${layer.id}[${layer.value}]`).join("\n    ");
+  const connections = edges.map((edge) => `${edge.fromLayerId} --> ${edge.toLayerId}`).join("\n    ");
+
+  console.log(`flowchart TD\n    ${nodes}\n    ${connections}`);
+  return `flowchart TD\n    ${nodes}\n    ${connections}`;
 }

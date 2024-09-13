@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
-export type Color = {
-  r: number;
-  g: number;
-  b: number;
-};
-
 export type Camera = {
   x: number;
   y: number;
   scale: number;
+};
+
+export type Color = {
+  r: number;
+  g: number;
+  b: number;
 };
 
 export enum HandlePosition {

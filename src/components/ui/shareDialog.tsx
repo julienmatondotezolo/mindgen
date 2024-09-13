@@ -7,7 +7,7 @@ import { useRecoilValue } from "recoil";
 
 import { DialogProps } from "@/_types";
 import { edgesAtomState, layerAtomState } from "@/state";
-import { exportMindmap, uppercaseFirstLetter } from "@/utils";
+import { exportMindmap, generateMermaidFlowchart, uppercaseFirstLetter } from "@/utils";
 
 import { Button, Input } from ".";
 
@@ -59,6 +59,7 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
 
   const handleExport = () => {
     exportMindmap(edges, layers);
+    generateMermaidFlowchart(edges, layers);
     setIsOpen(false);
   };
 

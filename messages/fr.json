@@ -119,5 +119,8 @@
   "Whiteboard": {
     "typeSomething": "Tapez quelque chose...",
     "chooseColor": "Choisir une couleur"
+  },
+  "Organization": {
+    "organization": "organisation"
   }
 }

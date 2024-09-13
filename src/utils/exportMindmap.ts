@@ -9,7 +9,7 @@ export async function exportMindmap(edges: Edge[], layer: Layer[]) {
     const filename = toLower(layer[0].value);
 
     mindmapObject.edges = edges;
-    mindmapObject.layer = layer;
+    mindmapObject.layers = layer;
 
     // Convert the mindmapObject to a JSON string
     const jsonString = JSON.stringify(mindmapObject, null, 2);
