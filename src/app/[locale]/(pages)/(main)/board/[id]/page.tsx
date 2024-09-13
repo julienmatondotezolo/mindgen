@@ -12,12 +12,9 @@ import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps, User } from "@/_types";
-import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
-import { NavLeft, NavRight, ToolBar } from "@/components/header";
-import { Mindmap } from "@/components/mindmap/";
-import { Toolbar } from "@/components/mindmap/toolbar";
+import { NavLeft, NavRight } from "@/components/header";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
@@ -146,8 +143,6 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                // <Mindmap userMindmapDetails={userMindmapDetails} currentCollaUsername={currentCollaUsername} />
-                // <Canvas boardId={userMindmapDetails.id} />
                 <Whiteboard userMindmapDetails={userMindmapDetails} boardId={userMindmapDetails.id} />
               )}
             </div>

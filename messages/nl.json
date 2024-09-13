@@ -117,6 +117,10 @@
     "viewer": "Bezoeker"
   },
   "Whiteboard": {
-    "typeSomething": "Schrijf iets..."
+    "typeSomething": "Schrijf iets...",
+    "chooseColor": "Kies een kleur"
+  },
+  "Organization": {
+    "organization": "organisatie"
   }
 }

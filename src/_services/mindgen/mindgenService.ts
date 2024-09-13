@@ -88,6 +88,40 @@ export async function fetchProfile({ session }: { session: CustomSession | null 
     }
 }
 
+/* ======================================================= */  
+/* ==================   ORGANIZATIONS   ================== */
+/* ======================================================= */  
+
+export async function createOrganization(organizationObject: any): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseCreatedOrganization: Response = await fetch(baseUrl + `/organization`, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(organizationObject),
+    });
+
+    if (responseCreatedOrganization.ok) {
+      return responseCreatedOrganization;
+    } else {
+      throw responseCreatedOrganization;
+    }
+  } catch (error) {
+    console.error("Impossible to create organozation:", error);
+  }
+}
+
+/* ================================================== */  
+/* ==================   MINDMAPS   ================== */
+/* ================================================== */   
+
 export async function fetchMindmaps({ session }: { session: CustomSession | null }): Promise<any> {
   if(session)
     try {
@@ -245,6 +279,10 @@ export async function leaveMindmap(collaboratorId: string): Promise<any> {
   }
 }
 
+/* ======================================================= */  
+/* ==================   COLLABORATORS   ================== */
+/* ======================================================= */  
+
 export async function fetchCollaborator(): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
@@ -295,6 +333,10 @@ export async function addNewCollaborator(collaboratorObject: any): Promise<any> 
   }
 }
 
+/* ===================================================== */  
+/* ==================   INVITATIONS   ================== */
+/* ===================================================== */  
+
 export async function fetchInvitations({ session }: { session: CustomSession | null }): Promise<any> {
   if(session)
     try {
@@ -340,6 +382,10 @@ export async function acceptInvitation(invitationId: string): Promise<any> {
     console.error("Impossible to accept invitations:", error);
   }
 }
+
+/* ======================================================= */  
+/* ==================   COLLABORATORS   ================== */
+/* ======================================================= */  
 
 export async function inviteAllCollaborators(collaboratorsObject: any): Promise<any> {
   const { mindmapId, invitedCollaborators } = collaboratorsObject;

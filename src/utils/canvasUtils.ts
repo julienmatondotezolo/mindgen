@@ -5,7 +5,9 @@ import { twMerge } from "tailwind-merge";
 import {
   Camera,
   Color,
+  Edge,
   EdgeOrientation,
+  EdgeType,
   HandlePosition,
   Layer,
   LayerType,
@@ -42,10 +44,21 @@ export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera,
 };
 
 export function colorToCss(color: Color) {
+  if (!color) return "#ff0000";
+
   return `#${color.r.toString(16).padStart(2, "0")}${color.g.toString(16).padStart(2, "0")}${color.b
     .toString(16)
     .padStart(2, "0")}`;
 }
+
+export const fillRGBA = (fill: Color, theme: string | undefined) => {
+  if (!fill) return "rgba(0, 0, 0, 0.5)";
+  const { r, g, b } = fill;
+
+  const opacity = theme === "dark" ? 0.7 : 1.0;
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 
 export const findNonOverlappingPosition = ({
   newPosition,
@@ -273,62 +286,28 @@ export const calculateBezierPoint = (t: number, p0: Point, p1: Point, p2: Point,
   };
 };
 
-export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
-  if (points.length < 2) {
-    throw new Error("Cannot transform points with less than 2 points");
-  }
+export function isEdgeCloseToLayer(edge: Edge, layer: Layer, threshold: number): boolean {
+  const edgeStart = edge.start;
+  const edgeEnd = edge.end;
+  const HANDLE_DISTANCE = 30;
 
-  let left = Number.POSITIVE_INFINITY;
-  let top = Number.POSITIVE_INFINITY;
-  let right = Number.NEGATIVE_INFINITY;
-  let bottom = Number.NEGATIVE_INFINITY;
+  const layerHandles = [
+    { x: layer.x + layer.width / 2, y: layer.y - HANDLE_DISTANCE },
+    { x: layer.x + layer.width + HANDLE_DISTANCE, y: layer.y + layer.height / 2 },
+    { x: layer.x + layer.width / 2, y: layer.y + layer.height + HANDLE_DISTANCE },
+    { x: layer.x - HANDLE_DISTANCE, y: layer.y + layer.height / 2 },
+  ];
 
-  for (const point of points) {
-    const [x, y] = point;
+  for (const handle of layerHandles) {
+    const distanceStart = Math.sqrt(Math.pow(edgeStart.x - handle.x, 2) + Math.pow(edgeStart.y - handle.y, 2));
+    const distanceEnd = Math.sqrt(Math.pow(edgeEnd.x - handle.x, 2) + Math.pow(edgeEnd.y - handle.y, 2));
 
-    if (left > x) {
-      left = x;
-    }
-
-    if (top > y) {
-      top = y;
-    }
-
-    if (right < x) {
-      right = x;
-    }
-
-    if (bottom < y) {
-      bottom = y;
+    if (distanceStart <= threshold || distanceEnd <= threshold) {
+      return true;
     }
   }
 
-  return {
-    type: LayerType.Path,
-    x: left,
-    y: top,
-    width: right - left,
-    height: bottom - top,
-    fill: color,
-    points: points.map(([x, y, pressure]) => [x - left, y - top, pressure]),
-  };
-}
-
-export function getSvgPathFromStroke(stroke: number[][]) {
-  if (!stroke.length) return "";
-
-  const d = stroke.reduce(
-    (acc, [x0, y0], i, arr) => {
-      const [x1, y1] = arr[(i + 1) % arr.length];
-
-      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-      return acc;
-    },
-    ["M", ...stroke[0], "Q"],
-  );
-
-  d.push("Z");
-  return d.join(" ");
+  return false;
 }
 
 export function calculateNewLayerPositions(
@@ -398,4 +377,89 @@ export function calculateNewLayerPositions(
   }
 
   return { newLayerPosition, newEdgePosition };
+}
+
+// Helper function to get handle position
+export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition | undefined): Point => {
+  const HANDLE_DISTANCE = 30;
+
+  switch (handlePosition) {
+    case HandlePosition.Top:
+      return { x: bounds.x + bounds.width / 2, y: bounds.y - HANDLE_DISTANCE };
+    case HandlePosition.Right:
+      return { x: bounds.x + bounds.width + HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
+    case HandlePosition.Bottom:
+      return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height + HANDLE_DISTANCE };
+    case HandlePosition.Left:
+      return { x: bounds.x - HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
+    default:
+      return { x: bounds.x, y: bounds.y };
+  }
+};
+
+export function penPointsToPathLayer(points: number[][], color: Color): PathLayer {
+  if (points.length < 2) {
+    throw new Error("Cannot transform points with less than 2 points");
+  }
+
+  let left = Number.POSITIVE_INFINITY;
+  let top = Number.POSITIVE_INFINITY;
+  let right = Number.NEGATIVE_INFINITY;
+  let bottom = Number.NEGATIVE_INFINITY;
+
+  for (const point of points) {
+    const [x, y] = point;
+
+    if (left > x) {
+      left = x;
+    }
+
+    if (top > y) {
+      top = y;
+    }
+
+    if (right < x) {
+      right = x;
+    }
+
+    if (bottom < y) {
+      bottom = y;
+    }
+  }
+
+  return {
+    type: LayerType.Path,
+    x: left,
+    y: top,
+    width: right - left,
+    height: bottom - top,
+    fill: color,
+    points: points.map(([x, y, pressure]) => [x - left, y - top, pressure]),
+  };
+}
+
+export function getSvgPathFromStroke(stroke: number[][]) {
+  if (!stroke.length) return "";
+
+  const d = stroke.reduce(
+    (acc, [x0, y0], i, arr) => {
+      const [x1, y1] = arr[(i + 1) % arr.length];
+
+      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
+      return acc;
+    },
+    ["M", ...stroke[0], "Q"],
+  );
+
+  d.push("Z");
+  return d.join(" ");
+}
+
+//
+export function generateMermaidFlowchart(edges: Edge[], layers: Layer[]): string {
+  const nodes = layers.map((layer) => `${layer.id}[${layer.value}]`).join("\n    ");
+  const connections = edges.map((edge) => `${edge.fromLayerId} --> ${edge.toLayerId}`).join("\n    ");
+
+  console.log(`flowchart TD\n    ${nodes}\n    ${connections}`);
+  return `flowchart TD\n    ${nodes}\n    ${connections}`;
 }

@@ -71,6 +71,8 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
       const body = {
         username: username,
         email: email,
+        preferredLanguage: "ENGLISH",
+        referralCode: null,
         password: password,
       };
 

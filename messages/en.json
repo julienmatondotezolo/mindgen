@@ -117,6 +117,10 @@
     "viewer": "Viewer"
   },
   "Whiteboard": {
-    "typeSomething": "Type something..."
+    "typeSomething": "Type something...",
+    "chooseColor": "Choose Color"
+  },
+  "Organization": {
+    "organization": "organization"
   }
 }

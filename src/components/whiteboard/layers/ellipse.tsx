@@ -5,7 +5,7 @@ import { useRecoilValue } from "recoil";
 
 import { Color, EllipseLayer } from "@/_types/canvas";
 import { boardIdState, useUpdateElement } from "@/state";
-import { colorToCss, getContrastingTextColor } from "@/utils";
+import { colorToCss, fillRGBA, getContrastingTextColor } from "@/utils";
 
 import { CustomContentEditable } from "./customContentEditable";
 
@@ -23,15 +23,6 @@ const calculateFontSize = (width: number, height: number) => {
   const fontSizeBasedOnWidth = width * scaleFactor;
 
   return Math.min(maxFontSize, fontSizeBasedOnHeight, fontSizeBasedOnWidth);
-};
-
-const fillRGBA = (fill: Color, theme: string | undefined) => {
-  if (!fill) return "rgba(0, 0, 0, 0.5)";
-  const { r, g, b } = fill;
-
-  const opacity = theme === "dark" ? 0.7 : 1.0;
-
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
 const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => {

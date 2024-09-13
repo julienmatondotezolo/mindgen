@@ -1,10 +1,7 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
-
 import { produce } from "immer";
-import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, useSetRecoilState } from "recoil";
+import { useRecoilCallback, useSetRecoilState } from "recoil";
 
-import { Edge, Layer, User } from "@/_types";
+import { Edge, Layer } from "@/_types";
 import { useSocket } from "@/hooks";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
@@ -61,7 +58,7 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
           return updatedActiveLayers;
         });
       },
-    [],
+    [roomId, socketEmit],
   );
 };
 
@@ -90,7 +87,7 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 
         setActiveLayers([layer.id]);
       },
-    [],
+    [addToHistory, roomId, setActiveLayers, socketEmit],
   );
 };
 
@@ -109,36 +106,19 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
               const index = draft.findIndex((layer) => layer.id === id);
 
               if (index !== -1) {
-                Object.assign(draft[index], updatedElementLayer);
+                draft[index] = mergeDeep(draft[index], updatedElementLayer);
               }
+              const updatedLayer = draft[index];
 
-              const mergedLayer = currentLayers.map((item: Layer) => {
-                if (item.id === id) {
-                  // Create a copy of the current item to avoid mutating the original object
-                  let updatedItem: any = { ...item };
-
-                  // Iterate over the keys of the updatedLayer object
-                  Object.keys(updatedElementLayer).forEach((key) => {
-                    // Dynamically add/update properties from updatedLayer to the updatedItem object
-                    updatedItem[key] = updatedElementLayer[key];
-                  });
-
-                  // Return the updated item with merged properties from updatedLayer
-                  return updatedItem;
-                } else {
-                  return item;
-                }
-              });
-
-              const updatedLayers = currentLayers.filter((item: Layer) => item.id == mergedLayer[0].id);
-
-              socketEmit("add-layer", { roomId, layer: mergedLayer });
+              socketEmit("add-layer", { roomId, layer: updatedLayer });
             },
-            // addToHistory,
+            (patches, inversePatches) => {
+              addToHistory(patches, inversePatches, "layer");
+            },
           ),
         );
       },
-    [roomId, socketEmit],
+    [addToHistory, roomId, socketEmit],
   );
 };
 
@@ -146,8 +126,6 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
   const { socketEmit } = useSocket();
 
   const addToHistory = useAddToHistoryPrivate();
-
-  const layers = useRecoilValue(layerAtomState);
 
   return useRecoilCallback(
     ({ set }) =>
@@ -166,7 +144,9 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
                 socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
               }
             },
-            addToHistory,
+            (patches, inversePatches) => {
+              addToHistory(patches, inversePatches, "layer");
+            },
           ),
         );
       },
@@ -217,14 +197,14 @@ export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
           produce(
             currentEdges,
             (draft) => {
-              const index = draft.findIndex((layer) => layer.id === id);
+              const index = draft.findIndex((edge) => edge.id === id);
 
               if (index !== -1) {
                 draft[index] = mergeDeep(draft[index], updatedElementEdge);
               }
               const updatedEdge = draft[index];
 
-              socketEmit("add-edge", { roomId, layer: updatedEdge });
+              socketEmit("add-edge", { roomId, edge: updatedEdge });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "edge");
@@ -240,8 +220,6 @@ export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
   const { socketEmit } = useSocket();
 
   const addToHistory = useAddToHistoryPrivate();
-
-  const layers = useRecoilValue(edgesAtomState);
 
   return useRecoilCallback(
     ({ set }) =>

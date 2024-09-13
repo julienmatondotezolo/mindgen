@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
-export type Color = {
-  r: number;
-  g: number;
-  b: number;
-};
-
 export type Camera = {
   x: number;
   y: number;
   scale: number;
+};
+
+export type Color = {
+  r: number;
+  g: number;
+  b: number;
 };
 
 export enum HandlePosition {
@@ -27,6 +27,8 @@ export enum EdgeType {
 
 export type Edge = {
   id: string;
+  arrowStart?: boolean;
+  arrowEnd?: boolean;
   handleStart?: HandlePosition;
   handleEnd?: HandlePosition;
   fromLayerId?: string;
@@ -70,6 +72,7 @@ export type LayerWithGeometry = {
   fill: Color;
   value?: string;
   valueStyle?: ValueStyle;
+  borderColor?: Color;
   borderWidth?: number;
   borderType?: LayerBorderType;
 };
