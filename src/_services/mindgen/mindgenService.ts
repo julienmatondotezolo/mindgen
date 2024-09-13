@@ -90,7 +90,29 @@ export async function fetchProfile({ session }: { session: CustomSession | null 
 
 /* ======================================================= */  
 /* ==================   ORGANIZATIONS   ================== */
-/* ======================================================= */  
+/* ======================================================= */
+
+export async function fetchOrganization({ session }: { session: CustomSession | null }): Promise<any> {
+  if(session)
+    try {
+      const responseOrganization: Response = await fetch(baseUrl + `/organization`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
+
+      if (responseOrganization.ok) {
+        return responseOrganization.json();
+      } else {
+        throw responseOrganization;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch organization:", error);
+    }
+}
 
 export async function createOrganization(organizationObject: any): Promise<any> {
   try {
@@ -114,7 +136,7 @@ export async function createOrganization(organizationObject: any): Promise<any> 
       throw responseCreatedOrganization;
     }
   } catch (error) {
-    console.error("Impossible to create organozation:", error);
+    console.error("Impossible to create organization:", error);
   }
 }
 

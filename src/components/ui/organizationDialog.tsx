@@ -41,7 +41,7 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       await mutateAsync(emptyOrganizationObject, {
         onSuccess: () => {
           // Invalidate the query to cause a re-fetch
-          queryClient.invalidateQueries("userMindmap");
+          queryClient.invalidateQueries("userOrganizations");
         },
       });
       handleClose();
