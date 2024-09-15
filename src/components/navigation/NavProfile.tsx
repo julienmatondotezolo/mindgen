@@ -28,32 +28,32 @@ function NavProfile() {
     enabled: session.data ? true : false,
   });
 
-  const fetchUserInvitations = () => fetchInvitations({ session: safeSession });
-  const { data: userInvitations } = useQuery("userInvitations", fetchUserInvitations, {
-    refetchOnMount: true,
-    enabled: session.data ? true : false,
-  });
+  // const fetchUserInvitations = () => fetchInvitations({ session: safeSession });
+  // const { data: userInvitations } = useQuery("userInvitations", fetchUserInvitations, {
+  //   refetchOnMount: true,
+  //   enabled: session.data ? true : false,
+  // });
 
-  const invitationLength = userInvitations && userInvitations.length;
+  // const invitationLength = userInvitations && userInvitations.length;
 
-  const { mutateAsync } = useMutation(acceptInvitation);
-  const handleAccept = async (invitationId: string) => {
-    try {
-      setIsAccepting(true);
-      await mutateAsync(invitationId, {
-        onSuccess: async () => {
-          // Invalidate the query to cause a re-fetch
-          await queryClient.invalidateQueries("userInvitations");
-          await queryClient.invalidateQueries("userMindmap");
-          setIsAccepting(false);
-        },
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
-    }
-  };
+  // const { mutateAsync } = useMutation(acceptInvitation);
+  // const handleAccept = async (invitationId: string) => {
+  //   try {
+  //     setIsAccepting(true);
+  //     await mutateAsync(invitationId, {
+  //       onSuccess: async () => {
+  //         // Invalidate the query to cause a re-fetch
+  //         await queryClient.invalidateQueries("userInvitations");
+  //         await queryClient.invalidateQueries("userMindmap");
+  //         setIsAccepting(false);
+  //       },
+  //     });
+  //   } catch (error) {
+  //     if (error instanceof Error) {
+  //       console.error(`An error has occurred: ${error.message}`);
+  //     }
+  //   }
+  // };
 
   const listStyle =
     "flex w-8 h-8 text-center bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-700 hover:dark:bg-slate-500";
@@ -71,7 +71,7 @@ function NavProfile() {
     return (
       <div className="flex float-right">
         <section className="flex flex-wrap space-x-4">
-          <figure className={`relative ${listStyle} cursor-pointer`}>
+          {/* <figure className={`relative ${listStyle} cursor-pointer`}>
             {invitationLength > 0 && (
               <div className="absolute flex -top-1 -right-2 w-5 h-5 rounded-full bg-red-600 text-xs">
                 <p className="m-auto text-white">{invitationLength < 9 ? invitationLength : "+9"}</p>
@@ -114,7 +114,7 @@ function NavProfile() {
                 </div>
               </PopoverContent>
             </Popover>
-          </figure>
+          </figure> */}
           <figure className={`${listStyle} cursor-pointer`}>
             <Popover>
               <PopoverTrigger asChild>

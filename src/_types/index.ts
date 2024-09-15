@@ -9,6 +9,7 @@ export * from "./Invitations";
 export * from "./MindMapDetailsProps";
 export * from "./MindMapMessages";
 export * from "./MindMapObject";
+export * from "./Organization";
 export * from "./Position";
 export * from "./ProfileProps";
 export * from "./QuestionAnswersProps";

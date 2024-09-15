@@ -3,10 +3,13 @@
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { useRecoilValue } from "recoil";
 
 import { createMindmap } from "@/_services";
+import { Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
 import { Button, Input, Switch, Textarea } from "@/components/ui";
+import { selectedOrganizationState } from "@/state";
 import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
@@ -40,11 +43,14 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
     setInputVisibility(checked ? "PRIVATE" : "PUBLIC");
   };
 
+  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+
   const handleConfirm = async () => {
     const emptyMindmapObject = emptyMindMapObject({
       name: inputTitle,
       description: inputDescription,
       pictureUrl: "",
+      organizationId: selectedOrga!.id,
       visibility: inputVisibility,
     });
 

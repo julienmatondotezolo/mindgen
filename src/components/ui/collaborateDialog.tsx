@@ -216,7 +216,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
             </>
           )}
         </article>
-        {checkPermission(PERMISSIONS, "UPDATE") && (
+        {/* {checkPermission(PERMISSIONS, "UPDATE") && (
           <p className="text-md font-bold mb-2">
             {userMindmap?.invitations.length
               ? `${userMindmap?.invitations.length} ${text(
@@ -224,8 +224,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                 )}`
               : null}
           </p>
-        )}
-        {checkPermission(PERMISSIONS, "UPDATE") &&
+        )} */}
+        {/* {checkPermission(PERMISSIONS, "UPDATE") &&
           userMindmap?.invitations.map((invitations: Invitations) => (
             <article
               key={invitations.id}
@@ -250,7 +250,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                 {uppercaseFirstLetter(text(invitations.status.toLowerCase()))}
               </p>
             </article>
-          ))}
+          ))} */}
         <p className="text-md font-bold mb-2">
           {collaboratorsLength < 1
             ? collaboratorText("noCollaborator")

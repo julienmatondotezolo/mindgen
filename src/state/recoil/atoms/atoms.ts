@@ -198,6 +198,11 @@ export const organizationState = atom({
   default: false,
 });
 
+export const organizationSettingsState = atom({
+  key: "organizationSettingsState",
+  default: false,
+});
+
 export const importModalState = atom({
   key: "importModalState",
   default: false,

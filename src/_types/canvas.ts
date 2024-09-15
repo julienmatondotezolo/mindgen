@@ -45,10 +45,10 @@ export type Edge = {
 };
 
 export enum LayerType {
-  Note,
-  Rectangle,
-  Ellipse,
-  Path,
+  Note = "NOTE",
+  Rectangle = "RECTANGLE",
+  Ellipse = "ELLIPSE",
+  Path = "PATH",
 }
 
 export type LayerBorderType = "solid" | "dashed";

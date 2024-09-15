@@ -2,14 +2,21 @@
 import React from "react";
 import { useRecoilState } from "recoil";
 
-import { BackDropGradient, MindmapDialog, ToastAction, useToast } from "@/components";
+import {
+  BackDropGradient,
+  MindmapDialog,
+  OrganizationDialog,
+  OrganizationSettingsDialog,
+  ToastAction,
+  useToast,
+} from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
-import { OrganizationDialog } from "@/components/ui/organizationDialog";
-import { collaborateModalState, modalState, organizationState } from "@/state";
+import { modalState, organizationSettingsState, organizationState } from "@/state";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
+  const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
   const { toast } = useToast();
 
   // Function to trigger a toast notification
@@ -44,6 +51,7 @@ export default function Dashboard() {
       </button>
       <MindmapDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
       <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
+      <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />
     </>
   );
 }

@@ -2,6 +2,7 @@
   "Index": {
     "add": "ajouter",
     "remove": "supprimer",
+    "leave": "quitter",
     "invite": "inviter",
     "invitation": "invitation",
     "invitations": "invitations",
@@ -28,7 +29,8 @@
     "share": "Partager",
     "collaborate": "Collaborer",
     "requiredInput": "Ce champ est obligatoire",
-    "passwordNotMatching": "Les mots de passe ne correspondent pas"
+    "passwordNotMatching": "Les mots de passe ne correspondent pas",
+    "settings": "paramètres"
   },
   "Auth": {
     "connection": "Connexion",

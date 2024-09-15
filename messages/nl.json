@@ -2,6 +2,7 @@
   "Index": {
     "add": "toevoegen",
     "remove": "verwijderen",
+    "leave": "verlaat",
     "invite": "uitnodigen",
     "invitation": "uitnodiging",
     "invitations": "uitnodigingen",
@@ -28,7 +29,8 @@
     "share": "Deel",
     "collaborate": "Samenwerken",
     "requiredInput": "Dit veld is verplicht",
-    "passwordNotMatching": "Wachtwoorden komen niet overeen"
+    "passwordNotMatching": "Wachtwoorden komen niet overeen",
+    "settings": "instellingen"
   },
   "Auth": {
     "connection": "Inloggen",

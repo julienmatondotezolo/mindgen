@@ -8,6 +8,8 @@ export * from "./input";
 export * from "./label";
 export * from "./languageSwitcher";
 export * from "./mindmapDialog";
+export * from "./organizationDialog";
+export * from "./organizationSettingsDialog";
 export * from "./PdfDropZone";
 export * from "./popover";
 export * from "./progress";
