@@ -60,7 +60,6 @@ export function OrgSidebar() {
     const selectedOrg = userOrganizations.find((org: Organization) => org.name === value);
 
     if (selectedOrg) {
-      console.log("selectedOrg:", selectedOrg.id);
       setSelectedOrganization(selectedOrg);
     } else {
       setSelectedOrganization(userOrganizations[0]);

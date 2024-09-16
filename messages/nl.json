@@ -30,7 +30,9 @@
     "collaborate": "Samenwerken",
     "requiredInput": "Dit veld is verplicht",
     "passwordNotMatching": "Wachtwoorden komen niet overeen",
-    "settings": "instellingen"
+    "settings": "instellingen",
+    "general": "general",
+    "members": "leden"
   },
   "Auth": {
     "connection": "Inloggen",

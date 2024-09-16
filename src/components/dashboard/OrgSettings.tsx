@@ -86,7 +86,7 @@ function OrgSettings() {
 
   return (
     <div className="w-full">
-      <p className="font-bold text-lg pb-4 border-b dark:border-slate-800">General</p>
+      <p className="font-bold text-lg pb-4 border-b dark:border-slate-800">{uppercaseFirstLetter(text("general"))}</p>
       {isLoading && (
         <div className="space-y-4">
           <Skeleton className=" mt-12 w-full h-24 bg-grey-blue" />

@@ -56,7 +56,8 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
     try {
       await mutateAsync(emptyMindmapObject, {
-        onSuccess: () => {
+        onSuccess: async (data) => {
+          console.log("data:", await data);
           // Invalidate the query to cause a re-fetch
           queryClient.invalidateQueries("userMindmap");
         },

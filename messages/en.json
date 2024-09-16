@@ -30,7 +30,9 @@
     "collaborate": "Collaborate",
     "requiredInput": "This field is required",
     "passwordNotMatching": "Passwords do not match",
-    "settings": "settings"
+    "settings": "settings",
+    "general": "general",
+    "members": "membres"
   },
   "Auth": {
     "connection": "Connection",

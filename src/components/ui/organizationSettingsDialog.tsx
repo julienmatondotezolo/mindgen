@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef } from "react";
 
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
-import { OrgMembers, OrgSettings } from "@/components/dashboard";
+import { OrgInvitation, OrgMembers, OrgSettings } from "@/components/dashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { uppercaseFirstLetter } from "@/utils";
 
@@ -44,10 +44,13 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
       <Tabs defaultValue="general" className="flex flex-wrap justify-between w-full">
         <TabsList className="flex flex-col w-[20%] h-max space-y-4">
           <TabsTrigger className={triggerStyle} value="general">
-            <p>General</p>
+            <p>{uppercaseFirstLetter(text("general"))}</p>
           </TabsTrigger>
           <TabsTrigger className={triggerStyle} value="members">
-            <p>Members</p>
+            <p>{uppercaseFirstLetter(text("members"))}</p>
+          </TabsTrigger>
+          <TabsTrigger className={triggerStyle} value="invitation">
+            <p>{uppercaseFirstLetter(text("invitation"))}</p>
           </TabsTrigger>
         </TabsList>
         <TabsContent value="general" className="w-[70%]">
@@ -55,6 +58,9 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
         </TabsContent>
         <TabsContent value="members" className="w-[70%]">
           <OrgMembers />
+        </TabsContent>
+        <TabsContent value="invitation" className="w-[70%]">
+          <OrgInvitation />
         </TabsContent>
       </Tabs>
       <X size={20} onClick={handleClose} className="cursor-pointer absolute right-5 top-0" />

@@ -255,7 +255,7 @@ export async function createMindmap(mindmapObject: any): Promise<any> {
     });
 
     if (responseCreatedMindMap.ok) {
-      return responseCreatedMindMap.json();
+      return responseCreatedMindMap.body;
     } else {
       throw responseCreatedMindMap;
     }

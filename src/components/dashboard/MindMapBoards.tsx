@@ -38,7 +38,11 @@ function MindMapBoards() {
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
   const fetchUserMindmaps = () => fetchMindmaps({ organizationId: selectedOrga!.id });
-  const { isLoading, data: userMindmap } = useQuery("userMindmap", fetchUserMindmaps, {});
+  const { isLoading, data: userMindmap } = useQuery(["userMindmap", selectedOrga?.id], fetchUserMindmaps, {
+    enabled: !!selectedOrga?.id, // Only run the query if selectedOrga.id is available
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
   const [isDeleting, setIsDeleting] = useState(false);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });
 
