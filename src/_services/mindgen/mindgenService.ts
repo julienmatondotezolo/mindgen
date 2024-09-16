@@ -4,6 +4,10 @@ import { CustomSession } from "@/_types";
 const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 // const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
 
+/* ======================================================= */  
+/* ==================   STREAM CHAT RESPONSE   ================== */
+/* ======================================================= */
+
 export async function fetchGeneratedTSummaryText(
   description: string,
   task: string,
@@ -46,51 +50,89 @@ export async function fetchGeneratedTSummaryText(
   }
 }
 
-export async function fetchApi(): Promise<any> {
+/* ================================================= */  
+/* ==================   PROFILE   ================== */
+/* ================================================= */ 
+
+export async function fetchProfile(): Promise<any> {
   try {
-    const responseProfile: Response = await fetch(baseUrl + `/user/ping`, {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
     });
 
     if (responseProfile.ok) {
-      return responseProfile;
+      return responseProfile.json();
     } else {
       throw responseProfile;
     }
   } catch (error) {
-    console.error("Impossible to ACCESS MINDGEN API:", error);
+    console.error("Impossible to fetch profiles:", error);
   }
-}
-
-export async function fetchProfile({ session }: { session: CustomSession | null }): Promise<any> {
-  if(session)
-    try {
-      const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-      });
-
-      if (responseProfile.ok) {
-        return responseProfile.json();
-      } else {
-        throw responseProfile;
-      }
-    } catch (error) {
-      console.error("Impossible to fetch profiles:", error);
-    }
 }
 
 /* ======================================================= */  
 /* ==================   ORGANIZATIONS   ================== */
-/* ======================================================= */  
+/* ======================================================= */
+
+export async function fetchOrganization(): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+    
+    const responseOrganization: Response = await fetch(baseUrl + `/organization`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseOrganization.ok) {
+      return responseOrganization.json();
+    } else {
+      throw responseOrganization;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch organization:", error);
+  }
+}
+
+export async function getOrganizationById({ organizationId }: {organizationId: string}): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseMindMap: Response = await fetch(baseUrl + `/organization/${organizationId}`, {
+      next: {
+        revalidate: 0,
+      },
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseMindMap.ok) {
+      return responseMindMap.json();
+    } else {
+      throw new Error(`HTTP error status: ${responseMindMap.status}`);
+    }
+  } catch (error: any) {
+    throw new Error(`Fetch error: ${error.message}`);
+  }
+}
 
 export async function createOrganization(organizationObject: any): Promise<any> {
   try {
@@ -114,7 +156,57 @@ export async function createOrganization(organizationObject: any): Promise<any> 
       throw responseCreatedOrganization;
     }
   } catch (error) {
-    console.error("Impossible to create organozation:", error);
+    console.error("Impossible to create organization:", error);
+  }
+}
+
+export async function updateOrganization({ organizationId, organizationObject }: { organizationId: string, organizationObject: any }): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseUpdateOrganization: Response = await fetch(baseUrl + `/organization/${organizationId}`, {
+      method: "PUT",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(organizationObject),
+    });
+
+    if (responseUpdateOrganization.ok) {
+      return responseUpdateOrganization;
+    } else {
+      throw responseUpdateOrganization;
+    }
+  } catch (error) {
+    console.error("Impossible to update organization:", error);
+  }
+}
+
+export async function deleteOrganizationById({ organizationId }: { organizationId: string }): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseDeletedOrganization: Response = await fetch(baseUrl + `/organization/${organizationId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseDeletedOrganization.ok) {
+      return responseDeletedOrganization;
+    } else {
+      throw responseDeletedOrganization;
+    }
+  } catch (error) {
+    console.error("Impossible to delete organization:", error);
   }
 }
 
@@ -122,26 +214,28 @@ export async function createOrganization(organizationObject: any): Promise<any> 
 /* ==================   MINDMAPS   ================== */
 /* ================================================== */   
 
-export async function fetchMindmaps({ session }: { session: CustomSession | null }): Promise<any> {
-  if(session)
-    try {
-      const responseMindmap: Response = await fetch(baseUrl + `/mindmap`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-      });
+export async function fetchMindmaps({ organizationId }: {organizationId: string}): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
 
-      if (responseMindmap.ok) {
-        return responseMindmap.json();
-      } else {
-        throw responseMindmap;
-      }
-    } catch (error) {
-      console.error("Impossible to fetch profiles:", error);
+    const responseMindmap: Response = await fetch(baseUrl + `/mindmap/organization/${organizationId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseMindmap.ok) {
+      return responseMindmap.json();
+    } else {
+      throw responseMindmap;
     }
+  } catch (error) {
+    console.error("Impossible to fetch mindmaps:", error);
+  }
 }
 
 export async function createMindmap(mindmapObject: any): Promise<any> {
@@ -161,7 +255,7 @@ export async function createMindmap(mindmapObject: any): Promise<any> {
     });
 
     if (responseCreatedMindMap.ok) {
-      return responseCreatedMindMap;
+      return responseCreatedMindMap.body;
     } else {
       throw responseCreatedMindMap;
     }

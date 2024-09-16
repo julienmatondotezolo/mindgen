@@ -1,61 +1,46 @@
-import { Edge, Node, Viewport } from "reactflow";
+import { Edge, Layer, LayerType } from "@/_types";
 
 interface MindMapObjectParams {
   name: string;
   description: string;
-  pictureUrl?: string;
-  nodes?: Node[];
+  layers?: Layer[];
   edges?: Edge[];
-  viewport?: Viewport;
   visibility: string;
+  organizationId: string;
+  pictureUrl?: string;
 }
 
 export function emptyMindMapObject({
   name,
   description,
-  pictureUrl,
-  nodes = [
+  layers = [
     {
-      width: 216,
-      height: 38,
       id: "node_0",
-      type: "mainNode",
-      position: {
-        x: -60,
-        y: 240,
+      type: LayerType.Rectangle,
+      x: 601,
+      y: 316,
+      width: 200,
+      height: 60,
+      fill: {
+        r: 77,
+        g: 106,
+        b: 255,
       },
-      data: {
-        label: "MindGen App",
-        selectedByCollaborator: false,
-      },
-      style: {
-        borderRadius: "100px",
-        width: 250,
-        height: 50,
-      },
-      selected: false,
-      dragging: false,
-      positionAbsolute: {
-        x: -60,
-        y: 240,
-      },
+      value: "Text",
     },
   ],
   edges = [],
-  viewport = {
-    x: 427.0924760414025,
-    y: -151.14134538066662,
-    zoom: 0.9167343307636076,
-  },
   visibility,
+  organizationId,
+  pictureUrl,
 }: MindMapObjectParams) {
   return {
     name,
     description,
-    pictureUrl,
-    nodes,
+    layers,
     edges,
-    viewport,
     visibility,
+    organizationId,
+    pictureUrl,
   };
 }

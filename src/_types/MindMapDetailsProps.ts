@@ -1,20 +1,17 @@
-import { Edge, Node, Viewport } from "reactflow";
-
-import { Collaborator, Invitations, MindMapMessages } from ".";
+import { Collaborator, MindMapMessages } from ".";
+import { Edge, Layer } from "./canvas";
 
 export type MindMapDetailsProps = {
   id: string;
+  layers: Layer[];
+  edges: Edge[];
   name: string;
-  picture_url: string;
   description: string;
-  invitations: Invitations[];
-  collaborators: Collaborator[];
-  connectedCollaboratorPermissions: string[];
   creatorId: string;
   creatorUsername: string;
+  picture_url: string;
+  collaborators: Collaborator[];
+  connectedCollaboratorPermissions: string[];
   messages: MindMapMessages[];
-  edges: Edge[];
-  nodes: Node[];
-  viewport: Viewport;
   visibility: string;
 };

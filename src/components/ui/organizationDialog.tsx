@@ -32,16 +32,16 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   };
 
   const handleConfirm = async () => {
-    const emptyOrganizationObject = {
+    const organizationObject = {
       name: inputTitle,
       type: "PERSONAL",
     };
 
     try {
-      await mutateAsync(emptyOrganizationObject, {
+      await mutateAsync(organizationObject, {
         onSuccess: () => {
           // Invalidate the query to cause a re-fetch
-          queryClient.invalidateQueries("userMindmap");
+          queryClient.invalidateQueries("userOrganizations");
         },
       });
       handleClose();

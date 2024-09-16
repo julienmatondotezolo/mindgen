@@ -1,25 +1,41 @@
 "use client";
-import React from "react";
-import { useRecoilState } from "recoil";
+import { CirclePlus } from "lucide-react";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import React, { useEffect } from "react";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { BackDropGradient, MindmapDialog, ToastAction, useToast } from "@/components";
+import { Organization } from "@/_types";
+import boardElement from "@/assets/images/elements.svg";
+import { BackDropGradient, Button, MindmapDialog, OrganizationDialog, OrganizationSettingsDialog } from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
-import { OrganizationDialog } from "@/components/ui/organizationDialog";
-import { collaborateModalState, modalState, organizationState } from "@/state";
+import {
+  mindmapDataState,
+  modalState,
+  organizationSettingsState,
+  organizationState,
+  selectedOrganizationState,
+} from "@/state";
+import { uppercaseFirstLetter } from "@/utils";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
-  const { toast } = useToast();
+  const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
+  const setUserMindmapDetails = useSetRecoilState(mindmapDataState);
 
-  // Function to trigger a toast notification
-  const triggerToast = () => {
-    toast({
-      title: "Hello, World!",
-      description: "This is a test toast notification.",
-      action: <ToastAction altText="Try again">Open mindmap</ToastAction>,
-    });
+  const selectedOrganization = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+  const text = useTranslations("Index");
+  const textOrga = useTranslations("Organization");
+
+  const handleClick = () => {
+    setOrganization(!isOrganization);
   };
+
+  useEffect(() => {
+    // Reset mindmap data
+    setUserMindmapDetails(undefined);
+  }, []);
 
   return (
     <>
@@ -32,18 +48,29 @@ export default function Dashboard() {
             <div className="w-[25%]">
               <OrgSidebar />
             </div>
-            <div className="w-full space-y-12">
-              <MindGenTemplates />
-              <RecentMindMap />
-            </div>
+            {selectedOrganization ? (
+              <div className="w-full space-y-12">
+                <MindGenTemplates />
+                <RecentMindMap />
+              </div>
+            ) : (
+              <article className="flex flex-col items-center mt-6 space-y-6 w-full">
+                <Image src={boardElement} alt="Empty" height={200} width={200} />
+                <p className="text-2xl font-semibold mt-6">Create an organization to get started</p>
+                <Button onClick={handleClick}>
+                  <span className=" text-base mr-2">
+                    <CirclePlus size={18} />
+                  </span>
+                  {`${uppercaseFirstLetter(text("create"))} ${textOrga("organization")}`}
+                </Button>
+              </article>
+            )}
           </article>
         </section>
       </div>
-      <button className="fixed left-5 bottom-5" onClick={triggerToast}>
-        Click me
-      </button>
       <MindmapDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
       <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
+      <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />
     </>
   );
 }

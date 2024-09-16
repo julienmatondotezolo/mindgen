@@ -2,23 +2,22 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
+import { useRecoilValue } from "recoil";
 
 import { deleteMindmapById, fetchMindmaps } from "@/_services";
-import { CustomSession, MindmapObject } from "@/_types";
+import { MindmapObject, Organization } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
+import { selectedOrganizationState } from "@/state";
 import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
 function MindMapBoards() {
-  const session = useSession();
-
   const text = useTranslations("Index");
   const dateText = useTranslations("Dashboard");
 
@@ -36,10 +35,11 @@ function MindMapBoards() {
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation(deleteMindmapById);
 
-  const safeSession = session ? (session as unknown as CustomSession) : null;
+  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
-  const fetchUserMindmaps = () => fetchMindmaps({ session: safeSession });
-  const { isLoading, data: userMindmap } = useQuery("userMindmap", fetchUserMindmaps, {
+  const fetchUserMindmaps = () => fetchMindmaps({ organizationId: selectedOrga!.id });
+  const { isLoading, data: userMindmap } = useQuery(["userMindmap", selectedOrga?.id], fetchUserMindmaps, {
+    enabled: !!selectedOrga?.id, // Only run the query if selectedOrga.id is available
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

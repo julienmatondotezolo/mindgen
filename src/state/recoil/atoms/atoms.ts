@@ -2,7 +2,17 @@
 import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import { CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
+import {
+  CanvasMode,
+  CanvasState,
+  ChatMessageProps,
+  Edge,
+  Layer,
+  MindMapDetailsProps,
+  QuestionAnswersProps,
+  User,
+} from "@/_types";
+import { Organization } from "@/_types/Organization";
 import { socket } from "@/socket";
 
 // ================   CANVAS STATE   ================== //
@@ -23,6 +33,39 @@ export const canvasStateAtom = atom<CanvasState>({
 export const currentUserState = atom<User | {}>({
   key: "currentUserState", // unique ID (with respect to other atoms/selectors)
   default: {}, // valeur par défaut (alias valeur initials)
+});
+
+// ================   ORGANIZATION EFFECTS   ================== //
+
+const organizationlocalStorageEffect = ({ onSet, setSelf }: any) => {
+  const savedOrganization = localStorage.getItem("selected-organization");
+
+  if (savedOrganization) {
+    setSelf(JSON.parse(savedOrganization)); // Load from local storage
+  }
+
+  // Subscribe to changes and save to local storage
+  onSet((newValue: Organization) => {
+    localStorage.setItem("selected-organization", JSON.stringify(newValue)); // Save to local storage
+  });
+};
+
+// ================   ORGA & BOARD STATE   ================== //
+
+export const selectedOrganizationState = atom<Organization | undefined>({
+  key: "selectedOrganizationState", // unique ID (with respect to other atoms/selectors)
+  default: undefined, // valeur par défaut (alias valeur initials)
+  effects: [organizationlocalStorageEffect],
+});
+
+export const boardIdState = atom<string>({
+  key: "boardIdState", // unique ID (with respect to other atoms/selectors)
+  default: "", // valeur par défaut (alias valeur initials)
+});
+
+export const mindmapDataState = atom<MindMapDetailsProps | undefined>({
+  key: "mindmapDataState",
+  default: undefined,
 });
 
 // ================   LAYER EFFECTS   ================== //
@@ -70,11 +113,6 @@ const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
 };
 
 // ================   LAYER STATES   ================== //
-
-export const boardIdState = atom({
-  key: "boardIdState", // unique ID (with respect to other atoms/selectors)
-  default: "", // valeur par défaut (alias valeur initials)
-});
 
 export const layerAtomState = atom<Layer[]>({
   key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
@@ -171,6 +209,11 @@ export const modalState = atom({
 
 export const organizationState = atom({
   key: "organizationState",
+  default: false,
+});
+
+export const organizationSettingsState = atom({
+  key: "organizationSettingsState",
   default: false,
 });
 

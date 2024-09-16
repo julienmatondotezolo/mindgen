@@ -7,12 +7,14 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { useRecoilValue } from "recoil";
 
 import { updateMindmapById } from "@/_services";
-import { CustomSession, MindMapDetailsProps } from "@/_types";
+import { CustomSession, MindMapDetailsProps, Organization } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
 import { Sheet, SheetContent, SheetTrigger, Switch } from "@/components/ui";
+import { edgesAtomState, layerAtomState, selectedOrganizationState } from "@/state";
 import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
@@ -67,6 +69,11 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     setNewMindMapVisibility(checked ? "PRIVATE" : "PUBLIC");
   };
 
+  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+
+  const currentLayers = useRecoilValue(layerAtomState);
+  const currentEdges = useRecoilValue(edgesAtomState);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Do something with formData
@@ -74,8 +81,9 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     const newMindmapObject = emptyMindMapObject({
       name: newMindMapName ?? "",
       description: newMindMapDescription ?? "",
-      nodes: userMindmapDetails?.nodes,
-      edges: userMindmapDetails?.edges,
+      layers: currentLayers,
+      edges: currentEdges,
+      organizationId: selectedOrga!.id,
       visibility: newMindMapVisibility ?? "PRIVATE",
     });
 

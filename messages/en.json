@@ -2,6 +2,7 @@
   "Index": {
     "add": "add",
     "remove": "remove",
+    "leave": "leave",
     "invite": "invite",
     "invitation": "invitation",
     "invitations": "invitations",
@@ -28,7 +29,10 @@
     "share": "Share",
     "collaborate": "Collaborate",
     "requiredInput": "This field is required",
-    "passwordNotMatching": "Passwords do not match"
+    "passwordNotMatching": "Passwords do not match",
+    "settings": "settings",
+    "general": "general",
+    "members": "membres"
   },
   "Auth": {
     "connection": "Connection",

@@ -15,7 +15,6 @@ import {
   HandlePosition,
   Layer,
   LayerType,
-  MindMapDetailsProps,
   Point,
   Side,
   XYWH,
@@ -59,14 +58,8 @@ import { LayerPreview } from "./LayerPreview";
 import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layers";
 import { Toolbar } from "./Toolbar";
 
-const Whiteboard = ({
-  userMindmapDetails,
-  boardId,
-}: {
-  userMindmapDetails: MindMapDetailsProps | undefined;
-  boardId: string;
-}) => {
-  const DEBUG_MODE = true;
+const Whiteboard = ({ boardId }: { boardId: string; }) => {
+  const DEBUG_MODE = false;
 
   const whiteboardText = useTranslations("Whiteboard");
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
