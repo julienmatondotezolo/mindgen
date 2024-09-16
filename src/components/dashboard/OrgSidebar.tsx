@@ -44,7 +44,7 @@ export function OrgSidebar() {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     onSuccess: (data) => {
-      if (data.length > 0) {
+      if (data) {
         const savedOrganization = localStorage.getItem("selected-organization");
 
         if (savedOrganization) {
@@ -72,38 +72,40 @@ export function OrgSidebar() {
 
   if (isLoading) return <>Loading...</>;
 
-  if (selectedOrganization)
-    return (
-      <div className="hidden lg:flex flex-col space-y-4 w-[206px]">
-        {isCreatingOrga ? (
-          <Skeleton className="w-full h-10 bg-grey-blue" />
-        ) : (
-          <Select value={selectedOrganization.name || ""} onValueChange={handleSelectChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Organization" />
-            </SelectTrigger>
-            <SelectContent className="cursor-pointer bg-white border-2 shadow-lg backdrop-filter backdrop-blur-lg dark:bg-slate-900 dark:bg-opacity-70 dark:shadow-slate-900 dark:border-slate-800">
-              {userOrganizations.map((organization: Organization) => (
-                <SelectItem key={organization.id} value={organization.name} className="cursor-pointer py-4">
-                  <p>{organization.name}</p>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        <Button onClick={handleClick}>
-          <span className=" text-base mr-2">
-            <CirclePlus size={18} />
-          </span>
-          {`${uppercaseFirstLetter(text("create"))} ${textOrga("organization")}`}
-        </Button>
+  return (
+    <div className="hidden lg:flex flex-col space-y-4 w-[206px]">
+      {isCreatingOrga ? (
+        <Skeleton className="w-full h-10 bg-grey-blue" />
+      ) : (
+        <Select value={selectedOrganization?.name || ""} onValueChange={handleSelectChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select organization" />
+          </SelectTrigger>
+          <SelectContent className="cursor-pointer bg-white border-2 shadow-lg backdrop-filter backdrop-blur-lg dark:bg-slate-900 dark:bg-opacity-70 dark:shadow-slate-900 dark:border-slate-800">
+            {userOrganizations?.map((organization: Organization) => (
+              <SelectItem key={organization.id} value={organization.name} className="cursor-pointer py-4">
+                <p>{organization.name}</p>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      <Button onClick={handleClick}>
+        <span className=" text-base mr-2">
+          <CirclePlus size={18} />
+        </span>
+        {`${uppercaseFirstLetter(text("create"))} ${textOrga("organization")}`}
+      </Button>
+      {selectedOrganization && (
         <Button onClick={handleSettingsClick} variant="board">
           <span className=" text-base mr-2">
             <Settings size={18} />
           </span>
           {`${uppercaseFirstLetter(text("settings"))}`}
         </Button>
+      )}
 
+      {selectedOrganization && (
         <div className="!mt-14 w-full h-full">
           <Button variant="ghost" asChild size="lg" className="font-normal justify-start px-2 w-full">
             <Link href="/dashboard">
@@ -130,6 +132,7 @@ export function OrgSidebar() {
             </Link>
           </Button>
         </div>
-      </div>
-    );
+      )}
+    </div>
+  );
 }

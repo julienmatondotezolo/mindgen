@@ -15,7 +15,6 @@ import {
   HandlePosition,
   Layer,
   LayerType,
-  MindMapDetailsProps,
   Point,
   Side,
   XYWH,
