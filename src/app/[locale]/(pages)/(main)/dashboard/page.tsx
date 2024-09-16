@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import { useRecoilState } from "recoil";
+import React, { useEffect } from "react";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
 import {
   BackDropGradient,
@@ -11,12 +11,13 @@ import {
   useToast,
 } from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
-import { modalState, organizationSettingsState, organizationState } from "@/state";
+import { mindmapDataState, modalState, organizationSettingsState, organizationState } from "@/state";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
   const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
+  const setUserMindmapDetails = useSetRecoilState(mindmapDataState);
   const { toast } = useToast();
 
   // Function to trigger a toast notification
@@ -27,6 +28,11 @@ export default function Dashboard() {
       action: <ToastAction altText="Try again">Open mindmap</ToastAction>,
     });
   };
+
+  useEffect(() => {
+    // Reset mindmap data
+    setUserMindmapDetails(undefined);
+  }, []);
 
   return (
     <>

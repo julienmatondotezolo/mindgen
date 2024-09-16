@@ -1,17 +1,15 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps, User } from "@/_types";
+import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
@@ -19,11 +17,13 @@ import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, Upgrade
 import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
-  boardIdState,
   collaborateModalState,
   collaboratorNameState,
   currentUserState,
+  edgesAtomState,
   importModalState,
+  layerAtomState,
+  mindmapDataState,
   promptResultState,
   promptValueState,
   qaState,
@@ -31,7 +31,7 @@ import {
   upgradePlanModalState,
   usernameState,
 } from "@/state";
-import { checkPermission, refreshPage, uppercaseFirstLetter } from "@/utils";
+import { refreshPage } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -41,16 +41,14 @@ export default function Board({ params }: { params: { id: string } }) {
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
+  const setLayers = useSetRecoilState(layerAtomState);
+  const setEdges = useSetRecoilState(edgesAtomState);
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
   const [currentCollaUsername, setCurrentCollaUsername] = useRecoilState(usernameState);
   const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
   const setCurrentUser = useSetRecoilState(currentUserState);
-
-  const [collaCursorPos, setCollaCursorPos] = useState<any>({});
-
-  const setBoardId = useSetRecoilState(boardIdState);
 
   const session = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
@@ -70,7 +68,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
       setCurrentCollaUsername(username);
     }
-  }, [session]);
+  }, [session, setCurrentCollaUsername]);
 
   useEffect(() => {
     const user: User = {
@@ -78,26 +76,41 @@ export default function Board({ params }: { params: { id: string } }) {
       username: session.data?.session?.user?.username,
     };
 
-    if (currentCollaUsername) socketJoinRoom(params.id, user.id, currentCollaUsername);
+    // if (currentCollaUsername) socketJoinRoom(params.id, user.id, currentCollaUsername);
     setCurrentUser(user);
-  }, [currentCollaUsername]);
+  }, [currentCollaUsername, session, setCurrentUser]);
 
-  const getUserMindmapById = async () => {
-    const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
+  function handleScrollTop() {
+    if (promptResult) {
+      scrollToTop();
+      setPromptResult(false);
+    } else {
+      scrollToBottom();
+      setPromptResult(true);
+    }
+  }
 
-    return mindmapData;
-  };
+  const [userMindmapDetails, setUserMindmapDetails] = useRecoilState(mindmapDataState);
 
-  const { isLoading, data: userMindmapDetails } = useQuery<MindMapDetailsProps>(
-    ["mindmap", params.id],
-    getUserMindmapById,
-    {
-      refetchOnMount: false,
-      onSuccess: async (data) => {
-        setBoardId(params.id);
+  useEffect(() => {
+    const getUserMindmapById = async () => {
+      const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
+
+      return mindmapData;
+    };
+
+    const fetchData = async () => {
+      if (!userMindmapDetails) {
+        // Only fetch if data is not already available
+        const data: MindMapDetailsProps = await getUserMindmapById();
+
+        setUserMindmapDetails(data);
+        setLayers(data.layers);
+        setEdges(data.edges);
+
         if (data.messages) {
-          // await joinRoom(data);
           setQa([]);
+
           const newQaItems = data.messages.map((mindMapQA) => ({
             text: mindMapQA.request,
             message: mindMapQA.response,
@@ -105,13 +118,38 @@ export default function Board({ params }: { params: { id: string } }) {
 
           setQa((prevQa) => [...prevQa, ...newQaItems]);
         }
-      },
-    },
-  );
+      }
+    };
 
-  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+    fetchData();
+  }, [userMindmapDetails, setUserMindmapDetails, params.id, safeSession, setLayers, setEdges, setQa]);
 
-  if (isLoading)
+  // const { isLoading, data: userMindmapDetails } = useQuery<MindMapDetailsProps>(
+  //   ["mindmap", params.id],
+  //   getUserMindmapById,
+  //   {
+  //     enabled: !!safeSession, // Only run the query if safeSession is available
+  //     staleTime: Infinity,
+  //     refetchOnWindowFocus: false,
+  //     refetchOnReconnect: false,
+  //     onSuccess: async (data: MindMapDetailsProps) => {
+  //       if (data.layers && data.messages) {
+  //         setLayers(data.layers);
+  //         setEdges(data.edges);
+
+  //         setQa([]);
+  //         const newQaItems = data.messages.map((mindMapQA) => ({
+  //           text: mindMapQA.request,
+  //           message: mindMapQA.response,
+  //         }));
+
+  //         setQa((prevQa) => [...prevQa, ...newQaItems]);
+  //       }
+  //     },
+  //   },
+  // );
+
+  if (!userMindmapDetails)
     return (
       <div className="flex w-full h-full fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
         <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
@@ -132,9 +170,31 @@ export default function Board({ params }: { params: { id: string } }) {
             <NavRight userMindmapDetails={userMindmapDetails} />
           </div>
 
+          <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
+            {userMindmapDetails ? (
+              <PromptTextInput userMindmapDetails={userMindmapDetails} />
+            ) : (
+              <Skeleton className="w-full max-h-36 h-12 bg-grey-blue rounded-xl" />
+            )}
+          </div>
+
+          <div
+            className={`fixed right-5 bottom-6 z-10 ${
+              promptValue || qa.length > 0 ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
+            }`}
+          >
+            <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
+              <Image
+                className={`${!promptResult ? "rotate-180" : "rotate-0"} transition-all duration-500`}
+                src={arrowIcon}
+                alt="Stars icon"
+              />
+            </Button>
+          </div>
+
           <div className="w-full">
             <div className="relative w-full h-full">
-              {isLoading && currentCollaUsername !== undefined ? (
+              {!userMindmapDetails && currentCollaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
                   <Spinner
@@ -143,9 +203,14 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Whiteboard userMindmapDetails={userMindmapDetails} boardId={userMindmapDetails.id} />
+                <Whiteboard boardId={userMindmapDetails.id} />
               )}
             </div>
+            {qa.length > 0 && (
+              <div className="relative w-full h-full flex flex-row justify-center bg-background">
+                <Answers />
+              </div>
+            )}
           </div>
         </main>
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
@@ -160,7 +225,7 @@ export default function Board({ params }: { params: { id: string } }) {
       </>
     );
 
-  if (!isLoading)
+  if (userMindmapDetails)
     return (
       <>
         <main className="relative flex justify-between w-screen h-screen">

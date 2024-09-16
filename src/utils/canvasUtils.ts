@@ -7,7 +7,6 @@ import {
   Color,
   Edge,
   EdgeOrientation,
-  EdgeType,
   HandlePosition,
   Layer,
   LayerType,
@@ -44,7 +43,7 @@ export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera,
 };
 
 export function colorToCss(color: Color) {
-  if (!color) return "#ff0000";
+  if (!color) return "#33373b";
 
   return `#${color.r.toString(16).padStart(2, "0")}${color.g.toString(16).padStart(2, "0")}${color.b
     .toString(16)
@@ -460,6 +459,5 @@ export function generateMermaidFlowchart(edges: Edge[], layers: Layer[]): string
   const nodes = layers.map((layer) => `${layer.id}[${layer.value}]`).join("\n    ");
   const connections = edges.map((edge) => `${edge.fromLayerId} --> ${edge.toLayerId}`).join("\n    ");
 
-  console.log(`flowchart TD\n    ${nodes}\n    ${connections}`);
   return `flowchart TD\n    ${nodes}\n    ${connections}`;
 }

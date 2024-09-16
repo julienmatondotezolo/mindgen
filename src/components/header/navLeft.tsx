@@ -14,7 +14,7 @@ import { CustomSession, MindMapDetailsProps, Organization } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
 import { Sheet, SheetContent, SheetTrigger, Switch } from "@/components/ui";
-import { selectedOrganizationState } from "@/state";
+import { edgesAtomState, layerAtomState, selectedOrganizationState } from "@/state";
 import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
@@ -71,6 +71,9 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
+  const currentLayers = useRecoilValue(layerAtomState);
+  const currentEdges = useRecoilValue(edgesAtomState);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Do something with formData
@@ -78,8 +81,8 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     const newMindmapObject = emptyMindMapObject({
       name: newMindMapName ?? "",
       description: newMindMapDescription ?? "",
-      layers: userMindmapDetails?.layers,
-      edges: userMindmapDetails?.edges,
+      layers: currentLayers,
+      edges: currentEdges,
       organizationId: selectedOrga!.id,
       visibility: newMindMapVisibility ?? "PRIVATE",
     });

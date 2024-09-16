@@ -2,7 +2,16 @@
 import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import { CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
+import {
+  CanvasMode,
+  CanvasState,
+  ChatMessageProps,
+  Edge,
+  Layer,
+  MindMapDetailsProps,
+  QuestionAnswersProps,
+  User,
+} from "@/_types";
 import { Organization } from "@/_types/Organization";
 import { socket } from "@/socket";
 
@@ -52,6 +61,11 @@ export const selectedOrganizationState = atom<Organization | undefined>({
 export const boardIdState = atom<string>({
   key: "boardIdState", // unique ID (with respect to other atoms/selectors)
   default: "", // valeur par défaut (alias valeur initials)
+});
+
+export const mindmapDataState = atom<MindMapDetailsProps | undefined>({
+  key: "mindmapDataState",
+  default: undefined,
 });
 
 // ================   LAYER EFFECTS   ================== //
