@@ -1,13 +1,12 @@
 import { Plus } from "lucide-react";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
 import { useRecoilState } from "recoil";
 
 import { fetchProfile } from "@/_services";
-import { Collaborator, CustomSession, MindMapDetailsProps, ProfileProps } from "@/_types";
+import { Member, MindMapDetailsProps, ProfileProps } from "@/_types";
 import collaborateIcon from "@/assets/icons/collaborate.svg";
 import importIcon from "@/assets/icons/import.svg";
 import shareIcon from "@/assets/icons/share.svg";
@@ -18,8 +17,8 @@ import { checkPermission } from "@/utils";
 function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const text = useTranslations("Index");
 
-  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
-  const collaborators = userMindmapDetails ? userMindmapDetails?.collaborators : [];
+  const PERMISSIONS = userMindmapDetails?.connectedMemberPermissions;
+  const collaborators = userMindmapDetails ? userMindmapDetails?.members : [];
   const MAX_COLLABORATORS_SHOWED = 3;
 
   const [importModal, setImportModal] = useRecoilState(importModalState);
@@ -27,9 +26,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
 
-  const session = useSession();
-  const safeSession = session ? (session as unknown as CustomSession) : null;
-  const fetchUserProfile = () => fetchProfile({ session: safeSession });
+  const fetchUserProfile = () => fetchProfile();
 
   const handleImportClick = () => {
     setImportModal(!importModal);
@@ -47,9 +44,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
     setUpgradePlanModal(!upgradePlanModal);
   };
 
-  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile, {
-    enabled: session.data?.session?.user !== undefined,
-  });
+  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
 
   return (
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
@@ -93,11 +88,11 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
             onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleCollaborateClick}
           >
             {collaborators?.length > 1 ? (
-              collaborators?.slice(0, MAX_COLLABORATORS_SHOWED).map((collaborator: Collaborator, index: number) => (
+              collaborators?.slice(0, MAX_COLLABORATORS_SHOWED).map((collaborator: Member, index: number) => (
                 <figure
                   key={index}
                   className={`flex h-6 w-6 rounded-full -ml-2 border ${
-                    collaborator.role == "OWNER" ? "bg-primary-color" : "bg-[#1fb865]"
+                    collaborator.mindmapRole == "CREATOR" ? "bg-primary-color" : "bg-[#1fb865]"
                   }`}
                 >
                   <p className="m-auto text-xs">{collaborator.username.substring(0, 1).toUpperCase()}</p>

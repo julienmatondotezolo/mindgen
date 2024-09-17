@@ -108,13 +108,13 @@
     "promptInput": "Ask/generate anything about this mindmap...",
     "answer": "Answer"
   },
-  "Collaborator": {
-    "collaboratorText": "Enable a collaborations session and invite new people to create awesome mind maps together.",
-    "noCollaborator": "No collaborator",
-    "collaborator": "Collaborator",
-    "collaborators": "Collaborators",
-    "addCollaborator": "Add collaborator",
-    "inviteCollaborator": "Invite collaborator",
+  "Member": {
+    "memberText": "Enable a collaborations session and invite new people to create awesome mind maps together.",
+    "noMember": "No member",
+    "member": "member",
+    "members": "members",
+    "addMember": "Add member",
+    "inviteMembers": "Invite member",
     "admin": "Admin",
     "contributor": "Contributor",
     "owner": "Owner",

@@ -47,7 +47,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const [qa, setQa] = useRecoilState(qaState);
 
   const [currentCollaUsername, setCurrentCollaUsername] = useRecoilState(usernameState);
-  const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
+  // const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
   const setCurrentUser = useSetRecoilState(currentUserState);
 
   const session = useSession();
@@ -123,31 +123,6 @@ export default function Board({ params }: { params: { id: string } }) {
 
     fetchData();
   }, [userMindmapDetails, setUserMindmapDetails, params.id, safeSession, setLayers, setEdges, setQa]);
-
-  // const { isLoading, data: userMindmapDetails } = useQuery<MindMapDetailsProps>(
-  //   ["mindmap", params.id],
-  //   getUserMindmapById,
-  //   {
-  //     enabled: !!safeSession, // Only run the query if safeSession is available
-  //     staleTime: Infinity,
-  //     refetchOnWindowFocus: false,
-  //     refetchOnReconnect: false,
-  //     onSuccess: async (data: MindMapDetailsProps) => {
-  //       if (data.layers && data.messages) {
-  //         setLayers(data.layers);
-  //         setEdges(data.edges);
-
-  //         setQa([]);
-  //         const newQaItems = data.messages.map((mindMapQA) => ({
-  //           text: mindMapQA.request,
-  //           message: mindMapQA.response,
-  //         }));
-
-  //         setQa((prevQa) => [...prevQa, ...newQaItems]);
-  //       }
-  //     },
-  //   },
-  // );
 
   if (!userMindmapDetails)
     return (

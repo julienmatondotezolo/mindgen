@@ -108,13 +108,13 @@
     "promptInput": "Vraag/Genereer alles over deze mindmap...",
     "answer": "Antwoord"
   },
-  "Collaborator": {
-    "collaboratorText": "Schakel een samenwerkingssessie in en nodig gebruikers uit om samen geweldige mindmaps te maken.",
-    "noCollaborator": "Geen medewerker",
-    "collaborator": "Medewerker",
-    "collaborators": "Medewerkers",
-    "addCollaborator": "Medewerker toevoegen",
-    "inviteCollaborator": "Medewerker uitnodigen",
+  "Member": {
+    "memberText": "Schakel een samenwerkingssessie in en nodig gebruikers uit om samen geweldige mindmaps te maken.",
+    "noMember": "Geen medewerker",
+    "member": "Medewerker",
+    "members": "Medewerkers",
+    "addMember": "Medewerker toevoegen",
+    "inviteMembers": "Medewerker uitnodigen",
     "admin": "Beheerder",
     "contributor": "Contributor",
     "owner": "Eigenaar",

@@ -477,18 +477,18 @@ export async function acceptInvitation(invitationId: string): Promise<any> {
   }
 }
 
-/* ======================================================= */  
-/* ==================   COLLABORATORS   ================== */
-/* ======================================================= */  
+/* ========================================================= */  
+/* ==================   MEMBERS & ROLES   ================== */
+/* ========================================================= */  
 
-export async function inviteAllCollaborators(collaboratorsObject: any): Promise<any> {
-  const { mindmapId, invitedCollaborators } = collaboratorsObject;
+export async function inviteAllMembers(membersObject: any): Promise<any> {
+  const { mindmapId, invitedMembers } = membersObject;
 
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();
 
-    const responseInvitedCollaborator: Response = await fetch(baseUrl + `/mindmap/invitation/invite/${mindmapId}`, {
+    const responseInvitedMembers: Response = await fetch(baseUrl + `/mindmap/invitation/invite/${mindmapId}`, {
       method: "POST",
       cache: "no-store",
       headers: {
@@ -496,20 +496,20 @@ export async function inviteAllCollaborators(collaboratorsObject: any): Promise<
         "Authorization": `Bearer ${session.session.user.token}`,
         "ngrok-skip-browser-warning": "1",
       },
-      body: JSON.stringify(invitedCollaborators),
+      body: JSON.stringify(invitedMembers),
     });
 
-    if (responseInvitedCollaborator.ok) {
-      return responseInvitedCollaborator.json();
+    if (responseInvitedMembers.ok) {
+      return responseInvitedMembers.json();
     } else {
-      throw responseInvitedCollaborator;
+      throw responseInvitedMembers;
     }
   } catch (error) {
-    console.error("Impossible to invite collaborator(s):", error);
+    console.error("Impossible to invite Member(s):", error);
   }
 }
 
-export async function updateCollaborators(collaboratorsObject: any): Promise<any> {
+export async function updateMembers(collaboratorsObject: any): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();

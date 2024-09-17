@@ -25,7 +25,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const text = useTranslations("Index");
 
-  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+  const PERMISSIONS = userMindmapDetails?.connectedMemberPermissions;
 
   const [newMindMapName, setNewMindMapName] = useState("");
   const [newMindMapDescription, setNewMindMapDescription] = useState("");
