@@ -25,3 +25,5 @@ export * from "./textarea";
 export * from "./toast";
 export * from "./upgradePlanDialog";
 export * from "./use-toast";
+export * from "./card";
+export * from "./table";

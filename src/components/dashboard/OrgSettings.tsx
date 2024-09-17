@@ -1,15 +1,20 @@
 import { useTranslations } from "next-intl";
-import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import React, { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { deleteOrganizationById, getOrganizationById, updateOrganization } from "@/_services";
+import { deleteOrganizationById, updateOrganization } from "@/_services";
 import { Organization } from "@/_types/Organization";
 import { Button, Input, Skeleton } from "@/components/ui";
 import { organizationSettingsState, selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
-function OrgSettings() {
+interface OrgProps {
+  userOrgaData: Organization | undefined;
+  isLoading: boolean;
+}
+
+function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
   const queryClient = useQueryClient();
 
   const text = useTranslations("Index");
@@ -24,24 +29,16 @@ function OrgSettings() {
     setInputTitle(e.target.value);
   };
 
-  const isOrgaSettings = useRecoilValue(organizationSettingsState);
-
-  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+  const [selectedOrga, setSelectedOrga] = useRecoilState<Organization | undefined>(selectedOrganizationState);
   const setOrgaSettings = useSetRecoilState(organizationSettingsState);
 
-  const fetchOrgaById = () => getOrganizationById({ organizationId: selectedOrga!.id });
-
-  const { isLoading, data: userOrgaData } = useQuery("userOrgaById", fetchOrgaById, {
-    enabled: isOrgaSettings,
-    onSuccess: (data: Organization) => {
-      if (data) {
-        setInputTitle(data.name);
-      }
-    },
-  });
+  useEffect(() => {
+    if (userOrgaData) setInputTitle(userOrgaData.name);
+  }, [userOrgaData]);
 
   const updateOrgaMutation = useMutation(updateOrganization, {
-    onSuccess: () => {
+    onSuccess: (updatedOrga) => {
+      setSelectedOrga(updatedOrga);
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");

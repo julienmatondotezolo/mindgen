@@ -18,6 +18,7 @@ export type Member = {
   memberId: string;
   userId: string;
   username: string;
+  email: string;
   mindmapRole: MindmapRole;
   organizationRole: OrganizationRole;
 };

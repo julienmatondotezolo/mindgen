@@ -204,7 +204,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                   <option value="CONTRIBUTOR">{memberText("contributor")}</option>
                   <option value="VIEWER">{memberText("viewer")}</option>
                 </select>
-                <Button onClick={handleInviteMembers}>{uppercaseFirstLetter(text("invite"))}</Button>
+                <Button onClick={handleInviteMembers}>{uppercaseFirstLetter(text("add"))}</Button>
               </div>
               <section className="w-full space-y-1 mt-4">
                 {notFoundUsers.map((notFoundUser, index) => (

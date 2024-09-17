@@ -42,29 +42,8 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
   const newBorderColor = borderColor
     ? colorToCss(borderColor)
     : theme === "dark"
-      ? "rgb(127, 17, 224)"
+      ? "rgb(180, 191, 204)"
       : "rgb(71, 85, 105)";
-
-  // const newBorderColor = () => {
-  //   let newBorderColor: Color;
-
-  //   if (borderColor) {
-  //     newBorderColor = borderColor;
-  //   } else if (theme === "dark") {
-  //     newBorderColor = {
-  //       r: 127,
-  //       g: 17,
-  //       b: 224,
-  //     };
-  //   } else {
-  //     newBorderColor = {
-  //       r: 71,
-  //       g: 85,
-  //       b: 105,
-  //     };
-  //   }
-  //   return newBorderColor;
-  // };
 
   return (
     <>

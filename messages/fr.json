@@ -115,6 +115,7 @@
     "members": "Membres",
     "addMember": "Ajouter un membre",
     "inviteMembers": "Inviter un membre",
+    "inviteMembersText": "Saisissez ou collez une ou plusieurs adresses e-mail, séparées par des espaces ou des virgules.",
     "admin": "Administrateur",
     "contributor": "Contributor",
     "owner": "Propriétaire",

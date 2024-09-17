@@ -151,7 +151,7 @@ export async function createOrganization(organizationObject: any): Promise<any> 
     });
 
     if (responseCreatedOrganization.ok) {
-      return responseCreatedOrganization;
+      return await responseCreatedOrganization.json();
     } else {
       throw responseCreatedOrganization;
     }
@@ -177,7 +177,7 @@ export async function updateOrganization({ organizationId, organizationObject }:
     });
 
     if (responseUpdateOrganization.ok) {
-      return responseUpdateOrganization;
+      return await responseUpdateOrganization.json();
     } else {
       throw responseUpdateOrganization;
     }
