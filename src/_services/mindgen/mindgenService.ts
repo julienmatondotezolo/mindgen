@@ -453,6 +453,29 @@ export async function fetchInvitations({ session }: { session: CustomSession | n
     }
 }
 
+export async function createInvitations({ session, invitationObject }: { session: CustomSession | null, invitationObject: any }): Promise<any> {
+  if(session)
+    try {
+      const responseInvitations: Response = await fetch(baseUrl + `/organization/invitation`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify(invitationObject),
+      });
+
+      if (responseInvitations.ok) {
+        return responseInvitations.json();
+      } else {
+        throw responseInvitations;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch invitations:", error);
+    }
+}
+
 export async function acceptInvitation(invitationId: string): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");

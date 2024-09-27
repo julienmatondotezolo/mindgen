@@ -56,7 +56,7 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
       } fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 sm:w-11/12 md:w-7/12 h-5/6 bg-white border-2 p-6 space-y-8 rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:bg-slate-900 dark:bg-opacity-70 dark:shadow-slate-900 dark:border-slate-800`}
     >
       <p className="font-bold text-xl">{`${uppercaseFirstLetter(text("settings"))} ${textOrga("organization")}`}</p>
-      <Tabs defaultValue="general" className="flex flex-wrap justify-between w-full">
+      <Tabs defaultValue="general" className="flex flex-wrap justify-between w-full h-[90%]">
         <TabsList className="flex flex-col w-[20%] h-max space-y-4">
           <TabsTrigger className={triggerStyle} value="general">
             <p>{uppercaseFirstLetter(text("general"))}</p>

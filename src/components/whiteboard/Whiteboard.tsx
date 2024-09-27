@@ -1229,25 +1229,30 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
     if (!svgElement || !gElement) return;
 
-    const gRect = gElement.getBBox();
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const svgRect = svgElement.getBoundingClientRect();
+    const gRect = gElement.getBoundingClientRect();
 
-    const scaleX = (viewportWidth * 0.8) / gRect.width;
-    const scaleY = (viewportHeight * 0.8) / gRect.height;
+    // console.log('gRectWidth:', gRect.width);
+    // console.log('gRectHeight:', gRect.height);
 
-    const scale = Math.min(scaleX, scaleY, 1);
+    // const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    // const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
-    const translateX = (viewportWidth - gRect.width * scale) / 2 - gRect.x * scale;
-    const translateY = (viewportHeight - gRect.height * scale) / 2 - gRect.y * scale;
+    // const scaleX = (viewportWidth * 0.8) / gRect.width;
+    // const scaleY = (viewportHeight * 0.8) / gRect.height;
 
-    setCamera({ x: translateX, y: translateY, scale: scale });
+    // const scale = Math.min(scaleX, scaleY, 1);
 
-    setTimeout(() => {
-      setApplyTransition(false);
-    }, CANVAS_TRANSITION_TIME);
+    // const translateX = (viewportWidth - gRect.width * scale) / 2 - gRect.x * scale;
+    // const translateY = (viewportHeight - gRect.height * scale) / 2 - gRect.y * scale;
 
-    setShowResetButton(false);
+    // setCamera({ x: translateX, y: translateY, scale: scale });
+
+    // setTimeout(() => {
+    //   setApplyTransition(false);
+    // }, CANVAS_TRANSITION_TIME);
+
+    // setShowResetButton(false);
   };
 
   const zoomIn = () => {

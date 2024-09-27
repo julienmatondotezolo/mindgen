@@ -40,7 +40,7 @@ export const currentUserState = atom<User | {}>({
 const organizationlocalStorageEffect = ({ onSet, setSelf }: any) => {
   const savedOrganization = localStorage.getItem("selected-organization");
 
-  if (savedOrganization) {
+  if (savedOrganization && savedOrganization !== "undefined") {
     setSelf(JSON.parse(savedOrganization)); // Load from local storage
   }
 

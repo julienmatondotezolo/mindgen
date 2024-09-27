@@ -12,6 +12,7 @@ export async function connectUser(credentials: any): Promise<Response> {
       body: JSON.stringify({
         username: credentials?.username,
         password: credentials?.password,
+        preferredLanguage: "ENGLISH",
       }),
     });
 
