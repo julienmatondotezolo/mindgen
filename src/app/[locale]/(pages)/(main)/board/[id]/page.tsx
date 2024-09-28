@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -25,7 +24,6 @@ import {
   edgesAtomState,
   importModalState,
   layerAtomState,
-  mindmapDataState,
   promptResultState,
   promptValueState,
   qaState,
@@ -54,9 +52,22 @@ export default function Board({ params }: { params: { id: string } }) {
 
   const session = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
+  const [enabled, setEnabled] = useState(true);
 
-  const { socketEmit, socketListen, socketOff, socketJoinRoom } = useSocket();
-  const router = useRouter();
+  const { socketEmit, socketListen, socketOff, socketJoinRoom, socketLeaveRoom } = useSocket();
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [params.id, session]);
 
   useEffect(() => {
     const user: User = {
@@ -66,17 +77,16 @@ export default function Board({ params }: { params: { id: string } }) {
 
     if (user.username) {
       setCurrentCollaUsername(user.username);
-      socketJoinRoom(params.id, user.id, currentCollaUsername);
     } else {
       const usernameFromStorage = sessionStorage.getItem("collaUsername");
       let username = usernameFromStorage ?? generateUsername();
 
       sessionStorage.setItem("collaUsername", username);
 
-      setCurrentCollaUsername(username);
       socketJoinRoom(params.id, user.id, currentCollaUsername);
     }
 
+    setEnabled(false);
     setCurrentUser(user);
   }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser, socketJoinRoom]);
 
@@ -91,8 +101,13 @@ export default function Board({ params }: { params: { id: string } }) {
     isLoading,
     isError,
   } = useQuery(["mindmap", params.id], fetchUserMindmapById, {
-    enabled: !!safeSession,
+    enabled,
+    staleTime: Infinity,
     onSuccess: (data: MindMapDetailsProps) => {
+      const userId = session.data?.session?.user?.id;
+
+      socketJoinRoom(params.id, userId, currentCollaUsername);
+
       setLayers(data.layers);
       setEdges(data.edges);
 

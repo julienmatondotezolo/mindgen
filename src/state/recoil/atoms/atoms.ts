@@ -63,11 +63,6 @@ export const boardIdState = atom<string>({
   default: "", // valeur par défaut (alias valeur initials)
 });
 
-export const mindmapDataState = atom<MindMapDetailsProps | undefined>({
-  key: "mindmapDataState",
-  default: undefined,
-});
-
 // ================   LAYER EFFECTS   ================== //
 
 const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
