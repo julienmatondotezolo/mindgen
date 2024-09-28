@@ -13,11 +13,6 @@ const Cursors = () => {
   const { socketListen } = useSocket();
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
 
-  // const exampleUser: ConnectedUser = {
-  //   id: "1",
-  //   username: "example",
-  // };
-
   useEffect(() => {
     socketListen("connected-users", (data) => {
       setConnectedUsers(data); // Update state instead of ref
@@ -27,12 +22,10 @@ const Cursors = () => {
   return (
     <>
       {connectedUsers.map((connectedUser, index) => (
-        <div key={connectedUser.id}>
+        <g key={connectedUser.id}>
           <Cursor key={connectedUser.id} connectionId={index} user={connectedUser} />
-        </div>
+        </g>
       ))}
-
-      {/* <Cursor connectionId={1} user={exampleUser} /> */}
     </>
   );
 };

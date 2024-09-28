@@ -39,9 +39,6 @@ export const Cursor = memo(({ user, connectionId }: CursorProps) => {
 
   const { x, y } = cursor;
 
-  // const x = 322;
-  // const y = 330;
-
   return (
     <foreignObject
       style={{
