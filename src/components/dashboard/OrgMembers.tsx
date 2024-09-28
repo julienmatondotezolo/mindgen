@@ -11,11 +11,6 @@ import {
   CardContent,
   CardFooter,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Skeleton,
   Table,
   TableBody,
@@ -26,7 +21,7 @@ import {
   TableRow,
   Textarea,
 } from "@/components/ui/";
-import { uppercaseFirstLetter } from "@/utils";
+import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
 interface OrgProps {
   userOrgaData: Organization | undefined;
@@ -44,6 +39,10 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   const textMember = useTranslations("Member");
 
   const members = userOrgaData?.members;
+
+  const currentUserid = safeSession?.data.session.user.id;
+
+  const currentMember: Member | undefined = userOrgaData?.members.filter((member) => member.userId == currentUserid)[0];
 
   // Open inviation
   const [openInvite, setOpenInvite] = useState(false);
@@ -149,8 +148,8 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                           required
                         >
                           <option value="ADMIN">{textMember("admin")}</option>
-                          <option value="CONTRIBUTOR">{textMember("contributor")}</option>
-                          <option value="VIEWER">{textMember("viewer")}</option>
+                          <option value="MEMBER">{uppercaseFirstLetter(textMember("member"))}</option>
+                          <option value="GUEST">{textMember("guest")}</option>
                         </select>
                       </div>
                       <div className="space-x-2">
@@ -165,9 +164,11 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                   </form>
                 </Card>
               ) : (
-                <Button onClick={() => setOpenInvite(true)} className="mt-8" type="submit">
-                  {textMember("inviteMembers")}
-                </Button>
+                currentMember?.organizationRole == "OWNER" && (
+                  <Button onClick={() => setOpenInvite(true)} className="mt-8" type="submit">
+                    {textMember("inviteMembers")}
+                  </Button>
+                )
               )}
               <div className="text-sm w-full mt-8 p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 pb-4 border-b dark:border-slate-800">
                 <Table>

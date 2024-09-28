@@ -254,7 +254,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
         <p className="text-md font-bold mb-2">
           {membersLength < 1
             ? memberText("noMember")
-            : `${membersLength} ${memberText(membersLength > 1 ? `members` : `collaborator`).toLowerCase()}`}
+            : `${membersLength + 1} ${memberText(membersLength > 1 ? `members` : `collaborator`).toLowerCase()}`}
         </p>
         {!userMindmap ? (
           <>

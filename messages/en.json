@@ -119,7 +119,8 @@
     "admin": "Admin",
     "contributor": "Contributor",
     "owner": "Owner",
-    "viewer": "Viewer"
+    "viewer": "Viewer",
+    "guest": "Guest"
   },
   "Whiteboard": {
     "typeSomething": "Type something...",

@@ -21,7 +21,7 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, (currentActiveLayers) => {
           if (currentActiveLayers[0]?.userId == undefined) {
-            socketEmit("select-layer", { roomId, selectedLayer: [userActiveLayers] });
+            socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
             return [userActiveLayers];
           }
 
@@ -33,7 +33,7 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
             return item;
           });
 
-          socketEmit("select-layer", { roomId, selectedLayer: newUserActiveLayers });
+          socketEmit("select-layer", { roomId, userId, selectedLayer: newUserActiveLayers });
           return newUserActiveLayers;
         });
       },
@@ -53,7 +53,7 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
             item.userId === userId ? { ...item, layerIds: [] } : item,
           );
 
-          socketEmit("select-layer", { roomId, selectedLayer: updatedActiveLayers });
+          socketEmit("select-layer", { roomId, userId, selectedLayer: updatedActiveLayers });
 
           return updatedActiveLayers;
         });

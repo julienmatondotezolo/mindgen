@@ -119,7 +119,8 @@
     "admin": "Administrateur",
     "contributor": "Contributor",
     "owner": "Propriétaire",
-    "viewer": "Visiteur"
+    "viewer": "Visiteur",
+    "guest": "invité(e)"
   },
   "Whiteboard": {
     "typeSomething": "Tapez quelque chose...",

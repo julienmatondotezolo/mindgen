@@ -15,6 +15,7 @@ import {
   HandlePosition,
   Layer,
   LayerType,
+  MindMapDetailsProps,
   Point,
   Side,
   XYWH,
@@ -58,8 +59,9 @@ import { LayerPreview } from "./LayerPreview";
 import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layers";
 import { Toolbar } from "./Toolbar";
 
-const Whiteboard = ({ boardId }: { boardId: string; }) => {
+const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps; }) => {
   const DEBUG_MODE = false;
+  const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
@@ -962,26 +964,15 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
         updateEdgePosition(current);
       }
 
-      socketEmit("cursor-move", {
-        roomId: boardId,
-        userId: currentUserId,
-        cursor: current,
-      });
+      if(userMindmapDetails.members.length > 1)
+        socketEmit("cursor-move", {
+          roomId: boardId,
+          userId: currentUserId,
+          cursor: current,
+        });
       // setMyPresence({ cursor: current });
     },
-    [
-      camera,
-      canvasState,
-      socketEmit,
-      boardId,
-      currentUserId,
-      startMultiSelection,
-      updateSelectionNet,
-      translateSelectedLayer,
-      resizeSelectedLayer,
-      drawEdgeline,
-      updateEdgePosition,
-    ],
+    [camera, canvasState, userMindmapDetails.members.length, socketEmit, boardId, currentUserId, startMultiSelection, updateSelectionNet, translateSelectedLayer, resizeSelectedLayer, drawEdgeline, updateEdgePosition],
   );
 
   const handlePointerUp = useCallback(

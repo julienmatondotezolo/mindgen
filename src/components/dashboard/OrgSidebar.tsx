@@ -47,7 +47,7 @@ export function OrgSidebar() {
       if (data) {
         const savedOrganization = localStorage.getItem("selected-organization");
 
-        if (savedOrganization) {
+        if (savedOrganization !== "undefined") {
           setSelectedOrganization(JSON.parse(savedOrganization)); // Load from local storage
         } else {
           setSelectedOrganization(data[0]); // Save the first organization

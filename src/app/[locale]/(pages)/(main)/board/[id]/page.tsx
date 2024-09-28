@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { useQuery } from "react-query";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { generateUsername } from "unique-username-generator";
 
@@ -54,21 +56,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const { socketEmit, socketListen, socketOff, socketJoinRoom } = useSocket();
-
-  useEffect(() => {
-    const username = session.data?.session?.user?.username;
-
-    if (username) {
-      setCurrentCollaUsername(username);
-    } else {
-      const usernameFromStorage = sessionStorage.getItem("collaUsername");
-      let username = usernameFromStorage ?? generateUsername();
-
-      sessionStorage.setItem("collaUsername", username);
-
-      setCurrentCollaUsername(username);
-    }
-  }, [session, setCurrentCollaUsername]);
+  const router = useRouter();
 
   useEffect(() => {
     const user: User = {
@@ -76,9 +64,50 @@ export default function Board({ params }: { params: { id: string } }) {
       username: session.data?.session?.user?.username,
     };
 
-    // if (currentCollaUsername) socketJoinRoom(params.id, user.id, currentCollaUsername);
+    if (user.username) {
+      setCurrentCollaUsername(user.username);
+      socketJoinRoom(params.id, user.id, currentCollaUsername);
+    } else {
+      const usernameFromStorage = sessionStorage.getItem("collaUsername");
+      let username = usernameFromStorage ?? generateUsername();
+
+      sessionStorage.setItem("collaUsername", username);
+
+      setCurrentCollaUsername(username);
+      socketJoinRoom(params.id, user.id, currentCollaUsername);
+    }
+
     setCurrentUser(user);
-  }, [currentCollaUsername, session, setCurrentUser]);
+  }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser, socketJoinRoom]);
+
+  const fetchUserMindmapById = async () => {
+    const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
+
+    return mindmapData;
+  };
+
+  const {
+    data: userMindmapDetails,
+    isLoading,
+    isError,
+  } = useQuery(["mindmap", params.id], fetchUserMindmapById, {
+    enabled: !!safeSession,
+    onSuccess: (data: MindMapDetailsProps) => {
+      setLayers(data.layers);
+      setEdges(data.edges);
+
+      if (data.messages) {
+        setQa([]);
+
+        const newQaItems = data.messages.map((mindMapQA) => ({
+          text: mindMapQA.request,
+          message: mindMapQA.response,
+        }));
+
+        setQa((prevQa) => [...prevQa, ...newQaItems]);
+      }
+    },
+  });
 
   function handleScrollTop() {
     if (promptResult) {
@@ -90,41 +119,7 @@ export default function Board({ params }: { params: { id: string } }) {
     }
   }
 
-  const [userMindmapDetails, setUserMindmapDetails] = useRecoilState(mindmapDataState);
-
-  useEffect(() => {
-    const getUserMindmapById = async () => {
-      const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
-
-      return mindmapData;
-    };
-
-    const fetchData = async () => {
-      if (!userMindmapDetails) {
-        // Only fetch if data is not already available
-        const data: MindMapDetailsProps = await getUserMindmapById();
-
-        setUserMindmapDetails(data);
-        setLayers(data.layers);
-        setEdges(data.edges);
-
-        if (data.messages) {
-          setQa([]);
-
-          const newQaItems = data.messages.map((mindMapQA) => ({
-            text: mindMapQA.request,
-            message: mindMapQA.response,
-          }));
-
-          setQa((prevQa) => [...prevQa, ...newQaItems]);
-        }
-      }
-    };
-
-    fetchData();
-  }, [userMindmapDetails, setUserMindmapDetails, params.id, safeSession, setLayers, setEdges, setQa]);
-
-  if (!userMindmapDetails)
+  if (isLoading)
     return (
       <div className="flex w-full h-full fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
         <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
@@ -178,7 +173,7 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Whiteboard boardId={userMindmapDetails.id} />
+                <Whiteboard userMindmapDetails={userMindmapDetails} />
               )}
             </div>
             {qa.length > 0 && (
@@ -200,7 +195,7 @@ export default function Board({ params }: { params: { id: string } }) {
       </>
     );
 
-  if (userMindmapDetails)
+  if (isError)
     return (
       <>
         <main className="relative flex justify-between w-screen h-screen">

@@ -1,9 +1,11 @@
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
 import { deleteOrganizationById, updateOrganization } from "@/_services";
+import { CustomSession, Member } from "@/_types";
 import { Organization } from "@/_types/Organization";
 import { Button, Input, Skeleton } from "@/components/ui";
 import { organizationSettingsState, selectedOrganizationState } from "@/state";
@@ -15,6 +17,14 @@ interface OrgProps {
 }
 
 function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
+  const session = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+  const currentUserid = safeSession?.data.session.user.id;
+
+  const currentMember: Member | undefined = userOrgaData?.members.filter((member) => member.userId == currentUserid)[0];
+
+  console.log("currentUserRole:", currentMember?.organizationRole);
+
   const queryClient = useQueryClient();
 
   const text = useTranslations("Index");
@@ -108,24 +118,26 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
               </Button>
             </section>
           </form>
-          <article className="flex py-4 border-b dark:border-slate-800">
+          {/* <article className="flex py-4 border-b dark:border-slate-800">
             <p className="mr-4">{`${uppercaseFirstLetter(text("leave"))} ${textOrga("organization")}:`}</p>
             <p className="cursor-pointer font-semibold text-red-500">
               {`${uppercaseFirstLetter(text("leave"))} ${textOrga("organization")}`}
             </p>
-          </article>
-          <article className="flex py-4">
-            <p className="mr-4">{`${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}:`}</p>
-            <button
-              onClick={() => handleDeleteOrga()}
-              disabled={deleteOrgaMutation.isLoading}
-              className={`cursor-pointer font-semibold text-red-500 ${deleteOrgaMutation.isLoading && "opacity-50"}`}
-            >
-              {deleteOrgaMutation.isLoading
-                ? `${uppercaseFirstLetter(text("loading"))}...`
-                : `${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}`}
-            </button>
-          </article>
+          </article> */}
+          {currentMember?.organizationRole == "OWNER" && (
+            <article className="flex py-4">
+              <p className="mr-4">{`${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}:`}</p>
+              <button
+                onClick={() => handleDeleteOrga()}
+                disabled={deleteOrgaMutation.isLoading}
+                className={`cursor-pointer font-semibold text-red-500 ${deleteOrgaMutation.isLoading && "opacity-50"}`}
+              >
+                {deleteOrgaMutation.isLoading
+                  ? `${uppercaseFirstLetter(text("loading"))}...`
+                  : `${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}`}
+              </button>
+            </article>
+          )}
         </div>
       )}
     </div>

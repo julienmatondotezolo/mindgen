@@ -119,7 +119,8 @@
     "admin": "Beheerder",
     "contributor": "Contributor",
     "owner": "Eigenaar",
-    "viewer": "Bezoeker"
+    "viewer": "Bezoeker",
+    "guest": "Gast"
   },
   "Whiteboard": {
     "typeSomething": "Schrijf iets...",
