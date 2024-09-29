@@ -70,14 +70,14 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (layer: Layer) => {
+      ({ layer, userId }: { layer: Layer; userId: string }) => {
         set(layerAtomState, (currentLayers) =>
           produce(
             currentLayers,
             (draft) => {
               // Assuming currentLayers is an array, we push the new layer to it
               draft.push(layer);
-              socketEmit("add-layer", { roomId, layer: [...currentLayers, layer] });
+              socketEmit("add-layer", { roomId, userId, layer: [...currentLayers, layer] });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");
@@ -98,7 +98,7 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (id: string, updatedElementLayer: any) => {
+      ({ id, userId, updatedElementLayer }: { id: string; userId: string; updatedElementLayer: any }) => {
         set(layerAtomState, (currentLayers) =>
           produce(
             currentLayers,
@@ -110,7 +110,7 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
               }
               const updatedLayer = draft[index];
 
-              socketEmit("add-layer", { roomId, layer: updatedLayer });
+              socketEmit("add-layer", { roomId, userId, layer: updatedLayer });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");

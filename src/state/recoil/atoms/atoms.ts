@@ -85,11 +85,11 @@ const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
   const handleAddActiveLayer = (data: any) => {
     setSelf((prevLayers: any) => {
-      const otherUserSelectedLayers = data.map((dataItem: { userId: any }) => {
+      const otherUserSelectedLayers = data.map((dataItem: { userId: any; layerIds: any }) => {
         const matchingPrevItem = prevLayers.find((prevItem: { userId: any }) => prevItem.userId === dataItem.userId);
 
         if (matchingPrevItem) {
-          return { ...dataItem, layerIds: matchingPrevItem.layerIds };
+          return { ...dataItem, layerIds: dataItem.layerIds };
         }
         return dataItem;
       });

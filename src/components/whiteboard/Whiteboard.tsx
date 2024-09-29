@@ -179,7 +179,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const layerId = nanoid();
 
-      const newLayer = {
+      const newLayer: Layer = {
         id: layerId.toString(),
         type: layerType,
         x: position.x,
@@ -190,7 +190,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         value: whiteboardText("typeSomething"),
       };
 
-      addLayer(newLayer);
+      addLayer({ layer: newLayer, userId: currentUserId });
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -355,7 +355,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const newLayerId = nanoid();
 
-      const newLayer = {
+      const newLayer: Layer = {
         id: newLayerId.toString(),
         type: currentLayer.type,
         x: newLayerPosition.x,
@@ -365,7 +365,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         fill: currentLayer.fill,
       };
 
-      addLayer(newLayer);
+      addLayer({ layer: newLayer, userId: currentUserId });
+      console.log("IM HERE");
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -581,16 +582,27 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     unSelectLayer({ userId: currentUserId });
   }, [currentUserId, unSelectLayer]);
 
-  const sortLayersBySelection = useCallback(
-    (layersToSort: Layer[]) =>
-      [...layersToSort].sort((a, b) => {
-        const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
-        const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
+  // const sortLayersBySelection = useCallback(
+  //   (layersToSort: Layer[] | undefined) => {
+  //     if (!Array.isArray(layersToSort)) {
+  //       console.error('layersToSort is not an array:', layersToSort);
+  //       return [layersToSort];
+  //     }
+    
+  //     return [...layersToSort].sort((a, b) => {
+  //       if (!a || !b) {
+  //         console.error('Invalid layer object:', { a, b });
+  //         return 0;
+  //       }
 
-        return aSelected - bSelected;
-      }),
-    [activeLayerIDs],
-  );
+  //       const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
+  //       const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
+
+  //       return bSelected - aSelected; // Changed to sort selected layers first
+  //     });
+  //   },
+  //   [activeLayerIDs],
+  // );
 
   // ================  EDGES  ================== //
 
@@ -989,7 +1001,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
         for (const layer of selectedLayers) {
-          updateLayer(layer.id, { x: layer.x, y: layer.y });
+          updateLayer(
+            { 
+              id: layer.id, 
+              userId: currentUserId, 
+              updatedElementLayer: { x: layer.x, y: layer.y }, 
+            }
+          );
         }
 
         // Update all edges connected to selected layers
@@ -1015,7 +1033,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
         for (const layer of selectedLayers) {
-          updateLayer(layer.id, { x: layer.x, y: layer.y, width: layer.width, height: layer.height });
+          updateLayer(
+            { 
+              id: layer.id, 
+              userId: currentUserId, 
+              updatedElementLayer: { x: layer.x, y: layer.y, width: layer.width, height: layer.height }, 
+            }
+          );
         }
 
         // Update all edges connected to selected layers
@@ -1079,7 +1103,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             const newLayerId = nanoid();
 
-            const newLayer = {
+            const newLayer: Layer = {
               id: newLayerId.toString(),
               type: currentLayer.type,
               x: newLayerPosition.x,
@@ -1089,7 +1113,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               fill: currentLayer.fill,
             };
 
-            addLayer(newLayer);
+            addLayer({ layer: newLayer, userId: currentUserId });
+            console.log("IM NOT HERE");
 
             selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -1568,7 +1593,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               </g>
             );
           })}
-          {sortLayersBySelection(layers).map((layer) => (
+          {/* {sortLayersBySelection(layers).map((layer) => ( */}
+          {layers.map((layer) => (
             <LayerPreview
               key={layer.id}
               layer={layer}
