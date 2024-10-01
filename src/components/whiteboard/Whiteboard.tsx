@@ -181,7 +181,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const layerId = nanoid();
 
       const newLayer: Layer = {
-        id: layerId.toString(),
+        id: layerId.toString() + layers.length,
         type: layerType,
         x: position.x,
         y: position.y,

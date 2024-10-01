@@ -77,7 +77,7 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
             (draft) => {
               // Assuming currentLayers is an array, we push the new layer to it
               draft.push(layer);
-              socketEmit("add-layer", { roomId, userId, layer: [...currentLayers, layer] });
+              socketEmit("add-layer", { roomId, userId, layer });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");

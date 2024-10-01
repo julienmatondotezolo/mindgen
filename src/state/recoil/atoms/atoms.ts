@@ -68,9 +68,7 @@ export const boardIdState = atom<string>({
 const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
   const handleAddLayer = (data: Layer) => {
-    console.log("data:", data);
-    // Assuming the data structure allows updating the atom state directly
-    setSelf(data);
+    setSelf((prevLayers: Layer[]) => [...prevLayers, data]);
   };
 
   // Attach the event listener when the effect runs
