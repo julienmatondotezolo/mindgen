@@ -67,16 +67,22 @@ export const boardIdState = atom<string>({
 
 const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddLayer = (data: Layer) => {
-    setSelf((prevLayers: Layer[]) => [...prevLayers, data]);
+  const handleAddLayer = (addedLayer: Layer) => {
+    setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);
+  };
+
+  const handleUpdateLayer = (updatedLayer: Layer) => {
+    setSelf((prevLayers: Layer[]) => prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
   };
 
   // Attach the event listener when the effect runs
   socket.on("remote-add-layer", handleAddLayer);
+  socket.on("remote-update-layer", handleUpdateLayer);
 
   // Return a cleanup function to detach the event listener when the effect is no longer needed
   return () => {
     socket.off("remote-add-layer", handleAddLayer);
+    socket.off("remote-update-layer", handleUpdateLayer);
   };
 };
 

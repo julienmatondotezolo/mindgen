@@ -18,6 +18,7 @@ import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, Upgrade
 import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
+  boardIdState,
   collaborateModalState,
   collaboratorNameState,
   currentUserState,
@@ -41,6 +42,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
+  const setBoardId = useSetRecoilState(boardIdState);
   const setLayers = useSetRecoilState(layerAtomState);
   const setEdges = useSetRecoilState(edgesAtomState);
   const promptValue = useRecoilValue(promptValueState);
@@ -110,6 +112,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
       setLayers(data.layers);
       setEdges(data.edges);
+      setBoardId(data.id);
 
       if (data.messages) {
         setQa([]);

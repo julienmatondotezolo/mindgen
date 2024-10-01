@@ -1,3 +1,5 @@
+import { nanoid } from "nanoid";
+
 import { Edge, Layer, LayerType } from "@/_types";
 
 interface MindMapObjectParams {
@@ -10,12 +12,14 @@ interface MindMapObjectParams {
   pictureUrl?: string;
 }
 
+const layerId = nanoid();
+
 export function emptyMindMapObject({
   name,
   description,
   layers = [
     {
-      id: "node_0",
+      id: layerId.toString() + "0",
       type: LayerType.Rectangle,
       x: 601,
       y: 316,
