@@ -66,15 +66,23 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
       for (const layerId of activeLayerIDs) {
         if (showBorderColorPicker) {
-          updateLayer(layerId, { borderColor: fill });
+          updateLayer({
+            id: layerId,
+            userId: currentUserId,
+            updatedElementLayer: { borderColor: fill },
+          });
         } else {
-          updateLayer(layerId, { fill: fill });
+          updateLayer({
+            id: layerId,
+            userId: currentUserId,
+            updatedElementLayer: { fill: fill },
+          });
         }
       }
       setShowColorPicker(false);
       setShowBorderColorPicker(false);
     },
-    [activeLayerIDs, setLastUsedColor, showBorderColorPicker, updateLayer],
+    [activeLayerIDs, currentUserId, setLastUsedColor, showBorderColorPicker, updateLayer],
   );
 
   const handleBorderColorChange = useCallback(() => {

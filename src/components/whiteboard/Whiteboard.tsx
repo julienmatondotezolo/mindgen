@@ -47,6 +47,7 @@ import {
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   getHandlePosition,
+  getLayerById,
   getOrientationFromPosition,
   pointerEventToCanvasPoint,
   resizeBounds,
@@ -60,7 +61,7 @@ import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layer
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps; }) => {
-  const DEBUG_MODE = false;
+  const DEBUG_MODE = true;
   const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");
@@ -236,9 +237,10 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       setCanvasState({
         mode: CanvasMode.Translating,
         current: point,
+        initialLayerBounds: getLayerById({ layerId, layers }),
       });
     },
-    [canvasState, camera, activeLayerIDs, ids, setCanvasState, selectLayer, currentUserId, setActiveEdgeId],
+    [canvasState.mode, camera, activeLayerIDs, setCanvasState, layers, ids, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -366,7 +368,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       };
 
       addLayer({ layer: newLayer, userId: currentUserId });
-      console.log("IM HERE");
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -1001,13 +1002,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
         for (const layer of selectedLayers) {
-          updateLayer(
-            { 
-              id: layer.id, 
-              userId: currentUserId, 
-              updatedElementLayer: { x: layer.x, y: layer.y }, 
-            }
-          );
+          // Check if the position has changed
+          if (layer.x !== canvasState.initialLayerBounds?.x || layer.y !== canvasState.initialLayerBounds?.y) {
+            updateLayer(
+              { 
+                id: layer.id, 
+                userId: currentUserId, 
+                updatedElementLayer: { x: layer.x, y: layer.y }, 
+              }
+            );
+          }
         }
 
         // Update all edges connected to selected layers
@@ -1074,7 +1078,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
         setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined, fromHandlePosition: undefined });
       } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
-        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {      
+        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
           const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
           if (!lastUpdatedEdge) return;
@@ -1114,7 +1118,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             };
 
             addLayer({ layer: newLayer, userId: currentUserId });
-            console.log("IM NOT HERE");
 
             selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -1594,9 +1597,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             );
           })}
           {/* {sortLayersBySelection(layers).map((layer) => ( */}
-          {layers.map((layer) => (
+          {layers.map((layer, index) => (
             <LayerPreview
-              key={layer.id}
+              key={index}
               layer={layer}
               onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
               selectionColor={layerIdsToColorSelection[layer.id]}

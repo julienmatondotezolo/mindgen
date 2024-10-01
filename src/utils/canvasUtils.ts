@@ -22,6 +22,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Layer[] }): Layer =>
+  layers.filter((layer: Layer) => layer.id == layerId)[0];
+
 export const connectionIdToColor = (connectionId: number) => COLORS[connectionId % COLORS.length];
 
 export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera, svgElement: SVGSVGElement | null) => {

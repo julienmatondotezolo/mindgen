@@ -110,7 +110,7 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
               }
               const updatedLayer = draft[index];
 
-              socketEmit("add-layer", { roomId, userId, layer: updatedLayer });
+              socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");
@@ -141,7 +141,7 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
               if (index !== -1) {
                 // Remove the layer from the array in th atom state
                 draft.splice(index, 1);
-                socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
+                // socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
               }
             },
             (patches, inversePatches) => {
