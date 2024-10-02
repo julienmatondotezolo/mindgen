@@ -1427,7 +1427,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <div className="text-sm mb-1">
             <strong>Active Layers:</strong>
 
-            {allActiveLayers.map((activeLayer) => (
+            {allActiveLayers.map((activeLayer: any) => (
               <section key={activeLayer.userId}>
                 <p>{activeLayer.userId}</p>
                 <pre>

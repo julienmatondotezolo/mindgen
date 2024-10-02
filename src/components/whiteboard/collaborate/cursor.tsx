@@ -33,7 +33,7 @@ export const Cursor = memo(({ user, connectionId }: CursorProps) => {
     });
   }, [cursor, socketListen, user.id]);
 
-  const name = info || "Teammate";
+  const name = info || "Viewer";
 
   if (!cursor) return null;
 
