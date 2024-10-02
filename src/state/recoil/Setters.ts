@@ -26,11 +26,12 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
           }
 
           const newUserActiveLayers = currentActiveLayers.map((item: any) => {
+            // If userId is not matching it means userId comes from socket
             if (item.userId === userId) {
-              return { ...item, layerIds: layerIds };
+              return { ...item, layerIds };
+            } else {
+              return { userId, layerIds };
             }
-
-            return item;
           });
 
           socketEmit("select-layer", { roomId, userId, selectedLayer: newUserActiveLayers });

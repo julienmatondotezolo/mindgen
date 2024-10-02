@@ -1426,7 +1426,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </p>
           <div className="text-sm mb-1">
             <strong>Active Layers:</strong>
-            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre>
+
+            {allActiveLayers.map((activeLayer) => (
+              <section key={activeLayer.userId}>
+                <p>{activeLayer.userId}</p>
+                <pre>
+                  {JSON.stringify(activeLayer.layerIds, null, 2)}
+                </pre>
+              </section>
+            ))}
+            {/*             
+            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre> */}
           </div>
         </div>
       )}

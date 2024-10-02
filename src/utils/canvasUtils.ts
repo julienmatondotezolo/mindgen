@@ -16,7 +16,18 @@ import {
   XYWH,
 } from "@/_types/canvas";
 
-const COLORS = ["#DC2626", "#D97706", "#059669", "#7C3AED", "#DB2777"];
+const COLORS = [
+  "#2563EB",
+  "#FF5733",
+  "#33CC33",
+  "#7C3AED",
+  "#DB2777",
+  "#5470A0FF",
+  "#059669",
+  "#F59E0B",
+  "#00BFFF",
+  "#8F0A1A",
+];
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

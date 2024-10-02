@@ -94,18 +94,40 @@ const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
 
 const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddActiveLayer = (data: any) => {
-    setSelf((prevLayers: any) => {
-      const otherUserSelectedLayers = data.map((dataItem: { userId: any; layerIds: any }) => {
-        const matchingPrevItem = prevLayers.find((prevItem: { userId: any }) => prevItem.userId === dataItem.userId);
-
-        if (matchingPrevItem) {
-          return { ...dataItem, layerIds: dataItem.layerIds };
-        }
-        return dataItem;
-      });
-
-      return otherUserSelectedLayers;
+  const handleAddActiveLayer = (socketSelectedData: any) => {
+    setSelf((prevSelectedData: any) => {
+      if (Object.keys(prevSelectedData).length === 0) {
+        return socketSelectedData;
+      }
+    
+      const matchingData = prevSelectedData.find((data: { userId: any; layerIds: any }) =>
+        socketSelectedData.some((socketData: { userId: any; layerIds: any }) => socketData.userId === data.userId)
+      );
+    
+      if (matchingData) {
+        const newLayerIds = matchingData.layerIds
+        const socketLayerIds = socketSelectedData.find((socketData: { userId: any; layerIds: any }) => socketData.userId === matchingData.userId).layerIds
+        
+        // Remove duplicates from newLayerIds
+        const uniqueNewLayerIds = [...new Set(newLayerIds)];
+      
+        // Combine uniqueLayerIds with socketLayerIds
+        const combinedLayerIds = [...uniqueNewLayerIds, ...socketLayerIds];
+        
+        // Create the updatedSelectedData object
+        const updatedSelectedData = {
+          ...matchingData,
+          layerIds: !socketLayerIds.length ? socketLayerIds : [...new Set(combinedLayerIds)]
+        };
+        
+        const updatedPrevSelectedData = prevSelectedData.map((selectedData: { userId: any; layerIds: any }) => 
+          selectedData.userId === updatedSelectedData.userId ? {...selectedData, layerIds: updatedSelectedData.layerIds} : selectedData
+        )
+        
+        return updatedPrevSelectedData
+      } else {
+        return [...prevSelectedData, ...socketSelectedData];
+      }
     });
   };
 
