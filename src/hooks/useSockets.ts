@@ -66,39 +66,28 @@ const useSocket = () => {
     }
   };
 
+  const socketDisconnect = () => {
+    try {
+      socket.emit("disconnect");
+    } catch (error) {
+      return error;
+    }
+  };
+
   const socketOff = (event: string) => {
     socket.off(event);
   };
 
-  // Handle navigation changes
-  useEffect(() => {
-    const handlePopState = () => {
-      socketOff("cursor-move"); // Optionally close the WebSocket connection on navigation change
-    };
-
-    window.addEventListener("popstate", handlePopState);
-
-    // Cleanup function to remove the event listener
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
-  // Add a listener for the beforeunload event to close the WebSocket connection
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      socketOff("cursor-move"); // Close the WebSocket connection
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    // Cleanup function to remove the event listener
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [socketOff]);
-
-  return { socket, isConnected, socketEmit, socketListen, socketJoinRoom, socketLeaveRoom, socketOff };
+  return {
+    socket,
+    isConnected,
+    socketEmit,
+    socketListen,
+    socketJoinRoom,
+    socketLeaveRoom,
+    socketDisconnect,
+    socketOff,
+  };
 };
 
 export { useSocket };

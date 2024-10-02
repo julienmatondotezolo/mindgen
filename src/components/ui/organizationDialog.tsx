@@ -3,16 +3,21 @@
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { useSetRecoilState } from "recoil";
 
 import { createOrganization } from "@/_services";
+import { Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
 import { Button, Input } from "@/components/ui";
+import { selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const textOrga = useTranslations("Organization");
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const setSelectedOrganization = useSetRecoilState<Organization | undefined>(selectedOrganizationState);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -39,7 +44,8 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
     try {
       await mutateAsync(organizationObject, {
-        onSuccess: () => {
+        onSuccess: (newOrga) => {
+          setSelectedOrganization(newOrga);
           // Invalidate the query to cause a re-fetch
           queryClient.invalidateQueries("userOrganizations");
         },

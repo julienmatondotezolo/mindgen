@@ -12,10 +12,10 @@ export type Color = {
 };
 
 export enum HandlePosition {
-  Top,
-  Left,
-  Right,
-  Bottom,
+  Top = "TOP",
+  Left = "LEFT",
+  Right = "RIGHT",
+  Bottom = "BOTTOM",
 }
 
 export type EdgeOrientation = "auto" | "0" | "90" | "-180" | "180" | "270";
@@ -51,7 +51,7 @@ export enum LayerType {
   Path = "PATH",
 }
 
-export type LayerBorderType = "solid" | "dashed";
+export type LayerBorderType = "SOLID" | "DASHED";
 
 export type ValueStyle = {
   // fontSize: number;
@@ -144,7 +144,7 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.EdgeEditing;
-      editingEdge: { id: string; handlePosition: "start" | "middle" | "end"; startPoint: Point };
+      editingEdge: { id: string; handlePosition: "START" | "MIDDLE" | "END"; startPoint: Point };
     }
   | {
       mode: CanvasMode.Pressing;
@@ -162,6 +162,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.Translating;
       current: Point;
+      initialLayerBounds: Layer;
     }
   | {
       mode: CanvasMode.Resizing;

@@ -115,10 +115,12 @@
     "members": "members",
     "addMember": "Add member",
     "inviteMembers": "Invite member",
+    "inviteMembersText": "Enter or paste one or more email addresses, separated by spaces or commas.",
     "admin": "Admin",
     "contributor": "Contributor",
     "owner": "Owner",
-    "viewer": "Viewer"
+    "viewer": "Viewer",
+    "guest": "Guest"
   },
   "Whiteboard": {
     "typeSomething": "Type something...",

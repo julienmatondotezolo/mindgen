@@ -115,10 +115,12 @@
     "members": "Medewerkers",
     "addMember": "Medewerker toevoegen",
     "inviteMembers": "Medewerker uitnodigen",
+    "inviteMembersText": "Voer een of meer e-mailadressen in of plak ze, gescheiden door spaties of komma's.",
     "admin": "Beheerder",
     "contributor": "Contributor",
     "owner": "Eigenaar",
-    "viewer": "Bezoeker"
+    "viewer": "Bezoeker",
+    "guest": "Gast"
   },
   "Whiteboard": {
     "typeSomething": "Schrijf iets...",

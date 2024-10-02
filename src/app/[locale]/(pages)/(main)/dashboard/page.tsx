@@ -2,27 +2,20 @@
 import { CirclePlus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import React, { useEffect } from "react";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import React from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Organization } from "@/_types";
 import boardElement from "@/assets/images/elements.svg";
 import { BackDropGradient, Button, MindmapDialog, OrganizationDialog, OrganizationSettingsDialog } from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
-import {
-  mindmapDataState,
-  modalState,
-  organizationSettingsState,
-  organizationState,
-  selectedOrganizationState,
-} from "@/state";
+import { modalState, organizationSettingsState, organizationState, selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
   const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
-  const setUserMindmapDetails = useSetRecoilState(mindmapDataState);
 
   const selectedOrganization = useRecoilValue<Organization | undefined>(selectedOrganizationState);
   const text = useTranslations("Index");
@@ -31,11 +24,6 @@ export default function Dashboard() {
   const handleClick = () => {
     setOrganization(!isOrganization);
   };
-
-  useEffect(() => {
-    // Reset mindmap data
-    setUserMindmapDetails(undefined);
-  }, []);
 
   return (
     <>

@@ -1,4 +1,5 @@
-/* eslint-disable no-unused-vars */
+/* eslint no-use-before-define */
+
 import { Node } from "reactflow";
 import { atom } from "recoil";
 
@@ -8,7 +9,6 @@ import {
   ChatMessageProps,
   Edge,
   Layer,
-  MindMapDetailsProps,
   QuestionAnswersProps,
   User,
 } from "@/_types";
@@ -35,12 +35,17 @@ export const currentUserState = atom<User | {}>({
   default: {}, // valeur par défaut (alias valeur initials)
 });
 
+export const connectedUsersState = atom<User[]>({
+  key: "connectedUsersState", // unique ID (with respect to other atoms/selectors)
+  default: [], // valeur par défaut (alias valeur initials)
+});
+
 // ================   ORGANIZATION EFFECTS   ================== //
 
 const organizationlocalStorageEffect = ({ onSet, setSelf }: any) => {
   const savedOrganization = localStorage.getItem("selected-organization");
 
-  if (savedOrganization) {
+  if (savedOrganization && savedOrganization !== "undefined") {
     setSelf(JSON.parse(savedOrganization)); // Load from local storage
   }
 
@@ -63,43 +68,76 @@ export const boardIdState = atom<string>({
   default: "", // valeur par défaut (alias valeur initials)
 });
 
-export const mindmapDataState = atom<MindMapDetailsProps | undefined>({
-  key: "mindmapDataState",
-  default: undefined,
-});
-
 // ================   LAYER EFFECTS   ================== //
 
 const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddLayer = (data: Layer) => {
-    // Assuming the data structure allows updating the atom state directly
-    setSelf(data);
+  const handleAddLayer = (addedLayer: Layer) => {
+    setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);
+  };
+
+  const handleUpdateLayer = (updatedLayer: Layer) => {
+    setSelf((prevLayers: Layer[]) => prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
+  };
+
+  const handleRemoveLayer = (layerIdsToDelete: string[]) => {
+    setSelf((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
   };
 
   // Attach the event listener when the effect runs
   socket.on("remote-add-layer", handleAddLayer);
+  socket.on("remote-update-layer", handleUpdateLayer);
+  socket.on("remote-remove-layer", handleRemoveLayer);
 
   // Return a cleanup function to detach the event listener when the effect is no longer needed
   return () => {
     socket.off("remote-add-layer", handleAddLayer);
+    socket.off("remote-update-layer", handleUpdateLayer);
+    socket.off("remote-remove-layer", handleRemoveLayer);
   };
 };
 
 const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddActiveLayer = (data: any) => {
-    setSelf((prevLayers: any) => {
-      const otherUserSelectedLayers = data.map((dataItem: { userId: any }) => {
-        const matchingPrevItem = prevLayers.find((prevItem: { userId: any }) => prevItem.userId === dataItem.userId);
+  const handleAddActiveLayer = (socketSelectedData: any) => {
+    setSelf((prevSelectedData: any) => {
+      console.log('prevSelectedData:', prevSelectedData)
+      if (Object.keys(prevSelectedData).length === 0) {
+        return socketSelectedData;
+      }
+    
+      const matchingData = prevSelectedData.find((data: { userId: any; layerIds: any }) =>
+        socketSelectedData.some((socketData: { userId: any; layerIds: any }) => socketData.userId === data.userId)
+      );
+    
+      if (matchingData) {
+        const newLayerIds = matchingData.layerIds
+        const socketLayerIds = socketSelectedData.find((socketData: { userId: any; layerIds: any }) => socketData.userId === matchingData.userId).layerIds
+        
+        // Remove duplicates from newLayerIds
+        const uniqueNewLayerIds = [...new Set(newLayerIds)];
+      
+        // // Combine uniqueLayerIds with socketLayerIds
+        // const combinedLayerIds = [...uniqueNewLayerIds, ...socketLayerIds];
+        // console.log('combinedLayerIds:', combinedLayerIds)
+        
+        // Create the updatedSelectedData object
+        const updatedSelectedData = {
+          ...matchingData,
+          layerIds: !socketLayerIds.length ? socketLayerIds : uniqueNewLayerIds
+        };
 
-        if (matchingPrevItem) {
-          return { ...dataItem, layerIds: matchingPrevItem.layerIds };
-        }
-        return dataItem;
-      });
-
-      return otherUserSelectedLayers;
+        const updatedPrevSelectedData = prevSelectedData.map((selectedData: { userId: any; layerIds: any }) => 
+          selectedData.userId === updatedSelectedData.userId ? {...selectedData, layerIds: updatedSelectedData.layerIds} : selectedData
+        )
+        
+        console.log('updatedPrevSelectedData:', updatedPrevSelectedData)
+        return updatedPrevSelectedData
+      } else {
+        const selectedDataMarge = [...prevSelectedData, ...socketSelectedData]
+        console.log('selectedDataMarge:', selectedDataMarge)
+        return [...prevSelectedData, ...socketSelectedData];
+      }
     });
   };
 

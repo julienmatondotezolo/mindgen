@@ -66,15 +66,23 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
       for (const layerId of activeLayerIDs) {
         if (showBorderColorPicker) {
-          updateLayer(layerId, { borderColor: fill });
+          updateLayer({
+            id: layerId,
+            userId: currentUserId,
+            updatedElementLayer: { borderColor: fill },
+          });
         } else {
-          updateLayer(layerId, { fill: fill });
+          updateLayer({
+            id: layerId,
+            userId: currentUserId,
+            updatedElementLayer: { fill: fill },
+          });
         }
       }
       setShowColorPicker(false);
       setShowBorderColorPicker(false);
     },
-    [activeLayerIDs, setLastUsedColor, showBorderColorPicker, updateLayer],
+    [activeLayerIDs, currentUserId, setLastUsedColor, showBorderColorPicker, updateLayer],
   );
 
   const handleBorderColorChange = useCallback(() => {
@@ -94,12 +102,16 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       if (layer) {
         const newBorderType = layer.borderType === "dashed" ? "solid" : "dashed";
 
-        updateLayer(layerId, { borderType: newBorderType });
+        updateLayer({
+          id: layerId,
+          userId: currentUserId,
+          updatedElementLayer: { borderType: newBorderType },
+        });
 
         setIsDashed(newBorderType === "dashed");
       }
     }
-  }, [activeLayerIDs, layers, updateLayer]);
+  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
 
   const handleToggleBorderWidth = useCallback(() => {
     for (const layerId of activeLayerIDs) {
@@ -108,11 +120,15 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       if (layer) {
         const newBorderWidth = layer.borderWidth === 4 ? 2 : 4;
 
-        updateLayer(layerId, { borderWidth: newBorderWidth });
+        updateLayer({
+          id: layerId,
+          userId: currentUserId,
+          updatedElementLayer: { borderWidth: newBorderWidth },
+        });
         setIsThickBorder(newBorderWidth === 4);
       }
     }
-  }, [activeLayerIDs, layers, updateLayer]);
+  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
 
   const handleToggleTextTransform = useCallback(() => {
     for (const layerId of activeLayerIDs) {
@@ -121,16 +137,20 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       if (layer) {
         const newTextTransform = layer.valueStyle?.textTransform === "uppercase" ? "none" : "uppercase";
 
-        updateLayer(layerId, {
-          valueStyle: {
-            ...layer.valueStyle,
-            textTransform: newTextTransform,
+        updateLayer({
+          id: layerId,
+          userId: currentUserId,
+          updatedElementLayer: {
+            valueStyle: {
+              ...layer.valueStyle,
+              textTransform: newTextTransform,
+            },
           },
         });
         setIsUppercase(newTextTransform === "uppercase");
       }
     }
-  }, [activeLayerIDs, layers, updateLayer]);
+  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
 
   const handleToggleFontWeight = useCallback(() => {
     for (const layerId of activeLayerIDs) {
@@ -139,26 +159,30 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       if (layer) {
         const newFontWeight = layer.valueStyle?.fontWeight === "900" ? "400" : "900";
 
-        updateLayer(layerId, {
-          valueStyle: {
-            ...layer.valueStyle,
-            fontWeight: newFontWeight,
+        updateLayer({
+          id: layerId,
+          userId: currentUserId,
+          updatedElementLayer: {
+            valueStyle: {
+              ...layer.valueStyle,
+              fontWeight: newFontWeight,
+            },
           },
         });
         setIsBold(newFontWeight === "900");
       }
     }
-  }, [activeLayerIDs, layers, updateLayer]);
+  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
 
   const handleRemoveLayer = useCallback(() => {
     const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
+    const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
+    removeLayer({ layerIdsToDelete, userId: currentUserId });
     unSelectLayer({ userId: currentUserId });
 
     for (const layer of selectedLayers) {
       if (layer) {
-        removeLayer(layer.id);
-
         edges.forEach((edge) => {
           if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
             removeEdge(edge.id);

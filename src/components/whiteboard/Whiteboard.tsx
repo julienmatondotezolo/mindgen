@@ -1,5 +1,5 @@
-/* eslint-disable no-unsafe-optional-chaining */
-/* eslint-disable prettier/prettier */
+/* eslint-disable */
+
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -15,7 +15,9 @@ import {
   HandlePosition,
   Layer,
   LayerType,
+  MindMapDetailsProps,
   Point,
+  RectangleLayer,
   Side,
   XYWH,
 } from "@/_types";
@@ -24,6 +26,7 @@ import {
   activeEdgeIdAtom,
   activeLayersAtom,
   canvasStateAtom,
+  connectedUsersState,
   edgesAtomState,
   hoveredEdgeIdAtom,
   isEdgeNearLayerAtom,
@@ -46,6 +49,7 @@ import {
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   getHandlePosition,
+  getLayerById,
   getOrientationFromPosition,
   pointerEventToCanvasPoint,
   resizeBounds,
@@ -58,8 +62,9 @@ import { LayerPreview } from "./LayerPreview";
 import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layers";
 import { Toolbar } from "./Toolbar";
 
-const Whiteboard = ({ boardId }: { boardId: string; }) => {
-  const DEBUG_MODE = false;
+const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps; }) => {
+  const DEBUG_MODE = true;
+  const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
@@ -87,7 +92,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
   // ================  SOCKETS  ================== //
 
   const { socketEmit } = useSocket();
-  const session = useSession();
+  const session: any = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
   // ================  SHADOW EDGE & LAYER STATE  ================== //
@@ -112,29 +117,27 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
   const [layers, setLayers] = useRecoilState(layerAtomState);
 
-  const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const allActiveLayers: any = useRecoilValue(activeLayersAtom);
   const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds)[0];
+    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
+    .map((item: any) => item.layerIds)[0];
 
-  const allOtherUsersSelections = allActiveLayers.filter((item) => item.userId !== currentUserId);
+  const connectedUsers = useRecoilValue(connectedUsersState);
+
+  const allOtherUsersSelections = allActiveLayers.filter((item: any) => item.userId !== currentUserId);
 
   const layerIdsToColorSelection = useMemo(() => {
-    if (allOtherUsersSelections[0]?.userId == undefined) return {};
-
     const layerIdsToColorSelection: Record<string, string> = {};
 
-    for (const otherUsersSelections of allOtherUsersSelections) {
-      let usersCount = 0;
+    for (let index = 0; index < connectedUsers.length; index++) {
 
-      for (const layerId of otherUsersSelections?.layerIds) {
-        layerIdsToColorSelection[layerId] = connectionIdToColor(usersCount);
-      }
-      usersCount++;
+      // for (const otherSelection of allOtherUsersSelections) {
+      //   layerIdsToColorSelection[otherSelection?.layersIds] = connectionIdToColor(index);
+      // }
     }
 
     return layerIdsToColorSelection;
-  }, [allOtherUsersSelections]);
+  }, [connectedUsers]);
 
   const selectLayer = useSelectElement({ roomId: boardId });
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
@@ -177,8 +180,8 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
       const layerId = nanoid();
 
-      const newLayer = {
-        id: layerId.toString(),
+      const newLayer: any = {
+        id: layerId.toString() + layers.length,
         type: layerType,
         x: position.x,
         y: position.y,
@@ -188,7 +191,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
         value: whiteboardText("typeSomething"),
       };
 
-      addLayer(newLayer);
+      addLayer({ layer: newLayer, userId: currentUserId });
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -234,9 +237,10 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
       setCanvasState({
         mode: CanvasMode.Translating,
         current: point,
+        initialLayerBounds: getLayerById({ layerId, layers }),
       });
     },
-    [canvasState, camera, activeLayerIDs, ids, setCanvasState, selectLayer, currentUserId, setActiveEdgeId],
+    [canvasState.mode, camera, activeLayerIDs, setCanvasState, layers, ids, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -353,7 +357,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
       const newLayerId = nanoid();
 
-      const newLayer = {
+      const newLayer: any = {
         id: newLayerId.toString(),
         type: currentLayer.type,
         x: newLayerPosition.x,
@@ -363,7 +367,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
         fill: currentLayer.fill,
       };
 
-      addLayer(newLayer);
+      addLayer({ layer: newLayer, userId: currentUserId });
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -434,6 +438,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
       setCanvasState({
         mode: CanvasMode.Translating,
+        initialLayerBounds: getLayerById({ layerId: "_", layers }),
         current: point,
       });
     },
@@ -579,16 +584,27 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
     unSelectLayer({ userId: currentUserId });
   }, [currentUserId, unSelectLayer]);
 
-  const sortLayersBySelection = useCallback(
-    (layersToSort: Layer[]) =>
-      [...layersToSort].sort((a, b) => {
-        const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
-        const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
+  // const sortLayersBySelection = useCallback(
+  //   (layersToSort: Layer[] | undefined) => {
+  //     if (!Array.isArray(layersToSort)) {
+  //       console.error('layersToSort is not an array:', layersToSort);
+  //       return [layersToSort];
+  //     }
+    
+  //     return [...layersToSort].sort((a, b) => {
+  //       if (!a || !b) {
+  //         console.error('Invalid layer object:', { a, b });
+  //         return 0;
+  //       }
 
-        return aSelected - bSelected;
-      }),
-    [activeLayerIDs],
-  );
+  //       const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
+  //       const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
+
+  //       return bSelected - aSelected; // Changed to sort selected layers first
+  //     });
+  //   },
+  //   [activeLayerIDs],
+  // );
 
   // ================  EDGES  ================== //
 
@@ -604,7 +620,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
   );
 
   const handleEdgeHandlePointerDown = useCallback(
-    (position: "start" | "middle" | "end", point: Point) => {
+    (position: "START" | "MIDDLE" | "END", point: Point) => {
       setCanvasState({
         mode: CanvasMode.EdgeEditing,
         editingEdge: {
@@ -649,7 +665,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
       let controlPoint1, controlPoint2;
 
       switch (handlePosition) {
-        case "start":
+        case "START":
           if (nearestHandle && nearestHandle.layerId !== edge.toLayerId) {
             updatedEdge = {
               ...edge,
@@ -666,7 +682,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
             };
           }
           break;
-        case "end":
+        case "END":
           if (nearestHandle && nearestHandle.layerId !== edge.fromLayerId) {
             updatedEdge = {
               ...edge,
@@ -685,7 +701,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
             };
           }
           break;
-        case "middle":
+        case "MIDDLE":
           controlPoint1 = edge.controlPoint1 || {
             x: edge.start.x + (edge.end.x - edge.start.x) / 3,
             y: edge.start.y + (edge.end.y - edge.start.y) / 3,
@@ -962,26 +978,15 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
         updateEdgePosition(current);
       }
 
-      socketEmit("cursor-move", {
-        roomId: boardId,
-        userId: currentUserId,
-        cursor: current,
-      });
+      if(userMindmapDetails.members.length > 1)
+        socketEmit("cursor-move", {
+          roomId: boardId,
+          userId: currentUserId,
+          cursor: current,
+        });
       // setMyPresence({ cursor: current });
     },
-    [
-      camera,
-      canvasState,
-      socketEmit,
-      boardId,
-      currentUserId,
-      startMultiSelection,
-      updateSelectionNet,
-      translateSelectedLayer,
-      resizeSelectedLayer,
-      drawEdgeline,
-      updateEdgePosition,
-    ],
+    [camera, canvasState, userMindmapDetails.members.length, socketEmit, boardId, currentUserId, startMultiSelection, updateSelectionNet, translateSelectedLayer, resizeSelectedLayer, drawEdgeline, updateEdgePosition],
   );
 
   const handlePointerUp = useCallback(
@@ -998,7 +1003,16 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
         for (const layer of selectedLayers) {
-          updateLayer(layer.id, { x: layer.x, y: layer.y });
+          // Check if the position has changed
+          if (layer.x !== canvasState.initialLayerBounds?.x || layer.y !== canvasState.initialLayerBounds?.y) {
+            updateLayer(
+              { 
+                id: layer.id, 
+                userId: currentUserId, 
+                updatedElementLayer: { x: layer.x, y: layer.y }, 
+              }
+            );
+          }
         }
 
         // Update all edges connected to selected layers
@@ -1024,7 +1038,13 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
 
         for (const layer of selectedLayers) {
-          updateLayer(layer.id, { x: layer.x, y: layer.y, width: layer.width, height: layer.height });
+          updateLayer(
+            { 
+              id: layer.id, 
+              userId: currentUserId, 
+              updatedElementLayer: { x: layer.x, y: layer.y, width: layer.width, height: layer.height }, 
+            }
+          );
         }
 
         // Update all edges connected to selected layers
@@ -1059,7 +1079,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
         });
         setDrawingEdge({ ongoing: false, lastEdgeId: undefined, fromLayerId: undefined, fromHandlePosition: undefined });
       } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
-        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {      
+        if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
           const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
           if (!lastUpdatedEdge) return;
@@ -1088,7 +1108,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
             const newLayerId = nanoid();
 
-            const newLayer = {
+            const newLayer: any = {
               id: newLayerId.toString(),
               type: currentLayer.type,
               x: newLayerPosition.x,
@@ -1098,7 +1118,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
               fill: currentLayer.fill,
             };
 
-            addLayer(newLayer);
+            addLayer({ layer: newLayer, userId: currentUserId });
 
             selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
@@ -1229,25 +1249,30 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
     if (!svgElement || !gElement) return;
 
-    const gRect = gElement.getBBox();
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const svgRect = svgElement.getBoundingClientRect();
+    const gRect = gElement.getBoundingClientRect();
 
-    const scaleX = (viewportWidth * 0.8) / gRect.width;
-    const scaleY = (viewportHeight * 0.8) / gRect.height;
+    // console.log('gRectWidth:', gRect.width);
+    // console.log('gRectHeight:', gRect.height);
 
-    const scale = Math.min(scaleX, scaleY, 1);
+    // const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    // const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
-    const translateX = (viewportWidth - gRect.width * scale) / 2 - gRect.x * scale;
-    const translateY = (viewportHeight - gRect.height * scale) / 2 - gRect.y * scale;
+    // const scaleX = (viewportWidth * 0.8) / gRect.width;
+    // const scaleY = (viewportHeight * 0.8) / gRect.height;
 
-    setCamera({ x: translateX, y: translateY, scale: scale });
+    // const scale = Math.min(scaleX, scaleY, 1);
 
-    setTimeout(() => {
-      setApplyTransition(false);
-    }, CANVAS_TRANSITION_TIME);
+    // const translateX = (viewportWidth - gRect.width * scale) / 2 - gRect.x * scale;
+    // const translateY = (viewportHeight - gRect.height * scale) / 2 - gRect.y * scale;
 
-    setShowResetButton(false);
+    // setCamera({ x: translateX, y: translateY, scale: scale });
+
+    // setTimeout(() => {
+    //   setApplyTransition(false);
+    // }, CANVAS_TRANSITION_TIME);
+
+    // setShowResetButton(false);
   };
 
   const zoomIn = () => {
@@ -1334,12 +1359,13 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
 
       if (event.code === "Backspace" && activeLayerIDs?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+        const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
+        removeLayer({ layerIdsToDelete, userId: currentUserId });
         handleUnSelectLayer();
 
         for (const layer of selectedLayers) {
           if (layer) {
-            removeLayer(layer.id);
             removeEdgesConnectedToLayer(layer.id);
           }
         }
@@ -1369,18 +1395,7 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [
-    activeLayerIDs,
-    canvasState,
-    layers,
-    removeLayer,
-    handleUnSelectLayer,
-    setCanvasState,
-    removeEdgesConnectedToLayer,
-    activeEdgeId,
-    removeEdge,
-    setActiveEdgeId,
-  ]);
+  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer, setCanvasState, removeEdgesConnectedToLayer, activeEdgeId, removeEdge, setActiveEdgeId, currentUserId]);
 
   // Hande Mouse move
   useEffect(() => {
@@ -1412,7 +1427,17 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
           </p>
           <div className="text-sm mb-1">
             <strong>Active Layers:</strong>
-            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre>
+
+            {allActiveLayers.map((activeLayer: any) => (
+              <section key={activeLayer.userId}>
+                <p>{activeLayer.userId === currentUserId ? "current user" : activeLayer.userId}</p>
+                <pre>
+                  {JSON.stringify(activeLayer.layerIds, null, 2)}
+                </pre>
+              </section>
+            ))}
+            {/*             
+            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre> */}
           </div>
         </div>
       )}
@@ -1572,9 +1597,10 @@ const Whiteboard = ({ boardId }: { boardId: string; }) => {
               </g>
             );
           })}
-          {sortLayersBySelection(layers).map((layer) => (
+          {/* {sortLayersBySelection(layers).map((layer) => ( */}
+          {layers.map((layer, index) => (
             <LayerPreview
-              key={layer.id}
+              key={index}
               layer={layer}
               onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
               selectionColor={layerIdsToColorSelection[layer.id]}

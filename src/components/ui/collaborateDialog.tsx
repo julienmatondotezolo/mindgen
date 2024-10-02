@@ -204,7 +204,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                   <option value="CONTRIBUTOR">{memberText("contributor")}</option>
                   <option value="VIEWER">{memberText("viewer")}</option>
                 </select>
-                <Button onClick={handleInviteMembers}>{uppercaseFirstLetter(text("invite"))}</Button>
+                <Button onClick={handleInviteMembers}>{uppercaseFirstLetter(text("add"))}</Button>
               </div>
               <section className="w-full space-y-1 mt-4">
                 {notFoundUsers.map((notFoundUser, index) => (
@@ -254,7 +254,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
         <p className="text-md font-bold mb-2">
           {membersLength < 1
             ? memberText("noMember")
-            : `${membersLength} ${memberText(membersLength > 1 ? `members` : `collaborator`).toLowerCase()}`}
+            : `${membersLength + 1} ${memberText(membersLength > 1 ? `members` : `collaborator`).toLowerCase()}`}
         </p>
         {!userMindmap ? (
           <>

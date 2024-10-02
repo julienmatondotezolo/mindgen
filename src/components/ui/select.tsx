@@ -1,3 +1,5 @@
+/* eslint no-use-before-define */
+
 "use client";
 
 import * as SelectPrimitive from "@radix-ui/react-select";

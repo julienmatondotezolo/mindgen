@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import React from "react";
 import { useRecoilValue } from "recoil";
@@ -26,6 +27,9 @@ const calculateFontSize = (width: number, height: number) => {
 };
 
 const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => {
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
+
   const { theme } = useTheme();
 
   const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType } = layer;
@@ -34,7 +38,7 @@ const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => 
   const updateLayer = useUpdateElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
-    updateLayer(id, { value: newValue });
+    updateLayer({ id, userId: currentUserId, updatedElementLayer: { value: newValue } });
   };
 
   return (

@@ -1,15 +1,28 @@
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import React, { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { deleteOrganizationById, getOrganizationById, updateOrganization } from "@/_services";
+import { deleteOrganizationById, updateOrganization } from "@/_services";
+import { CustomSession, Member } from "@/_types";
 import { Organization } from "@/_types/Organization";
 import { Button, Input, Skeleton } from "@/components/ui";
 import { organizationSettingsState, selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
-function OrgSettings() {
+interface OrgProps {
+  userOrgaData: Organization | undefined;
+  isLoading: boolean;
+}
+
+function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const currentUserid = safeSession?.data.session.user.id;
+
+  const currentMember: Member | undefined = userOrgaData?.members.filter((member) => member.userId == currentUserid)[0];
+
   const queryClient = useQueryClient();
 
   const text = useTranslations("Index");
@@ -24,24 +37,16 @@ function OrgSettings() {
     setInputTitle(e.target.value);
   };
 
-  const isOrgaSettings = useRecoilValue(organizationSettingsState);
-
-  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+  const [selectedOrga, setSelectedOrga] = useRecoilState<Organization | undefined>(selectedOrganizationState);
   const setOrgaSettings = useSetRecoilState(organizationSettingsState);
 
-  const fetchOrgaById = () => getOrganizationById({ organizationId: selectedOrga!.id });
-
-  const { isLoading, data: userOrgaData } = useQuery("userOrgaById", fetchOrgaById, {
-    enabled: isOrgaSettings,
-    onSuccess: (data: Organization) => {
-      if (data) {
-        setInputTitle(data.name);
-      }
-    },
-  });
+  useEffect(() => {
+    if (userOrgaData) setInputTitle(userOrgaData.name);
+  }, [userOrgaData]);
 
   const updateOrgaMutation = useMutation(updateOrganization, {
-    onSuccess: () => {
+    onSuccess: (updatedOrga) => {
+      setSelectedOrga(updatedOrga);
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
@@ -111,24 +116,26 @@ function OrgSettings() {
               </Button>
             </section>
           </form>
-          <article className="flex py-4 border-b dark:border-slate-800">
+          {/* <article className="flex py-4 border-b dark:border-slate-800">
             <p className="mr-4">{`${uppercaseFirstLetter(text("leave"))} ${textOrga("organization")}:`}</p>
             <p className="cursor-pointer font-semibold text-red-500">
               {`${uppercaseFirstLetter(text("leave"))} ${textOrga("organization")}`}
             </p>
-          </article>
-          <article className="flex py-4">
-            <p className="mr-4">{`${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}:`}</p>
-            <button
-              onClick={() => handleDeleteOrga()}
-              disabled={deleteOrgaMutation.isLoading}
-              className={`cursor-pointer font-semibold text-red-500 ${deleteOrgaMutation.isLoading && "opacity-50"}`}
-            >
-              {deleteOrgaMutation.isLoading
-                ? `${uppercaseFirstLetter(text("loading"))}...`
-                : `${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}`}
-            </button>
-          </article>
+          </article> */}
+          {currentMember?.organizationRole == "OWNER" && (
+            <article className="flex py-4">
+              <p className="mr-4">{`${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}:`}</p>
+              <button
+                onClick={() => handleDeleteOrga()}
+                disabled={deleteOrgaMutation.isLoading}
+                className={`cursor-pointer font-semibold text-red-500 ${deleteOrgaMutation.isLoading && "opacity-50"}`}
+              >
+                {deleteOrgaMutation.isLoading
+                  ? `${uppercaseFirstLetter(text("loading"))}...`
+                  : `${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}`}
+              </button>
+            </article>
+          )}
         </div>
       )}
     </div>

@@ -19,21 +19,25 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
         };
 
         // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, (currentActiveLayers) => {
+        set(activeLayersAtom, (currentActiveLayers: any) => {
           if (currentActiveLayers[0]?.userId == undefined) {
-            socketEmit("select-layer", { roomId, selectedLayer: [userActiveLayers] });
-            return [userActiveLayers];
+            socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
+
+            const mergLayers = [...currentActiveLayers, userActiveLayers];
+
+            return mergLayers.filter((obj) => Object.keys(obj).length > 0);
           }
 
-          const newUserActiveLayers = currentActiveLayers.map((item: any) => {
-            if (item.userId === userId) {
-              return { ...item, layerIds: layerIds };
+          const newUserActiveLayers = currentActiveLayers.map((activeLayer: any) => {
+            // If userId is not matching it means userId comes from socket
+            if (activeLayer.userId === userId) {
+              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ ...activeLayer, layerIds }] });
+              return { ...activeLayer, layerIds };
+            } else {
+              return [{ userId, layerIds }];
             }
-
-            return item;
           });
 
-          socketEmit("select-layer", { roomId, selectedLayer: newUserActiveLayers });
           return newUserActiveLayers;
         });
       },
@@ -49,11 +53,14 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
       ({ userId }: { userId: string }) => {
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, (currentActiveLayers) => {
-          const updatedActiveLayers = currentActiveLayers.map((item) =>
-            item.userId === userId ? { ...item, layerIds: [] } : item,
-          );
-
-          socketEmit("select-layer", { roomId, selectedLayer: updatedActiveLayers });
+          const updatedActiveLayers = currentActiveLayers.map((item: any) => {
+            if (item.userId === userId) {
+              // Emit to socket when userId matches
+              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ userId, layerIds: [] }] });
+              return { ...item, layerIds: [] };
+            }
+            return item;
+          });
 
           return updatedActiveLayers;
         });
@@ -70,14 +77,14 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (layer: Layer) => {
+      ({ layer, userId }: { layer: Layer; userId: string }) => {
         set(layerAtomState, (currentLayers) =>
           produce(
             currentLayers,
             (draft) => {
               // Assuming currentLayers is an array, we push the new layer to it
               draft.push(layer);
-              socketEmit("add-layer", { roomId, layer: [...currentLayers, layer] });
+              socketEmit("add-layer", { roomId, userId, layer });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");
@@ -98,7 +105,7 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (id: string, updatedElementLayer: any) => {
+      ({ id, userId, updatedElementLayer }: { id: string; userId: string; updatedElementLayer: any }) => {
         set(layerAtomState, (currentLayers) =>
           produce(
             currentLayers,
@@ -110,7 +117,7 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
               }
               const updatedLayer = draft[index];
 
-              socketEmit("add-layer", { roomId, layer: updatedLayer });
+              socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");
@@ -129,20 +136,20 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (id: string) => {
+      ({ layerIdsToDelete, userId }: { layerIdsToDelete: string[]; userId: string }) => {
         set(layerAtomState, (currentLayers) =>
           produce(
             currentLayers,
             (draft) => {
-              // Filter out the layer with the given ID
-              const index = draft.findIndex((layer) => layer.id === id);
-              const updatedLayer = currentLayers.filter((layer) => layer.id !== id);
+              // Iterate over layerIdsToDelete and remove the corresponding layers from the draft
+              for (const layerId of layerIdsToDelete) {
+                const index = draft.findIndex((layer) => layer.id === layerId);
 
-              if (index !== -1) {
-                // Remove the layer from the array in th atom state
-                draft.splice(index, 1);
-                socketEmit("add-layer", { roomId, layer: [...currentLayers, updatedLayer] });
+                if (index !== -1) {
+                  draft.splice(index, 1);
+                }
               }
+              socketEmit("remove-layer", { roomId, userId, layerIdsToDelete });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");
