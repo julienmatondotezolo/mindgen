@@ -1429,7 +1429,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             {allActiveLayers.map((activeLayer: any) => (
               <section key={activeLayer.userId}>
-                <p>{activeLayer.userId}</p>
+                <p>{activeLayer.userId === currentUserId ? "current user" : activeLayer.userId}</p>
                 <pre>
                   {JSON.stringify(activeLayer.layerIds, null, 2)}
                 </pre>

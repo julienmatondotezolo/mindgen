@@ -31,15 +31,14 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
           const newUserActiveLayers = currentActiveLayers.map((activeLayer: any) => {
             // If userId is not matching it means userId comes from socket
             if (activeLayer.userId === userId) {
+              console.log("TRUE", [{...activeLayer, layerIds}])
+              socketEmit("select-layer", { roomId, userId, selectedLayer: [{...activeLayer, layerIds}] });
               return { ...activeLayer, layerIds };
             } else {
-              return { userId, layerIds };
+              return [{ userId, layerIds }];
             }
           });
 
-          socketEmit("select-layer", { roomId, userId, selectedLayer: newUserActiveLayers });
-
-          console.log("newUserActiveLayers", newUserActiveLayers)
           return newUserActiveLayers;
         });
       },
@@ -63,8 +62,6 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
             }
             return item;
           });
-
-          socketEmit("select-layer", { roomId, userId, selectedLayer: updatedActiveLayers });
 
           return updatedActiveLayers;
         });

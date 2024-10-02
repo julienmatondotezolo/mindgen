@@ -96,6 +96,7 @@ const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
   const handleAddActiveLayer = (socketSelectedData: any) => {
     setSelf((prevSelectedData: any) => {
+      console.log('prevSelectedData:', prevSelectedData)
       if (Object.keys(prevSelectedData).length === 0) {
         return socketSelectedData;
       }
@@ -111,21 +112,25 @@ const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
         // Remove duplicates from newLayerIds
         const uniqueNewLayerIds = [...new Set(newLayerIds)];
       
-        // Combine uniqueLayerIds with socketLayerIds
-        const combinedLayerIds = [...uniqueNewLayerIds, ...socketLayerIds];
+        // // Combine uniqueLayerIds with socketLayerIds
+        // const combinedLayerIds = [...uniqueNewLayerIds, ...socketLayerIds];
+        // console.log('combinedLayerIds:', combinedLayerIds)
         
         // Create the updatedSelectedData object
         const updatedSelectedData = {
           ...matchingData,
-          layerIds: !socketLayerIds.length ? socketLayerIds : [...new Set(combinedLayerIds)]
+          layerIds: !socketLayerIds.length ? socketLayerIds : uniqueNewLayerIds
         };
-        
+
         const updatedPrevSelectedData = prevSelectedData.map((selectedData: { userId: any; layerIds: any }) => 
           selectedData.userId === updatedSelectedData.userId ? {...selectedData, layerIds: updatedSelectedData.layerIds} : selectedData
         )
         
+        console.log('updatedPrevSelectedData:', updatedPrevSelectedData)
         return updatedPrevSelectedData
       } else {
+        const selectedDataMarge = [...prevSelectedData, ...socketSelectedData]
+        console.log('selectedDataMarge:', selectedDataMarge)
         return [...prevSelectedData, ...socketSelectedData];
       }
     });
