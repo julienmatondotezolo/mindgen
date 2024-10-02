@@ -1,17 +1,7 @@
-/* eslint no-use-before-define */
-
 import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import {
-  CanvasMode,
-  CanvasState,
-  ChatMessageProps,
-  Edge,
-  Layer,
-  QuestionAnswersProps,
-  User,
-} from "@/_types";
+import { CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
 import { Organization } from "@/_types/Organization";
 import { socket } from "@/socket";
 
@@ -70,7 +60,7 @@ export const boardIdState = atom<string>({
 
 // ================   LAYER EFFECTS   ================== //
 
-const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
+const socketLayerEffect = ({ setSelf }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
   const handleAddLayer = (addedLayer: Layer) => {
     setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);
@@ -97,45 +87,47 @@ const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
   };
 };
 
-const socketActiveLayerEffect = ({ onSet, setSelf, node }: any) => {
+const socketActiveLayerEffect = ({ setSelf }: any) => {
   // Define the event handler function outside the effect to avoid redefining it on every call
   const handleAddActiveLayer = (socketSelectedData: any) => {
     setSelf((prevSelectedData: any) => {
-      console.log('prevSelectedData:', prevSelectedData)
       if (Object.keys(prevSelectedData).length === 0) {
         return socketSelectedData;
       }
-    
+
       const matchingData = prevSelectedData.find((data: { userId: any; layerIds: any }) =>
-        socketSelectedData.some((socketData: { userId: any; layerIds: any }) => socketData.userId === data.userId)
+        socketSelectedData.some((socketData: { userId: any; layerIds: any }) => socketData.userId === data.userId),
       );
-    
+
       if (matchingData) {
-        const newLayerIds = matchingData.layerIds
-        const socketLayerIds = socketSelectedData.find((socketData: { userId: any; layerIds: any }) => socketData.userId === matchingData.userId).layerIds
-        
+        const newLayerIds = matchingData.layerIds;
+        const socketLayerIds = socketSelectedData.find(
+          (socketData: { userId: any; layerIds: any }) => socketData.userId === matchingData.userId,
+        ).layerIds;
+
         // Remove duplicates from newLayerIds
         const uniqueNewLayerIds = [...new Set(newLayerIds)];
-      
+
         // // Combine uniqueLayerIds with socketLayerIds
         // const combinedLayerIds = [...uniqueNewLayerIds, ...socketLayerIds];
         // console.log('combinedLayerIds:', combinedLayerIds)
-        
+
         // Create the updatedSelectedData object
         const updatedSelectedData = {
           ...matchingData,
-          layerIds: !socketLayerIds.length ? socketLayerIds : uniqueNewLayerIds
+          layerIds: !socketLayerIds.length ? socketLayerIds : uniqueNewLayerIds,
         };
 
-        const updatedPrevSelectedData = prevSelectedData.map((selectedData: { userId: any; layerIds: any }) => 
-          selectedData.userId === updatedSelectedData.userId ? {...selectedData, layerIds: updatedSelectedData.layerIds} : selectedData
-        )
-        
-        console.log('updatedPrevSelectedData:', updatedPrevSelectedData)
-        return updatedPrevSelectedData
+        const updatedPrevSelectedData = prevSelectedData.map((selectedData: { userId: any; layerIds: any }) =>
+          selectedData.userId === updatedSelectedData.userId
+            ? { ...selectedData, layerIds: updatedSelectedData.layerIds }
+            : selectedData,
+        );
+
+        return updatedPrevSelectedData;
       } else {
-        const selectedDataMarge = [...prevSelectedData, ...socketSelectedData]
-        console.log('selectedDataMarge:', selectedDataMarge)
+        // const selectedDataMarge = [...prevSelectedData, ...socketSelectedData];
+
         return [...prevSelectedData, ...socketSelectedData];
       }
     });

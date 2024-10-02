@@ -1,10 +1,10 @@
 import { memo, useEffect } from "react";
+import { useRecoilState } from "recoil";
 
 import { useSocket } from "@/hooks";
+import { connectedUsersState } from "@/state";
 
 import { Cursor } from "./cursor";
-import { useRecoilState } from "recoil";
-import { connectedUsersState } from "@/state";
 
 const Cursors = () => {
   const { socketListen } = useSocket();
@@ -14,7 +14,7 @@ const Cursors = () => {
     socketListen("connected-users", (data) => {
       setConnectedUsers(data); // Update state instead of ref
     });
-  }, [socketListen]);
+  }, [setConnectedUsers, socketListen]);
 
   return (
     <>
