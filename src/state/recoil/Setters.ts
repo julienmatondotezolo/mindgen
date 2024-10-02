@@ -21,7 +21,7 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, (currentActiveLayers: any) => {
           if (currentActiveLayers[0]?.userId == undefined) {
-            socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
+            // socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
 
             const mergLayers = [...currentActiveLayers, userActiveLayers];
 
@@ -31,7 +31,7 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
           const newUserActiveLayers = currentActiveLayers.map((activeLayer: any) => {
             // If userId is not matching it means userId comes from socket
             if (activeLayer.userId === userId) {
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ ...activeLayer, layerIds }] });
+              // socketEmit("select-layer", { roomId, userId, selectedLayer: [{ ...activeLayer, layerIds }] });
               return { ...activeLayer, layerIds };
             } else {
               return [{ userId, layerIds }];
@@ -56,7 +56,7 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
           const updatedActiveLayers = currentActiveLayers.map((item: any) => {
             if (item.userId === userId) {
               // Emit to socket when userId matches
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ userId, layerIds: [] }] });
+              // socketEmit("select-layer", { roomId, userId, selectedLayer: [{ userId, layerIds: [] }] });
               return { ...item, layerIds: [] };
             }
             return item;
