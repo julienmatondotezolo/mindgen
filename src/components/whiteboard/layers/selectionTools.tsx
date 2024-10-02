@@ -176,13 +176,13 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
 
   const handleRemoveLayer = useCallback(() => {
     const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
+    const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
+    removeLayer({ layerIdsToDelete, userId: currentUserId });
     unSelectLayer({ userId: currentUserId });
 
     for (const layer of selectedLayers) {
       if (layer) {
-        removeLayer(layer.id);
-
         edges.forEach((edge) => {
           if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
             removeEdge(edge.id);
