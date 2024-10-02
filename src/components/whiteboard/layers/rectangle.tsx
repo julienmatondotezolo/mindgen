@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 
+import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useRecoilValue } from "recoil";
 
@@ -27,6 +28,9 @@ const calculateFontSize = (width: number, height: number) => {
 };
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
+
   const { theme } = useTheme();
 
   const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType, borderColor } = layer;
@@ -36,7 +40,7 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
   const updateLayer = useUpdateElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
-    updateLayer(id, { value: newValue });
+    updateLayer({ id, userId: currentUserId, updatedElementLayer: { value: newValue } });
   };
 
   const newBorderColor = borderColor
