@@ -129,19 +129,20 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, userId }: { id: string; userId: string }) => {
+      ({ layerIdsToDelete, userId }: { layerIdsToDelete: string[]; userId: string }) => {
         set(layerAtomState, (currentLayers) =>
           produce(
             currentLayers,
             (draft) => {
-              // Filter out the layer with the given ID
-              const index = draft.findIndex((layer) => layer.id === id);
+              // Iterate over layerIdsToDelete and remove the corresponding layers from the draft
+              for (const layerId of layerIdsToDelete) {
+                const index = draft.findIndex((layer) => layer.id === layerId);
 
-              if (index !== -1) {
-                // Remove the layer from the array in th atom state
-                draft.splice(index, 1);
-                socketEmit("add-layer", { roomId, userId, layerId: id });
+                if (index !== -1) {
+                  draft.splice(index, 1);
+                }
               }
+              socketEmit("remove-layer", { roomId, userId, layerIdsToDelete });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");

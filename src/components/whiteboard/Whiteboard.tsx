@@ -1358,12 +1358,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       if (event.code === "Backspace" && activeLayerIDs?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+        const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
+        removeLayer({ layerIdsToDelete, userId: currentUserId });
         handleUnSelectLayer();
 
         for (const layer of selectedLayers) {
           if (layer) {
-            removeLayer(layer.id);
             removeEdgesConnectedToLayer(layer.id);
           }
         }
@@ -1393,18 +1394,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [
-    activeLayerIDs,
-    canvasState,
-    layers,
-    removeLayer,
-    handleUnSelectLayer,
-    setCanvasState,
-    removeEdgesConnectedToLayer,
-    activeEdgeId,
-    removeEdge,
-    setActiveEdgeId,
-  ]);
+  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer, setCanvasState, removeEdgesConnectedToLayer, activeEdgeId, removeEdge, setActiveEdgeId, currentUserId]);
 
   // Hande Mouse move
   useEffect(() => {

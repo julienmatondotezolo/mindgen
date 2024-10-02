@@ -75,14 +75,20 @@ const socketLayerEffect = ({ onSet, setSelf, node }: any) => {
     setSelf((prevLayers: Layer[]) => prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
   };
 
+  const handleRemoveLayer = (layerIdsToDelete: string[]) => {
+    setSelf((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
+  };
+
   // Attach the event listener when the effect runs
   socket.on("remote-add-layer", handleAddLayer);
   socket.on("remote-update-layer", handleUpdateLayer);
+  socket.on("remote-remove-layer", handleRemoveLayer);
 
   // Return a cleanup function to detach the event listener when the effect is no longer needed
   return () => {
     socket.off("remote-add-layer", handleAddLayer);
     socket.off("remote-update-layer", handleUpdateLayer);
+    socket.off("remote-remove-layer", handleRemoveLayer);
   };
 };
 
