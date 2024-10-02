@@ -43,7 +43,7 @@ const boundingBox = (layers: Layer[]): XYWH | null => {
 };
 
 const useSelectionBounds = () => {
-  const session = useSession();
+  const session: any = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
   const layers = useRecoilValue(layerAtomState);
@@ -53,8 +53,8 @@ const useSelectionBounds = () => {
   const nearestLayer = useRecoilValue(nearestLayerAtom);
 
   const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds)[0];
+    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
+    .map((item: any) => item.layerIds)[0];
 
   // Check if layers is an array before filtering
   const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => activeLayerIDs?.includes(layer.id)) : [];

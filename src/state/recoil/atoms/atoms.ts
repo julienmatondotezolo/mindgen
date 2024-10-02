@@ -1,4 +1,5 @@
-/* eslint-disable no-unused-vars */
+/* eslint no-use-before-define */
+
 import { Node } from "reactflow";
 import { atom } from "recoil";
 
@@ -8,7 +9,6 @@ import {
   ChatMessageProps,
   Edge,
   Layer,
-  MindMapDetailsProps,
   QuestionAnswersProps,
   User,
 } from "@/_types";
@@ -33,6 +33,11 @@ export const canvasStateAtom = atom<CanvasState>({
 export const currentUserState = atom<User | {}>({
   key: "currentUserState", // unique ID (with respect to other atoms/selectors)
   default: {}, // valeur par défaut (alias valeur initials)
+});
+
+export const connectedUsersState = atom<User[]>({
+  key: "connectedUsersState", // unique ID (with respect to other atoms/selectors)
+  default: [], // valeur par défaut (alias valeur initials)
 });
 
 // ================   ORGANIZATION EFFECTS   ================== //

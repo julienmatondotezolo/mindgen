@@ -25,14 +25,13 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
 
             const mergLayers = [...currentActiveLayers, userActiveLayers];
 
-            return mergLayers.filter(obj => Object.keys(obj).length > 0);
+            return mergLayers.filter((obj) => Object.keys(obj).length > 0);
           }
 
           const newUserActiveLayers = currentActiveLayers.map((activeLayer: any) => {
             // If userId is not matching it means userId comes from socket
             if (activeLayer.userId === userId) {
-              console.log("TRUE", [{...activeLayer, layerIds}])
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [{...activeLayer, layerIds}] });
+              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ ...activeLayer, layerIds }] });
               return { ...activeLayer, layerIds };
             } else {
               return [{ userId, layerIds }];

@@ -1,5 +1,5 @@
-/* eslint-disable no-unsafe-optional-chaining */
-/* eslint-disable prettier/prettier */
+/* eslint-disable */
+
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -17,6 +17,7 @@ import {
   LayerType,
   MindMapDetailsProps,
   Point,
+  RectangleLayer,
   Side,
   XYWH,
 } from "@/_types";
@@ -25,6 +26,7 @@ import {
   activeEdgeIdAtom,
   activeLayersAtom,
   canvasStateAtom,
+  connectedUsersState,
   edgesAtomState,
   hoveredEdgeIdAtom,
   isEdgeNearLayerAtom,
@@ -90,7 +92,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  SOCKETS  ================== //
 
   const { socketEmit } = useSocket();
-  const session = useSession();
+  const session: any = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
   // ================  SHADOW EDGE & LAYER STATE  ================== //
@@ -115,29 +117,27 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const [layers, setLayers] = useRecoilState(layerAtomState);
 
-  const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const allActiveLayers: any = useRecoilValue(activeLayersAtom);
   const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds)[0];
+    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
+    .map((item: any) => item.layerIds)[0];
 
-  const allOtherUsersSelections = allActiveLayers.filter((item) => item.userId !== currentUserId);
+  const connectedUsers = useRecoilValue(connectedUsersState);
+
+  const allOtherUsersSelections = allActiveLayers.filter((item: any) => item.userId !== currentUserId);
 
   const layerIdsToColorSelection = useMemo(() => {
-    if (allOtherUsersSelections[0]?.userId == undefined) return {};
-
     const layerIdsToColorSelection: Record<string, string> = {};
 
-    for (const otherUsersSelections of allOtherUsersSelections) {
-      let usersCount = 0;
+    for (let index = 0; index < connectedUsers.length; index++) {
 
-      for (const layerId of otherUsersSelections?.layerIds) {
-        layerIdsToColorSelection[layerId] = connectionIdToColor(usersCount);
-      }
-      usersCount++;
+      // for (const otherSelection of allOtherUsersSelections) {
+      //   layerIdsToColorSelection[otherSelection?.layersIds] = connectionIdToColor(index);
+      // }
     }
 
     return layerIdsToColorSelection;
-  }, [allOtherUsersSelections]);
+  }, [connectedUsers]);
 
   const selectLayer = useSelectElement({ roomId: boardId });
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
@@ -180,7 +180,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const layerId = nanoid();
 
-      const newLayer: Layer = {
+      const newLayer: any = {
         id: layerId.toString() + layers.length,
         type: layerType,
         x: position.x,
@@ -357,7 +357,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const newLayerId = nanoid();
 
-      const newLayer: Layer = {
+      const newLayer: any = {
         id: newLayerId.toString(),
         type: currentLayer.type,
         x: newLayerPosition.x,
@@ -438,6 +438,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       setCanvasState({
         mode: CanvasMode.Translating,
+        initialLayerBounds: getLayerById({ layerId: "_", layers }),
         current: point,
       });
     },
@@ -619,7 +620,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   );
 
   const handleEdgeHandlePointerDown = useCallback(
-    (position: "start" | "middle" | "end", point: Point) => {
+    (position: "START" | "MIDDLE" | "END", point: Point) => {
       setCanvasState({
         mode: CanvasMode.EdgeEditing,
         editingEdge: {
@@ -664,7 +665,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       let controlPoint1, controlPoint2;
 
       switch (handlePosition) {
-        case "start":
+        case "START":
           if (nearestHandle && nearestHandle.layerId !== edge.toLayerId) {
             updatedEdge = {
               ...edge,
@@ -681,7 +682,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             };
           }
           break;
-        case "end":
+        case "END":
           if (nearestHandle && nearestHandle.layerId !== edge.fromLayerId) {
             updatedEdge = {
               ...edge,
@@ -700,7 +701,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             };
           }
           break;
-        case "middle":
+        case "MIDDLE":
           controlPoint1 = edge.controlPoint1 || {
             x: edge.start.x + (edge.end.x - edge.start.x) / 3,
             y: edge.start.y + (edge.end.y - edge.start.y) / 3,
@@ -1107,7 +1108,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             const newLayerId = nanoid();
 
-            const newLayer: Layer = {
+            const newLayer: any = {
               id: newLayerId.toString(),
               type: currentLayer.type,
               x: newLayerPosition.x,

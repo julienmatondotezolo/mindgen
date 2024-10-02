@@ -21,7 +21,7 @@ import {
   TableRow,
   Textarea,
 } from "@/components/ui/";
-import { checkPermission, uppercaseFirstLetter } from "@/utils";
+import { uppercaseFirstLetter } from "@/utils";
 
 interface OrgProps {
   userOrgaData: Organization | undefined;
@@ -30,7 +30,7 @@ interface OrgProps {
 
 function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   const session = useSession();
-  const safeSession = session ? (session as unknown as CustomSession) : null;
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
 
   const queryClient = useQueryClient();
 
@@ -67,8 +67,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   }
 
   const createInvMutation = useMutation(createInvitations, {
-    onSuccess: (data) => {
-      console.log("data:", data);
+    onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");

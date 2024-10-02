@@ -1,17 +1,14 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect } from "react";
 
 import { useSocket } from "@/hooks";
 
 import { Cursor } from "./cursor";
-
-interface ConnectedUser {
-  id: string; // Assuming IDs are strings, adjust if necessary
-  username: string;
-}
+import { useRecoilState } from "recoil";
+import { connectedUsersState } from "@/state";
 
 const Cursors = () => {
   const { socketListen } = useSocket();
-  const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
+  const [connectedUsers, setConnectedUsers] = useRecoilState(connectedUsersState);
 
   useEffect(() => {
     socketListen("connected-users", (data) => {

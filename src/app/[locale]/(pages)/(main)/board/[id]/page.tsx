@@ -20,7 +20,6 @@ import { Link } from "@/navigation";
 import {
   boardIdState,
   collaborateModalState,
-  collaboratorNameState,
   currentUserState,
   edgesAtomState,
   importModalState,
@@ -52,11 +51,11 @@ export default function Board({ params }: { params: { id: string } }) {
   // const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
   const setCurrentUser = useSetRecoilState(currentUserState);
 
-  const session = useSession();
+  const session: any = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
   const [enabled, setEnabled] = useState(true);
 
-  const { socketEmit, socketListen, socketOff, socketJoinRoom, socketLeaveRoom } = useSocket();
+  const { socketJoinRoom } = useSocket();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

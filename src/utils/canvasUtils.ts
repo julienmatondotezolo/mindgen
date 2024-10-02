@@ -441,6 +441,7 @@ export function penPointsToPathLayer(points: number[][], color: Color): PathLaye
   }
 
   return {
+    id: "sjdhbjbdtUITTY",
     type: LayerType.Path,
     x: left,
     y: top,

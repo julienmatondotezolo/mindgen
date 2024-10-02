@@ -1,25 +1,23 @@
-import { Bell, Mail } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import React from "react";
+import { useQuery } from "react-query";
 
-import { acceptInvitation, fetchInvitations, fetchProfile } from "@/_services";
+import { fetchProfile } from "@/_services";
 import { CustomSession } from "@/_types";
 import profileIcon from "@/assets/icons/profile.svg";
-import { formatDate, uppercaseFirstLetter } from "@/utils";
+import { uppercaseFirstLetter } from "@/utils";
 
-import { Button, Popover, PopoverContent, PopoverTrigger, Skeleton } from "../ui";
+import { Popover, PopoverContent, PopoverTrigger, Skeleton } from "../ui";
 import { ProfileMenu } from "./ProfileMenu";
 
 function NavProfile() {
   const session = useSession();
-  const text = useTranslations("Index");
-  const dateText = useTranslations("Dashboard");
-  const [isAccepting, setIsAccepting] = useState(false);
+  // const text = useTranslations("Index");
+  // const dateText = useTranslations("Dashboard");
+  // const [isAccepting, setIsAccepting] = useState(false);
 
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   const safeSession = session ? (session as unknown as CustomSession) : null;
 

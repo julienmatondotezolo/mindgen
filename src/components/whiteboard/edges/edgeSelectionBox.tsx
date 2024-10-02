@@ -8,7 +8,7 @@ import { calculateBezierPoint, calculateControlPoints, colorToCss } from "@/util
 
 interface EdgeSelectionBoxProps {
   edge: Edge;
-  onHandlePointerDown: (position: "start" | "middle" | "end", point: Point) => void;
+  onHandlePointerDown: (position: "START" | "MIDDLE" | "END", point: Point) => void;
 }
 
 export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHandlePointerDown }) => {

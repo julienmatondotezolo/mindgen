@@ -18,12 +18,10 @@ interface OrgProps {
 
 function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
   const session = useSession();
-  const safeSession = session ? (session as unknown as CustomSession) : null;
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
   const currentUserid = safeSession?.data.session.user.id;
 
   const currentMember: Member | undefined = userOrgaData?.members.filter((member) => member.userId == currentUserid)[0];
-
-  console.log("currentUserRole:", currentMember?.organizationRole);
 
   const queryClient = useQueryClient();
 
