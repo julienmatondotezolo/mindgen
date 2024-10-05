@@ -102,12 +102,7 @@ const socketActiveLayerEffect = ({ setSelf }: any) => {
         const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
 
         if (existingItem) {
-          const existingLayerIds =
-            selecteData.layerIds.length > 0 ? [...existingItem.layerIds, ...selecteData.layerIds] : [];
-
-          // console.log("selecteData Layer:", existingLayerIds);
-
-          // console.log("merged layers", [...existingItem.layerIds, ...selecteData.layerIds]);
+          const existingLayerIds = selecteData.layerIds;
 
           existingItem.layerIds = [...new Set(existingLayerIds)];
         } else {
