@@ -20,27 +20,45 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
 
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, (currentActiveLayers: any) => {
-          console.log("currentActiveLayers:", currentActiveLayers);
-
-          if (currentActiveLayers[0]?.userId == undefined) {
+          // If there are some currentActiveLayers add the selected Layer to it
+          if (Object.keys(currentActiveLayers[0]).length === 0) {
             socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
-
             const mergLayers = [...currentActiveLayers, userActiveLayers];
 
             return mergLayers.filter((obj) => Object.keys(obj).length > 0);
           }
 
-          const newUserActiveLayers = currentActiveLayers.map((activeLayer: any) => {
-            // If userId is not matching it means userId comes from socket
-            if (activeLayer.userId === userId) {
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ ...activeLayer, layerIds }] });
-              return { ...activeLayer, layerIds };
+          const result = currentActiveLayers.map((item: any) => ({ ...item }));
+
+          currentActiveLayers.forEach((currentActiveLayer: any) => {
+            const existingItem = result.find((existing: any) => existing.userId === userActiveLayers.userId);
+
+            if (existingItem) {
+              socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
+              existingItem.layerIds = userActiveLayers.layerIds;
             } else {
-              return [{ userId, layerIds }];
+              result.push(currentActiveLayer);
             }
           });
 
-          return newUserActiveLayers;
+          return result;
+
+          // console.log("currentActiveLayers:", currentActiveLayers);
+          // if (currentActiveLayers[0]?.userId == undefined) {
+          //   socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
+          //   const mergLayers = [...currentActiveLayers, userActiveLayers];
+          //   return mergLayers.filter((obj) => Object.keys(obj).length > 0);
+          // }
+          // const newUserActiveLayers = currentActiveLayers.map((activeLayer: any) => {
+          //   // If userId is not matching it means userId comes from socket
+          //   if (activeLayer.userId === userId) {
+          //     socketEmit("select-layer", { roomId, userId, selectedLayer: [{ ...activeLayer, layerIds }] });
+          //     return { ...activeLayer, layerIds };
+          //   } else {
+          //     return [{ userId, layerIds }];
+          //   }
+          // });
+          // return newUserActiveLayers;
         });
       },
     [roomId, socketEmit],

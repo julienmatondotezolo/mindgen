@@ -97,8 +97,6 @@ const socketActiveLayerEffect = ({ setSelf }: any) => {
 
       const result = prevSelectedData.map((item: any) => ({ ...item }));
 
-      console.log("socketSelectedData:", socketSelectedData);
-
       // Then, update layerIds for matching users
       socketSelectedData.forEach((selecteData: any) => {
         const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
@@ -107,7 +105,9 @@ const socketActiveLayerEffect = ({ setSelf }: any) => {
           const existingLayerIds =
             selecteData.layerIds.length > 0 ? [...existingItem.layerIds, ...selecteData.layerIds] : [];
 
-          console.log("selecteData Layer:", existingLayerIds);
+          // console.log("selecteData Layer:", existingLayerIds);
+
+          // console.log("merged layers", [...existingItem.layerIds, ...selecteData.layerIds]);
 
           existingItem.layerIds = [...new Set(existingLayerIds)];
         } else {
