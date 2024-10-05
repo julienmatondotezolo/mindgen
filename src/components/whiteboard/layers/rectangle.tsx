@@ -56,7 +56,7 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
         onPointerDown={(e) => onPointerDown(e, id)}
         style={{
           transform: `translate(${x}px, ${y}px)`,
-          outline: selectionColor ? `1px solid ${selectionColor}` : "none",
+          outline: selectionColor ? `3px solid ${selectionColor}` : "none",
           backgroundColor: fillRGBA(fill, theme),
           backdropFilter: "blur(5px)",
           WebkitBackdropFilter: "blur(5px)",
