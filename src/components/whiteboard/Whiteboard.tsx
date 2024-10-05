@@ -85,7 +85,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const CANVAS_TRANSITION_TIME = 500;
 
-  const ids: string[] = [];
+  const ids: string[] = useMemo(() => [], []);
 
   // ================  SOCKETS  ================== //
 
@@ -461,7 +461,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         current: point,
       });
     },
-    [activeLayerIDs, canvasState, edges, setLayers, setEdges, setCanvasState],
+    [activeLayerIDs, layers, canvasState, edges, setLayers, setEdges, setCanvasState],
   );
 
   const resizeSelectedLayer = useCallback(

@@ -95,41 +95,27 @@ const socketActiveLayerEffect = ({ setSelf }: any) => {
         return socketSelectedData;
       }
 
-      const matchingData = prevSelectedData.find((data: { userId: any; layerIds: any }) =>
-        socketSelectedData.some((socketData: { userId: any; layerIds: any }) => socketData.userId === data.userId),
-      );
+      const result = prevSelectedData.map((item: any) => ({ ...item }));
 
-      if (matchingData) {
-        const newLayerIds = matchingData.layerIds;
-        const socketLayerIds = socketSelectedData.find(
-          (socketData: { userId: any; layerIds: any }) => socketData.userId === matchingData.userId,
-        ).layerIds;
+      console.log("socketSelectedData:", socketSelectedData);
 
-        // Remove duplicates from newLayerIds
-        const uniqueNewLayerIds = [...new Set(newLayerIds)];
+      // Then, update layerIds for matching users
+      socketSelectedData.forEach((selecteData: any) => {
+        const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
 
-        // // Combine uniqueLayerIds with socketLayerIds
-        // const combinedLayerIds = [...uniqueNewLayerIds, ...socketLayerIds];
-        // console.log('combinedLayerIds:', combinedLayerIds)
+        if (existingItem) {
+          const existingLayerIds =
+            selecteData.layerIds.length > 0 ? [...existingItem.layerIds, ...selecteData.layerIds] : [];
 
-        // Create the updatedSelectedData object
-        const updatedSelectedData = {
-          ...matchingData,
-          layerIds: !socketLayerIds.length ? socketLayerIds : uniqueNewLayerIds,
-        };
+          console.log("selecteData Layer:", existingLayerIds);
 
-        const updatedPrevSelectedData = prevSelectedData.map((selectedData: { userId: any; layerIds: any }) =>
-          selectedData.userId === updatedSelectedData.userId
-            ? { ...selectedData, layerIds: updatedSelectedData.layerIds }
-            : selectedData,
-        );
+          existingItem.layerIds = [...new Set(existingLayerIds)];
+        } else {
+          result.push(selecteData);
+        }
+      });
 
-        return updatedPrevSelectedData;
-      } else {
-        // const selectedDataMarge = [...prevSelectedData, ...socketSelectedData];
-
-        return [...prevSelectedData, ...socketSelectedData];
-      }
+      return result;
     });
   };
 

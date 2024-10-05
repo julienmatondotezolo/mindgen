@@ -20,6 +20,8 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
 
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, (currentActiveLayers: any) => {
+          console.log("currentActiveLayers:", currentActiveLayers);
+
           if (currentActiveLayers[0]?.userId == undefined) {
             socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
 
@@ -56,7 +58,7 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
           const updatedActiveLayers = currentActiveLayers.map((item: any) => {
             if (item.userId === userId) {
               // Emit to socket when userId matches
-              // socketEmit("select-layer", { roomId, userId, selectedLayer: [{ userId, layerIds: [] }] });
+              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ userId, layerIds: [] }] });
               return { ...item, layerIds: [] };
             }
             return item;
