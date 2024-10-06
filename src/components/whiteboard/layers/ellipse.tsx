@@ -53,7 +53,7 @@ const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => 
           style={{
             width: "100%",
             height: "100%",
-            outline: selectionColor ? `1px solid ${selectionColor}` : "none",
+            outline: selectionColor ? `3px solid ${selectionColor}` : "none",
             backgroundColor: fillRGBA(fill, theme),
             backdropFilter: "blur(5px)",
             WebkitBackdropFilter: "blur(5px)",
@@ -61,7 +61,7 @@ const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => 
             borderWidth: borderWidth ? borderWidth : 2,
             borderStyle: borderType ? borderType : "solid",
             borderRadius: "50%",
-            overflow: "hidden",
+            // overflow: "hidden",
           }}
         >
           <CustomContentEditable

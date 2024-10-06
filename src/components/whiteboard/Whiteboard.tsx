@@ -85,7 +85,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const CANVAS_TRANSITION_TIME = 500;
 
-  const ids: string[] = [];
+  const ids: string[] = useMemo(() => [], []);
 
   // ================  SOCKETS  ================== //
 
@@ -225,6 +225,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         return;
       }
 
+      const isAlreadySelected = allOtherUserSelection.some((otherUser: any) => {
+        if(otherUser.layerIds) {
+          return otherUser.layerIds.includes(layerId);
+        }
+      });
+
+      if(isAlreadySelected) return;
+
       e.stopPropagation();
 
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
@@ -252,17 +260,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         initialLayerBounds: getLayerById({ layerId, layers }),
       });
     },
-    [
-      canvasState.mode,
-      camera,
-      activeLayerIDs,
-      setCanvasState,
-      layers,
-      ids,
-      selectLayer,
-      currentUserId,
-      setActiveEdgeId,
-    ],
+    [canvasState.mode, allOtherUserSelection, camera, activeLayerIDs, setCanvasState, layers, ids, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -461,7 +459,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         current: point,
       });
     },
-    [activeLayerIDs, canvasState, edges, setLayers, setEdges, setCanvasState],
+    [activeLayerIDs, layers, canvasState, edges, setLayers, setEdges, setCanvasState],
   );
 
   const resizeSelectedLayer = useCallback(
