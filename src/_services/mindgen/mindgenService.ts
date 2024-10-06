@@ -22,7 +22,7 @@ export async function fetchGeneratedTSummaryText(
     session: CustomSession | null, 
     conversationId: string,
     mindmapId: string,
-    organizationMemberId: string,
+    organizationMemberId: string | null,
     description: string,
     task: string,
     data: any,
@@ -30,21 +30,29 @@ export async function fetchGeneratedTSummaryText(
 ): Promise<ReadableStream<Uint8Array>> {
   if(session)
     try {
-      const responseSummaryText: Response = await fetch(baseUrl + "/api/v1/ai/stream", {
+      const bodyData = conversationId ? {
+        conversationId,
+        mindmapId,
+        organizationMemberId,
+        description,
+        task,
+        data,
+      } : {
+        mindmapId,
+        organizationMemberId,
+        description,
+        task,
+        data,
+      };
+
+      const responseSummaryText: Response = await fetch(baseUrl + "/ai/stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session?.data.session.user.token}`,
           "ngrok-skip-browser-warning": "1",
         },
-        body: JSON.stringify({ 
-          conversationId,
-          mindmapId,
-          organizationMemberId,
-          description,
-          task,
-          data,
-        }),
+        body: JSON.stringify(bodyData),
       });
 
       if (responseSummaryText.ok) {

@@ -32,9 +32,9 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const chatText = useTranslations("Chat");
 
   const size = 20;
-  const { description, members, creatorId } = userMindmapDetails;
+  const { description, members } = userMindmapDetails;
 
-  const userMemberID = findCollaboratorId(creatorId, members);
+  const userMemberID = findCollaboratorId(safeSession?.data.session.user.id, members);
 
   const [, setPromptValue] = useRecoilState(promptValueState);
   const setPromptResult = useSetRecoilState(promptResultState);
@@ -65,7 +65,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   }, [answerMessages]);
 
   useDidUpdateEffect(() => {
-    if (done && isLoading) {
+    if (done || isLoading) {
       setIsLoading(false);
       setPromptResult(false);
       scrollToBottom();
@@ -81,26 +81,24 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
     const mindMapArray = convertToMermaid(layers, edges);
 
-    console.log("mindMapArray:", mindMapArray);
+    const fetchStreamData = fetchGeneratedTSummaryText({
+      session: safeSession,
+      conversationId: userMindmapDetails.conversation[0].id,
+      mindmapId: userMindmapDetails.id,
+      organizationMemberId: userMemberID,
+      description,
+      task: text,
+      data: mindMapArray,
+    });
 
-    // const fetchStreamData = fetchGeneratedTSummaryText({
-    //   session: safeSession,
-    //   conversationId: userMindmapDetails.conversation,
-    //   mindmapId: userMindmapDetails.id,
-    //   organizationMemberId: userMemberID!!,
-    //   description,
-    //   task: text,
-    //   data: mindMapArray,
-    // });
+    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone, setIsLoading);
 
-    // handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
+    const newQA = {
+      text: text,
+      message: answerMessages[0].text,
+    };
 
-    // const newQA = {
-    //   text: text,
-    //   message: answerMessages[0].text,
-    // };
-
-    // setQa((prevQa) => [...prevQa, newQA]);
+    setQa((prevQa) => [...prevQa, newQA]);
 
     setText("");
   };
