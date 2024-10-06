@@ -1,6 +1,6 @@
 export * from "./canvasUtils";
 export * from "./checkPermission";
-export * from "./convertToNestedArray";
+export * from "./convertToMermaid";
 export * from "./emptyMindMapObject";
 export * from "./exportMindmap";
 export * from "./findUserCollaboratorId";

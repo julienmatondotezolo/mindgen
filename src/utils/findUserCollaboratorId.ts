@@ -1,6 +1,6 @@
-import { Collaborator } from "@/_types";
+import { Member } from "@/_types";
 
-export function findCollaboratorId(userID: any, array: Collaborator[] | undefined) {
+export function findCollaboratorId(userID: any, array: Member[] | undefined) {
   // Check if array is not undefined before proceeding
   if (!array) {
     return null;
@@ -11,7 +11,7 @@ export function findCollaboratorId(userID: any, array: Collaborator[] | undefine
 
   // If a matching object was found, return its collaboratorId
   if (matchingObject) {
-    return matchingObject.collaboratorId;
+    return matchingObject.memberId;
   } else {
     // If no match was found, return null
     return null;

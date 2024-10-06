@@ -9,45 +9,74 @@ const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 /* ======================================================= */
 
 export async function fetchGeneratedTSummaryText(
-  description: string,
-  task: string,
-  data: string | undefined,
-  collaboratorId: string | null,
-): Promise<ReadableStream<Uint8Array>> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responseSummaryText: Response = await fetch(baseUrl + "/chat/stream", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-      body: JSON.stringify({ description, task, data, collaboratorId }),
-    });
-
-    if (responseSummaryText.ok) {
-      // If the response is okay, return the response body as a ReadableStream<Uint8Array>
-      return responseSummaryText.body as ReadableStream<Uint8Array>;
-    } else {
-      console.error("Failed to post data and stream response");
-      // If the response is not okay, return a default ReadableStream<Uint8Array> with a message
-      return new ReadableStream<Uint8Array>({
-        start(controller) {
-          // Convert a string to Uint8Array and enqueue it to the stream
-          const message = "An error occurred while fetching the summary text.";
-
-          controller.enqueue(new TextEncoder().encode(message));
-          controller.close();
-        },
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    throw error;
+  { 
+    session,
+    conversationId,
+    mindmapId,
+    organizationMemberId,
+    description,
+    task,
+    data,
+  }: 
+  {
+    session: CustomSession | null, 
+    conversationId: string,
+    mindmapId: string,
+    organizationMemberId: string,
+    description: string,
+    task: string,
+    data: any,
   }
+): Promise<ReadableStream<Uint8Array>> {
+  if(session)
+    try {
+      const responseSummaryText: Response = await fetch(baseUrl + "/api/v1/ai/stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify({ 
+          conversationId,
+          mindmapId,
+          organizationMemberId,
+          description,
+          task,
+          data,
+        }),
+      });
+
+      if (responseSummaryText.ok) {
+      // If the response is okay, return the response body as a ReadableStream<Uint8Array>
+        return responseSummaryText.body as ReadableStream<Uint8Array>;
+      } else {
+        console.error("Failed to post data and stream response");
+        // If the response is not okay, return a default ReadableStream<Uint8Array> with a message
+        return new ReadableStream<Uint8Array>({
+          start(controller) {
+          // Convert a string to Uint8Array and enqueue it to the stream
+            const message = "An error occurred while fetching the summary text.";
+
+            controller.enqueue(new TextEncoder().encode(message));
+            controller.close();
+          },
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+
+  return new ReadableStream({
+    async start(controller) {
+      const message = "No active session found.";
+      const encoder = new TextEncoder();
+
+      controller.enqueue(encoder.encode(message));
+      controller.close();
+    },
+  }); 
 }
 
 /* ================================================= */  
