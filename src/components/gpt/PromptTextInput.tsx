@@ -1,29 +1,40 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
-import { Edge, Node, useEdges, useNodes } from "reactflow";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
-import { MindMapDetailsProps } from "@/_types";
+import { CustomSession, MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 import { useDidUpdateEffect } from "@/hooks";
-import { promptResultState, promptValueState, qaState, streamedAnswersState } from "@/state";
-import { convertToNestedArray, findCollaboratorId, scrollToBottom } from "@/utils";
+import {
+  edgesAtomState,
+  layerAtomState,
+  promptResultState,
+  promptValueState,
+  qaState,
+  streamedAnswersState,
+} from "@/state";
+import { convertToMermaid, findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const layers = useRecoilValue(layerAtomState);
+  const edges = useRecoilValue(edgesAtomState);
+
   const chatText = useTranslations("Chat");
-  const nodes = useNodes();
-  const edges = useEdges();
 
   const size = 20;
-  const { description, collaborators, creatorId } = userMindmapDetails;
+  const { description, members } = userMindmapDetails;
 
-  const userCollaboratorID = findCollaboratorId(creatorId, collaborators);
+  const userMemberID = findCollaboratorId(safeSession?.data.session.user.id, members);
 
   const [, setPromptValue] = useRecoilState(promptValueState);
   const setPromptResult = useSetRecoilState(promptResultState);
@@ -54,7 +65,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   }, [answerMessages]);
 
   useDidUpdateEffect(() => {
-    if (done && isLoading) {
+    if (done || isLoading) {
       setIsLoading(false);
       setPromptResult(false);
       scrollToBottom();
@@ -62,17 +73,25 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     updateQa();
   }, [done, isLoading, updateQa]);
 
-  const sendPrompt = (collaboratorId: string | null, nodes: Node[], edges: Edge[]) => {
+  const sendPrompt = () => {
     setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);
     setPromptValue(text);
 
-    const mindMapArray = convertToNestedArray(nodes, edges);
+    const mindMapArray = convertToMermaid(layers, edges);
 
-    const fetchStreamData = fetchGeneratedTSummaryText(description, text, mindMapArray, collaboratorId);
+    const fetchStreamData = fetchGeneratedTSummaryText({
+      session: safeSession,
+      conversationId: userMindmapDetails.conversation[0].id,
+      mindmapId: userMindmapDetails.id,
+      organizationMemberId: userMemberID,
+      description,
+      task: text,
+      data: mindMapArray,
+    });
 
-    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone);
+    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone, setIsLoading);
 
     const newQA = {
       text: text,
@@ -96,17 +115,17 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     if (text) {
       if (event.code === "Enter") {
         event.preventDefault();
-        sendPrompt(userCollaboratorID, nodes, edges);
+        sendPrompt();
       }
 
       if (event.type === "click") {
-        sendPrompt(userCollaboratorID, nodes, edges);
+        sendPrompt();
       }
     }
   };
 
   return (
-    <div className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:border-slate-800 dark:bg-slate-600 dark:bg-opacity-20">
+    <form className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:border-slate-800 dark:bg-slate-600 dark:bg-opacity-20">
       <Textarea
         className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
         placeholder={chatText("promptInput")}
@@ -115,6 +134,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
         onChange={handleTextareaChange}
         disabled={isLoading}
         style={{ height: textareaHeight }}
+        required
       />
       <Button onClick={handleSendPrompt} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>
         <Image
@@ -125,7 +145,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
           alt="Stars icon"
         />
       </Button>
-    </div>
+    </form>
   );
 }
 

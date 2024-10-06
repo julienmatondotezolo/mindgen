@@ -9,7 +9,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
-import { CustomSession, MindMapDetailsProps, User } from "@/_types";
+import { CustomSession, MindMapDetailsProps, MindMapMessages, User } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
@@ -91,6 +91,12 @@ export default function Board({ params }: { params: { id: string } }) {
     setCurrentUser(user);
   }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser, socketJoinRoom]);
 
+  useEffect(() => {
+    if (promptResult) {
+      scrollToBottom();
+    }
+  }, [promptResult]);
+
   const fetchUserMindmapById = async () => {
     const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
 
@@ -113,13 +119,17 @@ export default function Board({ params }: { params: { id: string } }) {
       setEdges(data.edges);
       setBoardId(data.id);
 
-      if (data.messages) {
+      if (data.conversation) {
         setQa([]);
 
-        const newQaItems = data.messages.map((mindMapQA) => ({
-          text: mindMapQA.request,
-          message: mindMapQA.response,
-        }));
+        const newQaItems = data.conversation[0].messages.map((mindMapQA: MindMapMessages) => {
+          const newMessages = {
+            text: mindMapQA.request,
+            message: mindMapQA.response,
+          };
+
+          return newMessages;
+        });
 
         setQa((prevQa) => [...prevQa, ...newQaItems]);
       }

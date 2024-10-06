@@ -7,13 +7,12 @@ export type MindMapDetailsProps = {
   edges: Edge[];
   name: string;
   description: string;
-  conversation: string;
+  conversation: MindMapMessages[];
   creatorId: string;
   creatorUsername: string;
   picture_url: string;
   members: Member[];
   connectedMemberPermissions: string[];
-  messages: MindMapMessages[];
   teams: string[];
   visibility: string;
 };

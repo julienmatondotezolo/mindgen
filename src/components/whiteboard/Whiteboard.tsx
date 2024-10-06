@@ -61,7 +61,7 @@ import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layer
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
-  const DEBUG_MODE = true;
+  const DEBUG_MODE = false;
   const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");

@@ -2,6 +2,7 @@ export async function handleStreamGPTData(
   stream: Promise<ReadableStream<Uint8Array>>,
   setAnswerMessages: any,
   setDone: any,
+  setIsLoading: any,
 ) {
   try {
     const reader = (await stream).getReader();
@@ -17,14 +18,9 @@ export async function handleStreamGPTData(
         break;
       }
 
-      let rawData = new TextDecoder("utf-8").decode(value).replaceAll("data:", "");
-      let spacesInData = rawData.split("\n");
+      let rawData = new TextDecoder("utf-8").decode(value);
 
-      for (let i in spacesInData) {
-        let splittedData = spacesInData[i];
-
-        decodedValue += splittedData ? JSON.parse(splittedData).choices[0].delta.content : "";
-      }
+      decodedValue += rawData ?? "";
 
       setAnswerMessages((prevMessages: any[]) => {
         const lastServerMessageIndex = prevMessages.map((msg: { sender: any }) => msg.sender).lastIndexOf("server");
@@ -41,7 +37,8 @@ export async function handleStreamGPTData(
       });
     }
   } catch (error) {
+    setIsLoading(false);
     console.error("An error occurred while handling the stream:", error);
-    // Handle the error appropriately, e.g., show an error message to the user
+    return error;
   }
 }
