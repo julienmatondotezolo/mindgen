@@ -225,6 +225,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         return;
       }
 
+      const isAlreadySelected = allOtherUserSelection.some((otherUser: any) => {
+        if(otherUser.layerIds) {
+          return otherUser.layerIds.includes(layerId);
+        }
+      });
+
+      if(isAlreadySelected) return;
+
       e.stopPropagation();
 
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
@@ -252,17 +260,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         initialLayerBounds: getLayerById({ layerId, layers }),
       });
     },
-    [
-      canvasState.mode,
-      camera,
-      activeLayerIDs,
-      setCanvasState,
-      layers,
-      ids,
-      selectLayer,
-      currentUserId,
-      setActiveEdgeId,
-    ],
+    [canvasState.mode, allOtherUserSelection, camera, activeLayerIDs, setCanvasState, layers, ids, selectLayer, currentUserId, setActiveEdgeId],
   );
 
   const onHandleMouseEnter = useCallback(
