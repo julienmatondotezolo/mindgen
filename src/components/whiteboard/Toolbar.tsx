@@ -20,7 +20,7 @@ const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
 
   return (
     <div className="fixed left-2/4 -translate-x-2/4 top-5 z-50">
-      <div className="flex w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
+      <div className="flex w-auto p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
         <ul className="flex flex-row items-center justify-between">
           <ToolButton icon={Undo2} onClick={() => undo.handle()} disabled={!undo.can} />
           <ToolButton icon={Redo2} onClick={() => redo.handle()} disabled={!redo.can} />

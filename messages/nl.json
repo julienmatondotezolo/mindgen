@@ -124,7 +124,8 @@
   },
   "Whiteboard": {
     "typeSomething": "Schrijf iets...",
-    "chooseColor": "Kies een kleur"
+    "chooseColor": "Kies een kleur",
+    "addLayerPlaceHolder": "Tekst toevoegen"
   },
   "Organization": {
     "organization": "organisatie"

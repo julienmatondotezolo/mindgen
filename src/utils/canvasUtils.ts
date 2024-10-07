@@ -367,7 +367,7 @@ export function calculateNewLayerPositions(
         newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
         newEdgePosition = {
           x: currentLayer.x + currentLayer.width / 2,
-          y: currentLayer.y - currentLayer.height - HANDLE_DISTANCE,
+          y: newLayerPosition.y + currentLayer.height + HANDLE_DISTANCE,
         };
         break;
       case HandlePosition.Right:
@@ -381,7 +381,7 @@ export function calculateNewLayerPositions(
         newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
         newEdgePosition = {
           x: currentLayer.x + currentLayer.width / 2,
-          y: currentLayer.y + currentLayer.height * 2 + HANDLE_DISTANCE,
+          y: newLayerPosition.y - HANDLE_DISTANCE,
         };
         break;
       default:

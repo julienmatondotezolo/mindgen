@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -226,12 +225,12 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       const isAlreadySelected = allOtherUserSelection.some((otherUser: any) => {
-        if(otherUser.layerIds) {
+        if (otherUser.layerIds) {
           return otherUser.layerIds.includes(layerId);
         }
       });
 
-      if(isAlreadySelected) return;
+      if (isAlreadySelected) return;
 
       e.stopPropagation();
 
@@ -260,7 +259,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         initialLayerBounds: getLayerById({ layerId, layers }),
       });
     },
-    [canvasState.mode, allOtherUserSelection, camera, activeLayerIDs, setCanvasState, layers, ids, selectLayer, currentUserId, setActiveEdgeId],
+    [
+      canvasState.mode,
+      allOtherUserSelection,
+      camera,
+      activeLayerIDs,
+      setCanvasState,
+      layers,
+      ids,
+      selectLayer,
+      currentUserId,
+      setActiveEdgeId,
+    ],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -339,7 +349,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       if (canvasState.mode === CanvasMode.EdgeEditing) return;
 
       const currentLayer = layers.find((layer) => layer.id === layerId);
-      const LAYER_SPACING = 150; // Adjust this value to control the space between layers
+      const LAYER_SPACING = 150; // Value to control the space between layers
       const HANDLE_DISTANCE = 20;
 
       if (!currentLayer) {
@@ -373,13 +383,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         width: currentLayer.width,
         height: currentLayer.height,
         fill: currentLayer.fill,
+        value: whiteboardText("addLayerPlaceHolder"),
       };
 
       addLayer({ layer: newLayer, userId: currentUserId });
 
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
-      if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
+      if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
         updateEdge(drawingEdge.lastEdgeId, {
           toLayerId: newLayer.id,
           end: newEdgePosition,
@@ -394,7 +405,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         mode: CanvasMode.None,
       });
     },
-    [addLayer, canvasState.mode, currentUserId, drawingEdge, layers, selectLayer, setCanvasState, updateEdge],
+    [
+      addLayer,
+      canvasState,
+      currentUserId,
+      drawingEdge,
+      layers,
+      selectLayer,
+      setCanvasState,
+      updateEdge,
+      whiteboardText,
+    ],
   );
 
   const translateSelectedLayer = useCallback(
@@ -865,9 +886,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         // If we're already in resizing mode, do nothing
         return;
       } else if (canvasState.mode === CanvasMode.Edge) {
-        const selectedLayerId = allActiveLayers[0].layerIds ? allActiveLayers[0].layerIds[0] : "";
-        const selectedLayer = layers.find((layer) => layer.id === selectedLayerId);
-        const HANDLE_DISTANCE = 30;
+        const selectedLayer = layers.find((layer) => activeLayerIDs?.includes(layer.id));
 
         if (selectedLayer) {
           // Determine which handle was clicked based on the pointer position
@@ -884,37 +903,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           }
 
           // Calculate the start point based on the handle position
-          let startPoint: Point;
-
-          switch (handlePosition) {
-            case HandlePosition.Left:
-              startPoint = { x: selectedLayer.x - HANDLE_DISTANCE, y: selectedLayer.y + selectedLayer.height / 2 };
-              break;
-            case HandlePosition.Right:
-              startPoint = {
-                x: selectedLayer.x + selectedLayer.width + HANDLE_DISTANCE,
-                y: selectedLayer.y + selectedLayer.height / 2,
-              };
-              break;
-            case HandlePosition.Top:
-              startPoint = { x: selectedLayer.x + selectedLayer.width / 2, y: selectedLayer.y - HANDLE_DISTANCE };
-              break;
-            case HandlePosition.Bottom:
-              startPoint = {
-                x: selectedLayer.x + selectedLayer.width / 2,
-                y: selectedLayer.y + selectedLayer.height + HANDLE_DISTANCE,
-              };
-              break;
-          }
+          const startPoint = shadowState.startPosition;
 
           // Create a new edge object
           const newEdge: Edge = {
             id: nanoid().toString(),
-            fromLayerId: selectedLayerId,
-            toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
+            fromLayerId: selectedLayer.id,
+            toLayerId: "",
             color: { r: 180, g: 191, b: 204 }, // Placeholder, replace with actual color logic
             thickness: 2,
-            start: startPoint,
+            start: startPoint ?? point,
             handleStart: handlePosition,
             end: point,
             orientation: "auto",
@@ -930,15 +928,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           addEdge(newEdge);
 
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
-          setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayerId });
+          setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayer.id });
 
           setActiveEdgeId(null);
         } else {
           // Create a new edge object
           const newEdge: Edge = {
             id: nanoid().toString(),
-            fromLayerId: selectedLayerId,
-            toLayerId: "", // Placeholder, replace with actual logic to determine toLayerId
+            fromLayerId: "",
+            toLayerId: "",
             color: { r: 180, g: 191, b: 204 }, // Placeholder, replace with actual color logic
             thickness: 2,
             start: point,
@@ -972,7 +970,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [addEdge, allActiveLayers, camera, canvasState, layers, setActiveEdgeId, setHoveredEdgeId, setCanvasState],
+    [
+      camera,
+      canvasState,
+      layers,
+      activeLayerIDs,
+      shadowState,
+      addEdge,
+      setActiveEdgeId,
+      setHoveredEdgeId,
+      setCanvasState,
+    ],
   );
 
   const handlePointerMove = useCallback(
@@ -1147,6 +1155,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               width: currentLayer.width,
               height: currentLayer.height,
               fill: currentLayer.fill,
+              value: whiteboardText("addLayerPlaceHolder"),
             };
 
             addLayer({ layer: newLayer, userId: currentUserId });
@@ -1212,16 +1221,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       canvasState,
       handleUnSelectLayer,
       setCanvasState,
-      drawingEdge,
-      setActiveEdgeId,
-      edges,
       layers,
       activeLayerIDs,
       updateLayer,
-      updateEdge,
+      currentUserId,
+      drawingEdge,
+      setActiveEdgeId,
+      edges,
+      whiteboardText,
       addLayer,
       selectLayer,
-      currentUserId,
+      updateEdge,
       insertLayer,
     ],
   );
@@ -1465,7 +1475,10 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <p className="text-sm mb-1">
             <strong>ShadowState:</strong> {JSON.stringify(shadowState.showShadow, null, 2)}
           </p>
-          {/* <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(canvasState, null, 2)}</pre> */}
+          <pre className="text-xs whitespace-pre-wrap">
+            <strong>Drawing Edge State: </strong>
+            {JSON.stringify(drawingEdge, null, 2)}
+          </pre>
           <p className="text-sm mb-1">
             <strong>Active Edge ID:</strong> {activeEdgeId || "None"}
           </p>
@@ -1507,7 +1520,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             cursor: "pointer",
           }}
         >
-          {edges.map((edge) => {
+          {edges.map((edge, index) => {
             const [controlPoint1, controlPoint2] =
               edge.start && edge.end
                 ? edge.controlPoint1 && edge.controlPoint2
@@ -1524,7 +1537,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 : "";
 
             return (
-              <g key={edge.id}>
+              <g key={index}>
                 <path
                   d={pathString}
                   stroke={colorToCss(isActive ? edge.hoverColor : edge.color)}

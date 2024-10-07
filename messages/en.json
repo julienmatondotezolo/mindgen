@@ -124,7 +124,8 @@
   },
   "Whiteboard": {
     "typeSomething": "Type something...",
-    "chooseColor": "Choose Color"
+    "chooseColor": "Choose Color",
+    "addLayerPlaceHolder": "Add text"
   },
   "Organization": {
     "organization": "organization"
