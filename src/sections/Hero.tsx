@@ -113,7 +113,7 @@ function Hero() {
       onHoverX: 780,
       onHoverY: 60,
       name: "John",
-      connectionId: 6,
+      connectionId: 2,
       translateY: [-30, 0],
       duration: 4,
     },
@@ -124,7 +124,7 @@ function Hero() {
       ref={heroRef}
       className={`${
         cursorVisible ? "!cursor-none" : "cursor-auto"
-      } relative bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#EAEEFE_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]`}
+      } relative bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]`}
     >
       <div className="container">
         <div className="md:flex flex-col md:items-center text-left md:text-center">
@@ -139,7 +139,7 @@ function Hero() {
             <div className="hidden group-hover:block absolute -right-2 -bottom-2 w-4 h-4 rounded-[3px] bg-primary-color"></div>
             {/* <div className="tag">Beta version </div> */}
 
-            <h1 className="md:text-7xl bg-gradient-to-b from-black to-[#001e80] bg-clip-text text-5xl font-bold tracking-tighter text-transparent">
+            <h1 className="md:text-7xl bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text text-5xl font-bold tracking-tighter text-transparent">
               Unleash Your Creativity with
             </h1>
             <BlurIn
@@ -148,7 +148,7 @@ function Hero() {
               className="md:text-7xl text-5xl font-bold text-primary-color text-left md:text-center"
             />
 
-            <p className="mt-6 text-xl tracking-tight text-[#010d3e]">
+            <p className="mt-6 text-xl tracking-tight text-[#010d3e] dark:text-primary-foreground default">
               Transform your ideas into visual masterpieces with Mindgen. Collaborate seamlessly and generate
               professional documents in minutes!
             </p>
@@ -199,7 +199,7 @@ function Hero() {
           />
         </div>
       </div>
-      {cursorVisible && <Cursor x={cursorPosition.x + 10} y={cursorPosition.y - 570} name="You" connectionId={2} />}
+      {cursorVisible && <Cursor x={cursorPosition.x + 10} y={cursorPosition.y - 570} name="You" connectionId={4} />}
     </section>
   );
 }

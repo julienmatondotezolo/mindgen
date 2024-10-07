@@ -3,6 +3,7 @@
 
 // import { BackDropGradient, Button } from "@/components";
 import { Navigation } from "@/components/dashboard";
+import { BackDropGradient } from "@/components/ui";
 import { Hero, Pricing } from "@/sections/";
 
 // import { Link } from "../../../navigation";
@@ -11,11 +12,12 @@ export default function Index() {
   // const welcomePageText = useTranslations("Welcome");
 
   return (
-    <>
+    <main className="relative">
+      <BackDropGradient />
       <Navigation />
       <Hero />
       <Pricing />
-    </>
+    </main>
     // <main className="relative flex min-h-screen flex-col items-center justify-between p-24">
     //   <BackDropGradient />
     //   <Navigation />
