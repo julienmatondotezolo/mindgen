@@ -1,4 +1,5 @@
 "use client";
+import { MoveRight } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -15,7 +16,7 @@ function Navigation() {
   const navigationText = useTranslations("Navigation");
 
   return (
-    <nav className="flex justify-center fixed z-50 top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white bg-opacity-90 border-b-2 backdrop-filter backdrop-blur-lg dark:bg-slate-800 dark:bg-opacity-50 dark:shadow-slate-900 dark:border-slate-800">
+    <nav className="flex justify-center fixed z-50 top-0 w-full py-3 bg-white bg-opacity-60 backdrop-filter backdrop-blur-md dark:bg-slate-800 dark:bg-opacity-50 dark:shadow-slate-900 dark:border-slate-800">
       <div className="flex justify-between max-w-7xl w-[96%]">
         <section className="flex items-center">
           <Link href={`/dashboard`}>
@@ -41,7 +42,12 @@ function Navigation() {
           </Link>
 
           <Link href={`/auth/login`}>
-            {session?.session == undefined && <Button variant={"outline"}>{navigationText("loginButton")}</Button>}
+            {session?.session == undefined && (
+              <Button className="gap-2" variant={"outline"}>
+                Start now
+                <MoveRight size={20} />
+              </Button>
+            )}
           </Link>
 
           <NavProfile />

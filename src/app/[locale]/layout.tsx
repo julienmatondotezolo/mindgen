@@ -1,10 +1,10 @@
 import "../../assets/styles/globals.css";
 
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import React from "react";
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "MindGen - Generate * with mindmap",
@@ -20,8 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html suppressHydrationWarning={true} lang={locale}>
-      <body className={`${inter.className}`}>{children}</body>
-      {/* <Toaster /> */}
+      <body className={`${dmSans.className}`}>{children}</body>
     </html>
   );
 }
