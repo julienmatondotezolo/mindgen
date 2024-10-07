@@ -61,7 +61,7 @@ import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layer
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
-  const DEBUG_MODE = false;
+  const DEBUG_MODE = true;
   const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");
@@ -337,15 +337,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const onHandleMouseUp = useCallback(
     (layerId: String, position: HandlePosition) => {
       if (canvasState.mode === CanvasMode.EdgeEditing) return;
-
-      setShadowState({
-        showShadow: false,
-        startPosition: null,
-        fromHandlePosition: undefined,
-        layerPosition: null,
-        edgePosition: null,
-        layer: null,
-      });
 
       const currentLayer = layers.find((layer) => layer.id === layerId);
       const LAYER_SPACING = 150; // Adjust this value to control the space between layers
@@ -766,6 +757,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
         handleUnSelectLayer();
 
+        setShadowState({
+          showShadow: false,
+          startPosition: null,
+          fromHandlePosition: undefined,
+          layerPosition: null,
+          edgePosition: null,
+          layer: null,
+        });
+
         const lastUpdatedEdge = edges.find((edge) => edge.id === drawingEdge.lastEdgeId);
 
         if (!lastUpdatedEdge) return;
@@ -780,26 +780,26 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         // Exclude the layer we're dragging from
         const filteredLayers = layers.filter((layer) => layer.id !== drawingEdge.fromLayerId);
 
-        const drawingFromLayer = layers.find((layer) => layer.id === drawingEdge.fromLayerId);
+        // const drawingFromLayer = layers.find((layer) => layer.id === drawingEdge.fromLayerId);
 
-        if (drawingFromLayer && drawingEdge.fromHandlePosition) {
-          const { newLayerPosition } = calculateNewLayerPositions(
-            drawingFromLayer,
-            drawingEdge.fromHandlePosition,
-            150, // LAYER_SPACING
-            20, // HANDLE_DISTANCE
-            point,
-          );
+        // if (drawingFromLayer && drawingEdge.fromHandlePosition) {
+        //   const { newLayerPosition } = calculateNewLayerPositions(
+        //     drawingFromLayer,
+        //     drawingEdge.fromHandlePosition,
+        //     150, // LAYER_SPACING
+        //     20, // HANDLE_DISTANCE
+        //     point,
+        //   );
 
-          setShadowState({
-            showShadow: true,
-            startPosition: null,
-            fromHandlePosition: lastUpdatedEdge.handleStart,
-            layerPosition: newLayerPosition,
-            edgePosition: null,
-            layer: drawingFromLayer,
-          });
-        }
+        //   setShadowState({
+        //     showShadow: true,
+        //     startPosition: null,
+        //     fromHandlePosition: lastUpdatedEdge.handleStart,
+        //     layerPosition: newLayerPosition,
+        //     edgePosition: null,
+        //     layer: drawingFromLayer,
+        //   });
+        // }
 
         const nearestHandle = findNearestLayerHandle(point, filteredLayers, snapThreshold);
         const nearestLayer = findNearestLayerHandle(point, filteredLayers, layerThreshold);
@@ -1168,15 +1168,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           }
         }
 
-        setShadowState({
-          showShadow: false,
-          startPosition: null,
-          fromHandlePosition: undefined,
-          layerPosition: null,
-          edgePosition: null,
-          layer: null,
-        });
-
         setDrawingEdge({
           ongoing: false,
           lastEdgeId: undefined,
@@ -1470,6 +1461,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <h3 className="font-bold mb-1">Canvas State:</h3>
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
+          </p>
+          <p className="text-sm mb-1">
+            <strong>ShadowState:</strong> {JSON.stringify(shadowState.showShadow, null, 2)}
           </p>
           {/* <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(canvasState, null, 2)}</pre> */}
           <p className="text-sm mb-1">
