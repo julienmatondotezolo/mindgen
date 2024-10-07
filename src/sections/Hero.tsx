@@ -127,7 +127,7 @@ function Hero() {
       } relative bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#EAEEFE_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]`}
     >
       <div className="container">
-        <div className="md:flex flex-col md:items-center text-center">
+        <div className="md:flex flex-col md:items-center text-left md:text-center">
           <div
             className="group md:w-[578px] my-6 relative transition-all duration-600 ease-in-out hover:border-2 border-primary-color hover:bg-[rgba(77,107,255,0.05)]"
             onMouseEnter={handleMouseEnter}
@@ -142,7 +142,11 @@ function Hero() {
             <h1 className="md:text-7xl bg-gradient-to-b from-black to-[#001e80] bg-clip-text text-5xl font-bold tracking-tighter text-transparent">
               Unleash Your Creativity with
             </h1>
-            <BlurIn word="Mindgen" duration={0.3} className="md:text-7xl text-5xl font-bold text-primary-color" />
+            <BlurIn
+              word="Mindgen"
+              duration={0.3}
+              className="md:text-7xl text-5xl font-bold text-primary-color text-left md:text-center"
+            />
 
             <p className="mt-6 text-xl tracking-tight text-[#010d3e]">
               Transform your ideas into visual masterpieces with Mindgen. Collaborate seamlessly and generate
@@ -161,7 +165,7 @@ function Hero() {
                     ease: "easeInOut",
                   },
                 }}
-                className="absolute top-0"
+                className="absolute top-0 hidden md:block"
               >
                 <Cursor
                   x={cursorVisible ? cursorProps.onHoverX : cursorProps.x}
@@ -173,7 +177,7 @@ function Hero() {
               </motion.div>
             ))}
 
-            <div className="mt-[30px] flex flex-col items-center">
+            <div className="mt-[30px] flex flex-col items-start md:items-center">
               <div className="space-x-4">
                 <Link href={`/dashboard`}>
                   <Button className="w-auto">Start for free</Button>
@@ -190,7 +194,7 @@ function Hero() {
             src={productImage.src}
             alt="Noodle Image"
             width={1024}
-            className="hidden lg:absolute lg:inset-0 lg:mx-auto lg:my-auto lg:block"
+            className="hidden md:absolute md:inset-0 md:mx-auto md:my-auto md:block"
             style={{ translateY, rotate: 0 }}
           />
         </div>

@@ -1,4 +1,5 @@
 "use client";
+import { MoveRight } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -41,7 +42,12 @@ function Navigation() {
           </Link>
 
           <Link href={`/auth/login`}>
-            {session?.session == undefined && <Button variant={"outline"}>{navigationText("loginButton")}</Button>}
+            {session?.session == undefined && (
+              <Button className="gap-2" variant={"outline"}>
+                Start now
+                <MoveRight size={20} />
+              </Button>
+            )}
           </Link>
 
           <NavProfile />
