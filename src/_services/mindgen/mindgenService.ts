@@ -569,30 +569,28 @@ export async function inviteAllMembers(membersObject: any): Promise<any> {
   }
 }
 
-export async function updateMembers(collaboratorsObject: any): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function updateMembers({ session, mindmapId, membersToUpdate }: {session: CustomSession | null, mindmapId: string, membersToUpdate: any}): Promise<any> {
+  if (session)
+    try {
+      const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/member-roles`, {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify(membersToUpdate),
+      });
 
-    const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/collaborator/role`, {
-      method: "PUT",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-      body: JSON.stringify(collaboratorsObject),
-    });
-
-    if (responseUpdatedCollaborator.ok) {
-      return responseUpdatedCollaborator;
-    } else {
-      throw responseUpdatedCollaborator;
+      if (responseUpdatedCollaborator.ok) {
+        return responseUpdatedCollaborator.json();
+      } else {
+        throw responseUpdatedCollaborator;
+      }
+    } catch (error) {
+      console.error("Impossible to invite collaborator(s):", error);
     }
-  } catch (error) {
-    console.error("Impossible to invite collaborator(s):", error);
-  }
 }
 
 export async function transferOwnership(collaboratorId: any): Promise<any> {
@@ -623,26 +621,25 @@ export async function transferOwnership(collaboratorId: any): Promise<any> {
   }
 }
 
-export async function removeCollaboratorById(collaboratorId: string): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function removeMemberById({ session, mindmapId, membersToDelete }: {session: CustomSession | null, mindmapId: string, membersToDelete: any}): Promise<any> {
+  if(session)
+    try {
+      const responseRemoveCollaborator: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/member-roles`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify(membersToDelete),
+      });
 
-    const responseRemoveCollaborator: Response = await fetch(baseUrl + `/mindmap/collaborator/${collaboratorId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseRemoveCollaborator.ok) {
-      return responseRemoveCollaborator;
-    } else {
-      throw responseRemoveCollaborator;
+      if (responseRemoveCollaborator.ok) {
+        return responseRemoveCollaborator.json();
+      } else {
+        throw responseRemoveCollaborator;
+      }
+    } catch (error) {
+      console.error("Impossible to remove collaborator:", error);
     }
-  } catch (error) {
-    console.error("Impossible to remove collaborator:", error);
-  }
 }

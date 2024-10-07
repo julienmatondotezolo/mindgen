@@ -36,7 +36,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
   return (
     <>
       <rect
-        className="fill-transparent stroke-blue-500 stroke-1 pointer-events-none"
+        className="fill-transparent stroke-primary-color stroke-2 pointer-events-none"
         style={{
           transform: `translate(${bounds.x}px, ${bounds.y}px)`,
         }}
@@ -48,7 +48,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
       {isShowingHandles && (
         <>
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{
@@ -66,7 +66,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
           />
           {/* TOP */}
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{
@@ -83,7 +83,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
             }}
           />
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{
@@ -101,7 +101,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
           />
           {/* RIGHT */}
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{
@@ -119,7 +119,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
             }}
           />
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{
@@ -138,7 +138,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
           />
           {/* BOTTOM */}
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{
@@ -156,7 +156,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
             }}
           />
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{
@@ -175,7 +175,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
           />
           {/* LEFT */}
           <rect
-            className="fill-white stroke-1 stroke-blue-500"
+            className="fill-white stroke-2 stroke-primary-color"
             x={0}
             y={0}
             style={{

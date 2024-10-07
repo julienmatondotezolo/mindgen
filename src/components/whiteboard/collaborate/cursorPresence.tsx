@@ -19,7 +19,7 @@ const Cursors = () => {
   return (
     <>
       {connectedUsers.map((connectedUser, index) => (
-        <g key={connectedUser.id}>
+        <g key={index}>
           <Cursor key={connectedUser.id} connectionId={index} user={connectedUser} />
         </g>
       ))}

@@ -1,14 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable indent */
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
-import { inviteAllMembers, removeCollaboratorById, updateMembers } from "@/_services";
-import { DialogProps, Member, MindMapDetailsProps } from "@/_types";
+import { inviteAllMembers, removeMemberById, updateMembers } from "@/_services";
+import { CustomSession, DialogProps, Member, MindMapDetailsProps, MindmapRole } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
 import { checkPermission, uppercaseFirstLetter } from "@/utils";
@@ -19,22 +16,24 @@ interface CollaborateDialogProps extends DialogProps {
 }
 
 const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindmapId, userMindmap }) => {
-  const session = useSession();
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
   const text = useTranslations("Index");
   const memberText = useTranslations("Member");
   const modalRef = useRef<HTMLDivElement>(null);
 
   const [inviteMembers, setInviteMembers] = useState({ mindmapId, username: "", role: "ADMIN" });
-  const [members, setMembers] = useState<Member[] | undefined>([]);
+  const [members, setMembers] = useState<Member[] | undefined>(userMindmap.members);
   const [isDeleting, setIsDeleting] = useState(false);
   const [notFoundUsers, setNotFoundUsers] = useState([]);
   const [currentRole, setCurrentRole] = useState("");
 
   const queryClient = useQueryClient();
 
-  const PERMISSIONS = userMindmap?.connectedMemberPermissions;
+  const PERMISSIONS = userMindmap.connectedMemberPermissions;
 
-  const membersLength = userMindmap ? userMindmap?.members.length - 1 : 0;
+  const membersLength = userMindmap ? userMindmap.members.length - 1 : 0;
 
   const fetchInviteMembers = useSyncMutation(inviteAllMembers, {
     onSuccess: (response: any) => {
@@ -46,23 +45,30 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     },
   });
 
-  const fetchUpdateCollaborator = useSyncMutation(updateMembers, {
+  const fetchUpdateCollaborator = useMutation(updateMembers, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmap");
+      setIsDeleting(false);
     },
   });
 
-  const { mutateAsync } = useMutation(removeCollaboratorById);
+  const fetchRemoveMemberById = useMutation(removeMemberById, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmap");
+      setIsDeleting(false);
+    },
+  });
 
-  const handleRemove = async (collaboratorId: string) => {
+  const handleRemoveMember = async (memberId: string) => {
     try {
       setIsDeleting(true);
-      await mutateAsync(collaboratorId, {
-        onSuccess: () => {
-          // Invalidate the query to cause a re-fetch
-          queryClient.invalidateQueries("mindmap");
-          setIsDeleting(false);
+      fetchRemoveMemberById.mutate({
+        session: safeSession,
+        mindmapId: mindmapId,
+        membersToDelete: {
+          memberIds: [memberId],
         },
       });
     } catch (error) {
@@ -80,7 +86,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
       collaborator = userMindmap?.members.filter((collaborator) => collaborator.userId == userId)[0];
       setCurrentRole(collaborator.mindmapRole);
     }
-  }, [session, userMindmap]);
+  }, [currentRole, session, userMindmap]);
 
   // Invalidate the query when the dialog opens
   useEffect(() => {
@@ -144,12 +150,11 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     const membersArray = members as Member[];
 
     // Find the index of the collaborator to update
-
     if (memberIndex !== -1) {
       // Create a new array with the updated collaborator role
       const updatedmembers = [...membersArray];
 
-      updatedmembers[memberIndex].mindmapRole = e.target.value;
+      updatedmembers[memberIndex].mindmapRole = e.target.value as MindmapRole;
 
       // Update the members state
       setMembers(updatedmembers);
@@ -158,14 +163,15 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
 
   const handleSave = () => {
     if (members) {
-      const mappedmembers = [
-        members.map((item) => ({
-          memberId: item.memberId,
-          role: item.mindmapRole,
-        })),
-      ];
+      const memberRolesToUpdate = members.map((item) => [item.memberId, item.mindmapRole]);
 
-      fetchUpdateCollaborator.mutate(mappedmembers[0].slice(1));
+      fetchUpdateCollaborator.mutate({
+        session: safeSession,
+        mindmapId: mindmapId,
+        membersToUpdate: {
+          memberRoles: { memberRolesToUpdate },
+        },
+      });
     } else {
       console.warn("No members to be saved");
     }
@@ -254,7 +260,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
         <p className="text-md font-bold mb-2">
           {membersLength < 1
             ? memberText("noMember")
-            : `${membersLength + 1} ${memberText(membersLength > 1 ? `members` : `collaborator`).toLowerCase()}`}
+            : `${membersLength + 1} ${memberText(membersLength > 1 ? `member` : `members`).toLowerCase()}`}
         </p>
         {!userMindmap ? (
           <>
@@ -269,7 +275,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
             >
               <section className="flex items-center">
                 <figure
-                  className={`flex h-6 w-6 ${
+                  className={`flex h-6 w-6 text-white ${
                     member.mindmapRole == "CREATOR" ? "bg-primary-color" : "bg-[#1fb865]"
                   } mr-4 rounded-full`}
                 >
@@ -299,8 +305,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                         <p className="text-xs text-[#ee6a63]">Deleting....</p>
                       ) : (
                         <button
-                          onClick={() => handleRemove(member.memberId)}
-                          className="text-xs text-[#ee6a63] cursor-pointer"
+                          onClick={() => handleRemoveMember(member.memberId)}
+                          className="text-xs text-[#ee6a63] font-bold cursor-pointer"
                         >
                           {uppercaseFirstLetter(text("remove"))}
                         </button>
@@ -313,12 +319,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
           ))
         )}
       </div>
-      {currentRole == "CREATOR" && members!.length > 1 ? (
-        <button className="text-xs text-[#ee6a63] cursor-pointer">Transfer ownsership</button>
-      ) : (
-        <button className="text-xs text-[#ee6a63] cursor-pointer">Leave project</button>
-      )}
-      {checkPermission(PERMISSIONS, "UPDATE") && members!.length > 1 && (
+      {checkPermission(PERMISSIONS, "UPDATE") && membersLength > 0 && (
         <section className="flex justify-end">
           <Button onClick={handleSave}>{uppercaseFirstLetter(text("save"))}</Button>
         </section>
