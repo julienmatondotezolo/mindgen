@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -294,6 +295,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         LAYER_SPACING,
         HANDLE_DISTANCE,
       );
+
+      // Find a non-overlapping position for the new layer
+      // const adjustedPosition = findNonOverlappingPosition({
+      //   newPosition: newLayerPosition,
+      //   layers,
+      //   currentLayer,
+      //   LAYER_SPACING,
+      // });
 
       setShadowState({
         showShadow: true,
@@ -650,14 +659,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "START" | "MIDDLE" | "END", point: Point) => {
-      setCanvasState({
-        mode: CanvasMode.EdgeEditing,
-        editingEdge: {
-          id: activeEdgeId!,
-          handlePosition: position,
-          startPoint: point,
-        },
-      });
+      if(activeEdgeId)
+        setCanvasState({
+          mode: CanvasMode.EdgeEditing,
+          editingEdge: {
+            id: activeEdgeId,
+            handlePosition: position,
+            startPoint: point,
+          },
+        });
     },
     [setCanvasState, activeEdgeId],
   );
@@ -669,7 +679,10 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const { id, handlePosition, startPoint } = canvasState.editingEdge;
       const edge = edges.find((e) => e.id === id);
 
-      if (!edge) return;
+      // Check if edge is undefined
+      if (!edge) {
+        return; // Exit the function if edge is not found
+      }
 
       const dx = point.x - startPoint.x;
       const dy = point.y - startPoint.y;
@@ -1081,21 +1094,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           });
         }
 
-        // Update all edges connected to selected layers
-        // const updatedEdges = edges.map((edge) => {
-        //   const isSource = activeLayerIDs?.includes(edge.fromLayerId);
-        //   const isTarget = activeLayerIDs?.includes(edge.toLayerId);
-
-        //   if (!isSource && !isTarget) {
-        //     return edge;
-        //   }
-
-        //   const { id, ...updatedEdge } = edge;
-
-        //   updateEdge(id, updatedEdge);
-        //   return edge;
-        // });
-
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1471,6 +1469,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <h3 className="font-bold mb-1">Canvas State:</h3>
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
+            {JSON.stringify(canvasState, null, 2)}
           </p>
           <p className="text-sm mb-1">
             <strong>ShadowState:</strong> {JSON.stringify(shadowState.showShadow, null, 2)}
@@ -1488,8 +1487,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <div className="text-sm mb-1">
             <strong>Active Layers:</strong>
 
-            {allActiveLayers.map((activeLayer: any) => (
-              <section key={activeLayer.userId}>
+            {allActiveLayers.map((activeLayer: any, index: any) => (
+              <section key={index}>
                 <p>{activeLayer.userId === currentUserId ? "current user" : activeLayer.userId}</p>
                 <pre>{JSON.stringify(activeLayer.layerIds, null, 2)}</pre>
               </section>
@@ -1521,6 +1520,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           }}
         >
           {edges.map((edge, index) => {
+            if(!edge) return;
             const [controlPoint1, controlPoint2] =
               edge.start && edge.end
                 ? edge.controlPoint1 && edge.controlPoint2

@@ -84,7 +84,7 @@ export const findNonOverlappingPosition = ({
   currentLayer: Layer;
   LAYER_SPACING: number;
 }): Point => {
-  const OVERLAP_THRESHOLD = 10; // Minimum distance between layers
+  const OVERLAP_THRESHOLD = 1; // Minimum distance between layers
   let adjustedPosition = { ...newPosition };
   let overlapping = true;
 

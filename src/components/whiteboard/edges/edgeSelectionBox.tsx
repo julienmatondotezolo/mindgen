@@ -48,7 +48,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
         strokeWidth={circleStrokeWidth}
         onPointerDown={(e: React.PointerEvent) => {
           e.stopPropagation();
-          onHandlePointerDown("start", { x: edge.start.x, y: edge.start.y });
+          onHandlePointerDown("START", { x: edge.start.x, y: edge.start.y });
         }}
         style={{ cursor: "move" }}
       />
@@ -61,7 +61,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
         strokeWidth={circleStrokeWidth}
         onPointerDown={(e: React.PointerEvent) => {
           e.stopPropagation();
-          onHandlePointerDown("middle", middlePoint);
+          onHandlePointerDown("MIDDLE", middlePoint);
         }}
         style={{ cursor: "move" }}
       />
@@ -74,7 +74,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
         strokeWidth={circleStrokeWidth}
         onPointerDown={(e: React.PointerEvent) => {
           e.stopPropagation();
-          onHandlePointerDown("end", { x: edge.end.x, y: edge.end.y });
+          onHandlePointerDown("END", { x: edge.end.x, y: edge.end.y });
         }}
         style={{ cursor: "move" }}
       />
