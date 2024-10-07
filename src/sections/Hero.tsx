@@ -180,9 +180,9 @@ function Hero() {
             <div className="mt-[30px] flex flex-col items-start md:items-center">
               <div className="space-x-4">
                 <Link href={`/dashboard`}>
-                  <Button className="w-auto">Start for free</Button>
+                  <Button className="w-auto !cursor-none">Start for free</Button>
                 </Link>
-                <Button className="gap-2" variant={"outline"}>
+                <Button className="gap-2 !cursor-none" variant={"outline"}>
                   <span>Learn more</span>
                   <MoveRight size={20} />
                 </Button>
