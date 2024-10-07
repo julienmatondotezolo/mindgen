@@ -1679,6 +1679,30 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <CursorPresence />
         </g>
       </svg>
+      <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
+      {layers?.length > 0 && (
+        <div className="fixed bottom-4 left-4 z-10 space-x-2">
+          <figure className="flex items-center space-x-2 float-left">
+            <Button variant="outline" onClick={zoomOut}>
+              -
+            </Button>
+            <p className="text-sm">{Math.round(camera.scale * 100)}%</p>
+            <Button variant="outline" onClick={zoomIn}>
+              +
+            </Button>
+          </figure>
+          <Button variant="outline" onClick={fitView}>
+            Reset content
+          </Button>
+        </div>
+      )}
+      {showResetButton && (
+        <Button variant="outline" onClick={resetView} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
+          Scroll back to content
+        </Button>
+      )}
+      <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
+      <EdgeSelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
     </main>
   );
 };
