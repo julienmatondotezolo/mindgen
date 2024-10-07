@@ -95,47 +95,67 @@
   }
   
 @layer components {
-    .nodeTextInput {
-        @apply block m-auto bg-transparent text-center outline-none w-full h-full
-    }
+  .nodeTextInput {
+      @apply block m-auto bg-transparent text-center outline-none w-full h-full
+  }
 
-    .gradientWhiteText {
-      @apply bg-gradient-to-br from-foreground to-blue-200 text-transparent bg-clip-text
-    }
+  .gradientWhiteText {
+    @apply bg-gradient-to-br from-foreground to-blue-200 text-transparent bg-clip-text
+  }
 
-    .gradientPrimary {
-        @apply bg-gradient-to-r from-primary-color to-secondary-color
-    }
+  .gradientPrimary {
+      @apply bg-gradient-to-r from-primary-color to-secondary-color
+  }
 
-    .gradientSecondary {
-        @apply bg-gradient-to-r from-secondary-color to-tertiary-color
-    }
+  .tag {
+    @apply inline-flex rounded-lg border border-[#222]/10 px-3 py-1 text-sm tracking-tight;
+  }
 
-    .promptContainer {
-      @apply dark:bg-slate-800 rounded-lg p-6 box-content;
-    }
+  .gradientSecondary {
+      @apply bg-gradient-to-r from-secondary-color to-tertiary-color
+  }
 
-    .promptContainer > h1 {
-      @apply text-2xl my-6;
-    }
+  .promptContainer {
+    @apply dark:bg-slate-800 rounded-lg p-6 box-content;
+  }
 
-    .promptContainer > h2 {
-      @apply text-xl my-5;
-    }
+  .promptContainer > h1 {
+    @apply text-2xl my-6;
+  }
 
-    .promptContainer > h3 {
-      @apply text-lg my-4;
-    }
+  .promptContainer > h2 {
+    @apply text-xl my-5;
+  }
 
-    .promptContainer > p {
-      @apply text-sm my-2;
-    }
+  .promptContainer > h3 {
+    @apply text-lg my-4;
+  }
 
-    .promptContainer li {
-      @apply list-item text-left box-content ml-4
-    }
+  .promptContainer > p {
+    @apply text-sm my-2;
+  }
 
-    .promptContainer > ul, .promptContainer > ol {
-      @apply list-disc text-sm space-y-4
-    }
+  .promptContainer li {
+    @apply list-item text-left box-content ml-4
+  }
+
+  .promptContainer > ul, .promptContainer > ol {
+    @apply list-disc text-sm space-y-4
+  }
+
+  .section-title {
+    @apply bg-gradient-to-b from-black to-[#001e80] bg-clip-text text-center text-3xl font-bold tracking-tighter text-transparent md:text-[54px] md:leading-[60px];
+  }
+
+  .section-description {
+    @apply text-center text-[22px] leading-[30px] tracking-tight text-[#010d3e];
+  }
+
+  .section-heading {
+    @apply mx-auto max-w-[540px];
+  }
+
+  .card {
+    @apply w-full max-w-xs rounded-3xl border border-[#F1F1F1] bg-white p-10 shadow-[0_7px_14px_#EAEAEA];
+  }
 }

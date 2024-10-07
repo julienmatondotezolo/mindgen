@@ -1,4 +1,5 @@
 export * from "./backDropGradient";
+export * from "./blur-in";
 export * from "./button";
 export * from "./card";
 export * from "./chat";
@@ -25,5 +26,6 @@ export * from "./table";
 export * from "./tabs";
 export * from "./textarea";
 export * from "./toast";
+export * from "./typing-animation";
 export * from "./upgradePlanDialog";
 export * from "./use-toast";
