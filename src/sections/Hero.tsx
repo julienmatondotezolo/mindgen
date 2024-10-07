@@ -86,6 +86,7 @@ function Hero() {
       connectionId: 1,
       translateY: [-20, 15],
       duration: 3,
+      blur: 1,
     },
     {
       x: -20,
@@ -96,6 +97,7 @@ function Hero() {
       connectionId: 8,
       translateY: [-10, 15],
       duration: 5,
+      blur: 1.6,
     },
     {
       x: 500,
@@ -106,6 +108,7 @@ function Hero() {
       connectionId: 3,
       translateY: [-15, 20],
       duration: 6,
+      blur: 1,
     },
     {
       x: 620,
@@ -116,6 +119,7 @@ function Hero() {
       connectionId: 2,
       translateY: [-30, 0],
       duration: 4,
+      blur: 1.5,
     },
   ];
 
@@ -165,7 +169,8 @@ function Hero() {
                     ease: "easeInOut",
                   },
                 }}
-                className="absolute top-0 hidden md:block"
+                className="absolute top-0 hidden md:block transition-all duration-1000 ease-out"
+                style={{ filter: `blur(${cursorVisible ? cursorProps.blur : 0}px)` }}
               >
                 <Cursor
                   x={cursorVisible ? cursorProps.onHoverX : cursorProps.x}
