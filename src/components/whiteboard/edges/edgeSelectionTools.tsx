@@ -6,7 +6,15 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Camera, CanvasMode, Color, EdgeType } from "@/_types";
 import { ToolButton } from "@/components/mindmap/toolButton";
 import { Button } from "@/components/ui/button";
-import { activeEdgeIdAtom, boardIdState, canvasStateAtom, edgesAtomState, useRemoveEdge, useUpdateEdge } from "@/state";
+import {
+  activeEdgeIdAtom,
+  boardIdState,
+  canvasStateAtom,
+  edgesAtomState,
+  useRemoveEdge,
+  useUnSelectEdgeElement,
+  useUpdateEdge,
+} from "@/state";
 
 import { ColorPicker } from "../colorPicker";
 
@@ -21,17 +29,23 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
   const currentUserId = session.data?.session?.user?.id;
 
   const edges = useRecoilValue(edgesAtomState);
-  const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
-  const setActiveEdgeId = useSetRecoilState(activeEdgeIdAtom);
+  const allActiveEdges = useRecoilValue(activeEdgeIdAtom);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const boardId = useRecoilValue(boardIdState);
 
+  const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
   const removeEdge = useRemoveEdge({ roomId: boardId });
   const updateEdge = useUpdateEdge({ roomId: boardId });
 
-  const selectedEdge = edges.find((edge) => edge.id === activeEdgeId);
+  const activeEdgeId = allActiveEdges
+    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
+    .map((item: any) => item.edgeIds)[0];
+
+  const selectedEdge = edges.find((edge) => {
+    if (activeEdgeId) edge.id === activeEdgeId[0];
+  });
 
   const handleColorChange = useCallback(
     (color: Color) => {
@@ -54,12 +68,12 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
         id: selectedEdge.id,
         userId: currentUserId,
       });
-      setActiveEdgeId(null);
+      unSelectEdge({ userId: currentUserId });
       setCanvasState({
         mode: CanvasMode.None,
       });
     }
-  }, [selectedEdge, removeEdge, currentUserId, setActiveEdgeId, setCanvasState]);
+  }, [selectedEdge, removeEdge, currentUserId, unSelectEdge, setCanvasState]);
 
   const handleChangeStrokeWidth = useCallback(
     (number: number) => {

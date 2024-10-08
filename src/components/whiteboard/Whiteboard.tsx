@@ -164,6 +164,12 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  CONSTANT EDGES  ================== //
 
   const [edges, setEdges] = useRecoilState(edgesAtomState);
+
+  const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
+  const activeEdgeId = allActiveEdges
+    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
+    .map((item: any) => item.edgeIds)[0];
+    
   const selectEdge = useSelectEdgeElement({ roomId: boardId });
   const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
   const addEdge = useAddEdgeElement({ roomId: boardId });
@@ -258,7 +264,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         // setActiveLayerIDs([layerId]);
         selectLayer({ userId: currentUserId, layerIds: [layerId] });
         unSelectEdge({ userId: currentUserId });
-        // setActiveEdgeId(null);
       }
 
       setCanvasState({
@@ -796,14 +801,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeClick = useCallback(
     (edgeId: string) => {
-      setActiveEdgeId(edgeId);
+      selectEdge({ userId: currentUserId, edgeIds: [edgeId] });
       setHoveredEdgeId(null);
       handleUnSelectLayer();
       setCanvasState({
         mode: CanvasMode.EdgeActive,
       });
     },
-    [handleUnSelectLayer, setActiveEdgeId, setCanvasState, setHoveredEdgeId],
+    [currentUserId, handleUnSelectLayer, selectEdge, setCanvasState, setHoveredEdgeId],
   );
 
   // ================  DRAWING EDGES  ================== //
@@ -828,7 +833,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         if (!lastUpdatedEdge) return;
 
-        setActiveEdgeId(lastUpdatedEdge.id);
+        selectEdge({ userId: currentUserId, edgeIds: [lastUpdatedEdge.id] });
 
         let updatedEdge: Edge;
 
@@ -896,19 +901,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [
-      canvasState,
-      drawingEdge,
-      edges,
-      setActiveEdgeId,
-      layers,
-      setIsEdgeNearLayer,
-      setNearestLayer,
-      setEdges,
-      setCanvasState,
-      handleUnSelectLayer,
-      setShadowState,
-    ],
+    [canvasState.mode, drawingEdge, handleUnSelectLayer, edges, selectEdge, currentUserId, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
   );
 
   // ================  SVG POINTER EVENTS  ================== //
@@ -967,7 +960,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayer.id });
 
-          setActiveEdgeId(null);
+          unSelectEdge({ userId: currentUserId });
+          
         } else {
           // Create a new edge object
           const newEdge: Edge = {
@@ -996,7 +990,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         return;
       } else if (canvasState.mode === CanvasMode.EdgeActive) {
-        setActiveEdgeId(null);
+        unSelectEdge({ userId: currentUserId });
         setHoveredEdgeId(null);
       } else if (canvasState.mode === CanvasMode.Typing) {
         return;
@@ -1007,7 +1001,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [camera, canvasState, layers, activeLayerIDs, shadowState.startPosition, addEdge, currentUserId, setActiveEdgeId, setHoveredEdgeId, setCanvasState],
+    [camera, canvasState.mode, layers, activeLayerIDs, shadowState.startPosition, addEdge, currentUserId, unSelectEdge, setHoveredEdgeId, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
@@ -1059,7 +1053,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
+        console.log("Active edge:", activeEdgeId);
         handleUnSelectLayer();
+        unSelectEdge({ userId: currentUserId });
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1215,7 +1211,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           fromLayerId: undefined,
           fromHandlePosition: undefined,
         });
-        setActiveEdgeId(null);
+        unSelectEdge({ userId: currentUserId });
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1240,7 +1236,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           fromLayerId: undefined,
           fromHandlePosition: undefined,
         });
-        setActiveEdgeId(null);
+        unSelectEdge({ userId: currentUserId });
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1252,24 +1248,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [
-      camera,
-      canvasState,
-      handleUnSelectLayer,
-      setCanvasState,
-      layers,
-      activeLayerIDs,
-      updateLayer,
-      currentUserId,
-      drawingEdge,
-      setActiveEdgeId,
-      edges,
-      whiteboardText,
-      addLayer,
-      selectLayer,
-      updateEdge,
-      insertLayer,
-    ],
+    [camera, canvasState, handleUnSelectLayer, setCanvasState, layers, edges, activeLayerIDs, updateEdge, currentUserId, updateLayer, drawingEdge, unSelectEdge, whiteboardText, addLayer, selectLayer, insertLayer],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -1460,7 +1439,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           id: activeEdgeId,
           userId: currentUserId,
         });
-        setActiveEdgeId(null);
+        unSelectEdge({ userId: currentUserId });
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1482,19 +1461,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [
-    activeLayerIDs,
-    canvasState,
-    layers,
-    removeLayer,
-    handleUnSelectLayer,
-    setCanvasState,
-    removeEdgesConnectedToLayer,
-    activeEdgeId,
-    removeEdge,
-    setActiveEdgeId,
-    currentUserId,
-  ]);
+  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer, setCanvasState, removeEdgesConnectedToLayer, removeEdge, currentUserId, unSelectEdge, activeEdgeId]);
 
   // Hande Mouse move
   useEffect(() => {
@@ -1525,9 +1492,20 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             <strong>Drawing Edge State: </strong>
             {JSON.stringify(drawingEdge, null, 2)}
           </pre>
-          <p className="text-sm mb-1">
-            <strong>Active Edge ID:</strong> {activeEdgeId || "None"}
-          </p>
+          <div className="text-sm mb-1">
+            <strong>Active Edges:</strong>
+
+            {allActiveEdges.map((activeEdge: any, index: any) => (
+              <section key={index}>
+                <div>{JSON.stringify(activeEdge, null, 2)}</div>
+                <p>[CURRENT USER ID]: {currentUserId}</p>
+                <p>{activeEdge.userId === currentUserId ? "current user" : activeEdge.userId}</p>
+                <pre>{JSON.stringify(activeEdge.layerIds, null, 2)}</pre>
+              </section>
+            ))}
+            {/*             
+            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre> */}
+          </div>
           <p className="text-sm mb-1">
             <strong>Hovered Edge ID:</strong> {hoveredEdgeId || "None"}
           </p>
