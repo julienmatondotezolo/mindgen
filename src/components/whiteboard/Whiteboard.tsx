@@ -2,6 +2,7 @@
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -62,6 +63,7 @@ import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
   const DEBUG_MODE = true;
+  const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");
@@ -345,12 +347,22 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const onHandleMouseDown = useCallback(
     (e: React.PointerEvent, layerId: string, position: HandlePosition) => {
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
-        updateEdge(drawingEdge.lastEdgeId, { fromLayerId: layerId });
+        // updateEdge(drawingEdge.lastEdgeId, { fromLayerId: layerId });
 
-        setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId, fromHandlePosition: position }));
+        updateEdge({
+          id: drawingEdge.lastEdgeId,
+          userId: currentUserId,
+          updatedElementEdge: { fromLayerId: layerId },
+        });
+
+        setDrawingEdge(
+          (prev) => (
+            { ...prev, fromLayerId: layerId, fromHandlePosition: position }
+          )
+        );
       }
     },
-    [drawingEdge, updateEdge],
+    [currentUserId, drawingEdge, updateEdge],
   );
 
   const onHandleMouseUp = useCallback(
@@ -400,11 +412,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
-        updateEdge(drawingEdge.lastEdgeId, {
-          toLayerId: newLayer.id,
-          end: newEdgePosition,
-          handleStart: position,
-          orientation: getOrientationFromPosition(position),
+        updateEdge({
+          id: drawingEdge.lastEdgeId,
+          userId: currentUserId,
+          updatedElementEdge: {
+            toLayerId: newLayer.id,
+            end: newEdgePosition,
+            handleStart: position,
+            orientation: getOrientationFromPosition(position),
+          },
         });
       }
 
@@ -622,27 +638,27 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     unSelectLayer({ userId: currentUserId });
   }, [currentUserId, unSelectLayer]);
 
-  // const sortLayersBySelection = useCallback(
-  //   (layersToSort: Layer[] | undefined) => {
-  //     if (!Array.isArray(layersToSort)) {
-  //       console.error('layersToSort is not an array:', layersToSort);
-  //       return [layersToSort];
-  //     }
+  const sortLayersBySelection = useCallback(
+    (layersToSort: Layer[]) => {
+      if (!Array.isArray(layersToSort)) {
+        console.error('layersToSort is not an array:', layersToSort);
+        return [layersToSort];
+      }
 
-  //     return [...layersToSort].sort((a, b) => {
-  //       if (!a || !b) {
-  //         console.error('Invalid layer object:', { a, b });
-  //         return 0;
-  //       }
+      return [...layersToSort].sort((a, b) => {
+        if (!a || !b) {
+          console.error('Invalid layer object:', { a, b });
+          return 0;
+        }
 
-  //       const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
-  //       const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
+        const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
+        const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
 
-  //       return bSelected - aSelected; // Changed to sort selected layers first
-  //     });
-  //   },
-  //   [activeLayerIDs],
-  // );
+        return aSelected - bSelected; // Changed to sort selected layers first
+      });
+    },
+    [activeLayerIDs],
+  );
 
   // ================  EDGES  ================== //
 
@@ -650,11 +666,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     (layerId: string) => {
       edges.forEach((edge) => {
         if (edge.fromLayerId === layerId || edge.toLayerId === layerId) {
-          removeEdge(edge.id);
+          removeEdge({
+            id: edge.id,
+            userId: currentUserId,
+          });
         }
       });
     },
-    [edges, removeEdge],
+    [currentUserId, edges, removeEdge],
   );
 
   const handleEdgeHandlePointerDown = useCallback(
@@ -938,7 +957,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           };
 
           // Update edges state with the new edge
-          addEdge(newEdge);
+          addEdge({ edge: newEdge, userId: currentUserId });
 
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayer.id });
@@ -964,7 +983,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           };
 
           // Update edges state with the new edge
-          addEdge(newEdge);
+          addEdge({ edge: newEdge, userId: currentUserId });
 
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: undefined });
@@ -983,17 +1002,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [
-      camera,
-      canvasState,
-      layers,
-      activeLayerIDs,
-      shadowState,
-      addEdge,
-      setActiveEdgeId,
-      setHoveredEdgeId,
-      setCanvasState,
-    ],
+    [camera, canvasState, layers, activeLayerIDs, shadowState.startPosition, addEdge, currentUserId, setActiveEdgeId, setHoveredEdgeId, setCanvasState],
   );
 
   const handlePointerMove = useCallback(
@@ -1063,21 +1072,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             });
           }
         }
-
-        // Update all edges connected to selected layers
-        // const updatedEdges = edges.map((edge) => {
-        //   const isSource = activeLayerIDs?.includes(edge.fromLayerId);
-        //   const isTarget = activeLayerIDs?.includes(edge.toLayerId);
-
-        //   if (!isSource && !isTarget) {
-        //     return edge;
-        //   }
-
-        //   const { id, ...updatedEdge } = edge;
-
-        //   updateEdge(id, updatedEdge);
-        //   return edge;
-        // });
 
         setCanvasState({
           mode: CanvasMode.None,
@@ -1161,17 +1155,25 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
             if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
-              updateEdge(drawingEdge.lastEdgeId, {
-                toLayerId: newLayer.id,
-                end: newEdgePosition,
-                handleStart: position,
-                orientation: getOrientationFromPosition(position),
+              updateEdge({
+                id: drawingEdge.lastEdgeId,
+                userId: currentUserId,
+                updatedElementEdge: {
+                  toLayerId: newLayer.id,
+                  end: newEdgePosition,
+                  handleStart: position,
+                  orientation: getOrientationFromPosition(position),
+                },
               });
             }
           } else {
             const { id, ...updatedProperties } = lastUpdatedEdge;
-
-            updateEdge(id, updatedProperties);
+            
+            updateEdge({
+              id,
+              userId: currentUserId,
+              updatedElementEdge: updatedProperties,
+            });
           }
         }
 
@@ -1193,7 +1195,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
           const { id, ...updatedProperties } = lastUpdatedEdge;
 
-          updateEdge(id, updatedProperties);
+          updateEdge({
+            id,
+            userId: currentUserId,
+            updatedElementEdge: updatedProperties,
+          });
         }
 
         setDrawingEdge({
@@ -1236,8 +1242,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handlePointerLeave = useCallback(() => {
     // but cursor to null when leaving canvas
+    if (userMindmapDetails.members.length > 1)
+      socketEmit("cursor-move", {
+        roomId: boardId,
+        userId: currentUserId,
+        cursor: null,
+      });
     // setMyPresence({ cursor: null });
-  }, []);
+  }, [boardId, currentUserId, socketEmit, userMindmapDetails]);
 
   // ================  CAMERA FUNCTIONS  ================== //
 
@@ -1412,7 +1424,10 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       if (event.code === "Backspace" && activeEdgeId && canvasState.mode === CanvasMode.EdgeActive) {
-        removeEdge(activeEdgeId);
+        removeEdge({
+          id: activeEdgeId,
+          userId: currentUserId,
+        });
         setActiveEdgeId(null);
         setCanvasState({
           mode: CanvasMode.None,
@@ -1469,7 +1484,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <h3 className="font-bold mb-1">Canvas State:</h3>
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
-            {JSON.stringify(canvasState, null, 2)}
+            {/* {JSON.stringify(canvasState, null, 2)} */}
           </p>
           <p className="text-sm mb-1">
             <strong>ShadowState:</strong> {JSON.stringify(shadowState.showShadow, null, 2)}
@@ -1503,7 +1518,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         className="h-[100vh] w-[100vw] absolute inset-0"
         style={{
           backgroundPosition: `${camera.x}px ${camera.y}px`,
-          backgroundImage: `radial-gradient(#e5e7eb ${1 * camera.scale}px, transparent 1px)`,
+          backgroundImage: `radial-gradient(${theme === "dark" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
           backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
         }}
         onPointerDown={handlePointerDown}
@@ -1636,8 +1651,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               </g>
             );
           })}
-          {/* {sortLayersBySelection(layers).map((layer) => ( */}
-          {layers.map((layer, index) => (
+          {/* {layers.map((layer, index) => ( */}
+          {sortLayersBySelection(layers).map((layer, index) => (
             <LayerPreview
               key={index}
               layer={layer}

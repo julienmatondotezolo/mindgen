@@ -142,11 +142,41 @@ export const hoveredLayerIdAtomState = atom<string>({
   default: "", // valeur par défaut (alias valeur initials)
 });
 
+// ================   EDGE EFFECTS   ================== //
+
+const socketEdgeEffect = ({ setSelf }: any) => {
+  // Define the event handler function outside the effect to avoid redefining it on every call
+  const handleAddEdge = (addedEdge: Edge) => {
+    setSelf((prevEdges: Edge[]) => [...prevEdges, addedEdge]);
+  };
+
+  const handleUpdateEdge = (updatedEdge: Edge) => {
+    setSelf((prevEdges: Edge[]) => prevEdges.map((edge) => (edge.id === updatedEdge.id ? updatedEdge : edge)));
+  };
+
+  const handleRemoveEdge = (edgeIdsToDelete: string[]) => {
+    setSelf((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
+  };
+
+  // Attach the event listener when the effect runs
+  socket.on("remote-add-edge", handleAddEdge);
+  socket.on("remote-update-edge", handleUpdateEdge);
+  socket.on("remote-remove-edge", handleRemoveEdge);
+
+  // Return a cleanup function to detach the event listener when the effect is no longer needed
+  return () => {
+    socket.off("remote-add-edge", handleAddEdge);
+    socket.off("remote-update-edge", handleUpdateEdge);
+    socket.off("remote-remove-edge", handleRemoveEdge);
+  };
+};
+
 // ================   EDGES STATES   ================== //
 
 export const edgesAtomState = atom<Edge[]>({
-  key: "edgesAtomState", // unique ID (with respect to other atoms/selectors)
-  default: [], // valeur par défaut (alias valeur initials)
+  key: "edgesAtomState",
+  default: [],
+  effects: [socketEdgeEffect],
 });
 
 export const activeEdgeIdAtom = atom<string | null>({

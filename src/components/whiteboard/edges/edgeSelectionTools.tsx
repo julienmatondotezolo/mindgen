@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -16,6 +17,9 @@ interface EdgeSelectionToolsProps {
 }
 
 export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelectionToolsProps) => {
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
+
   const edges = useRecoilValue(edgesAtomState);
   const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
   const setActiveEdgeId = useSetRecoilState(activeEdgeIdAtom);
@@ -33,61 +37,88 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
     (color: Color) => {
       setLastUsedColor(color);
       if (selectedEdge) {
-        updateEdge(selectedEdge.id, { color });
+        updateEdge({
+          id: selectedEdge.id,
+          userId: currentUserId,
+          updatedElementEdge: { color },
+        });
         setShowColorPicker(false);
       }
     },
-    [selectedEdge, setLastUsedColor, updateEdge],
+    [currentUserId, selectedEdge, setLastUsedColor, updateEdge],
   );
 
   const handleRemoveEdge = useCallback(() => {
     if (selectedEdge) {
-      removeEdge(selectedEdge.id);
+      removeEdge({
+        id: selectedEdge.id,
+        userId: currentUserId,
+      });
       setActiveEdgeId(null);
       setCanvasState({
         mode: CanvasMode.None,
       });
     }
-  }, [selectedEdge, removeEdge, setActiveEdgeId, setCanvasState]);
+  }, [selectedEdge, removeEdge, currentUserId, setActiveEdgeId, setCanvasState]);
 
   const handleChangeStrokeWidth = useCallback(
     (number: number) => {
       if (selectedEdge) {
-        updateEdge(selectedEdge.id, { thickness: number });
+        updateEdge({
+          id: selectedEdge.id,
+          userId: currentUserId,
+          updatedElementEdge: { thickness: number },
+        });
       }
     },
-    [selectedEdge, updateEdge],
+    [currentUserId, selectedEdge, updateEdge],
   );
 
   const handleToggleEdgeType = useCallback(() => {
     if (selectedEdge) {
       const newType = selectedEdge.type === EdgeType.Dashed ? EdgeType.Solid : EdgeType.Dashed;
 
-      updateEdge(selectedEdge.id, { type: newType });
+      updateEdge({
+        id: selectedEdge.id,
+        userId: currentUserId,
+        updatedElementEdge: { type: newType },
+      });
     }
-  }, [selectedEdge, updateEdge]);
+  }, [currentUserId, selectedEdge, updateEdge]);
 
   const handleToggleThickness = useCallback(() => {
     if (selectedEdge) {
       const newThickness = selectedEdge.thickness === 2 ? 4 : 2;
 
-      updateEdge(selectedEdge.id, { thickness: newThickness });
+      updateEdge({
+        id: selectedEdge.id,
+        userId: currentUserId,
+        updatedElementEdge: { thickness: newThickness },
+      });
     }
-  }, [selectedEdge, updateEdge]);
+  }, [currentUserId, selectedEdge, updateEdge]);
 
   const handleToggleArrow = useCallback(
     (arrow: string) => {
       if (arrow == "left" && selectedEdge) {
         const newArrowEnd = selectedEdge.arrowEnd ? false : true;
 
-        updateEdge(selectedEdge.id, { arrowEnd: newArrowEnd });
+        updateEdge({
+          id: selectedEdge.id,
+          userId: currentUserId,
+          updatedElementEdge: { arrowEnd: newArrowEnd },
+        });
       } else if (arrow == "right" && selectedEdge) {
         const newArrowStart = selectedEdge.arrowStart ? false : true;
 
-        updateEdge(selectedEdge.id, { arrowStart: newArrowStart });
+        updateEdge({
+          id: selectedEdge.id,
+          userId: currentUserId,
+          updatedElementEdge: { arrowStart: newArrowStart },
+        });
       }
     },
-    [selectedEdge, updateEdge],
+    [currentUserId, selectedEdge, updateEdge],
   );
 
   if (!selectedEdge) return null;

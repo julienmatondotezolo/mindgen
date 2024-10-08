@@ -175,14 +175,14 @@ export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (edge: Edge) => {
+      ({ edge, userId }: { edge: Edge; userId: string }) => {
         set(edgesAtomState, (currentEdges) =>
           produce(
             currentEdges,
             (draft) => {
               // Assuming currentEdges is an array, we push the new layer to it
               draft.push(edge);
-              socketEmit("add-edge", { roomId, edge: [...currentEdges, edge] });
+              socketEmit("add-edge", { roomId, userId, edge });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "edge");
@@ -203,7 +203,7 @@ export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (id: string, updatedElementEdge: any) => {
+      ({ id, userId, updatedElementEdge }: { id: string; userId: string; updatedElementEdge: any }) => {
         set(edgesAtomState, (currentEdges) =>
           produce(
             currentEdges,
@@ -215,7 +215,7 @@ export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
               }
               const updatedEdge = draft[index];
 
-              socketEmit("add-edge", { roomId, edge: updatedEdge });
+              socketEmit("update-edge", { roomId, userId, edge: updatedEdge });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "edge");
@@ -234,20 +234,19 @@ export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      (id: string) => {
+      ({ id, userId }: { id: string; userId: string }) => {
         set(edgesAtomState, (currentEdges) =>
           produce(
             currentEdges,
             (draft) => {
               // Filter out the layer with the given ID
               const index = draft.findIndex((edge) => edge.id === id);
-              const updatedEdges = currentEdges.filter((edge) => edge.id !== id);
 
               if (index !== -1) {
                 // Remove the edge from the array in th atom state
                 draft.splice(index, 1);
-                socketEmit("add-edge", { roomId, layer: [...currentEdges, updatedEdges] });
               }
+              socketEmit("remove-edge", { roomId, userId, edgeIdsToDelete: [id] });
             },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "edge");

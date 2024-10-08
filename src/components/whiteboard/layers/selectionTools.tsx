@@ -1,10 +1,9 @@
-/* eslint-disable no-unused-vars */
 "use client";
 
-import { Bold, BringToFront, CaseSensitive, CaseUpper, Ellipsis, PaintBucket, SendToBack, Trash2 } from "lucide-react";
+import { Bold, CaseUpper, Ellipsis, PaintBucket, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 
 import { Camera, CanvasMode, Color, Layer } from "@/_types";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ import {
   layerAtomState,
   useRemoveEdge,
   useRemoveElement,
-  useSelectElement,
   useUnSelectElement,
   useUpdateElement,
 } from "@/state";
@@ -27,10 +25,12 @@ import { ToolButton } from "../ToolButton";
 
 interface SelectionToolsProps {
   camera: Camera;
+  // eslint-disable-next-line no-unused-vars
   setLastUsedColor: (color: Color) => void;
 }
 
 export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionToolsProps) => {
+  camera; // WILL USE CAMERA TO SCALE THE SELECTION TOOL
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
@@ -38,8 +38,8 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds)[0];
+    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
+    .map((item: any) => item.layerIds)[0];
 
   const boardId = useRecoilValue(boardIdState);
   const canvasState = useRecoilValue(canvasStateAtom);
@@ -100,7 +100,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
-        const newBorderType = layer.borderType === "dashed" ? "solid" : "dashed";
+        const newBorderType = layer.borderType === "DASHED" ? "solid" : "dashed";
 
         updateLayer({
           id: layerId,
@@ -192,28 +192,8 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     }
   }, [activeLayerIDs, currentUserId, edges, layers, removeEdge, removeLayer, unSelectLayer]);
 
-  if (!selectionBounds || canvasState.mode === CanvasMode.EdgeEditing) return null;
-
-  // const viewportWidth = window.innerWidth;
-  // const viewportHeight = window.innerHeight;
-
-  // const selectionToolsWidth = 200;
-  // const selectionToolsHeight = 60;
-
-  // const x = selectionBounds.width / 2 + selectionBounds.x - camera.x;
-  // const y = selectionBounds.y + camera.y;
-
-  // const x = (selectionBounds.width / 2 + selectionBounds.x) * camera.scale + camera.x;
-  // const y = selectionBounds.y * camera.scale + camera.y;
-
-  // const x = Math.min(
-  //   Math.max((selectionBounds.width / 2 + selectionBounds.x) * camera.scale + camera.x, 0),
-  //   viewportWidth - selectionToolsWidth,
-  // );
-  // const y = Math.min(
-  //   Math.max(selectionBounds.y * camera.scale + camera.y - selectionToolsHeight, 0),
-  //   viewportHeight - selectionToolsHeight,
-  // );
+  if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
+    return null;
 
   const x = selectionBounds.x - selectionBounds.width / 2;
   const y = selectionBounds.y - selectionBounds.height * 2;

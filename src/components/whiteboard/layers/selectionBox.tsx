@@ -22,8 +22,8 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds)[0];
+    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
+    .map((item: any) => item.layerIds)[0];
 
   const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
 
