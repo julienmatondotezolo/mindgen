@@ -496,7 +496,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         current: point,
       });
     },
-    [activeLayerIDs, layers, canvasState, edges, setLayers, setEdges, setCanvasState],
+    [canvasState, setLayers, edges, setEdges, setCanvasState, layers, activeLayerIDs],
   );
 
   const resizeSelectedLayer = useCallback(
@@ -1061,6 +1061,33 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       } else if (canvasState.mode === CanvasMode.Translating) {
         // Update all selected layers
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+
+        const offset = {
+          x: point.x - canvasState.current.x,
+          y: point.y - canvasState.current.y,
+        };
+
+        // Update all edges
+        edges.map((edge) => {
+          const isSource = activeLayerIDs?.includes(edge.fromLayerId);
+          const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+
+          if (!isSource && !isTarget) {
+            return edge;
+          }
+
+          const updatedStart = isSource
+            ? { ...edge.start, x: edge.start.x + offset.x, y: edge.start.y + offset.y }
+            : edge.start;
+
+          const updatedEnd = isTarget ? { ...edge.end, x: edge.end.x + offset.x, y: edge.end.y + offset.y } : edge.end;
+
+          updateEdge({
+            id: edge.id,
+            userId: currentUserId,
+            updatedElementEdge: { start: updatedStart, end: updatedEnd },
+          });
+        });
 
         for (const layer of selectedLayers) {
           // Check if the position has changed
