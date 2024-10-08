@@ -179,9 +179,9 @@ export const edgesAtomState = atom<Edge[]>({
   effects: [socketEdgeEffect],
 });
 
-export const activeEdgeIdAtom = atom<string | null>({
+export const activeEdgeIdAtom = atom({
   key: "activeEdgeIdAtom",
-  default: null,
+  default: [{}],
 });
 
 export const hoveredEdgeIdAtom = atom<string | null>({

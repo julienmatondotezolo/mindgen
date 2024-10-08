@@ -35,7 +35,9 @@ import {
   useAddElement,
   useRemoveEdge,
   useRemoveElement,
+  useSelectEdgeElement,
   useSelectElement,
+  useUnSelectEdgeElement,
   useUnSelectElement,
   useUpdateEdge,
   useUpdateElement,
@@ -162,12 +164,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  CONSTANT EDGES  ================== //
 
   const [edges, setEdges] = useRecoilState(edgesAtomState);
+  const selectEdge = useSelectEdgeElement({ roomId: boardId });
+  const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
   const addEdge = useAddEdgeElement({ roomId: boardId });
   const updateEdge = useUpdateEdge({ roomId: boardId });
   const removeEdge = useRemoveEdge({ roomId: boardId });
 
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
-  const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+  // const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
 
   const setIsEdgeNearLayer = useSetRecoilState(isEdgeNearLayerAtom);
   const setNearestLayer = useSetRecoilState(nearestLayerAtom);
@@ -253,7 +257,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       } else if (!activeLayerIDs?.includes(layerId)) {
         // setActiveLayerIDs([layerId]);
         selectLayer({ userId: currentUserId, layerIds: [layerId] });
-        setActiveEdgeId(null);
+        unSelectEdge({ userId: currentUserId });
+        // setActiveEdgeId(null);
       }
 
       setCanvasState({
@@ -272,7 +277,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       ids,
       selectLayer,
       currentUserId,
-      setActiveEdgeId,
+      unSelectEdge,
     ],
   );
 

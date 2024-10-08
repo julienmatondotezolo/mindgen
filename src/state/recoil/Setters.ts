@@ -167,11 +167,77 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
 
 /* ----------------- EDGES ----------------- */
 
+export const useSelectEdgeElement = ({ roomId }: { roomId: string }) => {
+  const { socketEmit } = useSocket();
+
+  return useRecoilCallback(
+    ({ set }) =>
+      ({ edgeIds, userId }: { edgeIds: string[]; userId: string }) => {
+        const userActiveEdges = {
+          userId,
+          edgeIds,
+        };
+
+        // Update the activeLayersAtom with the provided layer IDs
+        set(activeEdgeIdAtom, (currentActiveEdges: any) => {
+          // If there are some currentActiveEdges add the selected Layer to it
+          if (Object.keys(currentActiveEdges[0]).length === 0) {
+            socketEmit("select-edge", { roomId, userId, selectedEdge: [userActiveEdges] });
+            const mergEdges = [...currentActiveEdges, userActiveEdges];
+
+            return mergEdges.filter((obj) => Object.keys(obj).length > 0);
+          }
+
+          const result = currentActiveEdges.map((item: any) => ({ ...item }));
+
+          currentActiveEdges.forEach(() => {
+            const existingItem = result.find((existing: any) => existing.userId === userActiveEdges.userId);
+
+            if (existingItem) {
+              socketEmit("select-edge", { roomId, userId, selectedEdge: [userActiveEdges] });
+              existingItem.edgeIds = userActiveEdges.edgeIds;
+            } else {
+              socketEmit("select-edge", { roomId, userId, selectedEdge: [userActiveEdges] });
+              result.push(userActiveEdges);
+            }
+          });
+
+          return result;
+        });
+      },
+    [roomId, socketEmit],
+  );
+};
+
+export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
+  const { socketEmit } = useSocket();
+
+  return useRecoilCallback(
+    ({ set }) =>
+      ({ userId }: { userId: string }) => {
+        // Update the activeLayersAtom with the provided layer IDs
+        set(activeLayersAtom, (currentActiveEdges) => {
+          const updatedActiveEdges = currentActiveEdges.map((item: any) => {
+            if (item.userId === userId) {
+              // Emit to socket when userId matches
+              socketEmit("select-edge", { roomId, userId, selectedEdge: [{ userId, edgeIds: [] }] });
+              return { ...item, edgeIds: [] };
+            }
+            return item;
+          });
+
+          return updatedActiveEdges;
+        });
+      },
+    [roomId, socketEmit],
+  );
+};
+
 export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
   const { socketEmit } = useSocket();
 
   const addToHistory = useAddToHistoryPrivate();
-  const setActiveLayers = useSetRecoilState(activeEdgeIdAtom);
+  const setActiveEdges = useSetRecoilState(activeEdgeIdAtom);
 
   return useRecoilCallback(
     ({ set }) =>
@@ -190,9 +256,9 @@ export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
           ),
         );
 
-        setActiveLayers(edge.id);
+        setActiveEdges([edge.id]);
       },
-    [addToHistory, roomId, setActiveLayers, socketEmit],
+    [addToHistory, roomId, setActiveEdges, socketEmit],
   );
 };
 
