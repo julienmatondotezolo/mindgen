@@ -64,7 +64,7 @@ import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layer
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
-  const DEBUG_MODE = true;
+  const DEBUG_MODE = false;
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
@@ -1528,7 +1528,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         className="h-[100vh] w-[100vw] absolute inset-0"
         style={{
           backgroundPosition: `${camera.x}px ${camera.y}px`,
-          backgroundImage: `radial-gradient(${theme === "dark" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
+          backgroundImage: `radial-gradient(${theme === "white" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
           backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
         }}
         onPointerDown={handlePointerDown}

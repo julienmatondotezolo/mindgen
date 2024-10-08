@@ -3,8 +3,9 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { MousePointer2, MoveRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { MindMapDetailsProps } from "@/_types";
 import productImage from "@/assets/section/product-image.png";
-import { Button } from "@/components";
+import { Button, Whiteboard } from "@/components";
 import BlurIn from "@/components/ui/blur-in";
 // import TypingAnimation from "@/components/ui/typing-animation";
 import { Link } from "@/navigation";
@@ -123,6 +124,52 @@ function Hero() {
     },
   ];
 
+  const userMindmapDetails: MindMapDetailsProps = {
+    id: "1",
+    organizationId: "e84e5e4e-92d7-4155-acaa-710651926451",
+    layers: [
+      {
+        type: "RECTANGLE",
+        dbId: "c16a5e48-0fdb-44d2-83b8-0bfe871fa442",
+        id: "TMJODR6ULEbV9AXQKtj140",
+        x: 601,
+        y: 316,
+        height: 60,
+        width: 200,
+        fill: {
+          r: 77,
+          g: 106,
+          b: 255,
+        },
+        value: "Text",
+        valueStyle: null,
+        borderColor: null,
+        borderWidth: null,
+        borderType: null,
+        rectangleGoodText: null,
+      },
+    ],
+    edges: [],
+    name: "PRIVATE DON'T JOIN",
+    description: "",
+    creatorId: "6bfc0d55-6b20-43cd-917d-3cc59e8c6eb9",
+    creatorUsername: "emji",
+    pictureUrl: "",
+    connectedMemberPermissions: ["VIEW", "UPDATE", "DELETE", "SHARE", "EXPORT", "IMPORT", "COPY", "MANAGE_ROLES"],
+    visibility: "PRIVATE",
+    members: [
+      {
+        userId: "410f2265-78c1-4eab-892a-9d432198b666",
+        memberId: "6bfc0d55-6b20-43cd-917d-3cc59e8c6eb9",
+        username: "emji",
+        email: "emji@yopmail.com",
+        mindmapRole: "CREATOR",
+        organizationRole: "ADMIN",
+      },
+    ],
+    teams: [],
+  };
+
   return (
     <section
       ref={heroRef}
@@ -131,9 +178,12 @@ function Hero() {
       } relative bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]`}
     >
       <div className="container">
-        <div className="md:flex flex-col md:items-center text-left md:text-center">
+        <figure className="absolute top-0 left-0 w-full h-full bg-blue">
+          <Whiteboard userMindmapDetails={userMindmapDetails} />
+        </figure>
+        <div className="md:flex flex-col md:items-center text-left md:text-center ">
           <div
-            className="group md:w-[578px] my-6 relative transition-all duration-600 ease-in-out hover:border-2 border-primary-color hover:bg-[rgba(77,107,255,0.05)]"
+            className="group md:w-[578px] my-6 relative transition-all duration-600 ease-in-out hover:border-2 border-primary-color hover:bg-[rgba(77,107,255,0.05)] backdrop-filter backdrop-blur-sm"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
