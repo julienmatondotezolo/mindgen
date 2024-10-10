@@ -1444,23 +1444,19 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
-        event.preventDefault();
-        
         if (canvasState.mode === CanvasMode.Typing) return;
+        event.preventDefault();
         setCanvasState({
           mode: CanvasMode.Grab,
         });
       }
 
       if (event.code === "Enter" && canvasState.mode === CanvasMode.Edge) {
-        event.preventDefault();
         // Reset drawingEdge state when pointer is released
         setDrawingEdge({ ongoing: false });
       }
 
       if (event.code === "Backspace" && activeLayerIDs?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
-        event.preventDefault();
-
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
         const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
@@ -1474,9 +1470,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
 
-      if (event.code === "Backspace" && activeEdgeId[0] && canvasState.mode === CanvasMode.EdgeActive) {
-        event.preventDefault();
-
+      if (event.code === "Backspace" && activeEdgeId?.length >= 0 && activeEdgeId[0] && canvasState.mode === CanvasMode.EdgeActive) {
         removeEdge({
           id: activeEdgeId[0],
           userId: currentUserId,
@@ -1490,9 +1484,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.code === "Space") {
-        event.preventDefault();
-
         if (canvasState.mode === CanvasMode.Typing) return;
+        event.preventDefault();
         setCanvasState({
           mode: CanvasMode.None,
         });
