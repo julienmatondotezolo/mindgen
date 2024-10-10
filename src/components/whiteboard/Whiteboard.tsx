@@ -59,7 +59,6 @@ import { CursorPresence } from "./collaborate";
 import { EdgePreview, EdgeSelectionBox, EdgeSelectionTools, ShadowEdge } from "./edges";
 import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layers";
 import { LayerPreview } from "./layers/LayerPreview";
-import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
   const DEBUG_MODE = false;
@@ -1642,7 +1641,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <CursorPresence />
         </g>
       </svg>
-      <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
       {layers?.length > 0 && (
         <div className="fixed bottom-4 left-4 z-10 space-x-2">
           <figure className="flex items-center space-x-2 float-left">

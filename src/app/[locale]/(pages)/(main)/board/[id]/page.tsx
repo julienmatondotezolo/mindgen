@@ -11,7 +11,7 @@ import { generateUsername } from "unique-username-generator";
 import { getMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps, MindMapMessages, User } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
-import { BackDropGradient, Spinner, Whiteboard } from "@/components";
+import { BackDropGradient, Spinner, Toolbar, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
@@ -185,6 +185,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
           <div className="w-full">
             <div className="relative w-full h-full">
+              <Toolbar />
               {!userMindmapDetails && currentCollaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
