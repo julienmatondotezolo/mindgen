@@ -5,8 +5,10 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQueryClient } from 'react-query';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
+import { updateMindmapById } from '@/_services/mindgen/mindgenService';
 import {
   Camera,
   CanvasMode,
@@ -17,6 +19,7 @@ import {
   Layer,
   LayerType,
   MindMapDetailsProps,
+  Organization,
   Point,
   Side,
   XYWH,
@@ -32,6 +35,7 @@ import {
   isEdgeNearLayerAtom,
   layerAtomState,
   nearestLayerAtom,
+  selectedOrganizationState,
   useAddEdgeElement,
   useAddElement,
   useRemoveEdge,
@@ -46,6 +50,7 @@ import {
 import {
   calculateNewLayerPositions,
   connectionIdToColor,
+  emptyMindMapObject,
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   getHandlePosition,
@@ -70,6 +75,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const [pictureUrl, setPictureUrl] = useState("");
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const [showResetButton, setShowResetButton] = useState(false);
@@ -97,6 +103,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  SHADOW EDGE & LAYER STATE  ================== //
 
+  const [layers, setLayers] = useRecoilState(layerAtomState);
+  const [edges, setEdges] = useRecoilState(edgesAtomState);
+
   const [shadowState, setShadowState] = useState<{
     showShadow: boolean;
     startPosition: Point | null;
@@ -113,9 +122,66 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     layer: null,
   });
 
-  // ================  CONSTANT LAYERS  ================== //
+  // ================  USE QUERY & SAVE MINDMAPS  ================== //
 
-  const [layers, setLayers] = useRecoilState(layerAtomState);
+  const queryClient = useQueryClient();
+
+  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+
+  const updateMindmapMutation = useMutation(updateMindmapById, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmaps");
+    },
+  });
+
+  const takeScreenshot = useCallback(async () => {
+    const canvasElement = document.getElementById('canvas');
+
+    if (canvasElement) {
+      canvasElement.style.color = "white";
+      canvasElement.style.fontFamily = 'sans-serif';
+      canvasElement.style.backgroundColor = theme === "dark" ? "#050713" : "#fdfdff";
+
+      const canvas = await html2canvas(canvasElement);
+      const base64Image = canvas.toDataURL("image/png");
+
+      setPictureUrl(base64Image);
+    }
+  }, []);
+
+  const saveMindmap = useCallback(() => {
+    const newMindmapObject = emptyMindMapObject({
+      name: userMindmapDetails.name,
+      description: userMindmapDetails.description,
+      layers,
+      edges,
+      organizationId: selectedOrga!.id,
+      visibility: userMindmapDetails.visibility,
+      pictureUrl: pictureUrl, 
+    });
+
+    updateMindmapMutation.mutate({
+      session: session,
+      mindmapId: userMindmapDetails.id,
+      mindmapObject: newMindmapObject,
+    });
+  }, [edges, layers, pictureUrl, selectedOrga, session, updateMindmapMutation, userMindmapDetails]);
+
+  useEffect(() => {
+    takeScreenshot(); // Run on the first render only
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      takeScreenshot();
+      saveMindmap();
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [saveMindmap, takeScreenshot]);
+
+  // ================  CONSTANT LAYERS  ================== //
 
   const allActiveLayers: any = useRecoilValue(activeLayersAtom);
   const activeLayerIDs = allActiveLayers
@@ -160,8 +226,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const removeLayer = useRemoveElement({ roomId: boardId });
 
   // ================  CONSTANT EDGES  ================== //
-
-  const [edges, setEdges] = useRecoilState(edgesAtomState);
 
   const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
   const activeEdgeId = allActiveEdges
@@ -1513,28 +1577,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     };
   }, [handleMouseMove]);
 
-  const takeScreenshot = useCallback(() => {
-    const canvasElement = document.getElementById('canvas');
-
-    if (canvasElement) {
-      canvasElement.style.color = "white";
-      canvasElement.style.fontFamily = 'sans-serif';
-        
-      html2canvas(canvasElement).then((canvas: any) => {
-        const link = document.createElement("a");
-
-        link.href = canvas.toDataURL("image/png");
-        link.download = "whiteboard_screenshot.png";
-        link.click();
-      });
-    }
-  }, []);
-
   return (
-    <main className="h-full w-full relative  touch-none select-none">
-      <button onClick={takeScreenshot} className="absolute bottom-24 left-4 z-10">
-        Take Screenshot
-      </button>
+    <main className="h-full w-full relative touch-none select-none">
       {DEBUG_MODE && (
         <div className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-black border border-gray-300 p-2 rounded shadow-md dark:text-primary-color">
           <h3 className="font-bold mb-1">Canvas State:</h3>
