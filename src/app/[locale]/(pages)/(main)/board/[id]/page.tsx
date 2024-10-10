@@ -15,7 +15,7 @@ import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
-import { usePageBottom, useSocket } from "@/hooks";
+import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
   boardIdState,
