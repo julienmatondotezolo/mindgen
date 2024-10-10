@@ -78,14 +78,7 @@ function MindMapBoards() {
                   backgroundSize: "cover",
                   backgroundRepeat: "no-repeat",
                 }}
-              >
-                <div
-                  onClick={() => handleUpdate(mindmap.name, mindmap.description)}
-                  className="z-50 absolute top-2 left-2 group-hover:opacity-100 opacity-0 transition duration-200 ease-in-out p-2 bg-primary-opaque border-grey-blue border-2 rounded-[10%]"
-                >
-                  <Image src={settingsIcon} height={size} width={size} alt="document icon" />
-                </div>
-              </figure>
+              />
             </Link>
             <article className="flex flex-wrap justify-between items-start">
               <div>
@@ -98,7 +91,7 @@ function MindMapBoards() {
                 </p>
                 <p className="text-xs text-grey">{formatDate(mindmap.createdAt, dateText)}</p>
               </div>
-              {checkPermission(mindmap.connectedCollaboratorPermissions, "DELETE") && (
+              {checkPermission(mindmap.connectedMemberPermissions, "DELETE") && (
                 <figure
                   onClick={() => handleDelete(mindmap.id)}
                   className="bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%"

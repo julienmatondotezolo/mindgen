@@ -13,7 +13,7 @@ import { updateMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps, Organization } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
-import { Sheet, SheetContent, SheetTrigger, Switch } from "@/components/ui";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, Switch } from "@/components/ui";
 import { edgesAtomState, layerAtomState, selectedOrganizationState } from "@/state";
 import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
@@ -120,7 +120,9 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         <ul className="w-full h-full">
           <form className="h-full flex flex-col justify-between pt-4" onSubmit={handleSubmit}>
             <section className="space-y-4">
-              <p className="font-bold text-xl">{uppercaseFirstLetter(text("save"))} mind map</p>
+              <SheetHeader>
+                <SheetTitle>{uppercaseFirstLetter(text("save"))} mind map</SheetTitle>
+              </SheetHeader>
               <section>
                 <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("name")}</p>
                 <Input

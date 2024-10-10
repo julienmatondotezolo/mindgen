@@ -1,22 +1,26 @@
 /* eslint-disable no-unused-vars */
 import { Circle, Hand, MousePointer2, MoveRight, Redo2, Square, Type, Undo2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import React from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { CanvasMode, CanvasState, LayerType } from "@/_types";
-import { activeEdgeIdAtom, activeLayersAtom, useUndoRedo } from "@/state";
+import { CanvasMode, LayerType } from "@/_types";
+import { activeEdgeIdAtom, activeLayersAtom, canvasStateAtom, useUndoRedo } from "@/state";
 
 import { ToolButton } from "./ToolButton";
 
-interface ToolbarProps {
-  canvasState: CanvasState;
-  setCanvasState: (newState: CanvasState) => void;
-}
+const Toolbar = () => {
+  const session: any = useSession();
+  const currentUserId = session.data?.session?.user?.id;
 
-const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const { undo, redo } = useUndoRedo();
   const setActiveLayerIDs = useSetRecoilState(activeLayersAtom);
-  const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
+
+  const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
+  const activeEdgeId = allActiveEdges
+    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
+    .map((item: any) => item.edgeIds)[0];
 
   return (
     <div className="fixed left-2/4 -translate-x-2/4 top-5 z-50">
@@ -71,7 +75,7 @@ const Toolbar = ({ canvasState, setCanvasState }: ToolbarProps) => {
                 mode: CanvasMode.Edge,
               })
             }
-            isActive={canvasState.mode === CanvasMode.Edge || activeEdgeId === ""}
+            isActive={canvasState.mode === CanvasMode.Edge || (activeEdgeId && activeEdgeId[0] === "")}
           />
           <ToolButton
             icon={Type}

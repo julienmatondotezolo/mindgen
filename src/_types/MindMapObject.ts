@@ -1,7 +1,7 @@
 export type MindmapObject = {
   createdAt: string;
   creatorId: string;
-  connectedCollaboratorPermissions: string[];
+  connectedMemberPermissions: string[];
   creatorUsername: string;
   description: string;
   id: string;

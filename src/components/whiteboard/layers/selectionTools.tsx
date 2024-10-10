@@ -185,7 +185,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       if (layer) {
         edges.forEach((edge) => {
           if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
-            removeEdge(edge.id);
+            removeEdge({ id: edge.id, userId: currentUserId });
           }
         });
       }

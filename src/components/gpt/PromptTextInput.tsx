@@ -6,12 +6,13 @@ import React, { useCallback, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedTSummaryText } from "@/_services";
-import { CustomSession, MindMapDetailsProps } from "@/_types";
+import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
 import { Button, Textarea } from "@/components/";
 import { useDidUpdateEffect } from "@/hooks";
 import {
+  canvasStateAtom,
   edgesAtomState,
   layerAtomState,
   promptResultState,
@@ -36,6 +37,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
   const userMemberID = findCollaboratorId(safeSession?.data.session.user.id, members);
 
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [, setPromptValue] = useRecoilState(promptValueState);
   const setPromptResult = useSetRecoilState(promptResultState);
   const [answerMessages, setAnswerMessages] = useRecoilState<ChatMessageProps[]>(streamedAnswersState);
@@ -113,6 +115,10 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
   const handleSendPrompt = (event: any) => {
     if (text) {
+      setCanvasState({
+        mode: CanvasMode.Typing,
+      });
+
       if (event.code === "Enter") {
         event.preventDefault();
         sendPrompt();
@@ -126,7 +132,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   };
 
   return (
-    <form className="relative flex flex-row items-start max-h-36 overflow-y-auto py-2 pr-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:border-slate-800 dark:bg-slate-600 dark:bg-opacity-20">
+    <form className="relative flex flex-row items-start max-h-36 overflow-y-auto p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
       <Textarea
         className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
         placeholder={chatText("promptInput")}

@@ -1,11 +1,14 @@
 /* eslint-disable prettier/prettier */
+import html2canvas from 'html2canvas';
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQueryClient } from 'react-query';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
+import { updateMindmapById } from '@/_services/mindgen/mindgenService';
 import {
   Camera,
   CanvasMode,
@@ -16,6 +19,7 @@ import {
   Layer,
   LayerType,
   MindMapDetailsProps,
+  Organization,
   Point,
   Side,
   XYWH,
@@ -31,6 +35,7 @@ import {
   isEdgeNearLayerAtom,
   layerAtomState,
   nearestLayerAtom,
+  selectedOrganizationState,
   useAddEdgeElement,
   useAddElement,
   useRemoveEdge,
@@ -45,6 +50,7 @@ import {
 import {
   calculateNewLayerPositions,
   connectionIdToColor,
+  emptyMindMapObject,
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   getHandlePosition,
@@ -59,10 +65,9 @@ import { CursorPresence } from "./collaborate";
 import { EdgePreview, EdgeSelectionBox, EdgeSelectionTools, ShadowEdge } from "./edges";
 import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layers";
 import { LayerPreview } from "./layers/LayerPreview";
-import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
-  const DEBUG_MODE = true;
+  const DEBUG_MODE = false;
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
@@ -70,6 +75,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const [pictureUrl, setPictureUrl] = useState("");
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const [showResetButton, setShowResetButton] = useState(false);
@@ -97,6 +103,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  SHADOW EDGE & LAYER STATE  ================== //
 
+  const [layers, setLayers] = useRecoilState(layerAtomState);
+  const [edges, setEdges] = useRecoilState(edgesAtomState);
+
   const [shadowState, setShadowState] = useState<{
     showShadow: boolean;
     startPosition: Point | null;
@@ -113,9 +122,68 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     layer: null,
   });
 
-  // ================  CONSTANT LAYERS  ================== //
+  // ================  USE QUERY & SAVE MINDMAPS  ================== //
 
-  const [layers, setLayers] = useRecoilState(layerAtomState);
+  const queryClient = useQueryClient();
+
+  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+
+  const updateMindmapMutation = useMutation(updateMindmapById, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmaps");
+    },
+  });
+
+  const takeScreenshot = useCallback(async () => {
+    const canvasElement = document.getElementById('canvas');
+
+    if (canvasElement) {
+      canvasElement.style.color = "white";
+      canvasElement.style.fontFamily = 'sans-serif';
+      canvasElement.style.backgroundColor = theme === "dark" ? "#050713" : "#fdfdff";
+
+      const canvas = await html2canvas(canvasElement);
+      const base64Image = canvas.toDataURL("image/png");
+
+      canvasElement.style.backgroundColor = 'transparent';
+
+      setPictureUrl(base64Image);
+    }
+  }, []);
+
+  const saveMindmap = useCallback(() => {
+    const newMindmapObject = emptyMindMapObject({
+      name: userMindmapDetails.name,
+      description: userMindmapDetails.description,
+      layers,
+      edges,
+      organizationId: selectedOrga!.id,
+      visibility: userMindmapDetails.visibility,
+      pictureUrl: pictureUrl, 
+    });
+
+    updateMindmapMutation.mutate({
+      session: session,
+      mindmapId: userMindmapDetails.id,
+      mindmapObject: newMindmapObject,
+    });
+  }, [edges, layers, pictureUrl, selectedOrga, session, updateMindmapMutation, userMindmapDetails]);
+
+  useEffect(() => {
+    takeScreenshot(); // Run on the first render only
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      takeScreenshot();
+      saveMindmap();
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [saveMindmap, takeScreenshot]);
+
+  // ================  CONSTANT LAYERS  ================== //
 
   const allActiveLayers: any = useRecoilValue(activeLayersAtom);
   const activeLayerIDs = allActiveLayers
@@ -161,12 +229,38 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  CONSTANT EDGES  ================== //
 
-  const [edges, setEdges] = useRecoilState(edgesAtomState);
-
   const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
   const activeEdgeId = allActiveEdges
     .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
     .map((item: any) => item.edgeIds)[0];
+
+  const allOtherUserEdgeSelection = allActiveEdges.filter((activeEdges: any) => activeEdges.userId !== currentUserId);
+
+  // Create a Map to store selections for quick lookup
+  const selectionEdgesMap = new Map();
+
+  // Populate the selectionMap
+  allOtherUserEdgeSelection.forEach((selection: any) => {
+    selectionEdgesMap.set(selection.userId, selection.edgeIds);
+  });
+
+  // Merge users with their selections
+  const otherUserEdgeSelections: any = allOtherUsers.map((user) => ({
+    ...user,
+    edgeIds: selectionEdgesMap.get(user.id) || [],
+  }));
+
+  const edgeIdsToColorSelection = useMemo(() => {
+    const edgeIdsToColorSelection: Record<string, string> = {};
+
+    for (const userSelection of otherUserEdgeSelections) {
+      for (const edgeId of userSelection.edgeIds) {
+        edgeIdsToColorSelection[edgeId] = connectionIdToColor(userSelection.socketIndex);
+      }
+    };
+
+    return edgeIdsToColorSelection;
+  }, [otherUserEdgeSelections]);
     
   const selectEdge = useSelectEdgeElement({ roomId: boardId });
   const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
@@ -799,7 +893,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeClick = useCallback(
     (e: React.PointerEvent, edgeId: string) => {
+      const isAlreadySelected = allOtherUserEdgeSelection.some((otherUser: any) => {
+        if (otherUser.edgeIds) {
+          return otherUser.edgeIds.includes(edgeId);
+        }
+      });
+
+      if (isAlreadySelected) return;
+
       e.stopPropagation();
+
       selectEdge({ userId: currentUserId, edgeIds: [edgeId] });
       setHoveredEdgeId(null);
       handleUnSelectLayer();
@@ -807,7 +910,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         mode: CanvasMode.EdgeActive,
       });
     },
-    [currentUserId, handleUnSelectLayer, selectEdge, setCanvasState, setHoveredEdgeId],
+    [allOtherUserEdgeSelection, currentUserId, handleUnSelectLayer, selectEdge, setCanvasState, setHoveredEdgeId],
   );
 
   // ================  DRAWING EDGES  ================== //
@@ -1408,6 +1511,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
         if (canvasState.mode === CanvasMode.Typing) return;
+        event.preventDefault();
         setCanvasState({
           mode: CanvasMode.Grab,
         });
@@ -1432,7 +1536,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
 
-      if (event.code === "Backspace" && activeEdgeId[0] && canvasState.mode === CanvasMode.EdgeActive) {
+      if (event.code === "Backspace" && activeEdgeId?.length >= 0 && activeEdgeId[0] && canvasState.mode === CanvasMode.EdgeActive) {
         removeEdge({
           id: activeEdgeId[0],
           userId: currentUserId,
@@ -1447,6 +1551,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.code === "Space") {
         if (canvasState.mode === CanvasMode.Typing) return;
+        event.preventDefault();
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1475,7 +1580,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   }, [handleMouseMove]);
 
   return (
-    <main className="h-full w-full relative  touch-none select-none">
+    <main className="h-full w-full relative touch-none select-none">
       {DEBUG_MODE && (
         <div className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-black border border-gray-300 p-2 rounded shadow-md dark:text-primary-color">
           <h3 className="font-bold mb-1">Canvas State:</h3>
@@ -1519,91 +1624,92 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </div>
         </div>
       )}
-      <svg
-        ref={svgRef}
-        className="h-[100vh] w-[100vw] absolute inset-0"
-        style={{
-          backgroundPosition: `${camera.x}px ${camera.y}px`,
-          backgroundImage: `radial-gradient(${theme === "dark" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
-          backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
-        }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerLeave}
-      >
-        <g
+      <figure id='canvas' className="h-[100vh] w-[100vw]">
+        <svg
+          ref={svgRef}
+          className="h-full w-full absolute inset-0"
           style={{
-            transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
-            transformOrigin: "center",
-            transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
-            cursor: "pointer",
+            backgroundPosition: `${camera.x}px ${camera.y}px`,
+            backgroundImage: `radial-gradient(${theme === "dark" ? "#111212FF" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
+            backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
           }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerLeave}
         >
-          {edges.map((edge, index) => 
-            <EdgePreview
-              key={index}
-              edge={edge}
-              onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
-              ARROW_SIZE={ARROW_SIZE}
-              selectionColor={layerIdsToColorSelection[edge.id]} 
-            />
-          )}
-          {/* {layers.map((layer, index) => ( */}
-          {sortLayersBySelection(layers).map((layer, index) => (
-            <LayerPreview
-              key={index}
-              layer={layer}
-              onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
-              selectionColor={layerIdsToColorSelection[layer.id]}
-            />
-          ))}
-          {shadowState.showShadow && shadowState.edgePosition && (
-            <ShadowEdge
-              start={shadowState.startPosition}
-              end={shadowState.edgePosition}
-              fromPosition={shadowState.fromHandlePosition}
-            />
-          )}
-          {shadowState.showShadow && shadowState.layerPosition && (
-            <ShadowLayer
-              type={shadowState.layer!.type}
-              position={shadowState.layerPosition}
-              width={shadowState.layer!.width}
-              height={shadowState.layer!.height}
-              fill={shadowState.layer!.fill}
-            />
-          )}
-          {/* {activeEdgeId && (
+          <g
+            style={{
+              transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
+              transformOrigin: "center",
+              transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
+              cursor: "pointer",
+            }}
+          >
+            {edges.map((edge, index) => 
+              <EdgePreview
+                key={index}
+                edge={edge}
+                onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
+                ARROW_SIZE={ARROW_SIZE}
+                selectionColor={edgeIdsToColorSelection[edge.id]} 
+              />
+            )}
+            {/* {layers.map((layer, index) => ( */}
+            {sortLayersBySelection(layers).map((layer, index) => (
+              <LayerPreview
+                key={index}
+                layer={layer}
+                onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
+                selectionColor={layerIdsToColorSelection[layer.id]}
+              />
+            ))}
+            {shadowState.showShadow && shadowState.edgePosition && (
+              <ShadowEdge
+                start={shadowState.startPosition}
+                end={shadowState.edgePosition}
+                fromPosition={shadowState.fromHandlePosition}
+              />
+            )}
+            {shadowState.showShadow && shadowState.layerPosition && (
+              <ShadowLayer
+                type={shadowState.layer!.type}
+                position={shadowState.layerPosition}
+                width={shadowState.layer!.width}
+                height={shadowState.layer!.height}
+                fill={shadowState.layer!.fill}
+              />
+            )}
+            {/* {activeEdgeId && (
             <EdgeSelectionBox
               edge={edges.find((edge) => edge.id === activeEdgeId[0])!}
               onHandlePointerDown={handleEdgeHandlePointerDown}
             />
           )} */}
-          <EdgeSelectionBox
-            edge={edges.find((edge) => activeEdgeId?.includes(edge.id))!}
-            onHandlePointerDown={handleEdgeHandlePointerDown}
-          />
-          <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
-          <LayerHandles
-            onMouseEnter={onHandleMouseEnter}
-            onMouseLeave={onHandleMouseLeave}
-            onPointerDown={onHandleMouseDown}
-            onPointerUp={onHandleMouseUp}
-          />
-          {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
-            <rect
-              className="fill-blue-500/5 stroke-blue-500 stroke-1"
-              x={Math.min(canvasState.origin.x, canvasState.current.x)}
-              y={Math.min(canvasState.origin.y, canvasState.current.y)}
-              width={Math.abs(canvasState.origin.x - canvasState.current.x)}
-              height={Math.abs(canvasState.origin.y - canvasState.current.y)}
+            <EdgeSelectionBox
+              edge={edges.find((edge) => activeEdgeId?.includes(edge.id))!}
+              onHandlePointerDown={handleEdgeHandlePointerDown}
             />
-          )}
-          <CursorPresence />
-        </g>
-      </svg>
-      <Toolbar canvasState={canvasState} setCanvasState={setCanvasState} />
+            <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
+            <LayerHandles
+              onMouseEnter={onHandleMouseEnter}
+              onMouseLeave={onHandleMouseLeave}
+              onPointerDown={onHandleMouseDown}
+              onPointerUp={onHandleMouseUp}
+            />
+            {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
+              <rect
+                className="fill-blue-500/5 stroke-blue-500 stroke-1"
+                x={Math.min(canvasState.origin.x, canvasState.current.x)}
+                y={Math.min(canvasState.origin.y, canvasState.current.y)}
+                width={Math.abs(canvasState.origin.x - canvasState.current.x)}
+                height={Math.abs(canvasState.origin.y - canvasState.current.y)}
+              />
+            )}
+            <CursorPresence />
+          </g>
+        </svg>
+      </figure>
       {layers?.length > 0 && (
         <div className="fixed bottom-4 left-4 z-10 space-x-2">
           <figure className="flex items-center space-x-2 float-left">
@@ -1632,3 +1738,4 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 };
 
 export { Whiteboard };
+

@@ -116,7 +116,7 @@
   }
 
   .promptContainer {
-    @apply dark:bg-slate-800 rounded-lg p-6 box-content;
+    @apply bg-slate-100 dark:bg-slate-800 rounded-lg p-6 box-content;
   }
 
   .promptContainer > h1 {
