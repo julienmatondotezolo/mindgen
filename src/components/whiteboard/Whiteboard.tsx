@@ -1444,6 +1444,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
+        event.preventDefault();
         if (canvasState.mode === CanvasMode.Typing) return;
         setCanvasState({
           mode: CanvasMode.Grab,
