@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import html2canvas from 'html2canvas';
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -1512,8 +1513,28 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     };
   }, [handleMouseMove]);
 
+  const takeScreenshot = useCallback(() => {
+    const canvasElement = document.getElementById('canvas');
+
+    if (canvasElement) {
+      canvasElement.style.color = "white";
+      canvasElement.style.fontFamily = 'sans-serif';
+        
+      html2canvas(canvasElement).then((canvas: any) => {
+        const link = document.createElement("a");
+
+        link.href = canvas.toDataURL("image/png");
+        link.download = "whiteboard_screenshot.png";
+        link.click();
+      });
+    }
+  }, []);
+
   return (
     <main className="h-full w-full relative  touch-none select-none">
+      <button onClick={takeScreenshot} className="absolute bottom-24 left-4 z-10">
+        Take Screenshot
+      </button>
       {DEBUG_MODE && (
         <div className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-black border border-gray-300 p-2 rounded shadow-md dark:text-primary-color">
           <h3 className="font-bold mb-1">Canvas State:</h3>
@@ -1557,90 +1578,92 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </div>
         </div>
       )}
-      <svg
-        ref={svgRef}
-        className="h-[100vh] w-[100vw] absolute inset-0"
-        style={{
-          backgroundPosition: `${camera.x}px ${camera.y}px`,
-          backgroundImage: `radial-gradient(${theme === "dark" ? "#111212FF" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
-          backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
-        }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerLeave}
-      >
-        <g
+      <figure id='canvas' className="h-[100vh] w-[100vw]">
+        <svg
+          ref={svgRef}
+          className="h-full w-full absolute inset-0"
           style={{
-            transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
-            transformOrigin: "center",
-            transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
-            cursor: "pointer",
+            backgroundPosition: `${camera.x}px ${camera.y}px`,
+            backgroundImage: `radial-gradient(${theme === "dark" ? "#111212FF" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
+            backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
           }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerLeave}
         >
-          {edges.map((edge, index) => 
-            <EdgePreview
-              key={index}
-              edge={edge}
-              onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
-              ARROW_SIZE={ARROW_SIZE}
-              selectionColor={edgeIdsToColorSelection[edge.id]} 
-            />
-          )}
-          {/* {layers.map((layer, index) => ( */}
-          {sortLayersBySelection(layers).map((layer, index) => (
-            <LayerPreview
-              key={index}
-              layer={layer}
-              onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
-              selectionColor={layerIdsToColorSelection[layer.id]}
-            />
-          ))}
-          {shadowState.showShadow && shadowState.edgePosition && (
-            <ShadowEdge
-              start={shadowState.startPosition}
-              end={shadowState.edgePosition}
-              fromPosition={shadowState.fromHandlePosition}
-            />
-          )}
-          {shadowState.showShadow && shadowState.layerPosition && (
-            <ShadowLayer
-              type={shadowState.layer!.type}
-              position={shadowState.layerPosition}
-              width={shadowState.layer!.width}
-              height={shadowState.layer!.height}
-              fill={shadowState.layer!.fill}
-            />
-          )}
-          {/* {activeEdgeId && (
+          <g
+            style={{
+              transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
+              transformOrigin: "center",
+              transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
+              cursor: "pointer",
+            }}
+          >
+            {edges.map((edge, index) => 
+              <EdgePreview
+                key={index}
+                edge={edge}
+                onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
+                ARROW_SIZE={ARROW_SIZE}
+                selectionColor={edgeIdsToColorSelection[edge.id]} 
+              />
+            )}
+            {/* {layers.map((layer, index) => ( */}
+            {sortLayersBySelection(layers).map((layer, index) => (
+              <LayerPreview
+                key={index}
+                layer={layer}
+                onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
+                selectionColor={layerIdsToColorSelection[layer.id]}
+              />
+            ))}
+            {shadowState.showShadow && shadowState.edgePosition && (
+              <ShadowEdge
+                start={shadowState.startPosition}
+                end={shadowState.edgePosition}
+                fromPosition={shadowState.fromHandlePosition}
+              />
+            )}
+            {shadowState.showShadow && shadowState.layerPosition && (
+              <ShadowLayer
+                type={shadowState.layer!.type}
+                position={shadowState.layerPosition}
+                width={shadowState.layer!.width}
+                height={shadowState.layer!.height}
+                fill={shadowState.layer!.fill}
+              />
+            )}
+            {/* {activeEdgeId && (
             <EdgeSelectionBox
               edge={edges.find((edge) => edge.id === activeEdgeId[0])!}
               onHandlePointerDown={handleEdgeHandlePointerDown}
             />
           )} */}
-          <EdgeSelectionBox
-            edge={edges.find((edge) => activeEdgeId?.includes(edge.id))!}
-            onHandlePointerDown={handleEdgeHandlePointerDown}
-          />
-          <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
-          <LayerHandles
-            onMouseEnter={onHandleMouseEnter}
-            onMouseLeave={onHandleMouseLeave}
-            onPointerDown={onHandleMouseDown}
-            onPointerUp={onHandleMouseUp}
-          />
-          {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
-            <rect
-              className="fill-blue-500/5 stroke-blue-500 stroke-1"
-              x={Math.min(canvasState.origin.x, canvasState.current.x)}
-              y={Math.min(canvasState.origin.y, canvasState.current.y)}
-              width={Math.abs(canvasState.origin.x - canvasState.current.x)}
-              height={Math.abs(canvasState.origin.y - canvasState.current.y)}
+            <EdgeSelectionBox
+              edge={edges.find((edge) => activeEdgeId?.includes(edge.id))!}
+              onHandlePointerDown={handleEdgeHandlePointerDown}
             />
-          )}
-          <CursorPresence />
-        </g>
-      </svg>
+            <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
+            <LayerHandles
+              onMouseEnter={onHandleMouseEnter}
+              onMouseLeave={onHandleMouseLeave}
+              onPointerDown={onHandleMouseDown}
+              onPointerUp={onHandleMouseUp}
+            />
+            {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
+              <rect
+                className="fill-blue-500/5 stroke-blue-500 stroke-1"
+                x={Math.min(canvasState.origin.x, canvasState.current.x)}
+                y={Math.min(canvasState.origin.y, canvasState.current.y)}
+                width={Math.abs(canvasState.origin.x - canvasState.current.x)}
+                height={Math.abs(canvasState.origin.y - canvasState.current.y)}
+              />
+            )}
+            <CursorPresence />
+          </g>
+        </svg>
+      </figure>
       {layers?.length > 0 && (
         <div className="fixed bottom-4 left-4 z-10 space-x-2">
           <figure className="flex items-center space-x-2 float-left">
@@ -1669,3 +1692,4 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 };
 
 export { Whiteboard };
+
