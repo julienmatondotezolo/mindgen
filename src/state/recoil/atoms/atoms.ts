@@ -183,7 +183,7 @@ const socketActiveEdgeEffect = ({ setSelf }: any) => {
 
       // Then, update layerIds for matching users
       socketSelectedData.forEach((selecteData: any) => {
-        const existingItem = result.find((existing: any) => existing.edgeIds === selecteData.edgeIds);
+        const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
 
         if (existingItem) {
           const existingEdgeIds = selecteData.edgeIds;
