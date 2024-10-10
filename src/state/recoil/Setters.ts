@@ -216,13 +216,15 @@ export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
     ({ set }) =>
       ({ userId }: { userId: string }) => {
         // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, (currentActiveEdges) => {
+        set(activeEdgeIdAtom, (currentActiveEdges) => {
           const updatedActiveEdges = currentActiveEdges.map((item: any) => {
             if (item.userId === userId) {
               // Emit to socket when userId matches
               socketEmit("select-edge", { roomId, userId, selectedEdge: [{ userId, edgeIds: [] }] });
               return { ...item, edgeIds: [] };
             }
+
+            // return { userId, edgeIds: [] };
             return item;
           });
 

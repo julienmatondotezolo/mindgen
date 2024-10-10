@@ -112,7 +112,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [queryClient, setIsOpen]);
 
   // Update state when input changes
   const handleMember = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -183,7 +183,7 @@ const socketActiveEdgeEffect = ({ setSelf }: any) => {
 
       // Then, update layerIds for matching users
       socketSelectedData.forEach((selecteData: any) => {
-        const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
+        const existingItem = result.find((existing: any) => existing.edgeIds === selecteData.edgeIds);
 
         if (existingItem) {
           const existingEdgeIds = selecteData.edgeIds;
@@ -199,11 +199,11 @@ const socketActiveEdgeEffect = ({ setSelf }: any) => {
   };
 
   // Attach the event listener when the effect runs
-  socket.on("remote-select-layer", handleAddActiveEdge);
+  socket.on("remote-select-edge", handleAddActiveEdge);
 
   // Return a cleanup function to detach the event listener when the effect is no longer needed
   return () => {
-    socket.off("remote-select-layer", handleAddActiveEdge);
+    socket.off("remote-select-edge", handleAddActiveEdge);
   };
 };
 

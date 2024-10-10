@@ -64,7 +64,7 @@ import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layer
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
-  const DEBUG_MODE = false;
+  const DEBUG_MODE = true;
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
@@ -688,11 +688,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "START" | "MIDDLE" | "END", point: Point) => {
-      if(activeEdgeId)
+      if(activeEdgeId[0])
         setCanvasState({
           mode: CanvasMode.EdgeEditing,
           editingEdge: {
-            id: activeEdgeId,
+            id: activeEdgeId[0],
             handlePosition: position,
             startPoint: point,
           },
@@ -1053,7 +1053,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
-        console.log("Active edge:", activeEdgeId);
         handleUnSelectLayer();
         unSelectEdge({ userId: currentUserId });
         setCanvasState({
@@ -1248,7 +1247,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [camera, canvasState, handleUnSelectLayer, setCanvasState, layers, edges, activeLayerIDs, updateEdge, currentUserId, updateLayer, drawingEdge, unSelectEdge, whiteboardText, addLayer, selectLayer, insertLayer],
+    [camera, canvasState, handleUnSelectLayer, unSelectEdge, currentUserId, setCanvasState, layers, edges, activeLayerIDs, updateEdge, updateLayer, drawingEdge, whiteboardText, addLayer, selectLayer, insertLayer],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -1434,9 +1433,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
 
-      if (event.code === "Backspace" && activeEdgeId && canvasState.mode === CanvasMode.EdgeActive) {
+      if (event.code === "Backspace" && activeEdgeId[0] && canvasState.mode === CanvasMode.EdgeActive) {
         removeEdge({
-          id: activeEdgeId,
+          id: activeEdgeId[0],
           userId: currentUserId,
         });
         unSelectEdge({ userId: currentUserId });
@@ -1497,10 +1496,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             {allActiveEdges.map((activeEdge: any, index: any) => (
               <section key={index}>
-                <div>{JSON.stringify(activeEdge, null, 2)}</div>
-                <p>[CURRENT USER ID]: {currentUserId}</p>
                 <p>{activeEdge.userId === currentUserId ? "current user" : activeEdge.userId}</p>
-                <pre>{JSON.stringify(activeEdge.layerIds, null, 2)}</pre>
+                <pre>{JSON.stringify(activeEdge.edgeIds, null, 2)}</pre>
               </section>
             ))}
             {/*             
@@ -1528,7 +1525,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         className="h-[100vh] w-[100vw] absolute inset-0"
         style={{
           backgroundPosition: `${camera.x}px ${camera.y}px`,
-          backgroundImage: `radial-gradient(${theme === "white" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
+          backgroundImage: `radial-gradient(${theme === "dark" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
           backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
         }}
         onPointerDown={handlePointerDown}
@@ -1555,7 +1552,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                   { x: 0, y: 0 },
                   { x: 0, y: 0 },
                 ];
-            const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId;
+            const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId?.includes(edge.id);
             const pathString =
               edge.start && edge.end
                 ? `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`
@@ -1688,7 +1685,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           )}
           {activeEdgeId && (
             <EdgeSelectionBox
-              edge={edges.find((edge) => edge.id === activeEdgeId)!}
+              edge={edges.find((edge) => edge.id === activeEdgeId[0])!}
               onHandlePointerDown={handleEdgeHandlePointerDown}
             />
           )}

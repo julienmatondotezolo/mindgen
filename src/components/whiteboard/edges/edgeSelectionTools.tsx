@@ -44,7 +44,7 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
     .map((item: any) => item.edgeIds)[0];
 
   const selectedEdge = edges.find((edge) => {
-    if (activeEdgeId) edge.id === activeEdgeId[0];
+    if (activeEdgeId) return activeEdgeId.includes(edge.id);
   });
 
   const handleColorChange = useCallback(
