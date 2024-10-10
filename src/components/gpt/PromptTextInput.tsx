@@ -83,7 +83,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
     const fetchStreamData = fetchGeneratedTSummaryText({
       session: safeSession,
-      conversationId: userMindmapDetails.conversation[0].id,
+      conversationId: userMindmapDetails.conversation ? userMindmapDetails.conversation[0].id : "",
       mindmapId: userMindmapDetails.id,
       organizationMemberId: userMemberID,
       description,
@@ -119,6 +119,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       }
 
       if (event.type === "click") {
+        event.preventDefault();
         sendPrompt();
       }
     }

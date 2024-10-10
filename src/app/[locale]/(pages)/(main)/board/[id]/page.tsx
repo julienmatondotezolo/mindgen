@@ -120,9 +120,7 @@ export default function Board({ params }: { params: { id: string } }) {
       setBoardId(data.id);
 
       if (data.conversation) {
-        setQa([]);
-
-        const newQaItems = data.conversation[0].messages.map((mindMapQA: MindMapMessages) => {
+        const newQaItems = data.conversation[0]?.messages.map((mindMapQA: MindMapMessages) => {
           const newMessages = {
             text: mindMapQA.request,
             message: mindMapQA.response,
@@ -131,7 +129,9 @@ export default function Board({ params }: { params: { id: string } }) {
           return newMessages;
         });
 
-        setQa((prevQa) => [...prevQa, ...newQaItems]);
+        setQa(newQaItems);
+      } else {
+        setQa([]);
       }
     },
   });
