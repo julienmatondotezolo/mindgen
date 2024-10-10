@@ -43,9 +43,7 @@ import {
   useUpdateElement,
 } from "@/state";
 import {
-  calculateControlPoints,
   calculateNewLayerPositions,
-  colorToCss,
   connectionIdToColor,
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
@@ -58,13 +56,13 @@ import {
 
 import { Button } from "../ui";
 import { CursorPresence } from "./collaborate";
-import { EdgeSelectionBox, EdgeSelectionTools, ShadowEdge } from "./edges";
-import { LayerPreview } from "./LayerPreview";
+import { EdgePreview, EdgeSelectionBox, EdgeSelectionTools, ShadowEdge } from "./edges";
 import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layers";
+import { LayerPreview } from "./layers/LayerPreview";
 import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
-  const DEBUG_MODE = false;
+  const DEBUG_MODE = true;
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
@@ -688,11 +686,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "START" | "MIDDLE" | "END", point: Point) => {
-      if(activeEdgeId)
+      if(activeEdgeId[0])
         setCanvasState({
           mode: CanvasMode.EdgeEditing,
           editingEdge: {
-            id: activeEdgeId,
+            id: activeEdgeId[0],
             handlePosition: position,
             startPoint: point,
           },
@@ -800,7 +798,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   );
 
   const handleEdgeClick = useCallback(
-    (edgeId: string) => {
+    (e: React.PointerEvent, edgeId: string) => {
+      e.stopPropagation();
       selectEdge({ userId: currentUserId, edgeIds: [edgeId] });
       setHoveredEdgeId(null);
       handleUnSelectLayer();
@@ -1053,7 +1052,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
-        console.log("Active edge:", activeEdgeId);
         handleUnSelectLayer();
         unSelectEdge({ userId: currentUserId });
         setCanvasState({
@@ -1248,7 +1246,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [camera, canvasState, handleUnSelectLayer, setCanvasState, layers, edges, activeLayerIDs, updateEdge, currentUserId, updateLayer, drawingEdge, unSelectEdge, whiteboardText, addLayer, selectLayer, insertLayer],
+    [camera, canvasState, handleUnSelectLayer, unSelectEdge, currentUserId, setCanvasState, layers, edges, activeLayerIDs, updateEdge, updateLayer, drawingEdge, whiteboardText, addLayer, selectLayer, insertLayer],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -1434,9 +1432,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
 
-      if (event.code === "Backspace" && activeEdgeId && canvasState.mode === CanvasMode.EdgeActive) {
+      if (event.code === "Backspace" && activeEdgeId[0] && canvasState.mode === CanvasMode.EdgeActive) {
         removeEdge({
-          id: activeEdgeId,
+          id: activeEdgeId[0],
           userId: currentUserId,
         });
         unSelectEdge({ userId: currentUserId });
@@ -1497,10 +1495,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             {allActiveEdges.map((activeEdge: any, index: any) => (
               <section key={index}>
-                <div>{JSON.stringify(activeEdge, null, 2)}</div>
-                <p>[CURRENT USER ID]: {currentUserId}</p>
                 <p>{activeEdge.userId === currentUserId ? "current user" : activeEdge.userId}</p>
-                <pre>{JSON.stringify(activeEdge.layerIds, null, 2)}</pre>
+                <pre>{JSON.stringify(activeEdge.edgeIds, null, 2)}</pre>
               </section>
             ))}
             {/*             
@@ -1528,7 +1524,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         className="h-[100vh] w-[100vw] absolute inset-0"
         style={{
           backgroundPosition: `${camera.x}px ${camera.y}px`,
-          backgroundImage: `radial-gradient(${theme === "white" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
+          backgroundImage: `radial-gradient(${theme === "dark" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
           backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
         }}
         onPointerDown={handlePointerDown}
@@ -1544,123 +1540,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             cursor: "pointer",
           }}
         >
-          {edges.map((edge, index) => {
-            if(!edge) return;
-            const [controlPoint1, controlPoint2] =
-              edge.start && edge.end
-                ? edge.controlPoint1 && edge.controlPoint2
-                  ? [edge.controlPoint1, edge.controlPoint2]
-                  : calculateControlPoints(edge.start, edge.end, edge.handleStart)
-                : [
-                  { x: 0, y: 0 },
-                  { x: 0, y: 0 },
-                ];
-            const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId;
-            const pathString =
-              edge.start && edge.end
-                ? `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`
-                : "";
-
-            return (
-              <g key={index}>
-                <path
-                  d={pathString}
-                  stroke={colorToCss(isActive ? edge.hoverColor : edge.color)}
-                  strokeWidth={edge.thickness}
-                  strokeDasharray={edge.type === EdgeType.Dashed ? "5,5" : "none"}
-                  markerEnd={`url(#arrowhead-${edge.id})`}
-                  markerStart={`url(#arrowheadstart-${edge.id})`}
-                  fill="transparent"
-                >
-                  {edge.type === EdgeType.Dashed && (
-                    <animate attributeName="stroke-dashoffset" values="10;0" dur="0.5s" repeatCount="indefinite" />
-                  )}
-                </path>
-                <circle
-                  cx={edge.start.x}
-                  cy={edge.start.y}
-                  r={1 + edge.thickness} // Adjust the radius as needed
-                  fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
-                />
-                <circle
-                  cx={edge.end.x}
-                  cy={edge.end.y}
-                  r={1 + edge.thickness} // Adjust the radius as needed
-                  fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
-                />
-                <path
-                  d={pathString}
-                  stroke="transparent"
-                  strokeWidth={40}
-                  fill="transparent"
-                  onMouseEnter={() => {
-                    if (
-                      canvasState.mode === CanvasMode.Grab ||
-                      canvasState.mode === CanvasMode.SelectionNet ||
-                      canvasState.mode === CanvasMode.EdgeEditing ||
-                      canvasState.mode === CanvasMode.EdgeDrawing ||
-                      canvasState.mode === CanvasMode.Translating ||
-                      canvasState.mode === CanvasMode.Inserting
-                      // drawingEdge.ongoing
-                    )
-                      return;
-                    setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
-                  }}
-                  onMouseLeave={() => {
-                    if (
-                      canvasState.mode === CanvasMode.Grab ||
-                      canvasState.mode === CanvasMode.SelectionNet ||
-                      canvasState.mode === CanvasMode.EdgeEditing ||
-                      canvasState.mode === CanvasMode.EdgeDrawing ||
-                      canvasState.mode === CanvasMode.Translating ||
-                      canvasState.mode === CanvasMode.Inserting ||
-                      // drawingEdge.ongoing ||
-                      activeEdgeId
-                    )
-                      return;
-                    setHoveredEdgeId(null), setCanvasState({ mode: CanvasMode.None });
-                  }}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    handleEdgeClick(edge.id);
-                  }}
-                  style={{ cursor: "pointer" }}
-                />
-                {edge.arrowEnd && (
-                  <marker
-                    key={`arrow-${edge.id}`}
-                    id={`arrowhead-${edge.id}`}
-                    markerWidth={ARROW_SIZE}
-                    markerHeight={ARROW_SIZE}
-                    refX={ARROW_SIZE / 4}
-                    refY={ARROW_SIZE / 2}
-                    orient={edge.orientation}
-                  >
-                    <polygon
-                      points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
-                      fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
-                    />
-                  </marker>
-                )}
-                {edge.arrowStart && (
-                  <marker
-                    key={`arrowheadstart-${edge.id}`}
-                    id={`arrowheadstart-${edge.id}`}
-                    markerWidth={ARROW_SIZE}
-                    markerHeight={ARROW_SIZE}
-                    refX={ARROW_SIZE / 4}
-                    refY={ARROW_SIZE / 2}
-                    orient={parseInt(edge.orientation) * 2}
-                  >
-                    <polygon
-                      points={`0 0, ${ARROW_SIZE} ${ARROW_SIZE / 2}, 0 ${ARROW_SIZE}`}
-                      fill={colorToCss(isActive ? edge.hoverColor : edge.color)}
-                    />
-                  </marker>
-                )}
-              </g>
-            );
-          })}
+          {edges.map((edge, index) => 
+            <EdgePreview
+              key={index}
+              edge={edge}
+              onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
+              ARROW_SIZE={ARROW_SIZE}
+              selectionColor={layerIdsToColorSelection[edge.id]} 
+            />
+          )}
           {/* {layers.map((layer, index) => ( */}
           {sortLayersBySelection(layers).map((layer, index) => (
             <LayerPreview
@@ -1686,12 +1574,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               fill={shadowState.layer!.fill}
             />
           )}
-          {activeEdgeId && (
+          {/* {activeEdgeId && (
             <EdgeSelectionBox
-              edge={edges.find((edge) => edge.id === activeEdgeId)!}
+              edge={edges.find((edge) => edge.id === activeEdgeId[0])!}
               onHandlePointerDown={handleEdgeHandlePointerDown}
             />
-          )}
+          )} */}
+          <EdgeSelectionBox
+            edge={edges.find((edge) => activeEdgeId?.includes(edge.id))!}
+            onHandlePointerDown={handleEdgeHandlePointerDown}
+          />
           <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
           <LayerHandles
             onMouseEnter={onHandleMouseEnter}

@@ -199,11 +199,11 @@ const socketActiveEdgeEffect = ({ setSelf }: any) => {
   };
 
   // Attach the event listener when the effect runs
-  socket.on("remote-select-layer", handleAddActiveEdge);
+  socket.on("remote-select-edge", handleAddActiveEdge);
 
   // Return a cleanup function to detach the event listener when the effect is no longer needed
   return () => {
-    socket.off("remote-select-layer", handleAddActiveEdge);
+    socket.off("remote-select-edge", handleAddActiveEdge);
   };
 };
 
