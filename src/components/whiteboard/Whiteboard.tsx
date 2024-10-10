@@ -146,6 +146,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const canvas = await html2canvas(canvasElement);
       const base64Image = canvas.toDataURL("image/png");
 
+      canvasElement.style.backgroundColor = 'transparent';
+
       setPictureUrl(base64Image);
     }
   }, []);
