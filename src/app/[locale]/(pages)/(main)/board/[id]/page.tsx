@@ -15,7 +15,7 @@ import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
-import { useSocket } from "@/hooks";
+import { usePageBottom, useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
   boardIdState,
@@ -90,12 +90,6 @@ export default function Board({ params }: { params: { id: string } }) {
     setEnabled(false);
     setCurrentUser(user);
   }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser, socketJoinRoom]);
-
-  useEffect(() => {
-    if (promptResult) {
-      scrollToBottom();
-    }
-  }, [promptResult]);
 
   const fetchUserMindmapById = async () => {
     const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
@@ -182,7 +176,7 @@ export default function Board({ params }: { params: { id: string } }) {
           >
             <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
               <Image
-                className={`${!promptResult ? "rotate-180" : "rotate-0"} transition-all duration-500`}
+                className={`${promptResult ? "rotate-0" : "rotate-180"} transition-all duration-500`}
                 src={arrowIcon}
                 alt="Stars icon"
               />

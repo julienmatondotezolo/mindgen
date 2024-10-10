@@ -3,6 +3,7 @@ export * from "./useDidUpdateEffect";
 export * from "./useDisableScrollBounce";
 export * from "./useHistory";
 export * from "./useMindMapChangeListener";
+export * from "./usePageBottom";
 export * from "./useScrollPosition";
 export * from "./useSelectionBounds";
 export * from "./useSockets";
