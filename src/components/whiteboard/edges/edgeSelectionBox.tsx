@@ -45,6 +45,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
   return (
     <g>
       <path d={pathString} fill="transparent" strokeWidth={20} stroke="#4d6aff" style={{ opacity: 0.05 }} />
+      <path d={pathString} fill="transparent" strokeWidth={0.8} stroke="#4d6aff" />
       <circle
         cx={edge.start.x}
         cy={edge.start.y}

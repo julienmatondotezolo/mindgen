@@ -167,6 +167,34 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const activeEdgeId = allActiveEdges
     .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
     .map((item: any) => item.edgeIds)[0];
+
+  const allOtherUserEdgeSelection = allActiveEdges.filter((activeEdges: any) => activeEdges.userId !== currentUserId);
+
+  // Create a Map to store selections for quick lookup
+  const selectionEdgesMap = new Map();
+
+  // Populate the selectionMap
+  allOtherUserEdgeSelection.forEach((selection: any) => {
+    selectionEdgesMap.set(selection.userId, selection.edgeIds);
+  });
+
+  // Merge users with their selections
+  const otherUserEdgeSelections: any = allOtherUsers.map((user) => ({
+    ...user,
+    edgeIds: selectionEdgesMap.get(user.id) || [],
+  }));
+
+  const edgeIdsToColorSelection = useMemo(() => {
+    const edgeIdsToColorSelection: Record<string, string> = {};
+
+    for (const userSelection of otherUserEdgeSelections) {
+      for (const edgeId of userSelection.edgeIds) {
+        edgeIdsToColorSelection[edgeId] = connectionIdToColor(userSelection.socketIndex);
+      }
+    };
+
+    return edgeIdsToColorSelection;
+  }, [otherUserEdgeSelections]);
     
   const selectEdge = useSelectEdgeElement({ roomId: boardId });
   const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
@@ -799,7 +827,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeClick = useCallback(
     (e: React.PointerEvent, edgeId: string) => {
+      const isAlreadySelected = allOtherUserEdgeSelection.some((otherUser: any) => {
+        if (otherUser.edgeIds) {
+          return otherUser.edgeIds.includes(edgeId);
+        }
+      });
+
+      if (isAlreadySelected) return;
+
       e.stopPropagation();
+
       selectEdge({ userId: currentUserId, edgeIds: [edgeId] });
       setHoveredEdgeId(null);
       handleUnSelectLayer();
@@ -807,7 +844,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         mode: CanvasMode.EdgeActive,
       });
     },
-    [currentUserId, handleUnSelectLayer, selectEdge, setCanvasState, setHoveredEdgeId],
+    [allOtherUserEdgeSelection, currentUserId, handleUnSelectLayer, selectEdge, setCanvasState, setHoveredEdgeId],
   );
 
   // ================  DRAWING EDGES  ================== //
@@ -1524,7 +1561,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         className="h-[100vh] w-[100vw] absolute inset-0"
         style={{
           backgroundPosition: `${camera.x}px ${camera.y}px`,
-          backgroundImage: `radial-gradient(${theme === "dark" ? "#111112" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
+          backgroundImage: `radial-gradient(${theme === "dark" ? "#111212FF" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
           backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
         }}
         onPointerDown={handlePointerDown}
@@ -1546,7 +1583,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               edge={edge}
               onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
               ARROW_SIZE={ARROW_SIZE}
-              selectionColor={layerIdsToColorSelection[edge.id]} 
+              selectionColor={edgeIdsToColorSelection[edge.id]} 
             />
           )}
           {/* {layers.map((layer, index) => ( */}

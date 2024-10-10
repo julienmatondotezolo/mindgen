@@ -11,7 +11,6 @@ import { calculateControlPoints, colorToCss } from "@/utils";
 
 interface EdgePreviewProps {
   edge: Edge;
-  // onEdgePointerDown: (e: React.PointerEvent, layerId: string) => void;
   onEdgePointerDown: (e: React.PointerEvent, edgId: string) => void;
   ARROW_SIZE: number;
   selectionColor: string;
@@ -48,6 +47,15 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
 
   return (
     <g>
+      {selectionColor && <path
+        d={pathString}
+        stroke={selectionColor}
+        strokeWidth={6}
+        // strokeDasharray={edge.type === EdgeType.Dashed ? "5,5" : "none"}
+        // markerEnd={`url(#arrowhead-${edge.id})`}
+        // markerStart={`url(#arrowheadstart-${edge.id})`}
+        fill="transparent"
+      />}
       <path
         d={pathString}
         stroke={colorToCss(isActive ? edge.hoverColor : edge.color)}
