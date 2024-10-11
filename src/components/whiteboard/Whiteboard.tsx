@@ -176,7 +176,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      takeScreenshot();
       saveMindmap();
     }, 10000); // 10 seconds
 

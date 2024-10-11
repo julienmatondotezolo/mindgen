@@ -73,7 +73,7 @@ function MindMapBoards() {
             key={mindmap.id}
             className={`${
               isDeleting ? "opacity-20" : "opacity-100"
-            } cursor-pointer rounded-xl group overflow-hidden border`}
+            } cursor-pointer rounded-xl group overflow-hidden border dark:border-slate-900`}
             style={{
               backgroundImage: `url(${mindmap.pictureUrl})`,
               backgroundSize: "150%",
