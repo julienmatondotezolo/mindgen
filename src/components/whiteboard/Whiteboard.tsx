@@ -150,7 +150,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       setPictureUrl(base64Image);
     }
-  }, []);
+  }, [theme]);
 
   const saveMindmap = useCallback(() => {
     const newMindmapObject = emptyMindMapObject({
@@ -172,7 +172,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   useEffect(() => {
     takeScreenshot(); // Run on the first render only
-  }, []);
+  });
 
   useEffect(() => {
     const intervalId = setInterval(() => {
