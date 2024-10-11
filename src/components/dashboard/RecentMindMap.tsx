@@ -22,10 +22,6 @@ function RecentMindMap() {
 
   return (
     <div className="pt-8 pb-16">
-      <section className="flex flex-wrap justify-between mb-8">
-        <p className="mb-6 font-bold dark:text-white">{recentMindmapText("myRecentMindmaps")}</p>
-        <OpenOurNewMindmap />
-      </section>
       <article className="grid sm:grid-cols-4 grid-cols-1 gap-8 w-full">
         {/* <div onClick={handleClick} className="cursor-pointer">
           <figure className="flex w-full h-24 border-2 border-primary-color mb-2 rounded-xl opacity-70 hover:opacity-100">
