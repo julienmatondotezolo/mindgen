@@ -26,8 +26,8 @@ function RecentMindMap() {
         <p className="mb-6 font-bold dark:text-white">{recentMindmapText("myRecentMindmaps")}</p>
         <OpenOurNewMindmap />
       </section>
-      <article className="grid sm:grid-cols-5 grid-cols-1 gap-8 w-full">
-        <div onClick={handleClick} className="cursor-pointer">
+      <article className="grid sm:grid-cols-4 grid-cols-1 gap-8 w-full">
+        {/* <div onClick={handleClick} className="cursor-pointer">
           <figure className="flex w-full h-24 border-2 border-primary-color mb-2 rounded-xl opacity-70 hover:opacity-100">
             <article className="m-auto text-primary-color text-center">
               <span className="text-4xl">+</span>
@@ -37,7 +37,7 @@ function RecentMindMap() {
           <article>
             <p className="text-sm font-medium dark:text-white">{uppercaseFirstLetter(text("new"))} mind map</p>
           </article>
-        </div>
+        </div> */}
 
         <MindMapBoards />
       </article>
