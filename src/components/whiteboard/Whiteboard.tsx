@@ -1585,7 +1585,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <h3 className="font-bold mb-1">Canvas State:</h3>
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
-            {/* {JSON.stringify(canvasState, null, 2)} */}
+            {JSON.stringify(canvasState, null, 2)}
           </p>
           <p className="text-sm mb-1">
             <strong>ShadowState:</strong> {JSON.stringify(shadowState.showShadow, null, 2)}
