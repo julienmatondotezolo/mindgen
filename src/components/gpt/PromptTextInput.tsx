@@ -85,7 +85,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
     const fetchStreamData = fetchGeneratedTSummaryText({
       session: safeSession,
-      conversationId: userMindmapDetails.conversation ? userMindmapDetails.conversation[0].id : "",
+      conversationId: userMindmapDetails.conversation ? userMindmapDetails.conversation?.id : "",
       mindmapId: userMindmapDetails.id,
       organizationMemberId: userMemberID,
       description,

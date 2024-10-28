@@ -114,7 +114,7 @@ export default function Board({ params }: { params: { id: string } }) {
       setBoardId(data.id);
 
       if (data.conversation) {
-        const newQaItems = data.conversation[0]?.messages.map((mindMapQA: MindMapMessages) => {
+        const newQaItems = data.conversation?.messages.map((mindMapQA: MindMapMessages) => {
           const newMessages = {
             text: mindMapQA.request,
             message: mindMapQA.response,
