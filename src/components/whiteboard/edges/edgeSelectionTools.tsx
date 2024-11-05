@@ -146,6 +146,7 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
         <div
           className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
           style={{
+            top: `${y}px`,
             transform: `translate(${x - 50}px, ${y - 150}px)`,
           }}
         >
@@ -155,6 +156,7 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
       <div
         className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
         style={{
+          top: `${y}px`,
           transform: `translate(${x}px, ${y}px)`,
         }}
       >

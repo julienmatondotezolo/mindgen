@@ -10,7 +10,6 @@ import { useRecoilValue } from "recoil";
 import { deleteMindmapById, fetchMindmaps } from "@/_services";
 import { MindmapObject, Organization } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
-import settingsIcon from "@/assets/icons/settings.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
 import { selectedOrganizationState } from "@/state";
 import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
@@ -23,14 +22,14 @@ function MindMapBoards() {
 
   const size = 10;
 
-  const [, setTitle] = useState("");
-  const [, setDescription] = useState("false");
+  // const [, setTitle] = useState("");
+  // const [, setDescription] = useState("false");
 
-  const handleUpdate = (mindmapName: string, mindMapDescription: string) => {
-    setTitle(mindmapName);
-    setDescription(mindMapDescription);
-    // setIsOpen(!isOpen);
-  };
+  // const handleUpdate = (mindmapName: string, mindMapDescription: string) => {
+  //   setTitle(mindmapName);
+  //   setDescription(mindMapDescription);
+  //   // setIsOpen(!isOpen);
+  // };
 
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation(deleteMindmapById);

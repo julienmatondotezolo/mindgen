@@ -53,7 +53,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   const isShowingHandles = soleLayerId || isEdgeNearLayer;
 
-  if (!isShowingHandles) return null;
+  if (!isShowingHandles || (activeLayerIDs && activeLayerIDs.length > 1)) return null;
 
   const handleLayerId = soleLayerId || (nearestLayer ? nearestLayer.id : null);
 

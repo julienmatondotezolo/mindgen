@@ -1,25 +1,12 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { AlignJustify, LayoutGrid } from "lucide-react";
-import { useTranslations } from "next-intl";
 import React from "react";
-import { useRecoilState } from "recoil";
-
-import { modalState } from "@/state";
-import { uppercaseFirstLetter } from "@/utils";
 
 import { MindMapBoards } from "./MindMapBoards";
-import { OpenOurNewMindmap } from "./OpenOurNewMindmap";
 
 function RecentMindMap() {
-  const recentMindmapText = useTranslations("Dashboard");
-  const text = useTranslations("Index");
-
-  const [isOpen, setIsOpen] = useRecoilState(modalState);
-
-  const handleClick = () => {
-    setIsOpen(!isOpen);
-  };
+  // const [isOpen, setIsOpen] = useRecoilState(modalState);
 
   const btnBackground = "p-2 rounded-md bg-gray-100 dark:bg-slate-900";
 

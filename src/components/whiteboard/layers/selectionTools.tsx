@@ -100,7 +100,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
-        const newBorderType = layer.borderType === "DASHED" ? "solid" : "dashed";
+        const newBorderType = layer.borderType === "DASHED" ? "solid" : "DASHED";
 
         updateLayer({
           id: layerId,
@@ -108,7 +108,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
           updatedElementLayer: { borderType: newBorderType },
         });
 
-        setIsDashed(newBorderType === "dashed");
+        setIsDashed(newBorderType === "DASHED");
       }
     }
   }, [activeLayerIDs, currentUserId, layers, updateLayer]);
@@ -195,62 +195,70 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
     return null;
 
-  const x = selectionBounds.x - selectionBounds.width / 2;
-  const y = selectionBounds.y - selectionBounds.height * 2;
+  if (selectionBounds) {
+    const { x, y, width, height } = selectionBounds;
 
-  return (
-    <>
-      {showColorPicker && (
+    const toolPositionX = x - width / 2;
+    const toolPositionY = -height * 2;
+
+    return (
+      <>
+        {showColorPicker && (
+          <div
+            className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+            style={{
+              top: `${y}px`,
+              transform: `translate(${showBorderColorPicker ? toolPositionX : toolPositionX - 50}px, ${
+                toolPositionY - 150
+              }px)`,
+            }}
+          >
+            <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
+          </div>
+        )}
         <div
-          className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+          className={`absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800`}
           style={{
-            transform: `translate(${showBorderColorPicker ? x : x - 50}px, ${y - 150}px)`,
+            top: `${y}px`,
+            transform: `translate(${toolPositionX}px, ${toolPositionY}px)`,
           }}
         >
-          <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
+          <ul className="flex flex-row space-x-2 items-center justify-between">
+            <ToolButton
+              icon={PaintBucket}
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              isActive={showColorPicker && showBorderColorPicker == false}
+            />
+            <Button
+              variant={showBorderColorPicker ? "boardActive" : "board"}
+              size="icon"
+              onClick={handleBorderColorChange}
+            >
+              <div
+                className={`w-5 h-5 border-[3px] dark:border-slate-200 rounded-full ${
+                  showBorderColorPicker ? "border-slate-200" : "border-slate-950"
+                }`}
+              ></div>
+            </Button>
+            <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+            <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={isDashed} />
+            <Button variant={isThickBorder ? "boardActive" : "board"} size="icon" onClick={handleToggleBorderWidth}>
+              <div
+                className={`w-[20px] h-[5px] dark:bg-slate-200 ${isThickBorder ? "bg-slate-200" : "bg-slate-950"}`}
+              ></div>
+            </Button>
+            <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+            <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={isUppercase} />
+            <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={isBold} />
+            <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+            <Button variant="board" size="icon" onClick={handleRemoveLayer}>
+              <Trash2 />
+            </Button>
+          </ul>
         </div>
-      )}
-      <div
-        className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
-        style={{
-          transform: `translate(calc(${x}px - 1%), calc(${y}px - 50%))`,
-        }}
-      >
-        <ul className="flex flex-row space-x-2 items-center justify-between">
-          <ToolButton
-            icon={PaintBucket}
-            onClick={() => setShowColorPicker(!showColorPicker)}
-            isActive={showColorPicker && showBorderColorPicker == false}
-          />
-          <Button
-            variant={showBorderColorPicker ? "boardActive" : "board"}
-            size="icon"
-            onClick={handleBorderColorChange}
-          >
-            <div
-              className={`w-5 h-5 border-[3px] dark:border-slate-200 rounded-full ${
-                showBorderColorPicker ? "border-slate-200" : "border-slate-950"
-              }`}
-            ></div>
-          </Button>
-          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={isDashed} />
-          <Button variant={isThickBorder ? "boardActive" : "board"} size="icon" onClick={handleToggleBorderWidth}>
-            <div
-              className={`w-[20px] h-[5px] dark:bg-slate-200 ${isThickBorder ? "bg-slate-200" : "bg-slate-950"}`}
-            ></div>
-          </Button>
-          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={isUppercase} />
-          <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={isBold} />
-          <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-          <Button variant="board" size="icon" onClick={handleRemoveLayer}>
-            <Trash2 />
-          </Button>
-        </ul>
-      </div>
-    </>
-  );
+      </>
+    );
+  }
 });
 
 SelectionTools.displayName = "SelectionTools";

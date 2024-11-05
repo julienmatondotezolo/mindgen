@@ -160,7 +160,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       edges,
       organizationId: selectedOrga!.id,
       visibility: userMindmapDetails.visibility,
-      pictureUrl: pictureUrl, 
+      pictureUrl: pictureUrl,
     });
 
     updateMindmapMutation.mutate({
@@ -170,17 +170,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     });
   }, [edges, layers, pictureUrl, selectedOrga, session, updateMindmapMutation, userMindmapDetails]);
 
-  // useEffect(() => {
-  //   takeScreenshot(); // Run on the first render only
-  // });
+  useEffect(() => {
+    takeScreenshot(); // Run on the first render only
+  });
 
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     saveMindmap();
-  //   }, 10000); // 10 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      saveMindmap();
+    }, 30000); // 10 seconds
 
-  //   return () => clearInterval(intervalId); // Cleanup on unmount
-  // }, [saveMindmap]);
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [saveMindmap]);
 
   // ================  CONSTANT LAYERS  ================== //
 
