@@ -364,7 +364,7 @@ export async function generatedMindmap({ session, organizationId, task }: { sess
 export async function reGenerateMindmap({ session, mindmapReqObject }: { session: CustomSession | null, mindmapReqObject: any }): Promise<ReadableStream<Uint8Array>> {
   if(session)
     try {
-      const responseGeneratedMindmap: Response = await fetch(baseUrl + `/ai/mindmap/stream`, {
+      const responseReGeneratedMindmap: Response = await fetch(baseUrl + `/ai/mindmap/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -374,8 +374,8 @@ export async function reGenerateMindmap({ session, mindmapReqObject }: { session
         body: JSON.stringify(mindmapReqObject),
       });
 
-      if (responseGeneratedMindmap.ok) {
-        return responseGeneratedMindmap.body as ReadableStream<Uint8Array>;
+      if (responseReGeneratedMindmap.ok) {
+        return responseReGeneratedMindmap.body as ReadableStream<Uint8Array>;
       } else {
         console.error("Failed to post data and stream response");
         // If the response is not okay, return a default ReadableStream<Uint8Array> with a message

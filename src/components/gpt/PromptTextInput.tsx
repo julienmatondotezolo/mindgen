@@ -115,7 +115,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone, setIsLoading);
 
     const newQA = {
-      text: text,
+      text: prompt ?? text,
       message: answerMessages[0].text,
     };
 
