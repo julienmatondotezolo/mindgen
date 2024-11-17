@@ -3,9 +3,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { MousePointer2, MoveRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { MindMapDetailsProps } from "@/_types";
 import productImage from "@/assets/section/product-image.png";
-import { Button, Whiteboard } from "@/components";
+import { Button } from "@/components";
 import BlurIn from "@/components/ui/blur-in";
 // import TypingAnimation from "@/components/ui/typing-animation";
 import { Link } from "@/navigation";
