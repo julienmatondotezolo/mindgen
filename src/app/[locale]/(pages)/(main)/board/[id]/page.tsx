@@ -161,7 +161,7 @@ export default function Board({ params }: { params: { id: string } }) {
               promptValue || qa.length > 0 ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
             }`}
           >
-            <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
+            <Button onClick={handleScrollTop} className="fixed bottom-6 right-6" size="icon">
               <Image
                 className={`${promptResult ? "rotate-0" : "rotate-180"} transition-all duration-500`}
                 src={arrowIcon}

@@ -1668,7 +1668,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       {
         isCapturing && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded-lg shadow-lg text-center">
+            <div className="bg-white shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-4 rounded-lg text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
               <p>We are saving your mindmap...</p>
             </div>
@@ -1804,7 +1804,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         </svg>
       </figure>
       {layers?.length > 0 && (
-        <div className="fixed bottom-4 left-4 z-10 space-x-2">
+        <div className="fixed bottom-6 left-6 z-10 space-x-2">
           <figure className="flex items-center space-x-2 float-left">
             <Button variant="outline" onClick={zoomOut}>
               -

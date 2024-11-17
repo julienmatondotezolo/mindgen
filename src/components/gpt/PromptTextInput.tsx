@@ -113,6 +113,18 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     setTextareaHeight(newHeight + "px");
   };
 
+  const handleQuickPrompt = (e: any, name: string, prompt: string) => {
+    e.preventDefault();
+    setText("");
+    if(name === "Create PDF") {
+      alert("Creating pdf")
+      return;
+    }
+
+    setText(prompt);
+    sendPrompt();
+  }
+
   const handleSendPrompt = (event: any) => {
     if (text) {
       setCanvasState({
@@ -130,10 +142,36 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       }
     }
   };
+  const quickPrompts = [
+    {
+      name: "Summarize",
+      prompt: "Make a summary of this mindmap"
+    },
+    // {
+    //   name: "Generate Essay",
+    //   prompt: "Write a persuasive essay on the information within the mindmap."
+    // },
+    // {
+    //   name: "Create Proposal",
+    //   prompt: "Generate a proposal document based on the information within the mindmap."
+    // },
+    {
+      name: "Export to Website",
+      prompt: "Export the mindmap content as a webpage (HTML format). With Javascript <script></script> tag and CSS <style></style> tag embedded inside the HTML."
+    },
+    {
+      name: "Create List of Key Ideas",
+      prompt: "Extract and list key points from the mindmap in a digestible format."
+    },
+    {
+      name: "Create PDF",
+      prompt: "Automatically generate a PDF document of the mindmap."
+    }
+  ];
 
   if (safeSession)
     return (
-      <form className="relative flex flex-row items-start max-h-36 overflow-y-auto p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
+      <form className="relative flex flex-row items-start max-h-36 p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
         <Textarea
           className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
           placeholder={chatText("promptInput")}
@@ -153,6 +191,17 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
             alt="Stars icon"
           />
         </Button>
+        <aside className="absolute flex flex-wrap justify-between w-full top-[-56px] left-0">
+          {quickPrompts.map((item, index) => (
+            <button
+              key={index}
+              onClick={(e) => handleQuickPrompt(e, item.name, item.prompt)}
+              className="border bg-white dark:bg-slate-900 dark:bg-opacity-80 dark:border-slate-800 px-4 py-2 w-fit rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap mb-2"
+            >
+              {item.name}
+            </button>
+          ))}
+        </aside>
       </form>
     );
 }

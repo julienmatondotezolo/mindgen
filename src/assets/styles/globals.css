@@ -158,4 +158,8 @@
   .card {
     @apply w-full max-w-xs rounded-3xl border border-[#F1F1F1] bg-white dark:bg-slate-500 dark:bg-opacity-20 p-10 shadow-[0_7px_14px_#EAEAEA] dark:shadow-none;
   }
+
+  .language-html {
+    width: 100%;
+  }
 }
