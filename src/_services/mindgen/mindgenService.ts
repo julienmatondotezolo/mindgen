@@ -318,7 +318,50 @@ export async function deleteOrganizationById({ organizationId }: { organizationI
 /* ==================   MINDMAPS   ================== */
 /* ================================================== */ 
 
-export async function generatedMindmap({ session, mindmapReqObject }: { session: CustomSession | null, mindmapReqObject: any }): Promise<ReadableStream<Uint8Array>> {
+export async function generatedMindmap({ session, organizationId, task }: { session: CustomSession | null, organizationId: any, task: string }): Promise<ReadableStream<Uint8Array>> {
+  if(session)
+    try {
+      const responseGeneratedMindmap: Response = await fetch(baseUrl + `/ai/${organizationId}/mindmap/text`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: task,
+      });
+
+      if (responseGeneratedMindmap.ok) {
+        return responseGeneratedMindmap.body as ReadableStream<Uint8Array>;
+      } else {
+        console.error("Failed to post data and stream response");
+        // If the response is not okay, return a default ReadableStream<Uint8Array> with a message
+        return new ReadableStream<Uint8Array>({
+          start(controller) {
+          // Convert a string to Uint8Array and enqueue it to the stream
+            const message = "An error occurred while fetching the summary text.";
+
+            controller.enqueue(new TextEncoder().encode(message));
+            controller.close();
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Impossible to generate Mindmap:", error);
+    }
+
+  return new ReadableStream({
+    async start(controller) {
+      const message = "No active session found.";
+      const encoder = new TextEncoder();
+  
+      controller.enqueue(encoder.encode(message));
+      controller.close();
+    },
+  }); 
+}
+
+export async function reGenerateMindmap({ session, mindmapReqObject }: { session: CustomSession | null, mindmapReqObject: any }): Promise<ReadableStream<Uint8Array>> {
   if(session)
     try {
       const responseGeneratedMindmap: Response = await fetch(baseUrl + `/ai/mindmap/stream`, {

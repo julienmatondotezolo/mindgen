@@ -33,7 +33,8 @@
     "settings": "settings",
     "general": "general",
     "members": "membres",
-    "generate": "generate"
+    "generate": "generate",
+    "generating": "generating"
   },
   "Auth": {
     "connection": "Connection",

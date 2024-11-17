@@ -1,28 +1,33 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
+import { Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilValue } from "recoil";
 
-import { createMindmap } from "@/_services";
-import { Organization } from "@/_types";
+import { generatedMindmap } from "@/_services";
+import { CustomSession, Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
-import { Button, Input, Switch, Textarea } from "@/components/ui";
+import { Button, Switch, Textarea } from "@/components/ui";
 import { selectedOrganizationState } from "@/state";
-import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
+import { uppercaseFirstLetter } from "@/utils";
 
 const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLFormElement>(null);
+
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const handleClose = () => {
     setIsOpen(false);
   };
 
   const queryClient = useQueryClient();
-  const fetchCreateMindmap = useMutation(createMindmap, {
-    mutationKey: "CREATE_MINDMAP",
+  const fetchGenerateMindmap = useMutation(generatedMindmap, {
+    mutationKey: "GENERATE_MINDMAP",
     onSuccess: async () => {
       // Invalidate the query to cause a re-fetch
       queryClient.invalidateQueries("userMindmap");
@@ -30,14 +35,8 @@ const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   });
 
   // Initialize state for title and description
-  const [inputTitle, setInputTitle] = useState("");
   const [inputDescription, setInputDescription] = useState("");
   const [inputVisibility, setInputVisibility] = useState("PUBLIC");
-
-  // Update state when input changes
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputTitle(e.target.value);
-  };
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputDescription(e.target.value);
@@ -51,16 +50,13 @@ const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
   const handleConfirm = async (e: any) => {
     e.preventDefault();
-    const emptyMindmapObject = emptyMindMapObject({
-      name: inputTitle,
-      description: inputDescription,
-      pictureUrl: "",
-      organizationId: selectedOrga!.id,
-      visibility: inputVisibility,
-    });
 
     try {
-      fetchCreateMindmap.mutate({ mindmapObject: emptyMindmapObject });
+      await fetchGenerateMindmap.mutateAsync({
+        session: safeSession,
+        organizationId: selectedOrga?.id,
+        task: inputDescription,
+      });
       handleClose();
     } catch (error) {
       if (error instanceof Error) {
@@ -68,7 +64,6 @@ const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       }
     }
 
-    setInputTitle("");
     setInputDescription("");
     handleClose();
   };
@@ -97,23 +92,13 @@ const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       <p className="font-bold text-xl">{uppercaseFirstLetter(text("generate"))} mind map</p>
       <article className="space-y-4">
         <section>
-          <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("name")}</p>
-          <Input
-            type="text"
-            placeholder={`Mind map ${text("name").toLowerCase()}`}
-            value={inputTitle}
-            onChange={handleTitleChange}
-            required
-          />
-        </section>
-
-        <section>
-          <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("description")}</p>
+          <p className="text-grey dark:text-grey-blue text-sm mb-2">Mind map {text("description")}</p>
           <Textarea
             placeholder={`Mind map ${text("description").toLowerCase()}`}
             value={inputDescription}
             onChange={handleDescriptionChange}
             required
+            disabled={fetchGenerateMindmap.isLoading}
           />
         </section>
         <div className="flex flex-wrap justify-between items-center">
@@ -121,14 +106,21 @@ const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
             <p className="font-semibold">{text("private")}</p>
             <p className="text-grey dark:text-grey-blue text-sm">{text("onlyViewable")}</p>
           </article>
-          <Switch checked={inputVisibility == "PRIVATE" ? true : false} onCheckedChange={handleVisibilityChange} />
+          <Switch
+            checked={inputVisibility == "PRIVATE" ? true : false}
+            disabled={fetchGenerateMindmap.isLoading}
+            onCheckedChange={handleVisibilityChange}
+          />
         </div>
       </article>
       <div className="flex flex-wrap items-center justify-end space-x-4 mt-4">
-        <Button variant="outline" onClick={handleClose}>
+        <Button variant="outline" onClick={handleClose} disabled={fetchGenerateMindmap.isLoading}>
           {uppercaseFirstLetter(text("cancel"))}
         </Button>
-        <Button type="submit">{uppercaseFirstLetter(text("generate"))}</Button>
+        <Button type="submit" disabled={fetchGenerateMindmap.isLoading}>
+          <Sparkles className={fetchGenerateMindmap.isLoading ? "animate-spin" : ""} height={15} />
+          {uppercaseFirstLetter(fetchGenerateMindmap.isLoading ? text("generating") + "..." : text("generate"))}
+        </Button>
       </div>
     </form>
   );

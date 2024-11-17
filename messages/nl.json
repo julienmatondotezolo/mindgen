@@ -33,7 +33,8 @@
     "settings": "instellingen",
     "general": "general",
     "members": "leden",
-    "generate": "genereer"
+    "generate": "genereer",
+    "generating": "genereren"
   },
   "Auth": {
     "connection": "Inloggen",

@@ -94,7 +94,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     setTextareaHeight(newHeight + "px");
   };
 
-  const sendPrompt = () => {
+  const sendPrompt = ({ prompt }: { prompt?: string }) => {
     setAnswerMessages([{ text: "", sender: "server" }]);
     setIsLoading(true);
     setPromptResult(true);
@@ -108,7 +108,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       mindmapId: userMindmapDetails.id,
       organizationMemberId: userMemberID,
       description,
-      task: text,
+      task: prompt ?? text,
       data: mindMapArray,
     });
 
@@ -148,7 +148,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     }
 
     setText(prompt);
-    sendPrompt();
+    sendPrompt({ prompt });
   };
 
   const handleSendPrompt = (event: any) => {
@@ -159,12 +159,12 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
       if (event.code === "Enter") {
         event.preventDefault();
-        sendPrompt();
+        sendPrompt({});
       }
 
       if (event.type === "click") {
         event.preventDefault();
-        sendPrompt();
+        sendPrompt({});
       }
     }
   };
@@ -177,15 +177,15 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       name: "Generate Essay",
       prompt: "Write a persuasive essay on the information within the mindmap.",
     },
-    // {
-    //   name: "Create Proposal",
-    //   prompt: "Generate a proposal document based on the information within the mindmap."
-    // },
-    // {
-    //   name: "Export to Website",
-    //   prompt:
-    //     "Export the mindmap content as a webpage (HTML format). With Javascript <script></script> tag and CSS <style></style> tag embedded inside the HTML.",
-    // },
+    {
+      name: "Create Proposal",
+      prompt: "Generate a proposal document based on the information within the mindmap.",
+    },
+    {
+      name: "Export to Website",
+      prompt:
+        "Export the mindmap content as a webpage (HTML format). With Javascript <script></script> tag and CSS <style></style> tag embedded inside the HTML.",
+    },
     {
       name: "Create List of Key Ideas",
       prompt: "Extract and list key points from the mindmap in a digestible format.",
