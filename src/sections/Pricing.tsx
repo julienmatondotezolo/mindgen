@@ -1,11 +1,14 @@
 "use client";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { useQuery } from "react-query";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useMutation, useQuery } from "react-query";
 import { twMerge } from "tailwind-merge";
 
-import { fetchPaymentProducts } from "@/_services";
-import { SubscriptionPlan } from "@/_types";
+import { fetchPaymentProducts, fetchStripeCheckout } from "@/_services";
+import { CustomSession, SubscriptionPlan } from "@/_types";
 import { Button } from "@/components";
 
 // const pricingTiers = [
@@ -61,13 +64,61 @@ import { Button } from "@/components";
 // ];
 
 function Pricing() {
+  const router = useRouter();
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const checkout = urlParams.get("checkout");
+
   const { data: paymentProducts, isLoading } = useQuery("paymentProducts", fetchPaymentProducts, {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
 
+  const stripeCheckout = useMutation(fetchStripeCheckout, {
+    onSuccess: async (data: any) => {
+      if (data) {
+        router.push(data.url);
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (checkout) {
+      stripeCheckout.mutate({ session: safeSession, priceId: checkout });
+    }
+  }, [checkout, safeSession, stripeCheckout]);
+
   if (isLoading) {
     return <section className="py-64">Loading...</section>;
+  }
+
+  const handleCheckout = (priceId: string) => {
+    if (!safeSession?.data?.session) {
+      const base = window.location.origin;
+      const currentLocale = window.location.pathname.split("/")[1];
+
+      const url = new URL(`${currentLocale}/auth/login`, base);
+
+      url.searchParams.set("callbackUrl", `/${currentLocale}?checkout=${priceId}`);
+
+      router.push(url.pathname + url.search);
+      return;
+    }
+
+    stripeCheckout.mutate({ session: safeSession, priceId });
+  };
+
+  if (stripeCheckout.isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-4 rounded-lg text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
+          <p>Redirecting to checkout...</p>
+        </div>
+      </div>
+    );
   }
 
   if (paymentProducts)
@@ -113,7 +164,13 @@ function Pricing() {
                   </span>
                   <span className="font-bold tracking-tight text-black/50 dark:text-white">/month</span>
                 </div>
-                <Button className={twMerge("mt-[30px] w-full")}>Sign up now</Button>
+                <Button
+                  onClick={() => handleCheckout(product.prices[0].id)}
+                  className={twMerge("mt-[30px] w-full")}
+                  disabled={stripeCheckout.isLoading}
+                >
+                  {stripeCheckout.isLoading ? "Loading..." : "Sign up now"}
+                </Button>
                 <ul className="mt-8 flex flex-col gap-5">
                   <li className="flex items-center gap-4 text-sm">
                     <Check size={6} />

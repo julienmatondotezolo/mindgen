@@ -5,27 +5,24 @@ import createMiddleware from "next-intl/middleware";
 
 import { localePrefix, locales } from "./navigation";
 
-export default createMiddleware({
+// Create the internationalization middleware
+const intlMiddleware = createMiddleware({
   defaultLocale: "en",
   localePrefix,
   locales,
 });
 
-export const config = {
-  // Match only internationalized pathnames and the protected paths
-  matcher: ["/", "/(en|fr|nl)/:path*", "/dashboard", "/board", "/profile"],
-};
-
-export async function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  // Handle internationalized paths by removing the locale prefix before checking
-  const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
-  // Define your protected paths here
+
+  // Define protected paths
   const protectedPaths = ["/dashboard", "/board", "/profile"];
 
-  const isPathProtected = protectedPaths.some((protectedPath) => sanitizedPath.startsWith(protectedPath));
+  // Handle internationalized paths by removing the locale prefix
+  const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
 
-  const res = NextResponse.next();
+  // Check if the current path is protected
+  const isPathProtected = protectedPaths.some((path) => sanitizedPath.startsWith(path));
 
   if (isPathProtected) {
     const token = await getToken({ req });
@@ -33,14 +30,22 @@ export async function middleware(req: NextRequest) {
     if (!token) {
       // Extract the current locale from the pathname
       const localeMatch = pathname.match(/^\/(en|fr|nl)/);
-      // Default to 'en' if no locale is found
       const currentLocale = localeMatch ? localeMatch[0] : "/en";
+
+      // Create redirect URL with proper locale prefix
       const url = new URL(`${currentLocale}/auth/login`, req.url);
 
-      url.searchParams.set("callbackUrl", sanitizedPath);
+      url.searchParams.set("callbackUrl", pathname);
+
       return NextResponse.redirect(url);
     }
   }
 
-  return res;
+  // Handle internationalization for all routes
+  return intlMiddleware(req);
 }
+
+export const config = {
+  // Match all routes that need internationalization or protection
+  matcher: ["/", "/(en|fr|nl)/:path*", "/dashboard/:path*", "/board/:path*", "/profile/:path*"],
+};

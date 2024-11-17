@@ -13,10 +13,10 @@ import { Link, useRouter } from "@/navigation";
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
+  const router = useRouter();
   const authText = useTranslations("Auth");
   const text = useTranslations("Index");
 
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -55,13 +55,15 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
       setShowBadCredentialsMessage(false);
 
       // Wait for the session to be updated
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // await new Promise((resolve) => setTimeout(resolve, 500));
 
+      // Force a hard redirect using window.location
       if (callbackUrl) {
-        const newCallbackURL = callbackUrl === "/dashboard" ? "/" : callbackUrl;
-
-        router.push(newCallbackURL);
+        window.location.href = callbackUrl;
+      } else {
+        router.push("/dashboard");
       }
+
       setIsLoading(false);
     } catch (error) {
       console.error("Login error:", error);

@@ -224,7 +224,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
               alt="Stars icon"
             />
           </Button>
-          <aside className="absolute top-[-56px] flex flex-wrap justify-between w-full left-0">
+          <aside className="absolute bottom-[56px] flex flex-wrap justify-between w-full left-0">
             {quickPrompts.map((item, index) => (
               <button
                 key={index}
