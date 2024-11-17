@@ -14,5 +14,6 @@ export * from "./Position";
 export * from "./ProfileProps";
 export * from "./QuestionAnswersProps";
 export * from "./ReactflowState";
+export * from "./SubscriptionPlan";
 export * from "./ToolBarProps";
 export * from "./User";

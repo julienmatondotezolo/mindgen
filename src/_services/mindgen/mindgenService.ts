@@ -136,6 +136,52 @@ export async function fetchProfile({ session }: {session: CustomSession | null})
     }
 }
 
+/* ======================================================== */
+/* ======================   PAYMENT   ===================== */
+/* ======================================================== */
+
+export async function fetchPaymentProducts(): Promise<any> {
+  try {
+    const responsePaymentProducts: Response = await fetch(baseUrl + `/payment/products`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responsePaymentProducts.ok) {
+      return responsePaymentProducts.json();
+    } else {
+      throw responsePaymentProducts;
+    }
+  } catch (error) {
+    console.error("Impossible to fetch profiles:", error);
+  }
+}
+
+export async function fetchStripeCheckout({ session, priceId }: {session: CustomSession | null, priceId: string}): Promise<any> {
+  if(session)
+    try {
+      const responseStripeCheckout: Response = await fetch(baseUrl + `/stripe/checkout/${priceId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
+
+      if (responseStripeCheckout.ok) {
+        return responseStripeCheckout.json();
+      } else {
+        throw responseStripeCheckout;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch profiles:", error);
+    }
+}
+
 /* ======================================================= */  
 /* ==================   ORGANIZATIONS   ================== */
 /* ======================================================= */
