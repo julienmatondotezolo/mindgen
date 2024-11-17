@@ -182,9 +182,9 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       prompt: "Generate a proposal document based on the information within the mindmap.",
     },
     {
-      name: "Export to Website",
+      name: "Create Website",
       prompt:
-        "Export the mindmap content as a webpage (HTML format). With Javascript <script></script> tag and CSS <style></style> tag embedded inside the HTML.",
+        "Export the mindmap content as a webpage (HTML format). Using tailwind for CSS be creative. And use a lot of colors, grid layouts with variations between columns and rows. Here is your task: 'Create a beautiful modern website with a table about this mindmap. A navigation multiple section with different varations of layouts and good letter spacing And images using pexels our unsplash related to the content of the mindmap. It needs to be appaeling to read'",
     },
     {
       name: "Create List of Key Ideas",
@@ -210,6 +210,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
             style={{ height: textareaHeight }}
             required
           />
+          <Button></Button>
           <Button
             onClick={handleSendPrompt}
             className="absolute bottom-2 right-2"
