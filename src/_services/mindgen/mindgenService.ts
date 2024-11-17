@@ -8,7 +8,7 @@ const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 /* ==================   STREAM CHAT RESPONSE   ================== */
 /* ======================================================= */
 
-export async function fetchGeneratedTSummaryText(
+export async function fetchGeneratedSummaryText(
   { 
     session,
     conversationId,

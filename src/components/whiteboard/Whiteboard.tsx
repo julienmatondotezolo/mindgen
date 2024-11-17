@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import html2canvas from 'html2canvas';
 import { nanoid } from "nanoid";
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
@@ -67,6 +68,10 @@ import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layer
 import { LayerPreview } from "./layers/LayerPreview";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const DEBUG_MODE = false;
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
@@ -75,13 +80,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const [pictureUrl, setPictureUrl] = useState("");
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const [showResetButton, setShowResetButton] = useState(false);
   const [applyTransition, setApplyTransition] = useState(false);
 
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const [, setLastUsedColor] = useState<Color>({
     r: 50,
@@ -136,6 +141,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   });
 
   const takeScreenshot = useCallback(async () => {
+    setIsCapturing(true);
     const canvasElement = document.getElementById('canvas');
 
     if (canvasElement) {
@@ -148,11 +154,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       canvasElement.style.backgroundColor = 'transparent';
 
-      setPictureUrl(base64Image);
+      // setPictureUrl(base64Image);
+      setIsCapturing(false);
+      return base64Image;
     }
   }, [theme]);
 
-  const saveMindmap = useCallback(() => {
+  const saveMindmap = useCallback(async () => {
     const newMindmapObject = emptyMindMapObject({
       name: userMindmapDetails.name,
       description: userMindmapDetails.description,
@@ -160,7 +168,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       edges,
       organizationId: selectedOrga!.id,
       visibility: userMindmapDetails.visibility,
-      pictureUrl: pictureUrl,
+      pictureUrl: await takeScreenshot(),
     });
 
     updateMindmapMutation.mutate({
@@ -168,19 +176,96 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       mindmapId: userMindmapDetails.id,
       mindmapObject: newMindmapObject,
     });
-  }, [edges, layers, pictureUrl, selectedOrga, session, updateMindmapMutation, userMindmapDetails]);
+  }, [edges, layers, selectedOrga, session, takeScreenshot, updateMindmapMutation, userMindmapDetails]);
+  
 
+  // Handle window/tab close and navigation away
   useEffect(() => {
-    takeScreenshot(); // Run on the first render only
-  }, []);
+    let isCapturing = false;
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      saveMindmap();
-    }, 30000); // 10 seconds
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'hidden' && !isCapturing) {
+        isCapturing = true;
+        // await takeScreenshot();
+        await saveMindmap();
+        isCapturing = false;
+      }
+    };
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      // Modern browsers require the event to be canceled and a message to be shown
+      e.preventDefault();
+      
+      if (!isCapturing) {
+        isCapturing = true;
+        // await takeScreenshot();
+        await saveMindmap();
+        isCapturing = false;
+        // saveMindmap();
+      }
+      
+      // Show a standard confirmation dialog
+      // Note: Most modern browsers show their own generic message regardless of what we set here
+      return (e.returnValue = '');
+    };
+
+    // Add event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload, { capture: true });
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload, { capture: true });
+    };
   }, [saveMindmap]);
+  
+  // Handle navigation state changes
+  useEffect(() => {
+    // Create a proxy for router.push
+    const originalPush = router.push;
+
+    router.push = async (...args: Parameters<typeof router.push>) => {
+      await saveMindmap();
+      return originalPush.apply(router, args);
+    };
+
+    return () => {
+      // Restore original push method
+      router.push = originalPush;
+    };
+  }, [pathname, router, saveMindmap, searchParams]);
+
+  // Intercept Link component clicks
+  const handleLinkClick = useCallback(async (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest('a');
+    
+    if (link?.getAttribute('href') && !link.getAttribute('href')?.startsWith('#')) {
+      e.preventDefault();
+      
+      await saveMindmap();
+      
+      // Use router.push for internal navigation
+      const href = link.getAttribute('href') || '';
+
+      if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+        router.push(href);
+      } else {
+        // For external links, use regular navigation
+        window.location.href = href;
+      }
+    }
+  }, [saveMindmap, router]);
+
+  useEffect(() => {
+    // Add click handler to document
+    document.addEventListener('click', handleLinkClick as any);
+    
+    return () => {
+      document.removeEventListener('click', handleLinkClick as any);
+    };
+  }, [handleLinkClick]);
 
   // ================  CONSTANT LAYERS  ================== //
 
@@ -1580,6 +1665,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   return (
     <main className="h-full w-full relative touch-none select-none">
+      {
+        isCapturing && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-4 rounded-lg shadow-lg text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
+              <p>We are saving your mindmap...</p>
+            </div>
+          </div>)
+      }
       {DEBUG_MODE && (
         <div className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-black border border-gray-300 p-2 rounded shadow-md dark:text-primary-color">
           <h3 className="font-bold mb-1">Canvas State:</h3>

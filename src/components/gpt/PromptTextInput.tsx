@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { fetchGeneratedTSummaryText } from "@/_services";
+import { fetchGeneratedSummaryText } from "@/_services";
 import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
@@ -83,7 +83,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
     const mindMapArray = convertToMermaid(layers, edges);
 
-    const fetchStreamData = fetchGeneratedTSummaryText({
+    const fetchStreamData = fetchGeneratedSummaryText({
       session: safeSession,
       conversationId: userMindmapDetails.conversation ? userMindmapDetails.conversation?.id : "",
       mindmapId: userMindmapDetails.id,
@@ -131,29 +131,30 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     }
   };
 
-  return (
-    <form className="relative flex flex-row items-start max-h-36 overflow-y-auto p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
-      <Textarea
-        className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
-        placeholder={chatText("promptInput")}
-        value={text}
-        onKeyDown={handleSendPrompt}
-        onChange={handleTextareaChange}
-        disabled={isLoading}
-        style={{ height: textareaHeight }}
-        required
-      />
-      <Button onClick={handleSendPrompt} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>
-        <Image
-          className={isLoading ? "animate-spin" : ""}
-          src={starsIcon}
-          height={size}
-          width={size}
-          alt="Stars icon"
+  if (safeSession)
+    return (
+      <form className="relative flex flex-row items-start max-h-36 overflow-y-auto p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
+        <Textarea
+          className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
+          placeholder={chatText("promptInput")}
+          value={text}
+          onKeyDown={handleSendPrompt}
+          onChange={handleTextareaChange}
+          disabled={isLoading}
+          style={{ height: textareaHeight }}
+          required
         />
-      </Button>
-    </form>
-  );
+        <Button onClick={handleSendPrompt} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>
+          <Image
+            className={isLoading ? "animate-spin" : ""}
+            src={starsIcon}
+            height={size}
+            width={size}
+            alt="Stars icon"
+          />
+        </Button>
+      </form>
+    );
 }
 
 export { PromptTextInput };

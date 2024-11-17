@@ -58,19 +58,6 @@ export default function Board({ params }: { params: { id: string } }) {
   const { socketJoinRoom } = useSocket();
 
   useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [params.id, session]);
-
-  useEffect(() => {
     const user: User = {
       id: session.data?.session?.user?.id,
       username: session.data?.session?.user?.username,
