@@ -5,6 +5,7 @@ export * from "./emptyMindMapObject";
 export * from "./exportMindmap";
 export * from "./findUserCollaboratorId";
 export * from "./formatDate";
+export * from "./handleStreamMindmapData";
 export * from "./importMindmap";
 export * from "./promiseReader";
 export * from "./refreshPage";

@@ -285,6 +285,11 @@ export const modalState = atom({
   default: false,
 });
 
+export const generateModalState = atom({
+  key: "generateModalState",
+  default: false,
+});
+
 export const organizationState = atom({
   key: "organizationState",
   default: false,

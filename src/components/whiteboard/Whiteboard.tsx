@@ -127,6 +127,69 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     layer: null,
   });
 
+  // ================  GENERATE MINDMAPS  ================== //
+
+  // const urlParams = new URLSearchParams(window.location.search);
+  // const generateUrl = urlParams.get("generate");
+
+
+  // const mindmapReqObject = {
+  //   mindmapId: userMindmapDetails.id,
+  //   task: userMindmapDetails.description,
+  // };
+
+  // const [isGeneratingMindmap, setIsGeneratingMindmap] = useState(false);
+
+  // useQuery({
+  //   queryFn: async () => {
+  //     if (isGeneratingMindmap) {
+  //       return; // Exit early if generateUrl is false
+  //     }
+
+  //     setIsGeneratingMindmap(true);
+      
+  //     const response = await generatedMindmap({ session, mindmapReqObject });
+
+  //     // Read chunks from the response stream
+  //     const reader = response.getReader();
+
+  //     let decodedValue = "";
+
+  //     while (true as const) {
+  //       const { done, value } = await reader.read();
+
+  //       if (done) {
+  //         setIsGeneratingMindmap(false);
+
+  //         return;
+  //       }
+
+  //       let rawData = new TextDecoder("utf-8").decode(value);
+
+  //       decodedValue += rawData ?? "";
+  //     }
+
+  //     return decodedValue;
+      
+  //   },
+  //   onSuccess: () => {
+  //     setIsGeneratingMindmap(false);
+  //     // Optionally, invalidate or refetch other queries to update the UI
+  //     queryClient.invalidateQueries("mindmaps");
+  //   },
+  // });
+
+  // if(generateUrl === "true") {
+  //   try {
+
+  //     // fetchGeneratedMindmap.mutate({ session, mindmapReqObject });
+  //   } catch (error) {
+  //     if (error instanceof Error) {
+  //       console.error(`An error has occurred: ${error.message}`);
+  //     }
+  //   }
+  // }
+
   // ================  USE QUERY & SAVE MINDMAPS  ================== //
 
   const queryClient = useQueryClient();

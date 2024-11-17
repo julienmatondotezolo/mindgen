@@ -12,7 +12,7 @@ import { Button, Input, Switch, Textarea } from "@/components/ui";
 import { selectedOrganizationState } from "@/state";
 import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
-const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
+const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLFormElement>(null);
 
@@ -94,7 +94,7 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         open ? "block" : "hidden"
       } fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 sm:w-11/12 md:w-4/12 bg-white border-2 p-6 space-y-8 rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:bg-slate-900 dark:bg-opacity-70 dark:shadow-slate-900 dark:border-slate-800`}
     >
-      <p className="font-bold text-xl">{uppercaseFirstLetter(text("new"))} mind map</p>
+      <p className="font-bold text-xl">{uppercaseFirstLetter(text("generate"))} mind map</p>
       <article className="space-y-4">
         <section>
           <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("name")}</p>
@@ -128,10 +128,10 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         <Button variant="outline" onClick={handleClose}>
           {uppercaseFirstLetter(text("cancel"))}
         </Button>
-        <Button type="submit">{uppercaseFirstLetter(text("create"))}</Button>
+        <Button type="submit">{uppercaseFirstLetter(text("generate"))}</Button>
       </div>
     </form>
   );
 };
 
-export { MindmapDialog };
+export { GenerateMindmapDialog };

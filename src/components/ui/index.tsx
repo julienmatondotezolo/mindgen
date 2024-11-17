@@ -5,6 +5,7 @@ export * from "./card";
 export * from "./chat";
 export * from "./collaborateDialog";
 export * from "./form";
+export * from "./generateMindmapDialog";
 export * from "./importDialog";
 export * from "./input";
 export * from "./label";

@@ -32,7 +32,8 @@
     "passwordNotMatching": "Passwords do not match",
     "settings": "settings",
     "general": "general",
-    "members": "membres"
+    "members": "membres",
+    "generate": "generate"
   },
   "Auth": {
     "connection": "Connection",

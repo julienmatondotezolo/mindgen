@@ -87,6 +87,29 @@ export async function fetchGeneratedSummaryText(
   }); 
 }
 
+export async function fetchCreatedPDF({ session, pdfReqObject }: { session: CustomSession | null, pdfReqObject: any }): Promise<any> {
+  if(session)
+    try {
+      const responseCreatePDF: Response = await fetch(baseUrl + `/ai/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify(pdfReqObject),
+      });
+
+      if (responseCreatePDF.ok) {
+        return responseCreatePDF.json();
+      } else {
+        throw responseCreatePDF;
+      }
+    } catch (error) {
+      console.error("Impossible to create PDF:", error);
+    }
+}
+
 /* ================================================= */  
 /* ==================   PROFILE   ================== */
 /* ================================================= */ 
@@ -247,7 +270,50 @@ export async function deleteOrganizationById({ organizationId }: { organizationI
 
 /* ================================================== */  
 /* ==================   MINDMAPS   ================== */
-/* ================================================== */   
+/* ================================================== */ 
+
+export async function generatedMindmap({ session, mindmapReqObject }: { session: CustomSession | null, mindmapReqObject: any }): Promise<ReadableStream<Uint8Array>> {
+  if(session)
+    try {
+      const responseGeneratedMindmap: Response = await fetch(baseUrl + `/ai/mindmap/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify(mindmapReqObject),
+      });
+
+      if (responseGeneratedMindmap.ok) {
+        return responseGeneratedMindmap.body as ReadableStream<Uint8Array>;
+      } else {
+        console.error("Failed to post data and stream response");
+        // If the response is not okay, return a default ReadableStream<Uint8Array> with a message
+        return new ReadableStream<Uint8Array>({
+          start(controller) {
+          // Convert a string to Uint8Array and enqueue it to the stream
+            const message = "An error occurred while fetching the summary text.";
+
+            controller.enqueue(new TextEncoder().encode(message));
+            controller.close();
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Impossible to generate Mindmap:", error);
+    }
+
+  return new ReadableStream({
+    async start(controller) {
+      const message = "No active session found.";
+      const encoder = new TextEncoder();
+  
+      controller.enqueue(encoder.encode(message));
+      controller.close();
+    },
+  }); 
+}
 
 export async function fetchMindmaps({ organizationId }: {organizationId: string}): Promise<any> {
   try {
@@ -273,7 +339,7 @@ export async function fetchMindmaps({ organizationId }: {organizationId: string}
   }
 }
 
-export async function createMindmap(mindmapObject: any): Promise<any> {
+export async function createMindmap({ mindmapObject }: {mindmapObject: any}): Promise<any> {
   try {
     const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
     const session = await response.json();

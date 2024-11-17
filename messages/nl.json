@@ -32,7 +32,8 @@
     "passwordNotMatching": "Wachtwoorden komen niet overeen",
     "settings": "instellingen",
     "general": "general",
-    "members": "leden"
+    "members": "leden",
+    "generate": "genereer"
   },
   "Auth": {
     "connection": "Inloggen",

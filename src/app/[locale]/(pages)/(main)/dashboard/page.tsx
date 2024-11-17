@@ -7,13 +7,27 @@ import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Organization } from "@/_types";
 import boardElement from "@/assets/images/elements.svg";
-import { BackDropGradient, Button, MindmapDialog, OrganizationDialog, OrganizationSettingsDialog } from "@/components";
+import {
+  BackDropGradient,
+  Button,
+  GenerateMindmapDialog,
+  MindmapDialog,
+  OrganizationDialog,
+  OrganizationSettingsDialog,
+} from "@/components";
 import { HeroProfile, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
-import { modalState, organizationSettingsState, organizationState, selectedOrganizationState } from "@/state";
+import {
+  generateModalState,
+  modalState,
+  organizationSettingsState,
+  organizationState,
+  selectedOrganizationState,
+} from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useRecoilState(generateModalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
   const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
 
@@ -57,6 +71,7 @@ export default function Dashboard() {
         </section>
       </div>
       <MindmapDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
+      <GenerateMindmapDialog open={isGenerateModalOpen} setIsOpen={setIsGenerateModalOpen} update={false} />
       <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
       <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />
     </>

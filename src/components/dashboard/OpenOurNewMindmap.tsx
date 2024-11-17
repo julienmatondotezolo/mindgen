@@ -1,12 +1,11 @@
 "use client";
-import Image from "next/image";
+import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useRecoilState } from "recoil";
 
-import documentIcon from "@/assets/icons/document.svg";
 import { Button } from "@/components/ui";
-import { modalState } from "@/state";
+import { generateModalState, modalState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 function OpenOurNewMindmap() {
@@ -14,7 +13,12 @@ function OpenOurNewMindmap() {
 
   const size = 15;
 
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useRecoilState(generateModalState);
   const [isOpen, setIsOpen] = useRecoilState(modalState);
+
+  const handleGenerateMindmap = () => {
+    setIsGenerateModalOpen(!isGenerateModalOpen);
+  };
 
   const handleClick = () => {
     setIsOpen(!isOpen);
@@ -24,9 +28,9 @@ function OpenOurNewMindmap() {
     <>
       <ul className="inline-block space-x-4">
         <li className="float-left dark:text-white">
-          <Button variant={"outline"}>
-            <Image className="mr-2 dark:invert" src={documentIcon} height={size} alt="document icon" />
-            <p className="dark:text-white">{uppercaseFirstLetter(text("open"))} mind map</p>
+          <Button onClick={handleGenerateMindmap} variant={"outline"}>
+            <Sparkles className="mr-2" height={size} />
+            <p className="dark:text-white">{uppercaseFirstLetter(text("generate"))} mind map</p>
           </Button>
         </li>
         <li className="float-left">

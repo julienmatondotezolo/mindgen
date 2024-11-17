@@ -3,9 +3,10 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
+import { useMutation } from "react-query";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { fetchGeneratedSummaryText } from "@/_services";
+import { fetchCreatedPDF, fetchGeneratedSummaryText } from "@/_services";
 import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
 import starsIcon from "@/assets/icons/stars.svg";
@@ -49,6 +50,16 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const [done, setDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const createdPDF = useMutation(fetchCreatedPDF, {
+    onSuccess: () => {
+      setText("");
+      // Optionally, invalidate or refetch other queries to update the UI
+    },
+    onError: () => {
+      setText("");
+    },
+  });
+
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
       const updatedQa = [...prevQa];
@@ -74,6 +85,14 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     }
     updateQa();
   }, [done, isLoading, updateQa]);
+
+  const handleTextareaChange = (event: any) => {
+    setText(event.target.value);
+    event.target.style.height = "36px";
+    const newHeight = event.target.scrollHeight;
+
+    setTextareaHeight(newHeight + "px");
+  };
 
   const sendPrompt = () => {
     setAnswerMessages([{ text: "", sender: "server" }]);
@@ -105,25 +124,32 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     setText("");
   };
 
-  const handleTextareaChange = (event: any) => {
-    setText(event.target.value);
-    event.target.style.height = "36px";
-    const newHeight = event.target.scrollHeight;
+  const createPDF = (prompt: any) => {
+    setText(prompt);
+    const mindMapArray = convertToMermaid(layers, edges);
 
-    setTextareaHeight(newHeight + "px");
+    const createPDFReqObject = {
+      task: prompt,
+      mermaid: mindMapArray,
+      description,
+    };
+
+    createdPDF.mutate({
+      session: session,
+      pdfReqObject: createPDFReqObject,
+    });
   };
 
   const handleQuickPrompt = (e: any, name: string, prompt: string) => {
     e.preventDefault();
-    setText("");
-    if(name === "Create PDF") {
-      alert("Creating pdf")
+    if (name === "Create PDF") {
+      createPDF(prompt);
       return;
     }
 
     setText(prompt);
     sendPrompt();
-  }
+  };
 
   const handleSendPrompt = (event: any) => {
     if (text) {
@@ -145,64 +171,78 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const quickPrompts = [
     {
       name: "Summarize",
-      prompt: "Make a summary of this mindmap"
+      prompt: "Make a summary of this mindmap",
     },
-    // {
-    //   name: "Generate Essay",
-    //   prompt: "Write a persuasive essay on the information within the mindmap."
-    // },
+    {
+      name: "Generate Essay",
+      prompt: "Write a persuasive essay on the information within the mindmap.",
+    },
     // {
     //   name: "Create Proposal",
     //   prompt: "Generate a proposal document based on the information within the mindmap."
     // },
-    {
-      name: "Export to Website",
-      prompt: "Export the mindmap content as a webpage (HTML format). With Javascript <script></script> tag and CSS <style></style> tag embedded inside the HTML."
-    },
+    // {
+    //   name: "Export to Website",
+    //   prompt:
+    //     "Export the mindmap content as a webpage (HTML format). With Javascript <script></script> tag and CSS <style></style> tag embedded inside the HTML.",
+    // },
     {
       name: "Create List of Key Ideas",
-      prompt: "Extract and list key points from the mindmap in a digestible format."
+      prompt: "Extract and list key points from the mindmap in a digestible format.",
     },
     {
       name: "Create PDF",
-      prompt: "Automatically generate a PDF document of the mindmap."
-    }
+      prompt: "Automatically generate a PDF document of the mindmap.",
+    },
   ];
 
   if (safeSession)
     return (
-      <form className="relative flex flex-row items-start max-h-36 p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
-        <Textarea
-          className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
-          placeholder={chatText("promptInput")}
-          value={text}
-          onKeyDown={handleSendPrompt}
-          onChange={handleTextareaChange}
-          disabled={isLoading}
-          style={{ height: textareaHeight }}
-          required
-        />
-        <Button onClick={handleSendPrompt} className="absolute bottom-2 right-2" size="icon" disabled={isLoading}>
-          <Image
-            className={isLoading ? "animate-spin" : ""}
-            src={starsIcon}
-            height={size}
-            width={size}
-            alt="Stars icon"
+      <>
+        <form className="relative flex flex-row items-start max-h-36 p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
+          <Textarea
+            className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
+            placeholder={chatText("promptInput")}
+            value={text}
+            onKeyDown={handleSendPrompt}
+            onChange={handleTextareaChange}
+            disabled={isLoading || createdPDF.isLoading}
+            style={{ height: textareaHeight }}
+            required
           />
-        </Button>
-        <aside className="absolute flex flex-wrap justify-between w-full top-[-56px] left-0">
-          {quickPrompts.map((item, index) => (
-            <button
-              key={index}
-              onClick={(e) => handleQuickPrompt(e, item.name, item.prompt)}
-              className="border bg-white dark:bg-slate-900 dark:bg-opacity-80 dark:border-slate-800 px-4 py-2 w-fit rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap mb-2"
-            >
-              {item.name}
-            </button>
-          ))}
-        </aside>
-      </form>
+          <Button
+            onClick={handleSendPrompt}
+            className="absolute bottom-2 right-2"
+            size="icon"
+            disabled={isLoading || createdPDF.isLoading}
+          >
+            <Image
+              className={isLoading || createdPDF.isLoading ? "animate-spin" : ""}
+              src={starsIcon}
+              height={size}
+              width={size}
+              alt="Stars icon"
+            />
+          </Button>
+          <aside className="absolute top-[-56px] flex flex-wrap justify-between w-full left-0">
+            {quickPrompts.map((item, index) => (
+              <button
+                key={index}
+                onClick={(e) => handleQuickPrompt(e, item.name, item.prompt)}
+                className="border bg-white dark:bg-slate-900 dark:bg-opacity-80 dark:border-slate-800 px-4 py-2 w-fit rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap mb-2"
+              >
+                {item.name}
+              </button>
+            ))}
+          </aside>
+          {createdPDF.isLoading && (
+            <div className="absolute top-[-196px] left-1/2 -translate-x-1/2 bg-white shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-900 dark:bg-opacity-95 dark:border-slate-800 p-4 rounded-lg text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
+              <p>We are creating your pdf...</p>
+            </div>
+          )}
+        </form>
+      </>
     );
 }
 
