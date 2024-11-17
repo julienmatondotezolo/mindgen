@@ -1,12 +1,13 @@
 import { Plus } from "lucide-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
 import { useRecoilState } from "recoil";
 
 import { fetchProfile } from "@/_services";
-import { Member, MindMapDetailsProps, ProfileProps } from "@/_types";
+import { CustomSession, Member, MindMapDetailsProps, ProfileProps } from "@/_types";
 import collaborateIcon from "@/assets/icons/collaborate.svg";
 import importIcon from "@/assets/icons/import.svg";
 import shareIcon from "@/assets/icons/share.svg";
@@ -16,6 +17,7 @@ import { checkPermission } from "@/utils";
 
 function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const text = useTranslations("Index");
+  const session = useSession();
 
   const PERMISSIONS = userMindmapDetails?.connectedMemberPermissions;
   const members = userMindmapDetails ? userMindmapDetails?.members : [];
@@ -26,7 +28,9 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
 
-  const fetchUserProfile = () => fetchProfile();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const fetchUserProfile = () => fetchProfile({ session: safeSession });
 
   const handleImportClick = () => {
     setImportModal(!importModal);
