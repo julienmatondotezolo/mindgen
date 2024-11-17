@@ -63,7 +63,8 @@
   "Navigation": {
     "searchInput": "Search mindmap",
     "upgradeButton": "Upgrade",
-    "loginButton": "Login"
+    "loginButton": "Login",
+    "tryNow": "Try now"
   },
   "Dashboard": {
     "welcome": "Welcome to Mindgen,",

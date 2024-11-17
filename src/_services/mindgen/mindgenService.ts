@@ -91,28 +91,26 @@ export async function fetchGeneratedTSummaryText(
 /* ==================   PROFILE   ================== */
 /* ================================================= */ 
 
-export async function fetchProfile(): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function fetchProfile({ session }: {session: CustomSession | null}): Promise<any> {
+  if(session)
+    try {
+      const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
 
-    const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseProfile.ok) {
-      return responseProfile.json();
-    } else {
-      throw responseProfile;
+      if (responseProfile.ok) {
+        return responseProfile.json();
+      } else {
+        throw responseProfile;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch profiles:", error);
     }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
-  }
 }
 
 /* ======================================================= */  

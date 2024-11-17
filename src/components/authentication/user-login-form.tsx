@@ -1,15 +1,14 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-
-import { Link, useRouter } from "../../navigation";
+import { Link, useRouter } from "@/navigation";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -18,6 +17,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
   const text = useTranslations("Index");
 
   const router = useRouter();
+  const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -37,17 +37,52 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     setIsLoading(true);
-    await signIn("credentials", { redirect: false, username: username, password: password }).then((res: any) => {
-      setIsLoading(false);
-      if (res.error) {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get("callbackUrl");
+
+      const result = await signIn("credentials", {
+        redirect: false,
+        username: username,
+        password: password,
+      });
+
+      if (result?.error) {
         setShowBadCredentialsMessage(true);
+        setIsLoading(false);
         return;
       }
+
       setShowBadCredentialsMessage(false);
 
-      router.push("/dashboard");
-    });
+      // Wait for the session to be updated
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (callbackUrl) {
+        const newCallbackURL = callbackUrl === "/dashboard" ? "/" : callbackUrl;
+
+        router.push(newCallbackURL);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      setIsLoading(false);
+    }
   }
+
+  // useEffect(() => {
+  //   console.log("Session:", session);
+  //   if (session) {
+  //     const urlParams = new URLSearchParams(window.location.search);
+  //     const callbackUrl = urlParams.get("callbackUrl");
+
+  //     if (callbackUrl) {
+  //       router.push(callbackUrl);
+  //     } else {
+  //       router.push("/dashboard");
+  //     }
+  //   }
+  // }, [session]);
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
@@ -87,7 +122,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
           <Link href="/auth/forgot-password" target="_blank" className=" underline underline-offset-4">
             <small>{authText("forgotPassword")}?</small>
           </Link>
-          <Button disabled={isLoading}>
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? <p>{text("loading")}</p> : <p>{authText("connectionButton")}</p>}
           </Button>
         </div>

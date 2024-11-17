@@ -13,24 +13,17 @@ export default createMiddleware({
 
 export const config = {
   // Match only internationalized pathnames and the protected paths
-  matcher: ["/", "/(fr|nl)/:path*", "/dashboard", "/board/:id"],
+  matcher: ["/", "/(en|fr|nl)/:path*", "/dashboard", "/board", "/profile"],
 };
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  const protectedPaths = ["/dashboard", "/board/:id"]; // Define your protected paths here
+  // Handle internationalized paths by removing the locale prefix before checking
+  const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
+  // Define your protected paths here
+  const protectedPaths = ["/dashboard", "/board", "/profile"];
 
-  const isPathProtected = protectedPaths.some((protectedPath) => {
-    // Handle internationalized paths by removing the locale prefix before checking
-    const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
-
-    if (protectedPath.includes(":")) {
-      // For dynamic paths like /board/:id, use a regex test instead of startsWith
-      return new RegExp(`^${protectedPath.replace(":id", "\\d+")}`).test(sanitizedPath);
-    } else {
-      return sanitizedPath.startsWith(protectedPath);
-    }
-  });
+  const isPathProtected = protectedPaths.some((protectedPath) => sanitizedPath.startsWith(protectedPath));
 
   const res = NextResponse.next();
 
@@ -38,9 +31,13 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req });
 
     if (!token) {
-      const url = new URL(`/auth/login`, req.url);
+      // Extract the current locale from the pathname
+      const localeMatch = pathname.match(/^\/(en|fr|nl)/);
+      // Default to 'en' if no locale is found
+      const currentLocale = localeMatch ? localeMatch[0] : "/en";
+      const url = new URL(`${currentLocale}/auth/login`, req.url);
 
-      url.searchParams.set("callbackUrl", pathname);
+      url.searchParams.set("callbackUrl", sanitizedPath);
       return NextResponse.redirect(url);
     }
   }

@@ -14,6 +14,7 @@ import { NavProfile } from "./NavProfile";
 function Navigation() {
   const { data: session } = useSession();
   const navigationText = useTranslations("Navigation");
+  const pricingText = useTranslations("Pricing");
 
   return (
     <nav className="flex justify-center fixed z-50 top-0 w-full py-3 bg-white bg-opacity-60 backdrop-filter backdrop-blur-md dark:bg-slate-800 dark:bg-opacity-50 dark:shadow-slate-900 dark:border-slate-800">
@@ -37,20 +38,20 @@ function Navigation() {
           <Link href={`/pricing`}>
             <Button>
               <Image className="mr-2" src={diamondsIcon} alt="Collaborate icon" />
-              {navigationText("upgradeButton")}
+              {session?.session ? navigationText("upgradeButton") : pricingText("hero")}
             </Button>
           </Link>
 
-          <Link href={`/auth/login`}>
+          <Link href={`/dashboard`}>
             {session?.session == undefined && (
               <Button className="gap-2" variant={"outline"}>
-                Start now
+                {navigationText("tryNow")}
                 <MoveRight size={20} />
               </Button>
             )}
           </Link>
 
-          <NavProfile />
+          {session?.session && <NavProfile />}
         </div>
       </div>
     </nav>

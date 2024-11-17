@@ -63,7 +63,8 @@
   "Navigation": {
     "searchInput": "Zoek een mindmap",
     "upgradeButton": "Upgraden",
-    "loginButton": "Inloggen"
+    "loginButton": "Inloggen",
+    "tryNow": "Probeer nu"
   },
   "Dashboard": {
     "welcome": "Welkom bij Mindgen,",

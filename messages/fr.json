@@ -63,7 +63,8 @@
   "Navigation": {
     "searchInput": "Rechercher un mindmap",
     "upgradeButton": "Mettre à niveau",
-    "loginButton": "Se connecter"
+    "loginButton": "Se connecter",
+    "tryNow": "Essayer maintenant"
   },
   "Dashboard": {
     "welcome": "Bienvenue sur Mindgen,",
@@ -72,7 +73,7 @@
     "today": "Aujourd'hui"
   },
   "Pricing": {
-    "hero": "Tarification",
+    "hero": "Prix",
     "heroExplanation": "Payez seulement pour ce que vous utilisez avec la tarification à la demande.",
     "planButton": "Commencer avec",
     "freePlan": "Gratuit",
