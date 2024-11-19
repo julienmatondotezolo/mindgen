@@ -6,7 +6,6 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { Camera, CanvasMode, Color, Layer } from "@/_types";
-import { Button } from "@/components/ui/button";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
 import {
   activeLayersAtom,
@@ -203,7 +202,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     return null;
 
   if (selectionBounds) {
-    const { x, y, width, height } = selectionBounds;
+    const { x, y } = selectionBounds;
 
     const objectSizesWitdh = 4000;
     const objectSizesHeight = 1900;
@@ -258,17 +257,6 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
               onClick={() => setShowColorPicker(!showColorPicker)}
               isActive={showColorPicker && showBorderColorPicker == false}
             />
-            {/* <Button
-              variant={showBorderColorPicker ? "boardActive" : "board"}
-              size="icon"
-              onClick={handleBorderColorChange}
-            >
-              <div
-                className={`w-5 h-5 border-[3px] dark:border-slate-200 rounded-full ${
-                  showBorderColorPicker ? "border-slate-200" : "border-slate-950"
-                }`}
-              ></div>
-            </Button> */}
             <ToolButton onClick={handleBorderColorChange} isActive={showBorderColorPicker ? true : false}>
               <div
                 className={`w-5 h-5 border-[3px] dark:border-slate-200 rounded-full ${

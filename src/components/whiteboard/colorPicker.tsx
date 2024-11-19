@@ -3,8 +3,10 @@
 
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSetRecoilState } from "recoil";
 
-import { Color } from "@/_types/canvas";
+import { CanvasMode, Color } from "@/_types/canvas";
+import { canvasStateAtom } from "@/state";
 import { colorToCss } from "@/utils";
 
 interface ColorPickerProps {
@@ -42,16 +44,33 @@ interface ColorButtonProps {
   onClick: (color: Color) => void;
 }
 
-export const ColorButton = ({ color, onClick }: ColorButtonProps) => (
-  <button
-    className="w-8 h-8 flex items-center justify-center hover:opacity-75 transition"
-    onClick={() => onClick(color)}
-  >
-    <div
-      className="h-8 w-8 rounded-full"
-      style={{
-        background: colorToCss(color),
+export const ColorButton = ({ color, onClick }: ColorButtonProps) => {
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
+
+  return (
+    <button
+      className="w-8 h-8 flex items-center justify-center hover:opacity-75 transition"
+      onMouseEnter={() => {
+        setCanvasState({
+          mode: CanvasMode.Tooling,
+        });
       }}
-    />
-  </button>
-);
+      onMouseLeave={() => {
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      }}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        onClick(color);
+      }}
+    >
+      <div
+        className="h-8 w-8 rounded-full"
+        style={{
+          background: colorToCss(color),
+        }}
+      />
+    </button>
+  );
+};
