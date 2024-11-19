@@ -33,6 +33,30 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Helper functions to validate objects
+export const isValidLayer = (layer: any): boolean =>
+  layer.type === "RECTANGLE" &&
+  layer.id &&
+  typeof layer.x === "number" &&
+  typeof layer.y === "number" &&
+  typeof layer.height === "number" &&
+  typeof layer.width === "number" &&
+  layer.fill &&
+  typeof layer.value === "string";
+
+export const isValidEdge = (edge: any): boolean =>
+  edge.id &&
+  typeof edge.arrowStart === "boolean" &&
+  typeof edge.arrowEnd === "boolean" &&
+  edge.handleStart &&
+  edge.handleEnd &&
+  edge.fromLayerId &&
+  edge.toLayerId &&
+  edge.start &&
+  edge.end &&
+  edge.controlPoint1 &&
+  edge.controlPoint2;
+
 export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Layer[] }): Layer =>
   layers.filter((layer: Layer) => layer.id == layerId)[0];
 
@@ -241,6 +265,69 @@ export const getOrientationFromPosition = (position: HandlePosition, inversed?: 
   }
 };
 
+function calculateControlOffset(distance: number, curvature: number): number {
+  if (distance >= 0) {
+    return 0.5 * distance;
+  }
+
+  return curvature * 25 * Math.sqrt(-distance);
+}
+
+export type GetControlWithCurvatureParams = {
+  pos: HandlePosition;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  c: number;
+};
+
+export function getControlWithCurvature({ pos, x1, y1, x2, y2, c }: GetControlWithCurvatureParams): [number, number] {
+  switch (pos) {
+    case HandlePosition.Left:
+      return [x1 - calculateControlOffset(x1 - x2, c), y1];
+    case HandlePosition.Right:
+      return [x1 + calculateControlOffset(x2 - x1, c), y1];
+    case HandlePosition.Top:
+      return [x1, y1 - calculateControlOffset(y1 - y2, c)];
+    case HandlePosition.Bottom:
+      return [x1, y1 + calculateControlOffset(y2 - y1, c)];
+  }
+}
+
+export function edgeBezierPathString({ edge }: { edge: Edge }): string {
+  const sourceX = edge.start.x;
+  const sourceY = edge.start.y;
+  const sourcePosition: HandlePosition = edge.handleStart || HandlePosition.Top;
+  const targetPosition: HandlePosition = edge.handleEnd || HandlePosition.Top;
+  const targetX = edge.end.x;
+  const targetY = edge.end.y;
+  const curvature = 0.5;
+
+  const [sourceControlX, sourceControlY] = getControlWithCurvature({
+    pos: sourcePosition,
+    x1: sourceX,
+    y1: sourceY,
+    x2: targetX,
+    y2: targetY,
+    c: curvature,
+  });
+
+  const [targetControlX, targetControlY] = getControlWithCurvature({
+    pos: targetPosition,
+    x1: targetX,
+    y1: targetY,
+    x2: sourceX,
+    y2: sourceY,
+    c: curvature,
+  });
+
+  const pathString = `
+  M${sourceX},${sourceY} C${sourceControlX},${sourceControlY} ${targetControlX},${targetControlY} ${targetX},${targetY}`;
+
+  return pathString;
+}
+
 export const calculateControlPoints = (start: Point, end: Point, fromPosition: HandlePosition | undefined) => {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
@@ -280,23 +367,6 @@ export const calculateControlPoints = (start: Point, end: Point, fromPosition: H
   }
 
   return [controlPoint1, controlPoint2];
-};
-
-export const calculateBezierPoint = (t: number, p0: Point, p1: Point, p2: Point, p3: Point): Point => {
-  const oneMinusT = 1 - t;
-
-  return {
-    x:
-      Math.pow(oneMinusT, 3) * p0.x +
-      3 * Math.pow(oneMinusT, 2) * t * p1.x +
-      3 * oneMinusT * Math.pow(t, 2) * p2.x +
-      Math.pow(t, 3) * p3.x,
-    y:
-      Math.pow(oneMinusT, 3) * p0.y +
-      3 * Math.pow(oneMinusT, 2) * t * p1.y +
-      3 * oneMinusT * Math.pow(t, 2) * p2.y +
-      Math.pow(t, 3) * p3.y,
-  };
 };
 
 export function isEdgeCloseToLayer(edge: Edge, layer: Layer, threshold: number): boolean {

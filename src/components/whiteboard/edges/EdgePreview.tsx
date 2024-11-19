@@ -5,9 +5,9 @@ import { useSession } from "next-auth/react";
 import React, { memo } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { CanvasMode, Edge, EdgeType } from "@/_types";
+import { CanvasMode, Edge, EdgeType, HandlePosition } from "@/_types";
 import { activeEdgeIdAtom, canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
-import { calculateControlPoints, colorToCss } from "@/utils";
+import { colorToCss, edgeBezierPathString } from "@/utils";
 
 interface EdgePreviewProps {
   edge: Edge;
@@ -30,20 +30,9 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
 
   if (!edge) return null;
 
-  const [controlPoint1, controlPoint2] =
-    edge.start && edge.end
-      ? edge.controlPoint1 && edge.controlPoint2
-        ? [edge.controlPoint1, edge.controlPoint2]
-        : calculateControlPoints(edge.start, edge.end, edge.handleStart)
-      : [
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-      ];
   const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId?.includes(edge.id);
-  const pathString =
-    edge.start && edge.end
-      ? `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`
-      : "";
+
+  const pathString = edgeBezierPathString({ edge });
 
   return (
     <g>

@@ -4,7 +4,7 @@ import { useRecoilValue } from "recoil";
 
 import { CanvasMode, Edge, Point } from "@/_types";
 import { canvasStateAtom } from "@/state";
-import { calculateBezierPoint, calculateControlPoints, colorToCss } from "@/utils";
+import { edgeBezierPathString } from "@/utils";
 
 interface EdgeSelectionBoxProps {
   edge: Edge;
@@ -32,15 +32,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
   //   y: (edge.start.y + edge.end.y) / 2,
   // };
 
-  const [controlPoint1, controlPoint2] =
-    edge.controlPoint1 && edge.controlPoint2
-      ? [edge.controlPoint1, edge.controlPoint2]
-      : calculateControlPoints(edge.start, edge.end, edge.handleStart);
-
-  // Calculate the middle point using the Bezier curve formula
-  const middlePoint = calculateBezierPoint(0.5, edge.start, controlPoint1, controlPoint2, edge.end);
-
-  const pathString = `M${edge.start.x} ${edge.start.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${edge.end.x} ${edge.end.y}`;
+  const pathString = edgeBezierPathString({ edge });
 
   return (
     <g>
@@ -59,7 +51,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
         }}
         style={{ cursor: "move" }}
       />
-      <circle
+      {/* <circle
         cx={middlePoint.x}
         cy={middlePoint.y}
         r={circleSize}
@@ -71,7 +63,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
           onHandlePointerDown("MIDDLE", middlePoint);
         }}
         style={{ cursor: "move" }}
-      />
+      /> */}
       <circle
         cx={edge.end.x}
         cy={edge.end.y}
