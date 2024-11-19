@@ -2,8 +2,8 @@
 
 import { Bold, CaseUpper, Ellipsis, PaintBucket, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { memo, useCallback, useState } from "react";
-import { useRecoilValue } from "recoil";
+import { memo, useCallback, useEffect, useState } from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { Camera, CanvasMode, Color, Layer } from "@/_types";
 import { Button } from "@/components/ui/button";
@@ -30,12 +30,12 @@ interface SelectionToolsProps {
 }
 
 export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionToolsProps) => {
-  camera;
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
   const layers = useRecoilValue(layerAtomState);
   const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
 
   const activeLayerIDs = allActiveLayers
     .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
@@ -192,28 +192,39 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
     }
   }, [activeLayerIDs, currentUserId, edges, layers, removeEdge, removeLayer, unSelectLayer]);
 
+  useEffect(() => {
+    if (selectionBounds)
+      setCanvasState({
+        mode: CanvasMode.Pencil,
+      });
+  }, []);
+
   if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
     return null;
 
   if (selectionBounds) {
     const { x, y, width, height } = selectionBounds;
 
-    canvasState;
-
-    const toolPositionX = x + width / 2;
-    const toolPositionY = y - height - 50;
+    const toolPositionX = x;
+    const toolPositionY = y - 120;
 
     // const toolPositionX = canvasState?.current?.x;
     // const toolPositionY = canvasState?.current?.y;
 
     return (
-      <>
+      <foreignObject
+        className="relative"
+        x={toolPositionX}
+        y={toolPositionY}
+        width={500 / camera.scale}
+        height={100 / camera.scale}
+      >
         {showColorPicker && (
           <div
-            className="fixed bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+            className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
             style={{
-              top: `${toolPositionY - height}px`,
-              left: `${toolPositionX - width}px`,
+              // top: `${toolPositionY - height}px`,
+              // left: `${toolPositionX - width}px`,
               transform: `translate(0, -70px)`,
             }}
           >
@@ -221,11 +232,12 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
           </div>
         )}
         <div
-          className={`absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800`}
+          className={`absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 text-slate-950`}
           style={{
-            top: `${toolPositionY}px`,
-            left: `${toolPositionX}px`,
-            transform: `translate(-50%, 0)`,
+            // top: `${toolPositionY}px`,
+            // left: `${toolPositionX}px`,
+            transform: `translate(10px, 0) scale(${1 / camera.scale})`,
+            transformOrigin: "top left",
           }}
         >
           <ul className="flex flex-row space-x-2 items-center justify-between">
@@ -234,7 +246,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
               onClick={() => setShowColorPicker(!showColorPicker)}
               isActive={showColorPicker && showBorderColorPicker == false}
             />
-            <Button
+            {/* <Button
               variant={showBorderColorPicker ? "boardActive" : "board"}
               size="icon"
               onClick={handleBorderColorChange}
@@ -244,24 +256,32 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
                   showBorderColorPicker ? "border-slate-200" : "border-slate-950"
                 }`}
               ></div>
-            </Button>
+            </Button> */}
+            <ToolButton onClick={handleBorderColorChange} isActive={showBorderColorPicker ? true : false}>
+              <div
+                className={`w-5 h-5 border-[3px] dark:border-slate-200 rounded-full ${
+                  showBorderColorPicker ? "border-slate-200" : "border-slate-950"
+                }`}
+              ></div>
+            </ToolButton>
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
             <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={isDashed} />
-            <Button variant={isThickBorder ? "boardActive" : "board"} size="icon" onClick={handleToggleBorderWidth}>
+            <ToolButton onClick={handleToggleBorderWidth} isActive={isThickBorder ? true : false}>
               <div
                 className={`w-[20px] h-[5px] dark:bg-slate-200 ${isThickBorder ? "bg-slate-200" : "bg-slate-950"}`}
               ></div>
-            </Button>
+            </ToolButton>
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
             <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={isUppercase} />
             <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={isBold} />
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-            <Button variant="board" size="icon" onClick={handleRemoveLayer}>
+            {/* <Button variant="board" size="icon" onClick={handleRemoveLayer}>
               <Trash2 />
-            </Button>
+            </Button> */}
+            <ToolButton icon={Trash2} onClick={handleRemoveLayer} />
           </ul>
         </div>
-      </>
+      </foreignObject>
     );
   }
 });

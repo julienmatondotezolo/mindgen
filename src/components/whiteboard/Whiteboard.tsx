@@ -1,18 +1,16 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-unused-vars */
-import { select } from 'd3-selection';
-import { zoom, zoomIdentity } from 'd3-zoom';
-import html2canvas from 'html2canvas';
+import { select } from "d3-selection";
+import { zoom, zoomIdentity } from "d3-zoom";
+import html2canvas from "html2canvas";
 import { nanoid } from "nanoid";
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from "react-query";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { updateMindmapById } from '@/_services/mindgen/mindgenService';
+import { updateMindmapById } from "@/_services/mindgen/mindgenService";
 import {
   Camera,
   CanvasMode,
@@ -134,7 +132,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // const urlParams = new URLSearchParams(window.location.search);
   // const generateUrl = urlParams.get("generate");
 
-
   // const mindmapReqObject = {
   //   mindmapId: userMindmapDetails.id,
   //   task: userMindmapDetails.description,
@@ -149,7 +146,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   //     }
 
   //     setIsGeneratingMindmap(true);
-      
+
   //     const response = await generatedMindmap({ session, mindmapReqObject });
 
   //     // Read chunks from the response stream
@@ -172,7 +169,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   //     }
 
   //     return decodedValue;
-      
+
   //   },
   //   onSuccess: () => {
   //     setIsGeneratingMindmap(false);
@@ -207,17 +204,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const takeScreenshot = useCallback(async () => {
     setIsCapturing(true);
-    const canvasElement = document.getElementById('canvas');
+    const canvasElement = document.getElementById("canvas");
 
     if (canvasElement) {
       canvasElement.style.color = "white";
-      canvasElement.style.fontFamily = 'sans-serif';
+      canvasElement.style.fontFamily = "sans-serif";
       canvasElement.style.backgroundColor = theme === "dark" ? "#050713" : "#fdfdff";
 
       const canvas = await html2canvas(canvasElement);
       const base64Image = canvas.toDataURL("image/png");
 
-      canvasElement.style.backgroundColor = 'transparent';
+      canvasElement.style.backgroundColor = "transparent";
 
       // setPictureUrl(base64Image);
       setIsCapturing(false);
@@ -242,14 +239,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       mindmapObject: newMindmapObject,
     });
   }, [edges, layers, selectedOrga, session, takeScreenshot, updateMindmapMutation, userMindmapDetails]);
-  
 
   // Handle window/tab close and navigation away
   useEffect(() => {
     let isCapturing = false;
 
     const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'hidden' && !isCapturing) {
+      if (document.visibilityState === "hidden" && !isCapturing) {
         isCapturing = true;
         // await takeScreenshot();
         await saveMindmap();
@@ -260,7 +256,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
       // Modern browsers require the event to be canceled and a message to be shown
       e.preventDefault();
-      
+
       if (!isCapturing) {
         isCapturing = true;
         // await takeScreenshot();
@@ -268,23 +264,23 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         isCapturing = false;
         // saveMindmap();
       }
-      
+
       // Show a standard confirmation dialog
       // Note: Most modern browsers show their own generic message regardless of what we set here
-      return (e.returnValue = '');
+      return (e.returnValue = "");
     };
 
     // Add event listeners
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload, { capture: true });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload, { capture: true });
 
     // Cleanup
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload, { capture: true });
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload, { capture: true });
     };
   }, [saveMindmap]);
-  
+
   // Handle navigation state changes
   useEffect(() => {
     // Create a proxy for router.push
@@ -302,33 +298,36 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   }, [pathname, router, saveMindmap, searchParams]);
 
   // Intercept Link component clicks
-  const handleLinkClick = useCallback(async (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const link = target.closest('a');
-    
-    if (link?.getAttribute('href') && !link.getAttribute('href')?.startsWith('#')) {
-      e.preventDefault();
-      
-      await saveMindmap();
-      
-      // Use router.push for internal navigation
-      const href = link.getAttribute('href') || '';
+  const handleLinkClick = useCallback(
+    async (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest("a");
 
-      if (href.startsWith('/') || href.startsWith(window.location.origin)) {
-        router.push(href);
-      } else {
-        // For external links, use regular navigation
-        window.location.href = href;
+      if (link?.getAttribute("href") && !link.getAttribute("href")?.startsWith("#")) {
+        e.preventDefault();
+
+        await saveMindmap();
+
+        // Use router.push for internal navigation
+        const href = link.getAttribute("href") || "";
+
+        if (href.startsWith("/") || href.startsWith(window.location.origin)) {
+          router.push(href);
+        } else {
+          // For external links, use regular navigation
+          window.location.href = href;
+        }
       }
-    }
-  }, [saveMindmap, router]);
+    },
+    [saveMindmap, router],
+  );
 
   useEffect(() => {
     // Add click handler to document
-    document.addEventListener('click', handleLinkClick as any);
-    
+    document.addEventListener("click", handleLinkClick as any);
+
     return () => {
-      document.removeEventListener('click', handleLinkClick as any);
+      document.removeEventListener("click", handleLinkClick as any);
     };
   }, [handleLinkClick]);
 
@@ -406,11 +405,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       for (const edgeId of userSelection.edgeIds) {
         edgeIdsToColorSelection[edgeId] = connectionIdToColor(userSelection.socketIndex);
       }
-    };
+    }
 
     return edgeIdsToColorSelection;
   }, [otherUserEdgeSelections]);
-    
+
   const selectEdge = useSelectEdgeElement({ roomId: boardId });
   const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
   const addEdge = useAddEdgeElement({ roomId: boardId });
@@ -473,7 +472,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         canvasState.mode === CanvasMode.Grab ||
         canvasState.mode === CanvasMode.Pencil ||
         canvasState.mode === CanvasMode.Inserting ||
-        canvasState.mode === CanvasMode.Typing
+        canvasState.mode === CanvasMode.Typing ||
+        canvasState.mode === CanvasMode.Tooling
       ) {
         return;
       }
@@ -606,11 +606,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           updatedElementEdge: { fromLayerId: layerId },
         });
 
-        setDrawingEdge(
-          (prev) => (
-            { ...prev, fromLayerId: layerId, fromHandlePosition: position }
-          )
-        );
+        setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId, fromHandlePosition: position }));
       }
     },
     [currentUserId, drawingEdge, updateEdge],
@@ -892,13 +888,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const sortLayersBySelection = useCallback(
     (layersToSort: Layer[]) => {
       if (!Array.isArray(layersToSort)) {
-        console.error('layersToSort is not an array:', layersToSort);
+        console.error("layersToSort is not an array:", layersToSort);
         return [layersToSort];
       }
 
       return [...layersToSort].sort((a, b) => {
         if (!a || !b) {
-          console.error('Invalid layer object:', { a, b });
+          console.error("Invalid layer object:", { a, b });
           return 0;
         }
 
@@ -929,7 +925,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "START" | "MIDDLE" | "END", point: Point) => {
-      if(activeEdgeId[0])
+      if (activeEdgeId[0])
         setCanvasState({
           mode: CanvasMode.EdgeEditing,
           editingEdge: {
@@ -946,16 +942,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     (point: Point) => {
       if (canvasState.mode !== CanvasMode.EdgeEditing || !canvasState.editingEdge) return;
 
-      const { id, handlePosition, startPoint } = canvasState.editingEdge;
+      const { id, handlePosition } = canvasState.editingEdge;
       const edge = edges.find((e) => e.id === id);
 
       // Check if edge is undefined
       if (!edge) {
         return; // Exit the function if edge is not found
       }
-
-      const dx = point.x - startPoint.x;
-      const dy = point.y - startPoint.y;
 
       let updatedEdge: Edge;
 
@@ -1134,7 +1127,19 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [canvasState.mode, drawingEdge, handleUnSelectLayer, edges, selectEdge, currentUserId, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState],
+    [
+      canvasState.mode,
+      drawingEdge,
+      handleUnSelectLayer,
+      edges,
+      selectEdge,
+      currentUserId,
+      layers,
+      setIsEdgeNearLayer,
+      setNearestLayer,
+      setEdges,
+      setCanvasState,
+    ],
   );
 
   // ================  SVG POINTER EVENTS  ================== //
@@ -1194,7 +1199,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayer.id });
 
           unSelectEdge({ userId: currentUserId });
-          
         } else {
           // Create a new edge object
           const newEdge: Edge = {
@@ -1227,6 +1231,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         setHoveredEdgeId(null);
       } else if (canvasState.mode === CanvasMode.Typing) {
         return;
+      } else if (canvasState.mode === CanvasMode.Tooling) {
+        // If we're already in Tooling mode, do nothing
+        return;
       } else {
         setCanvasState({
           origin: point,
@@ -1234,7 +1241,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [camera, canvasState.mode, layers, activeLayerIDs, shadowState.startPosition, addEdge, currentUserId, unSelectEdge, setHoveredEdgeId, setCanvasState],
+    [
+      camera,
+      canvasState.mode,
+      layers,
+      activeLayerIDs,
+      shadowState.startPosition,
+      addEdge,
+      currentUserId,
+      unSelectEdge,
+      setHoveredEdgeId,
+      setCanvasState,
+    ],
   );
 
   const handlePointerMove = useCallback(
@@ -1284,7 +1302,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
-
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
         handleUnSelectLayer();
@@ -1431,7 +1448,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             }
           } else {
             const { id, ...updatedProperties } = lastUpdatedEdge;
-            
+
             updateEdge({
               id,
               userId: currentUserId,
@@ -1484,7 +1501,24 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       }
     },
-    [camera, canvasState, handleUnSelectLayer, unSelectEdge, currentUserId, setCanvasState, layers, edges, activeLayerIDs, updateEdge, updateLayer, drawingEdge, whiteboardText, addLayer, selectLayer, insertLayer],
+    [
+      camera,
+      canvasState,
+      handleUnSelectLayer,
+      unSelectEdge,
+      currentUserId,
+      setCanvasState,
+      layers,
+      edges,
+      activeLayerIDs,
+      updateEdge,
+      updateLayer,
+      drawingEdge,
+      whiteboardText,
+      addLayer,
+      selectLayer,
+      insertLayer,
+    ],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -1506,33 +1540,23 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     }
   }, [layers]); // Run when layers or refs change
 
-  const handleMouseMove = useCallback(
-    (event: MouseEvent) => {
-      if (!isMouseDown || canvasState.mode !== CanvasMode.Grab) return;
+  const handleMouseMove = useCallback(() => {
+    if (!isMouseDown || canvasState.mode !== CanvasMode.Grab) return;
 
-      // setCamera((prev) => ({
-      //   x: prev.x + event.movementX,
-      //   y: prev.y + event.movementY,
-      //   scale: prev.scale,
-      // }));
+    // Check if the <g> element is out of bounds
+    const svgElement = document.querySelector("svg g");
 
-      // Check if the <g> element is out of bounds
-      const svgElement = document.querySelector("svg g");
+    if (svgElement) {
+      const rect = svgElement.getBoundingClientRect();
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
-      if (svgElement) {
-        const rect = svgElement.getBoundingClientRect();
-        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      // Check if <g> element is outside the viewport
+      const isOutOfBounds = rect.top > viewportHeight || rect.right < 0 || rect.bottom < 0 || rect.left > viewportWidth;
 
-        // Check if <g> element is outside the viewport
-        const isOutOfBounds =
-          rect.top > viewportHeight || rect.right < 0 || rect.bottom < 0 || rect.left > viewportWidth;
-
-        setShowResetButton(isOutOfBounds);
-      }
-    },
-    [isMouseDown, canvasState.mode],
-  );
+      setShowResetButton(isOutOfBounds);
+    }
+  }, [isMouseDown, canvasState.mode]);
 
   const handleMouseDown = (event: MouseEvent) => {
     if (event.button === 0 && CanvasMode.Grab) {
@@ -1555,15 +1579,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
       .filter((event: any) => {
-        if (event.type === 'wheel') return true;
+        if (event.type === "wheel") return true;
 
-        return canvasState.mode === CanvasMode.Grab && (event.type === 'mousedown' || event.type === 'mousemove');
+        return canvasState.mode === CanvasMode.Grab && (event.type === "mousedown" || event.type === "mousemove");
       })
-      .on('zoom', (event) => {
+      .on("zoom", (event) => {
         const { x, y, k } = event.transform;
 
         setCamera({ x, y, scale: k });
-        g.attr('transform', event.transform.toString());
+        g.attr("transform", event.transform.toString());
       });
 
     zoomBehaviorRef.current = zoomBehavior;
@@ -1573,69 +1597,54 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     // svg.call(zoomBehavior.transform, zoomIdentity);
 
     return () => {
-      svg.on('.zoom', null);
+      svg.on(".zoom", null);
     };
   }, [canvasState]);
 
   const zoomIn = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    
+
     const svg = select(svgRef.current);
     const newScale = Math.min(camera.scale * 1, 4);
-    const transform = zoomIdentity
-      .translate(camera.x, camera.y)
-      .scale(newScale);
-    
-    svg.transition()
-      .duration(300)
-      .call(zoomBehaviorRef.current.transform, transform);
+    const transform = zoomIdentity.translate(camera.x, camera.y).scale(newScale);
+
+    svg.transition().duration(300).call(zoomBehaviorRef.current.transform, transform);
   };
 
   const zoomOut = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    
+
     const svg = select(svgRef.current);
     const newScale = Math.max(camera.scale / 1, 0.1);
-    const transform = zoomIdentity
-      .translate(camera.x, camera.y)
-      .scale(newScale);
-    
-    svg.transition()
-      .duration(300)
-      .call(zoomBehaviorRef.current.transform, transform);
+    const transform = zoomIdentity.translate(camera.x, camera.y).scale(newScale);
+
+    svg.transition().duration(300).call(zoomBehaviorRef.current.transform, transform);
   };
 
   const fitView = () => {
-    if (canvasState.mode === CanvasMode.Translating || !svgRef.current || !gRef.current || !zoomBehaviorRef.current) return;
+    if (canvasState.mode === CanvasMode.Translating || !svgRef.current || !gRef.current || !zoomBehaviorRef.current)
+      return;
 
     setShowResetButton(false);
 
     const svg = select(svgRef.current);
-    
+
     // Get the bounding box of the content
     const bounds = gRef.current.getBBox();
     const svgWidth = svgRef.current.clientWidth;
     const svgHeight = svgRef.current.clientHeight;
-    
+
     // Calculate scale to fit content with padding
     const padding = 40;
-    const scale = Math.min(
-      svgWidth / (bounds.width + padding * 2),
-      svgHeight / (bounds.height + padding * 2)
-    ) * 0.75; // 90% of max scale for padding
-    
+    const scale = Math.min(svgWidth / (bounds.width + padding * 2), svgHeight / (bounds.height + padding * 2)) * 0.75; // 90% of max scale for padding
+
     // Calculate translation to center content
-    const centerX = (svgWidth / 2) - ((bounds.x + bounds.width / 2) * scale);
-    const centerY = (svgHeight / 2) - ((bounds.y + bounds.height / 2) * scale);
-    
-    const transform = zoomIdentity
-      .translate(centerX, centerY)
-      .scale(scale);
-    
-    svg.transition()
-      .duration(500)
-      .call(zoomBehaviorRef.current.transform, transform);
-      
+    const centerX = svgWidth / 2 - (bounds.x + bounds.width / 2) * scale;
+    const centerY = svgHeight / 2 - (bounds.y + bounds.height / 2) * scale;
+
+    const transform = zoomIdentity.translate(centerX, centerY).scale(scale);
+
+    svg.transition().duration(500).call(zoomBehaviorRef.current.transform, transform);
   };
 
   // New useEffect hook for canvas mode changes
@@ -1688,7 +1697,12 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
 
-      if (event.code === "Backspace" && activeEdgeId?.length >= 0 && activeEdgeId[0] && canvasState.mode === CanvasMode.EdgeActive) {
+      if (
+        event.code === "Backspace" &&
+        activeEdgeId?.length >= 0 &&
+        activeEdgeId[0] &&
+        canvasState.mode === CanvasMode.EdgeActive
+      ) {
         removeEdge({
           id: activeEdgeId[0],
           userId: currentUserId,
@@ -1716,7 +1730,19 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [activeLayerIDs, canvasState, layers, removeLayer, handleUnSelectLayer, setCanvasState, removeEdgesConnectedToLayer, removeEdge, currentUserId, unSelectEdge, activeEdgeId]);
+  }, [
+    activeLayerIDs,
+    canvasState,
+    layers,
+    removeLayer,
+    handleUnSelectLayer,
+    setCanvasState,
+    removeEdgesConnectedToLayer,
+    removeEdge,
+    currentUserId,
+    unSelectEdge,
+    activeEdgeId,
+  ]);
 
   // Hande Mouse move
   useEffect(() => {
@@ -1733,17 +1759,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   return (
     <main className="h-full w-full relative touch-none select-none">
-      {
-        isCapturing && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-4 rounded-lg text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
-              <p>We are saving your mindmap...</p>
-            </div>
-          </div>)
-      }
+      {isCapturing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-4 rounded-lg text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
+            <p>We are saving your mindmap...</p>
+          </div>
+        </div>
+      )}
       {DEBUG_MODE && (
-        <div className="fixed bottom-4 right-4 z-[9999] bg-white dark:bg-black border border-gray-300 p-2 rounded shadow-md dark:text-primary-color">
+        <div className="fixed bottom-24 left-4 w-72 z-[9999] bg-white dark:bg-black border border-gray-300 p-2 rounded shadow-md dark:text-primary-color">
           <h3 className="font-bold mb-1">Canvas State:</h3>
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
@@ -1785,13 +1810,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </div>
         </div>
       )}
-      <figure id='canvas' className="h-[100vh] w-[100vw]">
+      <figure id="canvas" className="h-[100vh] w-[100vw]">
         <svg
           ref={svgRef}
           className="h-full w-full absolute inset-0"
           style={{
             backgroundPosition: `${camera.x}px ${camera.y}px`,
-            backgroundImage: `radial-gradient(${theme === "dark" ? "#111212FF" : "#e5e7eb"} ${1 * camera.scale}px, transparent 1px)`,
+            backgroundImage: `radial-gradient(${theme === "dark" ? "#111212FF" : "#e5e7eb"} ${
+              1 * camera.scale
+            }px, transparent 1px)`,
             backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
           }}
           onPointerDown={handlePointerDown}
@@ -1799,18 +1826,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerLeave}
         >
-          <g
-            ref={gRef}
-          >
-            {edges.map((edge, index) => 
+          <g ref={gRef}>
+            {edges.map((edge, index) => (
               <EdgePreview
                 key={index}
                 edge={edge}
                 onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
                 ARROW_SIZE={ARROW_SIZE}
-                selectionColor={edgeIdsToColorSelection[edge.id]} 
+                selectionColor={edgeIdsToColorSelection[edge.id]}
               />
-            )}
+            ))}
             {/* {layers.map((layer, index) => ( */}
             {sortLayersBySelection(layers).map((layer, index) => (
               <LayerPreview
@@ -1863,6 +1888,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               />
             )}
             <CursorPresence />
+            {/* <foreignObject x={canvasState?.current?.x} y={canvasState?.current?.y} width="160" height="160">
+              <div className="">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis mollis mi ut ultricies. Nullam magna
+                ipsum, porta vel dui convallis, rutrum imperdiet eros. Aliquam erat volutpat.
+              </div>
+            </foreignObject> */}
+            <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
           </g>
         </svg>
       </figure>
@@ -1882,11 +1914,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </Button>
         </div>
       )}
-      <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
       <EdgeSelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
     </main>
   );
 };
 
 export { Whiteboard };
-

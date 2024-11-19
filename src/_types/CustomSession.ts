@@ -1,6 +1,7 @@
 interface User {
   id: string;
   token: string; // Assuming the token is a string
+  username: string;
   // Add other user properties here as needed
 }
 

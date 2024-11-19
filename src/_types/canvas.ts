@@ -175,6 +175,9 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Typing;
+    }
+  | {
+      mode: CanvasMode.Tooling;
     };
 
 export enum CanvasMode {
@@ -191,4 +194,5 @@ export enum CanvasMode {
   EdgeDrawing,
   EdgeEditing,
   Typing,
+  Tooling,
 }

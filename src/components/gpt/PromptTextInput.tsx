@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -40,6 +39,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const { description, members } = userMindmapDetails;
 
   const userMemberID = findCollaboratorId(safeSession?.data.session.user.id, members);
+  const username = safeSession?.data.session.user?.username;
 
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [, setPromptValue] = useRecoilState(promptValueState);
@@ -339,11 +339,29 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
     {
       name: "Create Website",
       prompt:
-        "Export the mindmap content as a webpage (HTML format). Using tailwind for CSS be creative. And use a lot of colors, grid layouts with variations between columns and rows. Here is your task: 'Create a beautiful modern website with a table about this mindmap. A navigation multiple section with different varations of layouts and good letter spacing And images using pexels our unsplash related to the content of the mindmap. It needs to be appaeling to read'",
+        `Export the mindmap content as an HTML webpage, utilizing Tailwind CSS for creative styling. Employ a diverse color palette and experiment with various grid layouts, adjusting column and row configurations.
+        
+        Here is your task: 'Create a visually appealing, modern website featuring a table summarizing the mindmap's content. Incorporate a multi-section navigation with varying layouts and optimal letter spacing. Enhance the content with relevant images sourced from Unsplash or Pexels, ensuring they are free for commercial use. Prioritize readability and aesthetic appeal.'
+        
+        Important:
+        Validate Image URLs: Before generating the HTML, verify the validity of each image URL.
+        Use Valid Image URLs: Employ URLs like [invalid URL removed]"`,
     },
     {
-      name: "Create List of Key Ideas",
-      prompt: "Extract and list key points from the mindmap in a digestible format.",
+      name: "Create E-mail",
+      prompt: `
+      Write a professional email summarizing this mindmap content also say that you are talking about this subject "${userMindmapDetails.name}]".
+
+      Key points from the mind map:
+
+      [Point 1]
+      [Point 2]
+      [Point 3]
+      ...
+      Please let me know if you have any questions or require further clarification.
+      
+      The emmail is send by ${username}
+      `,
     },
     {
       name: "Create PDF",

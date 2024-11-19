@@ -2,5 +2,5 @@ export * from "./ellipse";
 export * from "./layerHandles";
 export * from "./rectangle";
 export * from "./selectionBox";
-export * from "./selectionTools";
+export * from "./SelectionTools";
 export * from "./shadowLayer";
