@@ -462,6 +462,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       setCanvasState({
         mode: CanvasMode.None,
       });
+      fitView();
     },
     [addLayer, currentUserId, layers, selectLayer, setCanvasState, whiteboardText],
   );
@@ -1538,7 +1539,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     if (layers?.length > 0 && svgRef.current && gRef.current && zoomBehaviorRef.current) {
       fitView();
     }
-  }, [layers]); // Run when layers or refs change
+  }, []); // Run when layers or refs change
 
   const handleMouseMove = useCallback(() => {
     if (!isMouseDown || canvasState.mode !== CanvasMode.Grab) return;

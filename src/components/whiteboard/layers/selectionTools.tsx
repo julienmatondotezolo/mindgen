@@ -205,8 +205,11 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   if (selectionBounds) {
     const { x, y, width, height } = selectionBounds;
 
-    const toolPositionX = x;
-    const toolPositionY = y - 120;
+    const objectSizesWitdh = 4000;
+    const objectSizesHeight = 1900;
+
+    const toolPositionX = x - 1900;
+    const toolPositionY = y - 1950;
 
     // const toolPositionX = canvasState?.current?.x;
     // const toolPositionY = canvasState?.current?.y;
@@ -216,30 +219,39 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
         className="relative"
         x={toolPositionX}
         y={toolPositionY}
-        width={500 / camera.scale}
-        height={100 / camera.scale}
+        width={objectSizesWitdh}
+        height={objectSizesHeight}
       >
-        {showColorPicker && (
-          <div
-            className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
-            style={{
-              // top: `${toolPositionY - height}px`,
-              // left: `${toolPositionX - width}px`,
-              transform: `translate(0, -70px)`,
-            }}
-          >
-            <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
-          </div>
-        )}
+        {/* USE FOR POSITION ELMENTS INSIDE RECT */}
+        {/* <div
+          className="absolute top-0 left-0"
+          style={{
+            background: "white",
+            width: objectSizesWitdh,
+            height: objectSizesHeight,
+          }}
+        ></div> */}
         <div
-          className={`absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 text-slate-950`}
+          className={`absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 text-slate-950 dark:text-slate-200`}
           style={{
             // top: `${toolPositionY}px`,
             // left: `${toolPositionX}px`,
-            transform: `translate(10px, 0) scale(${1 / camera.scale})`,
-            transformOrigin: "top left",
+            transform: `translate(1800px, 1820px) scale(${1 / camera.scale})`,
+            transformOrigin: "bottom center",
           }}
         >
+          {showColorPicker && (
+            <div
+              className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+              style={{
+                bottom: 70,
+                left: 0,
+                transform: `translate(0px, 0px)`,
+              }}
+            >
+              <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
+            </div>
+          )}
           <ul className="flex flex-row space-x-2 items-center justify-between">
             <ToolButton
               icon={PaintBucket}
