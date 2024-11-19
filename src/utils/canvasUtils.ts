@@ -66,18 +66,11 @@ export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera,
   if (!svgElement) return { x: 0, y: 0 };
 
   const svgRect = svgElement.getBoundingClientRect();
-  const centerX = svgRect.width / 2;
-  const centerY = svgRect.height / 2;
 
   return {
-    x: (e.clientX - svgRect.left - centerX) / camera.scale + centerX - camera.x,
-    y: (e.clientY - svgRect.top - centerY) / camera.scale + centerY - camera.y,
+    x: (e.clientX - svgRect.left - camera.x) / camera.scale,
+    y: (e.clientY - svgRect.top - camera.y) / camera.scale,
   };
-
-  // return {
-  //   x: (e.clientX - svgRect.left - camera.x) / camera.scale,
-  //   y: (e.clientY - svgRect.top - camera.y) / camera.scale,
-  // };
 };
 
 export function colorToCss(color: Color) {

@@ -21,7 +21,11 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, (currentActiveLayers: any) => {
           // If there are some currentActiveLayers add the selected Layer to it
-          if (Object.keys(currentActiveLayers[0]).length === 0) {
+          if (
+            !currentActiveLayers?.length ||
+            !currentActiveLayers[0] ||
+            Object.keys(currentActiveLayers[0]).length === 0
+          ) {
             socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
             const mergLayers = [...currentActiveLayers, userActiveLayers];
 

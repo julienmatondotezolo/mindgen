@@ -30,7 +30,7 @@ interface SelectionToolsProps {
 }
 
 export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionToolsProps) => {
-  camera; // WILL USE CAMERA TO SCALE THE SELECTION TOOL
+  camera;
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
@@ -198,19 +198,23 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   if (selectionBounds) {
     const { x, y, width, height } = selectionBounds;
 
-    const toolPositionX = x - width / 2;
-    const toolPositionY = -height * 2;
+    canvasState;
+
+    const toolPositionX = x + width / 2;
+    const toolPositionY = y - height - 50;
+
+    // const toolPositionX = canvasState?.current?.x;
+    // const toolPositionY = canvasState?.current?.y;
 
     return (
       <>
         {showColorPicker && (
           <div
-            className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+            className="fixed bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
             style={{
-              top: `${y}px`,
-              transform: `translate(${showBorderColorPicker ? toolPositionX : toolPositionX - 50}px, ${
-                toolPositionY - 150
-              }px)`,
+              top: `${toolPositionY - height}px`,
+              left: `${toolPositionX - width}px`,
+              transform: `translate(0, -70px)`,
             }}
           >
             <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
@@ -219,8 +223,9 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
         <div
           className={`absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800`}
           style={{
-            top: `${y}px`,
-            transform: `translate(${toolPositionX}px, ${toolPositionY}px)`,
+            top: `${toolPositionY}px`,
+            left: `${toolPositionX}px`,
+            transform: `translate(-50%, 0)`,
           }}
         >
           <ul className="flex flex-row space-x-2 items-center justify-between">

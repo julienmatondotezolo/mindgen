@@ -102,7 +102,7 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
           setHoveredEdgeId(null), setCanvasState({ mode: CanvasMode.None });
         }}
         onPointerDown={(e) => onEdgePointerDown(e, edge.id)}
-        style={{ cursor: "pointer" }}
+        // style={{ cursor: "pointer" }}
       />
       {edge.arrowEnd && (
         <marker

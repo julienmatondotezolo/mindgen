@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -145,60 +146,87 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const handleGenerateMindmap = async (e: any) => {
     e.preventDefault();
 
-    const mindmapReqObject = {
-      mindmapId: userMindmapDetails.id,
-      task: userMindmapDetails.description,
-    };
-
-    const response = await reGenerateMindmap({
-      session: session,
-      mindmapReqObject: mindmapReqObject,
-    });
-
-    const reader = response.getReader();
-
-    if (!reader) return;
-
-    let result = "";
-
-    while (true as const) {
+    try {
       setIsGenerating(true);
-      const { done, value } = await reader.read();
 
-      if (done) {
+      const mindmapReqObject = {
+        mindmapId: userMindmapDetails.id,
+        task: userMindmapDetails.description,
+      };
+
+      const response = await reGenerateMindmap({
+        session: session,
+        mindmapReqObject: mindmapReqObject,
+      });
+
+      const reader = response.getReader();
+
+      if (!reader) {
         setIsGenerating(false);
-        break;
+        return;
       }
 
-      // Convert the chunk to text and clean up json markers
-      const chunk = new TextDecoder().decode(value);
+      let buffer = "";
+      let currentLayers: any[] = [];
+      let currentEdges: any[] = [];
 
-      result += chunk;
+      while (true as const) {
+        const { done, value } = await reader.read();
 
-      result = result.replace(/^```json/, "").replace(/```$/, "");
-
-      // Remove the "json" prefix if it exists
-      if (result.startsWith("json")) {
-        result = result.slice(4);
-      }
-
-      try {
-        const parsedData = JSON.parse(result);
-
-        if (parsedData.layers && parsedData.edges) {
-          setLayers(parsedData.layers);
-          setEdges(parsedData.edges);
+        if (done) {
+          setIsGenerating(false);
+          // Clear any remaining buffer
+          if (buffer.trim().length > 0) {
+            // console.log("Remaining buffer:", buffer);
+          }
+          break;
         }
-      } catch (e) {
-        // Incomplete JSON, continue collecting chunks
-        continue;
-      }
-    }
 
-    // fetchGeneratedMindmap.mutate({
-    //   session: session,
-    //   mindmapReqObject: mindmapReqObject,
-    // });
+        // Convert the chunk to text and clean up json markers
+        const chunk = new TextDecoder().decode(value);
+
+        buffer += chunk;
+
+        // Try to find complete objects in the buffer
+        while (true as const) {
+          // const layerMatch = buffer.match(/{\s*"type"\s*:\s*"RECTANGLE"[^}]+}/);
+          // const edgeMatch = buffer.match(/{\s*"id"\s*:\s*"edge_[^}]+}/);
+
+          const layerMatch = buffer.match(/{\s*"type"\s*:\s*"RECTANGLE"[^}]*}(?=\s*(?:{|$))/);
+          const edgeMatch = buffer.match(/{\s*"id"\s*:\s*"edge_[^}]*}(?=\s*(?:{|$))/);
+
+          if (!layerMatch && !edgeMatch) break;
+
+          try {
+            if (layerMatch) {
+              const layerObj = JSON.parse(layerMatch[0]);
+
+              // if (isValidLayer(layerObj)) {
+              //   currentLayers = [...currentLayers, layerObj];
+              //   setLayers(currentLayers);
+              //   buffer = buffer.slice(layerMatch.index! + layerMatch[0].length);
+              // }
+            } else if (edgeMatch) {
+              const edgeObj = JSON.parse(edgeMatch[0]);
+
+              // if (isValidEdge(edgeObj)) {
+              //   currentEdges = [...currentEdges, edgeObj];
+              //   setEdges(currentEdges);
+              //   buffer = buffer.slice(edgeMatch.index! + edgeMatch[0].length);
+              // }
+            }
+          } catch (e) {
+            // If JSON parsing fails, break the inner loop
+            console.error("JSON parsing error:", e);
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Stream processing error:", error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleQuickPrompt = (e: any, name: string, prompt: string) => {
@@ -229,6 +257,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       }
     }
   };
+
   const quickPrompts = [
     {
       name: "Summarize",
@@ -241,6 +270,71 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     {
       name: "Create Proposal",
       prompt: "Generate a proposal document based on the information within the mindmap.",
+    },
+    {
+      name: "Create Document",
+      prompt: `
+      Create a professional document layout using proper HTML5 structure optimized for PDF conversion. Use Tailwind CSS for styling with these specific requirements:
+Basic HTML Structure:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Document</title>
+    <!-- Include Tailwind CSS -->
+</head>
+<body class="bg-white min-h-screen">
+    <!-- Document content here -->
+</body>
+</html>
+
+Document Structure:
+Include a professional header with document name
+Add a clean table of contents with proper spacing
+Create distinct sections with clear hierarchy
+Use print-friendly margins and padding
+
+
+Typography:
+
+
+Implement a professional font stack (e.g., Inter or Roboto)
+Use proper heading hierarchy (h1-h6)
+Set optimal line height and letter spacing for readability
+Include page numbers in footers
+
+
+Layout Specifications:
+
+
+Use a single-column layout for main content
+Two-column layout for specific sections where needed
+Clear section breaks with subtle dividers
+Proper spacing between paragraphs and sections
+
+
+Styling:
+
+
+Use a professional color palette (primary colors: navy blue, dark gray)
+Include subtle shadows for depth
+Add decorative elements like section indicators
+Create styled blockquotes and callouts
+
+
+Components:
+
+
+Design tables with alternating row colors
+Include styled lists (bullet points and numbered)
+Add information boxes and alerts
+Create styled code blocks if needed
+
+All styling should use Tailwind's utility classes and focus on print optimization. The final layout should maintain its structure when converted to PDF format.
+
+BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT WHITESPACES
+      `,
     },
     {
       name: "Create Website",

@@ -1,4 +1,7 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-unused-vars */
+import { select } from 'd3-selection';
+import { zoom, zoomIdentity } from 'd3-zoom';
 import html2canvas from 'html2canvas';
 import { nanoid } from "nanoid";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -72,18 +75,19 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const DEBUG_MODE = false;
+  const DEBUG_MODE = true;
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
+  const zoomBehaviorRef = useRef<any>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const gRef = useRef<SVGGElement>(null);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
-  const [showResetButton, setShowResetButton] = useState(false);
-  const [applyTransition, setApplyTransition] = useState(false);
+  const [, setShowResetButton] = useState(false);
 
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -95,8 +99,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   });
 
   const MAX_LAYERS = 100;
-
-  const CANVAS_TRANSITION_TIME = 500;
 
   const ids: string[] = useMemo(() => [], []);
 
@@ -972,8 +974,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       // Set drawingEdge state to indicate an edge drawing operation is ongoing
       setDrawingEdge({ ongoing: true, lastEdgeId: id, fromLayerId: edge.fromLayerId });
 
-      let controlPoint1, controlPoint2;
-
       switch (handlePosition) {
         case "START":
           if (nearestHandle && nearestHandle.layerId !== edge.toLayerId) {
@@ -1010,22 +1010,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               orientation: edge.orientation,
             };
           }
-          break;
-        case "MIDDLE":
-          controlPoint1 = edge.controlPoint1 || {
-            x: edge.start.x + (edge.end.x - edge.start.x) / 3,
-            y: edge.start.y + (edge.end.y - edge.start.y) / 3,
-          };
-          controlPoint2 = edge.controlPoint2 || {
-            x: edge.start.x + (2 * (edge.end.x - edge.start.x)) / 3,
-            y: edge.start.y + (2 * (edge.end.y - edge.start.y)) / 3,
-          };
-
-          updatedEdge = {
-            ...edge,
-            controlPoint1: { x: controlPoint1.x + dx, y: controlPoint1.y + dy },
-            controlPoint2: { x: controlPoint2.x + dx, y: controlPoint2.y + dy },
-          };
           break;
       }
 
@@ -1301,11 +1285,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     (e: React.PointerEvent) => {
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
+
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
         handleUnSelectLayer();
         unSelectEdge({ userId: currentUserId });
         setCanvasState({
           mode: CanvasMode.None,
+          current: point,
         });
       } else if (canvasState.mode === CanvasMode.Translating) {
         // Update all selected layers
@@ -1351,6 +1337,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         setCanvasState({
           mode: CanvasMode.None,
+          current: point,
         });
       } else if (canvasState.mode === CanvasMode.Resizing) {
         // Update all selected layers
@@ -1493,6 +1480,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       } else {
         setCanvasState({
           mode: CanvasMode.None,
+          current: point,
         });
       }
     },
@@ -1512,15 +1500,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  CAMERA FUNCTIONS  ================== //
 
+  useEffect(() => {
+    if (layers?.length > 0 && svgRef.current && gRef.current && zoomBehaviorRef.current) {
+      fitView();
+    }
+  }, [layers]); // Run when layers or refs change
+
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
       if (!isMouseDown || canvasState.mode !== CanvasMode.Grab) return;
 
-      setCamera((prev) => ({
-        x: prev.x + event.movementX,
-        y: prev.y + event.movementY,
-        scale: prev.scale,
-      }));
+      // setCamera((prev) => ({
+      //   x: prev.x + event.movementX,
+      //   y: prev.y + event.movementY,
+      //   scale: prev.scale,
+      // }));
 
       // Check if the <g> element is out of bounds
       const svgElement = document.querySelector("svg g");
@@ -1552,85 +1546,96 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     setIsMouseDown(false);
   };
 
-  const fitView = () => {
-    setApplyTransition(true);
+  useEffect(() => {
+    if (!svgRef.current || !gRef.current) return;
 
-    const svgElement = document.querySelector("svg");
-    const gElement = document.querySelector("svg g");
+    const svg = select(svgRef.current);
+    const g = select(gRef.current);
 
-    if (!svgElement || !gElement) return;
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.1, 4])
+      .filter((event: any) => {
+        if (event.type === 'wheel') return true;
 
-    // const svgRect = svgElement.getBoundingClientRect();
-    // const gRect = gElement.getBoundingClientRect();
+        return canvasState.mode === CanvasMode.Grab && (event.type === 'mousedown' || event.type === 'mousemove');
+      })
+      .on('zoom', (event) => {
+        const { x, y, k } = event.transform;
 
-    // console.log('gRectWidth:', gRect.width);
-    // console.log('gRectHeight:', gRect.height);
+        setCamera({ x, y, scale: k });
+        g.attr('transform', event.transform.toString());
+      });
 
-    // const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-    // const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    zoomBehaviorRef.current = zoomBehavior;
+    svg.call(zoomBehavior);
 
-    // const scaleX = (viewportWidth * 0.8) / gRect.width;
-    // const scaleY = (viewportHeight * 0.8) / gRect.height;
+    // Set initial transform
+    // svg.call(zoomBehavior.transform, zoomIdentity);
 
-    // const scale = Math.min(scaleX, scaleY, 1);
-
-    // const translateX = (viewportWidth - gRect.width * scale) / 2 - gRect.x * scale;
-    // const translateY = (viewportHeight - gRect.height * scale) / 2 - gRect.y * scale;
-
-    // setCamera({ x: translateX, y: translateY, scale: scale });
-
-    // setTimeout(() => {
-    //   setApplyTransition(false);
-    // }, CANVAS_TRANSITION_TIME);
-
-    // setShowResetButton(false);
-  };
+    return () => {
+      svg.on('.zoom', null);
+    };
+  }, [canvasState]);
 
   const zoomIn = () => {
-    setApplyTransition(true);
-
-    setCamera((prevState) => ({
-      ...prevState,
-      scale: prevState.scale + 0.1, // Increase scale by 25%
-    }));
-
-    // Disable transition after a delay matching the transition duration
-    setTimeout(() => {
-      setApplyTransition(false);
-    }, CANVAS_TRANSITION_TIME);
-
-    setShowResetButton(false);
+    if (!svgRef.current || !zoomBehaviorRef.current) return;
+    
+    const svg = select(svgRef.current);
+    const newScale = Math.min(camera.scale * 1, 4);
+    const transform = zoomIdentity
+      .translate(camera.x, camera.y)
+      .scale(newScale);
+    
+    svg.transition()
+      .duration(300)
+      .call(zoomBehaviorRef.current.transform, transform);
   };
 
   const zoomOut = () => {
-    setApplyTransition(true);
-
-    setCamera((prevState) => ({
-      ...prevState,
-      scale: prevState.scale - 0.1, // Decrease scale by 25%
-    }));
-
-    // Disable transition after a delay matching the transition duration
-    setTimeout(() => {
-      setApplyTransition(false);
-    }, CANVAS_TRANSITION_TIME);
-
-    setShowResetButton(false);
+    if (!svgRef.current || !zoomBehaviorRef.current) return;
+    
+    const svg = select(svgRef.current);
+    const newScale = Math.max(camera.scale / 1, 0.1);
+    const transform = zoomIdentity
+      .translate(camera.x, camera.y)
+      .scale(newScale);
+    
+    svg.transition()
+      .duration(300)
+      .call(zoomBehaviorRef.current.transform, transform);
   };
 
-  const resetView = () => {
-    // Enable transition
-    setApplyTransition(true);
-
-    // Reset camera position
-    setCamera({ x: 0, y: 0, scale: 1 });
-
-    // Disable transition after a delay matching the transition duration
-    setTimeout(() => {
-      setApplyTransition(false);
-    }, CANVAS_TRANSITION_TIME);
+  const fitView = () => {
+    if (canvasState.mode === CanvasMode.Translating || !svgRef.current || !gRef.current || !zoomBehaviorRef.current) return;
 
     setShowResetButton(false);
+
+    const svg = select(svgRef.current);
+    
+    // Get the bounding box of the content
+    const bounds = gRef.current.getBBox();
+    const svgWidth = svgRef.current.clientWidth;
+    const svgHeight = svgRef.current.clientHeight;
+    
+    // Calculate scale to fit content with padding
+    const padding = 40;
+    const scale = Math.min(
+      svgWidth / (bounds.width + padding * 2),
+      svgHeight / (bounds.height + padding * 2)
+    ) * 0.75; // 90% of max scale for padding
+    
+    // Calculate translation to center content
+    const centerX = (svgWidth / 2) - ((bounds.x + bounds.width / 2) * scale);
+    const centerY = (svgHeight / 2) - ((bounds.y + bounds.height / 2) * scale);
+    
+    const transform = zoomIdentity
+      .translate(centerX, centerY)
+      .scale(scale);
+    
+    svg.transition()
+      .duration(500)
+      .call(zoomBehaviorRef.current.transform, transform);
+      
   };
 
   // New useEffect hook for canvas mode changes
@@ -1795,12 +1800,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           onPointerLeave={handlePointerLeave}
         >
           <g
-            style={{
-              transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
-              transformOrigin: "center",
-              transition: applyTransition ? `transform ${CANVAS_TRANSITION_TIME / 1000}s ease-out` : "none",
-              cursor: "pointer",
-            }}
+            ref={gRef}
           >
             {edges.map((edge, index) => 
               <EdgePreview
@@ -1878,14 +1878,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             </Button>
           </figure>
           <Button variant="outline" onClick={fitView}>
-            Reset content
+            Fit
           </Button>
         </div>
-      )}
-      {showResetButton && (
-        <Button variant="outline" onClick={resetView} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-          Scroll back to content
-        </Button>
       )}
       <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
       <EdgeSelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />

@@ -9,13 +9,14 @@ function RenderMarkdown({ markdownText }: { markdownText: string }) {
   useEffect(() => {
     const processMarkdown = async (markdownText: string) => {
       try {
-        // Check if content is HTML
-        if (markdownText.trim().startsWith("```html") && markdownText.includes("</html>")) {
-          setIsHtmlContent(true);
-          // Extract HTML content between ```html and ``` tags
-          const htmlContent = markdownText.split("```html")[1].split("```")[0].trim();
+        // Extract content between triple backticks if present
+        const backtickMatch = markdownText.match(/```(?:html)?\n([\s\S]*?)```/);
 
-          setTextFormatted(htmlContent);
+        if (backtickMatch) {
+          const extractedContent = backtickMatch[1];
+
+          setIsHtmlContent(extractedContent.includes("<!DOCTYPE html>"));
+          setTextFormatted(extractedContent);
           return;
         }
 

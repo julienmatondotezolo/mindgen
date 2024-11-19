@@ -126,6 +126,7 @@ export enum Side {
 export type CanvasState =
   | {
       mode: CanvasMode.None;
+      current?: Point;
     }
   | {
       mode: CanvasMode.Grab;
