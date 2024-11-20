@@ -46,7 +46,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   });
 
   const fetchUpdateCollaborator = useMutation(updateMembers, {
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("data:", data);
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmap");
       setIsDeleting(false);
@@ -161,20 +162,22 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (members) {
       const memberRoles = members.reduce((acc: any, item) => {
         acc[item.memberId] = item.mindmapRole;
         return acc;
       }, {});
 
-      fetchUpdateCollaborator.mutate({
+      await fetchUpdateCollaborator.mutateAsync({
         session: safeSession,
         mindmapId: mindmapId,
         membersToUpdate: {
           memberRoles: { ...memberRoles },
         },
       });
+
+      handleClose();
     } else {
       console.warn("No members to be saved");
     }
@@ -324,7 +327,11 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
       </div>
       {checkPermission(PERMISSIONS, "UPDATE") && membersLength > 0 && (
         <section className="flex justify-end">
-          <Button onClick={handleSave}>{uppercaseFirstLetter(text("save"))}</Button>
+          <Button onClick={handleSave} disabled={fetchUpdateCollaborator.isLoading}>
+            {fetchUpdateCollaborator.isLoading
+              ? uppercaseFirstLetter(text("loading")) + "..."
+              : uppercaseFirstLetter(text("save"))}
+          </Button>
         </section>
       )}
     </div>

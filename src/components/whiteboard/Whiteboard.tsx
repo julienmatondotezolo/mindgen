@@ -30,6 +30,7 @@ import { useSocket } from "@/hooks";
 import {
   activeEdgeIdAtom,
   activeLayersAtom,
+  cameraStateAtom,
   canvasStateAtom,
   connectedUsersState,
   edgesAtomState,
@@ -80,7 +81,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const boardId = userMindmapDetails.id;
 
   const whiteboardText = useTranslations("Whiteboard");
-  const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 1 });
   const zoomBehaviorRef = useRef<any>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const gRef = useRef<SVGGElement>(null);
@@ -89,6 +89,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const [, setShowResetButton] = useState(false);
 
+  const [camera, setCamera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [isCapturing, setIsCapturing] = useState(false);
 
@@ -1717,7 +1718,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.code === "Space") {
-        if (canvasState.mode === CanvasMode.Typing) return;
+        if (canvasState.mode === CanvasMode.Typing || !checkPermission(PERMISSIONS, "UPDATE")) return;
         event.preventDefault();
         setCanvasState({
           mode: CanvasMode.None,
@@ -1775,6 +1776,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <p className="text-sm mb-1">
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
             {JSON.stringify(canvasState, null, 2)}
+          </p>
+          <p className="text-sm mb-1">
+            <strong>Camera scale:</strong> {camera.scale}
           </p>
           <p className="text-sm mb-1">
             <strong>ShadowState:</strong> {JSON.stringify(shadowState.showShadow, null, 2)}

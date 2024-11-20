@@ -158,7 +158,7 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
         }}
       ></div> */}
       <div
-        className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+        className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 text-slate-950 dark:text-slate-200"
         style={{
           transform: `translate(1800px, 1820px) scale(${1 / camera.scale})`,
           transformOrigin: "bottom center",

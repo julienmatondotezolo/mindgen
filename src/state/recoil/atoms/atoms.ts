@@ -1,15 +1,16 @@
 import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import { CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
+import { Camera, CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
 import { Organization } from "@/_types/Organization";
 import { socket } from "@/socket";
 
 // ================   CANVAS STATE   ================== //
 
-// const [canvasState, setCanvasState] = useState<CanvasState>({
-//   mode: CanvasMode.None,
-// });
+export const cameraStateAtom = atom<Camera>({
+  key: "cameraStateAtom", // unique ID (with respect to other atoms/selectors)
+  default: { x: 0, y: 0, scale: 1 }, // valeur par défaut (alias valeur initials)
+});
 
 export const canvasStateAtom = atom<CanvasState>({
   key: "canvasState", // unique ID (with respect to other atoms/selectors)
