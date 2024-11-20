@@ -170,15 +170,21 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       let currentLayers: any[] = [];
       let currentEdges: any[] = [];
 
+      currentLayers;
+      currentEdges;
+
       while (true as const) {
         const { done, value } = await reader.read();
 
         if (done) {
           setIsGenerating(false);
-          // Clear any remaining buffer
-          if (buffer.trim().length > 0) {
-            // console.log("Remaining buffer:", buffer);
-          }
+          const removeBacksticks = buffer.replace("json", "").replace("```", "").replace("```", "");
+
+          const streamData = JSON.parse(removeBacksticks);
+
+          setLayers(streamData.layers);
+          setEdges(streamData.edges);
+
           break;
         }
 
@@ -201,6 +207,8 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
             if (layerMatch) {
               const layerObj = JSON.parse(layerMatch[0]);
 
+              layerObj;
+
               // if (isValidLayer(layerObj)) {
               //   currentLayers = [...currentLayers, layerObj];
               //   setLayers(currentLayers);
@@ -209,12 +217,15 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
             } else if (edgeMatch) {
               const edgeObj = JSON.parse(edgeMatch[0]);
 
+              edgeObj;
+
               // if (isValidEdge(edgeObj)) {
               //   currentEdges = [...currentEdges, edgeObj];
               //   setEdges(currentEdges);
               //   buffer = buffer.slice(edgeMatch.index! + edgeMatch[0].length);
               // }
             }
+            break;
           } catch (e) {
             // If JSON parsing fails, break the inner loop
             console.error("JSON parsing error:", e);
@@ -338,8 +349,7 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
     },
     {
       name: "Create Website",
-      prompt:
-        `Export the mindmap content as an HTML webpage, utilizing Tailwind CSS for creative styling. Employ a diverse color palette and experiment with various grid layouts, adjusting column and row configurations.
+      prompt: `Export the mindmap content as an HTML webpage, utilizing Tailwind CSS for creative styling. Employ a diverse color palette and experiment with various grid layouts, adjusting column and row configurations.
         
         Here is your task: 'Create a visually appealing, modern website featuring a table summarizing the mindmap's content. Incorporate a multi-section navigation with varying layouts and optimal letter spacing. Enhance the content with relevant images sourced from Unsplash or Pexels, ensuring they are free for commercial use. Prioritize readability and aesthetic appeal.'
         

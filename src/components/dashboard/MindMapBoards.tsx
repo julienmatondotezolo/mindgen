@@ -68,7 +68,7 @@ function MindMapBoards() {
           : userMindmap.map((mindmap: MindmapObject) => (
             <div
               key={mindmap.id}
-              className={`${
+              className={`relative ${
                 deletingMindmapId === mindmap.id ? "opacity-20" : "opacity-100"
               } cursor-pointer rounded-xl group overflow-hidden border dark:border-slate-900`}
               style={{
@@ -82,8 +82,8 @@ function MindMapBoards() {
                 <figure className="w-full h-24" />
               </Link>
               <article className="flex flex-wrap justify-between items-start p-2 bg-white bg-opacity-60 backdrop-filter backdrop-blur-md dark:bg-slate-800 dark:bg-opacity-50">
-                <div>
-                  <p className="text-sm font-medium dark:text-white">{mindmap.name}</p>
+                <section className="w-[90%]">
+                  <p className="mb-2 text-sm font-medium dark:text-white truncate overflow-hidden text-ellipsis">{mindmap.name}</p>
                   <p className="text-xs text-grey">
                     {text("createdBy")}{" "}
                     <span className="text-primary-color cursor-pointer hover:underline">
@@ -91,11 +91,11 @@ function MindMapBoards() {
                     </span>
                   </p>
                   <p className="text-xs text-grey">{formatDate(mindmap.createdAt, dateText)}</p>
-                </div>
+                </section>
                 {checkPermission(mindmap.connectedMemberPermissions, "DELETE") && (
                   <figure
                     onClick={() => handleDelete(mindmap.id)}
-                    className="hidden group-hover:block bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%]"
+                    className="hidden absolute bottom-4 right-4 group-hover:block bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%]"
                   >
                     {!deletingMindmapId || deletingMindmapId !== mindmap.id ? (
                       <Image src={deleteIcon} height={size} alt="document icon" />

@@ -127,6 +127,30 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     layer: null,
   });
 
+  const fitView = useCallback(() => {
+    if (canvasState.mode === CanvasMode.Translating || !svgRef.current || !gRef.current || !zoomBehaviorRef.current)
+      return;
+
+    const svg = select(svgRef.current);
+
+    // Get the bounding box of the content
+    const bounds = gRef.current.getBBox();
+    const svgWidth = svgRef.current.clientWidth;
+    const svgHeight = svgRef.current.clientHeight;
+
+    // Calculate scale to fit content with padding
+    const padding = 40;
+    const scale = Math.min(svgWidth / (bounds.width + padding * 2), svgHeight / (bounds.height + padding * 2)) * 0.75; // 90% of max scale for padding
+
+    // Calculate translation to center content
+    const centerX = svgWidth / 2 - (bounds.x + bounds.width / 2) * scale;
+    const centerY = svgHeight / 2 - (bounds.y + bounds.height / 2) * scale;
+
+    const transform = zoomIdentity.translate(centerX, centerY).scale(scale);
+
+    svg.transition().duration(500).call(zoomBehaviorRef.current.transform, transform);
+  }, [canvasState]);
+
   // ================  GENERATE MINDMAPS  ================== //
 
   // const urlParams = new URLSearchParams(window.location.search);
@@ -464,7 +488,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       });
       fitView();
     },
-    [addLayer, currentUserId, layers, selectLayer, setCanvasState, whiteboardText],
+    [addLayer, currentUserId, fitView, layers.length, selectLayer, setCanvasState, whiteboardText],
   );
 
   const handleLayerPointerDown = useCallback(
@@ -1620,32 +1644,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const transform = zoomIdentity.translate(camera.x, camera.y).scale(newScale);
 
     svg.transition().duration(300).call(zoomBehaviorRef.current.transform, transform);
-  };
-
-  const fitView = () => {
-    if (canvasState.mode === CanvasMode.Translating || !svgRef.current || !gRef.current || !zoomBehaviorRef.current)
-      return;
-
-    setShowResetButton(false);
-
-    const svg = select(svgRef.current);
-
-    // Get the bounding box of the content
-    const bounds = gRef.current.getBBox();
-    const svgWidth = svgRef.current.clientWidth;
-    const svgHeight = svgRef.current.clientHeight;
-
-    // Calculate scale to fit content with padding
-    const padding = 40;
-    const scale = Math.min(svgWidth / (bounds.width + padding * 2), svgHeight / (bounds.height + padding * 2)) * 0.75; // 90% of max scale for padding
-
-    // Calculate translation to center content
-    const centerX = svgWidth / 2 - (bounds.x + bounds.width / 2) * scale;
-    const centerY = svgHeight / 2 - (bounds.y + bounds.height / 2) * scale;
-
-    const transform = zoomIdentity.translate(centerX, centerY).scale(scale);
-
-    svg.transition().duration(500).call(zoomBehaviorRef.current.transform, transform);
   };
 
   // New useEffect hook for canvas mode changes
