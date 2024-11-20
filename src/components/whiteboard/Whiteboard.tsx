@@ -1589,9 +1589,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const g = select(gRef.current);
 
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.1, 1])
+      .scaleExtent([0.1, 4])
       .filter((event: any) => {
-        if (event.type === "wheel") return true;
+        // For wheel events, prevent default behavior when Ctrl is pressed
+        if (event.type === "wheel") {
+          if (event.ctrlKey) {
+            event.preventDefault(); // Prevent the default browser zoom
+            return true; // Still allow our zoom to work
+          }
+          return true;
+        }
 
         return canvasState.mode === CanvasMode.Grab && (event.type === "mousedown" || event.type === "mousemove");
       })

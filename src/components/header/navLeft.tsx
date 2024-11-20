@@ -62,11 +62,11 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     // Set canvas state to Grab mode when sheet is open
     if (open === true) {
       setCanvasState({
-        mode: CanvasMode.Typing
+        mode: CanvasMode.Typing,
       });
     } else {
       setCanvasState({
-        mode: CanvasMode.None
+        mode: CanvasMode.None,
       });
     }
   };
