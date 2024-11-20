@@ -1589,7 +1589,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const g = select(gRef.current);
 
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.1, 4])
+      .scaleExtent([0.1, 1])
       .filter((event: any) => {
         if (event.type === "wheel") return true;
 
@@ -1615,9 +1615,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const zoomIn = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-
     const svg = select(svgRef.current);
-    const newScale = Math.min(camera.scale * 1, 4);
+    const newScale = Math.min(camera.scale * 1.2, 4);
     const transform = zoomIdentity.translate(camera.x, camera.y).scale(newScale);
 
     svg.transition().duration(300).call(zoomBehaviorRef.current.transform, transform);
@@ -1625,9 +1624,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const zoomOut = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-
     const svg = select(svgRef.current);
-    const newScale = Math.max(camera.scale / 1, 0.1);
+    const newScale = Math.max(camera.scale / 1.2, 0.1);
     const transform = zoomIdentity.translate(camera.x, camera.y).scale(newScale);
 
     svg.transition().duration(300).call(zoomBehaviorRef.current.transform, transform);
