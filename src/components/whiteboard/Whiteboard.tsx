@@ -68,6 +68,7 @@ import { CursorPresence } from "./collaborate";
 import { EdgePreview, EdgeSelectionBox, EdgeSelectionTools, ShadowEdge } from "./edges";
 import { LayerHandles, SelectionBox, SelectionTools, ShadowLayer } from "./layers";
 import { LayerPreview } from "./layers/LayerPreview";
+import { Toolbar } from "./Toolbar";
 
 const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) => {
   const pathname = usePathname();
@@ -157,14 +158,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  INITIAL RENDER  ================== //
   useEffect(() => {
-    if (PERMISSIONS && checkPermission(PERMISSIONS, "VIEW")) {
-      setCanvasState({
-        mode: CanvasMode.Grab,
-      });
-    }
     if (layers?.length > 0 && svgRef.current && gRef.current && zoomBehaviorRef.current) {
       fitView();
     }
+
+    if (!checkPermission(PERMISSIONS, "UPDATE")) {
+      setCanvasState({
+        mode: CanvasMode.Grab,
+      });
+
+      return;
+    }
+
+    setCanvasState({
+      mode: CanvasMode.None,
+    });
   }, []); // Run when layers or refs change
 
   // ================  GENERATE MINDMAPS  ================== //
@@ -1647,7 +1655,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // Adjusted keyboard event handlers
   useEffect(() => {
+    const whiteboardElement = document.getElementById("canvas");
+
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if the active element is within the whiteboard component
+      if (!whiteboardElement?.contains(document.activeElement) && !whiteboardElement?.contains(event.target as Node)) {
+        return;
+      }
+
       if (event.code === "Space") {
         if (canvasState.mode === CanvasMode.Typing) return;
         event.preventDefault();
@@ -1747,7 +1762,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   }, [handleMouseMove]);
 
   return (
-    <main className="h-full w-full relative touch-none select-none">
+    <main className="h-full w-full relative">
       {isCapturing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-4 rounded-lg text-center">
@@ -1799,6 +1814,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </div>
         </div>
       )}
+      {checkPermission(PERMISSIONS, "UPDATE") && <Toolbar />}
       <figure id="canvas" className="h-[100vh] w-[100vw]">
         <svg
           ref={svgRef}

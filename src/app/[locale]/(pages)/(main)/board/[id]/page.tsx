@@ -11,7 +11,7 @@ import { generateUsername } from "unique-username-generator";
 import { getMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps, MindMapMessages, User } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
-import { BackDropGradient, Spinner, Toolbar, Whiteboard } from "@/components";
+import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
@@ -31,7 +31,7 @@ import {
   upgradePlanModalState,
   usernameState,
 } from "@/state";
-import { checkPermission, refreshPage } from "@/utils";
+import { refreshPage } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -143,10 +143,6 @@ export default function Board({ params }: { params: { id: string } }) {
       <>
         <main className="relative flex justify-between w-screen h-screen scroll-smooth">
           <BackDropGradient />
-          <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
-            <NavLeft userMindmapDetails={userMindmapDetails} />
-            <NavRight userMindmapDetails={userMindmapDetails} />
-          </div>
 
           <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
             {userMindmapDetails ? (
@@ -171,8 +167,11 @@ export default function Board({ params }: { params: { id: string } }) {
           </div>
 
           <div className="w-full">
+            <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
+              <NavLeft userMindmapDetails={userMindmapDetails} />
+              <NavRight userMindmapDetails={userMindmapDetails} />
+            </div>
             <div className="relative w-full h-full">
-              {checkPermission(userMindmapDetails.connectedMemberPermissions, "UPDATE") && <Toolbar />}
               {!userMindmapDetails && currentCollaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />

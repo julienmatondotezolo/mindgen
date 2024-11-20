@@ -18,7 +18,7 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
   return (
-    <li className="m-1">
+    <li className="m-1 cursor-pointer">
       <Button
         disabled={disabled}
         onMouseEnter={() => {
