@@ -371,7 +371,7 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
       ...
       Please let me know if you have any questions or require further clarification.
       
-      The emmail is send by ${username}
+      The e-mail is send by ${username}
       `,
     },
     {

@@ -1655,14 +1655,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // Adjusted keyboard event handlers
   useEffect(() => {
-    const whiteboardElement = document.getElementById("canvas");
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if the active element is within the whiteboard component
-      if (!whiteboardElement?.contains(document.activeElement) && !whiteboardElement?.contains(event.target as Node)) {
-        return;
-      }
-
       if (event.code === "Space") {
         if (canvasState.mode === CanvasMode.Typing) return;
         event.preventDefault();

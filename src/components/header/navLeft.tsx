@@ -7,14 +7,14 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { updateMindmapById } from "@/_services";
-import { CustomSession, MindMapDetailsProps, Organization } from "@/_types";
+import { CanvasMode, CustomSession, MindMapDetailsProps, Organization } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, Switch } from "@/components/ui";
-import { edgesAtomState, layerAtomState, selectedOrganizationState } from "@/state";
+import { canvasStateAtom, edgesAtomState, layerAtomState, selectedOrganizationState } from "@/state";
 import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
@@ -24,6 +24,8 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const text = useTranslations("Index");
+
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
 
   const PERMISSIONS = userMindmapDetails?.connectedMemberPermissions;
 
@@ -54,6 +56,20 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     if (mindMapDescription) setNewMindMapDescription(mindMapDescription);
     if (mindMapVisibility) setNewMindMapVisibility(mindMapVisibility);
   }, [mindMapName, mindMapDescription, mindMapVisibility]);
+
+  const handleSheetOpenChange = (open: boolean) => {
+    setIsSheetOpen(!isSheetOpen);
+    // Set canvas state to Grab mode when sheet is open
+    if (open === true) {
+      setCanvasState({
+        mode: CanvasMode.Typing
+      });
+    } else {
+      setCanvasState({
+        mode: CanvasMode.None
+      });
+    }
+  };
 
   // Update state when input changes
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +111,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
   };
 
   return (
-    <Sheet open={isSheetOpen} onOpenChange={() => setIsSheetOpen(!isSheetOpen)}>
+    <Sheet open={isSheetOpen} onOpenChange={(open) => handleSheetOpenChange(open)}>
       <div className="flex px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
         <ul className="flex flex-row items-center justify-between px-1">
           <li className="flex mr-4">
