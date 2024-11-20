@@ -1662,7 +1662,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
-        if (canvasState.mode === CanvasMode.Typing) return;
+        if (canvasState.mode === CanvasMode.Typing || !checkPermission(PERMISSIONS, "UPDATE")) return;
         event.preventDefault();
         setCanvasState({
           mode: CanvasMode.Grab,

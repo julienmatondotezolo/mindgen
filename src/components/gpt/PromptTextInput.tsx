@@ -23,7 +23,7 @@ import {
   qaState,
   streamedAnswersState,
 } from "@/state";
-import { convertToMermaid, findCollaboratorId, scrollToBottom } from "@/utils";
+import { convertToMermaid, findCollaboratorId, scrollToBottom, uppercaseFirstLetter } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
@@ -91,11 +91,16 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   }, [done, isLoading, updateQa]);
 
   const handleTextareaChange = (event: any) => {
+    setCanvasState({
+      mode: CanvasMode.Typing,
+    });
     setText(event.target.value);
-    event.target.style.height = "36px";
-    const newHeight = event.target.scrollHeight;
 
-    setTextareaHeight(newHeight + "px");
+    // Reset height before calculating new height
+    event.target.style.height = "36px";
+    const newHeight = Math.max(36, event.target.scrollHeight);
+
+    setTextareaHeight(`${newHeight}px`);
   };
 
   const sendPrompt = ({ prompt }: { prompt?: string }) => {
@@ -253,6 +258,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   };
 
   const handleSendPrompt = (event: any) => {
+    event.preventDefault();
     if (text) {
       setCanvasState({
         mode: CanvasMode.Typing,
@@ -421,10 +427,10 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
                 {item.name}
               </button>
             ))}
-            {/* <Button onClick={handleGenerateMindmap} className="px-4 py-2" disabled={isGenerating}>
+            <Button onClick={handleGenerateMindmap} className="px-4 py-2" disabled={isGenerating}>
               <Sparkles className={isGenerating ? "animate-spin" : ""} height={size - 5} />
               <p className="dark:text-white">{uppercaseFirstLetter(indexText("generate"))}</p>
-            </Button> */}
+            </Button>
           </aside>
           {createdPDF.isLoading ||
             (isGenerating && (
