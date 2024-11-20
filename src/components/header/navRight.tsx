@@ -57,7 +57,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
           <li className="m-1">
             <Button
               variant={"outline"}
-              onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleImportClick}
+              onClick={userProfile?.plan != "FREE" ? handleImportClick : handleUpgratePlanClick}
             >
               <Image
                 className="mr-2 dark:invert"
@@ -89,7 +89,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
         <li className="m-1">
           <Button
             variant={members!.length > 1 ? "outline" : "default"}
-            onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleCollaborateClick}
+            onClick={userProfile?.plan != "FREE" ? handleCollaborateClick : handleUpgratePlanClick}
           >
             {members?.length > 1 ? (
               members?.slice(0, MAX_MEMBERS_SHOWED).map((collaborator: Member, index: number) => (
@@ -113,12 +113,10 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
               />
             )}
 
-            {members?.slice(1, members.length).length >= MAX_MEMBERS_SHOWED ? (
+            {members?.slice(1, members.length).length >= MAX_MEMBERS_SHOWED && (
               <figure className="flex h-6 w-6 rounded-full -ml-2 border bg-white dark:bg-slate-800">
                 <p className="m-auto text-[10px]">{`+${members.length - MAX_MEMBERS_SHOWED}`}</p>
               </figure>
-            ) : (
-              <></>
             )}
 
             {members?.length > 1 ? <Plus className="p-1 ml-2 border-2 rounded-full" /> : <p>{text("collaborate")}</p>}

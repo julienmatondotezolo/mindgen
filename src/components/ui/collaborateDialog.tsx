@@ -163,13 +163,16 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
 
   const handleSave = () => {
     if (members) {
-      const memberRolesToUpdate = members.map((item) => [item.memberId, item.mindmapRole]);
+      const memberRoles = members.reduce((acc: any, item) => {
+        acc[item.memberId] = item.mindmapRole;
+        return acc;
+      }, {});
 
       fetchUpdateCollaborator.mutate({
         session: safeSession,
         mindmapId: mindmapId,
         membersToUpdate: {
-          memberRoles: { memberRolesToUpdate },
+          memberRoles: { ...memberRoles },
         },
       });
     } else {

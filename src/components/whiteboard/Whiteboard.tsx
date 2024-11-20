@@ -51,6 +51,7 @@ import {
 } from "@/state";
 import {
   calculateNewLayerPositions,
+  checkPermission,
   connectionIdToColor,
   emptyMindMapObject,
   findIntersectingLayersWithRectangle,
@@ -97,6 +98,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   });
 
   const MAX_LAYERS = 100;
+  const PERMISSIONS = userMindmapDetails.connectedMemberPermissions;
 
   const ids: string[] = useMemo(() => [], []);
 
@@ -127,6 +129,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     layer: null,
   });
 
+  // ================  FITVIEW  ================== //
+
   const fitView = useCallback(() => {
     if (canvasState.mode === CanvasMode.Translating || !svgRef.current || !gRef.current || !zoomBehaviorRef.current)
       return;
@@ -151,67 +155,19 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     svg.transition().duration(500).call(zoomBehaviorRef.current.transform, transform);
   }, [canvasState]);
 
+  // ================  INITIAL RENDER  ================== //
+  useEffect(() => {
+    if (PERMISSIONS && checkPermission(PERMISSIONS, "VIEW")) {
+      setCanvasState({
+        mode: CanvasMode.Grab,
+      });
+    }
+    if (layers?.length > 0 && svgRef.current && gRef.current && zoomBehaviorRef.current) {
+      fitView();
+    }
+  }, []); // Run when layers or refs change
+
   // ================  GENERATE MINDMAPS  ================== //
-
-  // const urlParams = new URLSearchParams(window.location.search);
-  // const generateUrl = urlParams.get("generate");
-
-  // const mindmapReqObject = {
-  //   mindmapId: userMindmapDetails.id,
-  //   task: userMindmapDetails.description,
-  // };
-
-  // const [isGeneratingMindmap, setIsGeneratingMindmap] = useState(false);
-
-  // useQuery({
-  //   queryFn: async () => {
-  //     if (isGeneratingMindmap) {
-  //       return; // Exit early if generateUrl is false
-  //     }
-
-  //     setIsGeneratingMindmap(true);
-
-  //     const response = await generatedMindmap({ session, mindmapReqObject });
-
-  //     // Read chunks from the response stream
-  //     const reader = response.getReader();
-
-  //     let decodedValue = "";
-
-  //     while (true as const) {
-  //       const { done, value } = await reader.read();
-
-  //       if (done) {
-  //         setIsGeneratingMindmap(false);
-
-  //         return;
-  //       }
-
-  //       let rawData = new TextDecoder("utf-8").decode(value);
-
-  //       decodedValue += rawData ?? "";
-  //     }
-
-  //     return decodedValue;
-
-  //   },
-  //   onSuccess: () => {
-  //     setIsGeneratingMindmap(false);
-  //     // Optionally, invalidate or refetch other queries to update the UI
-  //     queryClient.invalidateQueries("mindmaps");
-  //   },
-  // });
-
-  // if(generateUrl === "true") {
-  //   try {
-
-  //     // fetchGeneratedMindmap.mutate({ session, mindmapReqObject });
-  //   } catch (error) {
-  //     if (error instanceof Error) {
-  //       console.error(`An error has occurred: ${error.message}`);
-  //     }
-  //   }
-  // }
 
   // ================  USE QUERY & SAVE MINDMAPS  ================== //
 
@@ -247,6 +203,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   }, [theme]);
 
   const saveMindmap = useCallback(async () => {
+    if (!checkPermission(PERMISSIONS, "UPDATE")) return;
+
     const newMindmapObject = emptyMindMapObject({
       name: userMindmapDetails.name,
       description: userMindmapDetails.description,
@@ -262,7 +220,19 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       mindmapId: userMindmapDetails.id,
       mindmapObject: newMindmapObject,
     });
-  }, [edges, layers, selectedOrga, session, takeScreenshot, updateMindmapMutation, userMindmapDetails]);
+  }, [
+    PERMISSIONS,
+    edges,
+    layers,
+    selectedOrga,
+    session,
+    takeScreenshot,
+    updateMindmapMutation,
+    userMindmapDetails.description,
+    userMindmapDetails.id,
+    userMindmapDetails.name,
+    userMindmapDetails.visibility,
+  ]);
 
   // Handle window/tab close and navigation away
   useEffect(() => {
@@ -936,6 +906,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const removeEdgesConnectedToLayer = useCallback(
     (layerId: string) => {
+      if (!checkPermission(PERMISSIONS, "DELETE")) {
+        alert("You don't have the rights to delete");
+        return;
+      }
+
       edges.forEach((edge) => {
         if (edge.fromLayerId === layerId || edge.toLayerId === layerId) {
           removeEdge({
@@ -945,7 +920,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       });
     },
-    [currentUserId, edges, removeEdge],
+    [PERMISSIONS, currentUserId, edges, removeEdge],
   );
 
   const handleEdgeHandlePointerDown = useCallback(
@@ -1569,12 +1544,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  CAMERA FUNCTIONS  ================== //
 
-  useEffect(() => {
-    if (layers?.length > 0 && svgRef.current && gRef.current && zoomBehaviorRef.current) {
-      fitView();
-    }
-  }, []); // Run when layers or refs change
-
   const handleMouseMove = useCallback(() => {
     if (!isMouseDown || canvasState.mode !== CanvasMode.Grab) return;
 
@@ -1693,6 +1662,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       if (event.code === "Backspace" && activeLayerIDs?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
+        if (!checkPermission(PERMISSIONS, "DELETE")) {
+          alert("You don't have the rights to delete");
+          return;
+        }
+
         const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
         const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
@@ -1712,6 +1686,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         activeEdgeId[0] &&
         canvasState.mode === CanvasMode.EdgeActive
       ) {
+        if (!checkPermission(PERMISSIONS, "DELETE")) {
+          alert("You don't have the rights to delete");
+          return;
+        }
+
         removeEdge({
           id: activeEdgeId[0],
           userId: currentUserId,
@@ -1751,6 +1730,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     currentUserId,
     unSelectEdge,
     activeEdgeId,
+    PERMISSIONS,
   ]);
 
   // Hande Mouse move
@@ -1897,13 +1877,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               />
             )}
             <CursorPresence />
-            {/* <foreignObject x={canvasState?.current?.x} y={canvasState?.current?.y} width="160" height="160">
-              <div className="">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis mollis mi ut ultricies. Nullam magna
-                ipsum, porta vel dui convallis, rutrum imperdiet eros. Aliquam erat volutpat.
-              </div>
-            </foreignObject> */}
-            <SelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
+            <SelectionTools
+              camera={camera}
+              isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
+              setLastUsedColor={setLastUsedColor}
+            />
+            <EdgeSelectionTools
+              camera={camera}
+              isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
+              setLastUsedColor={setLastUsedColor}
+            />
           </g>
         </svg>
       </figure>
@@ -1923,7 +1906,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </Button>
         </div>
       )}
-      <EdgeSelectionTools camera={camera} setLastUsedColor={setLastUsedColor} />
+      <EdgeSelectionTools
+        camera={camera}
+        isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
+        setLastUsedColor={setLastUsedColor}
+      />
     </main>
   );
 };

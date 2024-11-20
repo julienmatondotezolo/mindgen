@@ -24,11 +24,12 @@ import { ToolButton } from "../ToolButton";
 
 interface SelectionToolsProps {
   camera: Camera;
+  isDeletable: boolean;
   // eslint-disable-next-line no-unused-vars
   setLastUsedColor: (color: Color) => void;
 }
 
-export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionToolsProps) => {
+export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: SelectionToolsProps) => {
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
@@ -174,6 +175,10 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
   }, [activeLayerIDs, currentUserId, layers, updateLayer]);
 
   const handleRemoveLayer = useCallback(() => {
+    if (isDeletable) {
+      alert("You don't have the rights to delete");
+      return;
+    }
     const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
     const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
@@ -189,7 +194,7 @@ export const SelectionTools = memo(({ camera, setLastUsedColor }: SelectionTools
         });
       }
     }
-  }, [activeLayerIDs, currentUserId, edges, layers, removeEdge, removeLayer, unSelectLayer]);
+  }, [activeLayerIDs, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
 
   useEffect(() => {
     if (selectionBounds)

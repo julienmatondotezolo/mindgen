@@ -31,7 +31,7 @@ import {
   upgradePlanModalState,
   usernameState,
 } from "@/state";
-import { refreshPage } from "@/utils";
+import { checkPermission, refreshPage } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -172,7 +172,7 @@ export default function Board({ params }: { params: { id: string } }) {
 
           <div className="w-full">
             <div className="relative w-full h-full">
-              <Toolbar />
+              {checkPermission(userMindmapDetails.connectedMemberPermissions, "UPDATE") && <Toolbar />}
               {!userMindmapDetails && currentCollaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />

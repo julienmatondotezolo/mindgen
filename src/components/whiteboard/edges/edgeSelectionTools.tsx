@@ -20,11 +20,12 @@ import { ColorPicker } from "../colorPicker";
 
 interface EdgeSelectionToolsProps {
   camera: Camera;
+  isDeletable: boolean;
   // eslint-disable-next-line no-unused-vars
   setLastUsedColor: (color: Color) => void;
 }
 
-export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelectionToolsProps) => {
+export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: EdgeSelectionToolsProps) => {
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
@@ -63,6 +64,10 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
   );
 
   const handleRemoveEdge = useCallback(() => {
+    if (isDeletable) {
+      alert("You don't have the rights to delete");
+      return;
+    }
     if (selectedEdge) {
       removeEdge({
         id: selectedEdge.id,
@@ -73,7 +78,7 @@ export const EdgeSelectionTools = memo(({ camera, setLastUsedColor }: EdgeSelect
         mode: CanvasMode.None,
       });
     }
-  }, [selectedEdge, removeEdge, currentUserId, unSelectEdge, setCanvasState]);
+  }, [isDeletable, selectedEdge, removeEdge, currentUserId, unSelectEdge, setCanvasState]);
 
   const handleChangeStrokeWidth = useCallback(
     (number: number) => {
