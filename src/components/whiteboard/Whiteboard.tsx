@@ -1906,11 +1906,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </Button>
         </div>
       )}
-      <EdgeSelectionTools
-        camera={camera}
-        isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
-        setLastUsedColor={setLastUsedColor}
-      />
     </main>
   );
 };

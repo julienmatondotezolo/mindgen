@@ -4,8 +4,6 @@ import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { Camera, CanvasMode, Color, EdgeType } from "@/_types";
-import { ToolButton } from "@/components/mindmap/toolButton";
-import { Button } from "@/components/ui/button";
 import {
   activeEdgeIdAtom,
   boardIdState,
@@ -17,6 +15,7 @@ import {
 } from "@/state";
 
 import { ColorPicker } from "../colorPicker";
+import { ToolButton } from "../ToolButton";
 
 interface EdgeSelectionToolsProps {
   camera: Camera;
@@ -142,29 +141,41 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
   if (!selectedEdge) return null;
 
-  const x = (selectedEdge.start.x + selectedEdge.end.x) / 2.5 + camera.x;
-  const y = (selectedEdge.start.y + selectedEdge.end.y) / 6 + camera.y;
+  const objectSizesWitdh = 4000;
+  const objectSizesHeight = 1950;
+
+  const x = selectedEdge.start.x - 1800;
+  const y = selectedEdge.end.y - 1950;
 
   return (
-    <>
-      {showColorPicker && (
-        <div
-          className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
-          style={{
-            top: `${y}px`,
-            transform: `translate(${x - 50}px, ${y - 150}px)`,
-          }}
-        >
-          <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
-        </div>
-      )}
+    <foreignObject className="relative" x={x} y={y} width={objectSizesWitdh} height={objectSizesHeight}>
+      {/* <div
+        className="absolute top-0 left-0"
+        style={{
+          background: "white",
+          width: objectSizesWitdh,
+          height: objectSizesHeight,
+        }}
+      ></div> */}
       <div
         className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
         style={{
-          top: `${y}px`,
-          transform: `translate(${x}px, ${y}px)`,
+          transform: `translate(1800px, 1820px) scale(${1 / camera.scale})`,
+          transformOrigin: "bottom center",
         }}
       >
+        {showColorPicker && (
+          <div
+            className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+            style={{
+              bottom: 65,
+              left: 0,
+              transform: `translate(0px, 0px)`,
+            }}
+          >
+            <ColorPicker onChange={handleColorChange} onClose={() => setShowColorPicker(false)} />
+          </div>
+        )}
         <ul className="flex flex-row space-x-2 items-center justify-between">
           <ToolButton
             icon={PaintBucket}
@@ -174,27 +185,21 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <ToolButton icon={Minus} onClick={() => handleChangeStrokeWidth(2)} isActive={selectedEdge.thickness === 2} />
           <ToolButton icon={Ellipsis} onClick={handleToggleEdgeType} isActive={selectedEdge.type === EdgeType.Dashed} />
-          <Button
-            variant={selectedEdge.thickness === 4 ? "boardActive" : "board"}
-            size="icon"
-            onClick={handleToggleThickness}
-          >
+          <ToolButton onClick={handleToggleThickness} isActive={selectedEdge.thickness === 4 ? true : false}>
             <div
               className={`w-[20px] h-[5px] dark:bg-slate-200 ${
                 selectedEdge.thickness === 4 ? "bg-slate-200" : "bg-slate-950"
               }`}
             ></div>
-          </Button>
+          </ToolButton>
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <ToolButton icon={ArrowLeft} onClick={() => handleToggleArrow("left")} isActive={selectedEdge.arrowEnd} />
           <ToolButton icon={ArrowRight} onClick={() => handleToggleArrow("right")} isActive={selectedEdge.arrowStart} />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
-          <Button variant="board" size="icon" onClick={handleRemoveEdge}>
-            <Trash2 />
-          </Button>
+          <ToolButton icon={Trash2} onClick={handleRemoveEdge} />
         </ul>
       </div>
-    </>
+    </foreignObject>
   );
 });
 
