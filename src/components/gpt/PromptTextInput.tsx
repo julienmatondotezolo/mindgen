@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+// eslint-disable-next-line no-unused-vars
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -358,7 +359,7 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
         Use Valid Image URLs: Employ URLs like [invalid URL removed]"`,
     },
     {
-      name: "Create E-mail",
+      name: "Write E-mail",
       prompt: `
       Write a professional email summarizing this mindmap content also say that you are talking about this subject "${userMindmapDetails.name}]".
 
@@ -376,6 +377,11 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
     {
       name: "Create PDF",
       prompt: "Automatically generate a PDF document of the mindmap.",
+    },
+    {
+      name: "Generate User Story",
+      prompt:
+        "Create a user story based on the content of this mindmap. Determine the features using the content of the mindmap Use some font weight variations.",
     },
   ];
 
@@ -415,10 +421,10 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
                 {item.name}
               </button>
             ))}
-            <Button onClick={handleGenerateMindmap} className="px-4 py-2" disabled={isGenerating}>
+            {/* <Button onClick={handleGenerateMindmap} className="px-4 py-2" disabled={isGenerating}>
               <Sparkles className={isGenerating ? "animate-spin" : ""} height={size - 5} />
               <p className="dark:text-white">{uppercaseFirstLetter(indexText("generate"))}</p>
-            </Button>
+            </Button> */}
           </aside>
           {createdPDF.isLoading ||
             (isGenerating && (
