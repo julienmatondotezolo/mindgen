@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable no-unused-vars */
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -23,7 +23,7 @@ import {
   qaState,
   streamedAnswersState,
 } from "@/state";
-import { convertToMermaid, findCollaboratorId, scrollToBottom, uppercaseFirstLetter } from "@/utils";
+import { convertToMermaid, findCollaboratorId, scrollToBottom } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {

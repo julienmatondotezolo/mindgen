@@ -57,8 +57,9 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
       });
   };
 
-  const handleExport = () => {
-    exportMindmap(edges, layers);
+  const handleExport = async (e: any) => {
+    e.preventDefault();
+    await exportMindmap(edges, layers);
     generateMermaidFlowchart(edges, layers);
     setIsOpen(false);
   };
@@ -92,7 +93,7 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
           </div>
         </article>
         {layers?.length > 0 && (
-          <Button className="space-x-2" onClick={handleExport}>
+          <Button className="space-x-2" onClick={(e: any) => handleExport(e)}>
             <FileDown />
             <p>{text("export")} mindmap</p>
           </Button>

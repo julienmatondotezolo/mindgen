@@ -35,6 +35,14 @@ function MindMapBoards() {
     enabled: !!selectedOrga?.id, // Only run the query if selectedOrga.id is available
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    // Add sorting logic here
+    select: (data) => data?.sort((a: any, b: any) => {
+      const dateA = new Date(a.updatedAt).getTime();
+      const dateB = new Date(b.updatedAt).getTime();
+
+      return dateB - dateA;
+
+    }),
   });
   const [, setIsDeleting] = useState(false);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });
@@ -90,7 +98,7 @@ function MindMapBoards() {
                       {uppercaseFirstLetter(mindmap.creatorUsername)}
                     </span>
                   </p>
-                  <p className="text-xs text-grey">{formatDate(mindmap.createdAt, dateText)}</p>
+                  <p className="text-xs text-grey">Updated <span className="cursor-pointer hover:underline">{formatDate(mindmap.updatedAt, dateText)}</span></p>
                 </section>
                 {checkPermission(mindmap.connectedMemberPermissions, "DELETE") && (
                   <figure
