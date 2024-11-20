@@ -1042,6 +1042,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeClick = useCallback(
     (e: React.PointerEvent, edgeId: string) => {
+      if (canvasState.mode === CanvasMode.Grab) return;
+
       const isAlreadySelected = allOtherUserEdgeSelection.some((otherUser: any) => {
         if (otherUser.edgeIds) {
           return otherUser.edgeIds.includes(edgeId);
@@ -1059,7 +1061,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         mode: CanvasMode.EdgeActive,
       });
     },
-    [allOtherUserEdgeSelection, currentUserId, handleUnSelectLayer, selectEdge, setCanvasState, setHoveredEdgeId],
+    [
+      canvasState,
+      allOtherUserEdgeSelection,
+      currentUserId,
+      handleUnSelectLayer,
+      selectEdge,
+      setCanvasState,
+      setHoveredEdgeId,
+    ],
   );
 
   // ================  DRAWING EDGES  ================== //

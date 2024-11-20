@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ interface ToolButtonProps {
 }
 
 export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }: ToolButtonProps) => {
-  const setCanvasState = useSetRecoilState(canvasStateAtom);
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
   return (
     <li className="m-1">
@@ -27,6 +27,7 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
           });
         }}
         onMouseLeave={() => {
+          if (canvasState.mode === CanvasMode.Grab) return;
           setCanvasState({
             mode: CanvasMode.None,
           });
