@@ -46,8 +46,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
   });
 
   const fetchUpdateCollaborator = useMutation(updateMembers, {
-    onSuccess: (data) => {
-      console.log("data:", data);
+    onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmap");
       setIsDeleting(false);

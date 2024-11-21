@@ -2,8 +2,10 @@
 
 import { MousePointer2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
+import { useRecoilValue } from "recoil";
 
 import { useSocket } from "@/hooks";
+import { cameraStateAtom } from "@/state";
 import { connectionIdToColor } from "@/utils";
 
 interface ConnectedUser {
@@ -18,6 +20,7 @@ interface CursorProps {
 
 export const Cursor = memo(({ user, connectionId }: CursorProps) => {
   const { socketListen } = useSocket();
+  const camera = useRecoilValue(cameraStateAtom);
 
   const info = user.username;
 
@@ -39,13 +42,19 @@ export const Cursor = memo(({ user, connectionId }: CursorProps) => {
 
   const { x, y } = cursor;
 
+  const initialHeight = 50;
+  const initialWidth = name.length * 10 + 24;
+
+  const height = Math.max(initialHeight, initialHeight / camera.scale);
+  const width = Math.max(initialWidth, initialWidth / camera.scale);
+
   return (
     <foreignObject
       style={{
         transform: `translateX(${x}px) translateY(${y}px)`,
       }}
-      height={50}
-      width={name.length * 10 + 24}
+      height={height}
+      width={width}
       className="relative drop-shadow-md"
     >
       <MousePointer2

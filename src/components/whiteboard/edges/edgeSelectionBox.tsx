@@ -3,7 +3,7 @@ import React from "react";
 import { useRecoilValue } from "recoil";
 
 import { CanvasMode, Edge, Point } from "@/_types";
-import { canvasStateAtom } from "@/state";
+import { cameraStateAtom, canvasStateAtom } from "@/state";
 import { edgeBezierPathString } from "@/utils";
 
 interface EdgeSelectionBoxProps {
@@ -13,6 +13,7 @@ interface EdgeSelectionBoxProps {
 
 export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHandlePointerDown }) => {
   const canvasState = useRecoilValue(canvasStateAtom);
+  const camera = useRecoilValue(cameraStateAtom);
 
   if (
     !edge ||
@@ -22,7 +23,8 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
   )
     return;
 
-  const circleSize = 5;
+  const circleSize = Math.max(5, 5 / camera.scale);
+
   const circleBorderColor = "#4d6aff";
   const circleFillColor = "#FFFFFF";
   const circleStrokeWidth = 2;

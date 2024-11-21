@@ -12,7 +12,6 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { updateMindmapById } from "@/_services/mindgen/mindgenService";
 import {
-  Camera,
   CanvasMode,
   Color,
   Edge,

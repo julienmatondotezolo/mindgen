@@ -7,18 +7,17 @@ import { useRecoilValue } from "recoil";
 
 import { Side, XYWH } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import { activeLayersAtom } from "@/state";
+import { activeLayersAtom, cameraStateAtom } from "@/state";
 
 interface SelectionBoxProps {
   onResizeHandlePointerDown: (corner: Side, initialBounds: XYWH) => void;
 }
 
-const HANDLE_WIDTH = 8;
-
 export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxProps) => {
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
+  const camera = useRecoilValue(cameraStateAtom);
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   const activeLayerIDs = allActiveLayers
@@ -32,6 +31,10 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
   const bounds = useSelectionBounds();
 
   if (!bounds) return null;
+
+  const MIN_HANDLE_WIDTH = 8;
+
+  const HANDLE_WIDTH = Math.max(MIN_HANDLE_WIDTH, MIN_HANDLE_WIDTH / camera.scale);
 
   return (
     <>
