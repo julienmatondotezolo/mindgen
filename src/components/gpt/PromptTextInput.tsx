@@ -91,9 +91,6 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   }, [done, isLoading, updateQa]);
 
   const handleTextareaChange = (event: any) => {
-    setCanvasState({
-      mode: CanvasMode.Typing,
-    });
     setText(event.target.value);
 
     // Reset height before calculating new height
@@ -402,6 +399,11 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
             className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
             placeholder={chatText("promptInput")}
             value={text}
+            onClick={() =>
+              setCanvasState({
+                mode: CanvasMode.Typing,
+              })
+            }
             onKeyDown={handleSendPrompt}
             onChange={handleTextareaChange}
             disabled={isLoading || createdPDF.isLoading}
@@ -427,10 +429,10 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
                 {item.name}
               </button>
             ))}
-            <Button onClick={handleGenerateMindmap} className="px-4 py-2" disabled={isGenerating}>
+            {/* <Button onClick={handleGenerateMindmap} className="px-4 py-2" disabled={isGenerating}>
               <Sparkles className={isGenerating ? "animate-spin" : ""} height={size - 5} />
               <p className="dark:text-white">{uppercaseFirstLetter(indexText("generate"))}</p>
-            </Button>
+            </Button> */}
           </aside>
           {createdPDF.isLoading ||
             (isGenerating && (
