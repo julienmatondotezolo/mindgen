@@ -1,8 +1,10 @@
 "use client";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { MousePointer2, MoveRight } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
+import { CustomSession } from "@/_types";
 import productImage from "@/assets/section/product-image.png";
 import { Button } from "@/components";
 import BlurIn from "@/components/ui/blur-in";
@@ -50,6 +52,9 @@ export default function Cursor({
 }
 
 function Hero() {
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -184,13 +189,24 @@ function Hero() {
 
             <div className="mt-[30px] flex flex-col items-start md:items-center">
               <div className="space-x-4">
-                <Link href={`/dashboard`}>
-                  <Button className="w-auto !cursor-none">Start for free</Button>
-                </Link>
-                <Button className="gap-2 !cursor-none" variant={"outline"}>
-                  <span>Learn more</span>
-                  <MoveRight size={20} />
-                </Button>
+                {safeSession?.data?.session ? (
+                  <Link href={`/dashboard`}>
+                    <Button className="w-auto gap-2 !cursor-none">
+                      <span>Open app</span>
+                      <MoveRight size={20} />
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href={`/dashboard`}>
+                      <Button className="w-auto !cursor-none">Start for free</Button>
+                    </Link>
+                    <Button className="gap-2 !cursor-none" variant={"outline"}>
+                      <span>Learn more</span>
+                      <MoveRight size={20} />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
