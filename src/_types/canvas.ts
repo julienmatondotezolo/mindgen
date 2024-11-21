@@ -18,7 +18,7 @@ export enum HandlePosition {
   Bottom = "BOTTOM",
 }
 
-export type EdgeOrientation = "auto" | "0" | "90" | "-180" | "180" | "270";
+export type EdgeOrientation = "auto" | "10" | "45" | "0" | "90" | "-180" | "180" | "270";
 
 export enum EdgeType {
   Solid,

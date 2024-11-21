@@ -27,7 +27,7 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
 
   const circleBorderColor = "#4d6aff";
   const circleFillColor = "#FFFFFF";
-  const circleStrokeWidth = 2;
+  const circleStrokeWidth = Math.max(3, 3 / camera.scale);
 
   // const middlePoint = {
   //   x: (edge.start.x + edge.end.x) / 2,

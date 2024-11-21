@@ -246,7 +246,7 @@ export function getContrastingTextColor(color: Color) {
 export const getOrientationFromPosition = (position: HandlePosition, inversed?: boolean): EdgeOrientation => {
   switch (position) {
     case HandlePosition.Left:
-      return inversed ? "0" : "180";
+      return inversed ? "0" : "45";
     case HandlePosition.Right:
       return inversed ? "180" : "0";
     case HandlePosition.Top:
