@@ -27,7 +27,12 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
           });
         }}
         onMouseLeave={() => {
-          if (canvasState.mode === CanvasMode.Grab || canvasState.mode === CanvasMode.Inserting) return;
+          if (
+            canvasState.mode === CanvasMode.Grab ||
+            canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Edge
+          )
+            return;
           setCanvasState({
             mode: CanvasMode.None,
           });

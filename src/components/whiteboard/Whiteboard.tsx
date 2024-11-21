@@ -75,7 +75,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const DEBUG_MODE = true;
+  const DEBUG_MODE: string | undefined = process.env.NEXT_PUBLIC_DEBUG_MODE;
+
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
@@ -459,14 +460,24 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       addLayer({ layer: newLayer, userId: currentUserId });
 
+      fitView();
+
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+
+      setShadowState({
+        showShadow: false,
+        startPosition: null,
+        fromHandlePosition: undefined,
+        layerPosition: null,
+        edgePosition: null,
+        layer: null,
+      });
 
       setCanvasState({
         mode: CanvasMode.None,
       });
-      fitView();
     },
-    [addLayer, currentUserId, fitView, layers.length, selectLayer, setCanvasState, whiteboardText],
+    [addLayer, fitView, currentUserId, layers.length, selectLayer, setCanvasState, whiteboardText],
   );
 
   const handleLayerPointerDown = useCallback(
@@ -658,7 +669,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       };
 
       addLayer({ layer: newLayer, userId: currentUserId });
-
       selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
@@ -1287,6 +1297,26 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         translateSelectedLayer(current);
       } else if (canvasState.mode === CanvasMode.Resizing) {
         resizeSelectedLayer(current, e.shiftKey);
+      } else if (canvasState.mode === CanvasMode.Inserting) {
+        const newLayer: Layer = {
+          id: "shadow" + layers.length,
+          type: canvasState.layerType,
+          x: 0,
+          y: 0,
+          width: canvasState.layerType === LayerType.Rectangle ? 200 : 150,
+          height: canvasState.layerType === LayerType.Rectangle ? 60 : 150,
+          fill: { r: 77, g: 106, b: 255 },
+          value: whiteboardText("typeSomething"),
+        };
+
+        setShadowState({
+          showShadow: true,
+          startPosition: null,
+          fromHandlePosition: undefined,
+          layerPosition: current,
+          edgePosition: null,
+          layer: newLayer,
+        });
       } else if (canvasState.mode === CanvasMode.Edge || canvasState.mode == CanvasMode.EdgeDrawing) {
         drawEdgeline(current);
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
@@ -1302,6 +1332,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       // setMyPresence({ cursor: current });
     },
     [
+      layers,
+      whiteboardText,
       camera,
       canvasState,
       userMindmapDetails.members.length,
@@ -1618,7 +1650,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     return () => {
       svg.on(".zoom", null);
     };
-  }, [canvasState]);
+  }, [canvasState, setCamera]);
 
   const zoomIn = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
@@ -1645,8 +1677,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         document.body.style.cursor = "grab";
       } else if (canvasState.mode === CanvasMode.Edge) {
         document.body.style.cursor = "cell";
+      } else if (canvasState.mode === CanvasMode.Inserting) {
+        document.body.style.cursor = "crosshair";
       } else {
         document.body.style.cursor = "default";
+        setShadowState({
+          showShadow: false,
+          startPosition: null,
+          fromHandlePosition: undefined,
+          layerPosition: null,
+          edgePosition: null,
+          layer: null,
+        });
       }
     };
 

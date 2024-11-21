@@ -2,8 +2,8 @@
 
 import { Bold, CaseUpper, Ellipsis, PaintBucket, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { memo, useCallback, useEffect, useState } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { memo, useCallback, useState } from "react";
+import { useRecoilValue } from "recoil";
 
 import { Camera, CanvasMode, Color, Layer } from "@/_types";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
@@ -35,7 +35,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
   const layers = useRecoilValue(layerAtomState);
   const allActiveLayers = useRecoilValue(activeLayersAtom);
-  const setCanvasState = useSetRecoilState(canvasStateAtom);
 
   const activeLayerIDs = allActiveLayers
     .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
@@ -195,13 +194,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
       }
     }
   }, [activeLayerIDs, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
-
-  useEffect(() => {
-    if (selectionBounds)
-      setCanvasState({
-        mode: CanvasMode.Pencil,
-      });
-  }, []);
 
   if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
     return null;

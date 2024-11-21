@@ -50,22 +50,24 @@ const Toolbar = () => {
           />
           <ToolButton
             icon={Square}
-            onClick={() =>
+            onClick={() => {
               setCanvasState({
                 mode: CanvasMode.Inserting,
                 layerType: LayerType.Rectangle,
-              })
-            }
+              });
+              setActiveLayerIDs([]);
+            }}
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Rectangle}
           />
           <ToolButton
             icon={Circle}
-            onClick={() =>
+            onClick={() => {
               setCanvasState({
                 mode: CanvasMode.Inserting,
                 layerType: LayerType.Ellipse,
-              })
-            }
+              });
+              setActiveLayerIDs([]);
+            }}
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Ellipse}
           />
           <ToolButton
