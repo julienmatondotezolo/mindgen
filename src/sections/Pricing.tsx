@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useLocale } from "next-intl";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { twMerge } from "tailwind-merge";
 
@@ -65,11 +66,23 @@ import { Button } from "@/components";
 
 function Pricing() {
   const router = useRouter();
+  const locale = useLocale();
+
   const session: any = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
+  const baseUrl: string | undefined = process.env.NEXT_PUBLIC_URL;
+  const successUrl = `${baseUrl}/${locale}/dashboard`;
+  const cancelUrl = `${baseUrl}/${locale}`;
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const checkout = urlParams.get("checkout");
+  // Add state for checkout param
+  const [checkout, setCheckout] = useState<string | null>(null);
+
+  // Add new useEffect to handle URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    setCheckout(urlParams.get("checkout"));
+  }, []);
 
   const { data: paymentProducts, isLoading } = useQuery("paymentProducts", fetchPaymentProducts, {
     refetchOnWindowFocus: true,
@@ -86,9 +99,15 @@ function Pricing() {
 
   useEffect(() => {
     if (checkout) {
-      stripeCheckout.mutate({ session: safeSession, priceId: checkout });
+      const checkoutBody = {
+        priceId: checkout,
+        successUrl,
+        cancelUrl,
+      };
+
+      stripeCheckout.mutate({ session: safeSession, checkoutBody });
     }
-  }, [checkout, safeSession, stripeCheckout]);
+  }, [cancelUrl, checkout, safeSession, stripeCheckout, successUrl]);
 
   if (isLoading) {
     return <section className="py-64">Loading...</section>;
@@ -107,7 +126,13 @@ function Pricing() {
       return;
     }
 
-    stripeCheckout.mutate({ session: safeSession, priceId });
+    const checkoutBody = {
+      priceId,
+      successUrl,
+      cancelUrl,
+    };
+
+    stripeCheckout.mutate({ session: safeSession, checkoutBody });
   };
 
   if (stripeCheckout.isLoading) {
@@ -123,7 +148,7 @@ function Pricing() {
 
   if (paymentProducts)
     return (
-      <section className="py-64">
+      <section className="py-64 bg-[radial-gradient(ellipse_80%_40%_at_top,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]">
         <div className="container">
           <div className="section-heading">
             <h2 className="section-title bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text">
@@ -158,12 +183,12 @@ function Pricing() {
                     </div>
                   )}
                 </div>
-                <div className="mt-[30px] flex items-baseline gap-1">
-                  <span className="text-4xl font-bold leading-none tracking-tighter">
-                    € {product.prices[0].unitAmount}
-                  </span>
-                  <span className="font-bold tracking-tight text-black/50 dark:text-white">/month</span>
-                </div>
+                {product.prices.map((product: any, productIndex: number) => (
+                  <div key={productIndex} className="mt-[30px] flex items-baseline gap-1">
+                    <span className="text-4xl font-bold leading-none tracking-tighter">€ {product.unitAmount}</span>
+                    <span className="font-bold tracking-tight text-black/50 dark:text-white">/month</span>
+                  </div>
+                ))}
                 <Button
                   onClick={() => handleCheckout(product.prices[0].id)}
                   className={twMerge("mt-[30px] w-full")}

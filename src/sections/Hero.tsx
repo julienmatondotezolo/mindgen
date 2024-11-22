@@ -5,7 +5,8 @@ import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import { CustomSession } from "@/_types";
-import productImage from "@/assets/section/product-image.png";
+// import productImage from "@/assets/section/product-image.png";
+import productImage from "@/assets/section/hero.gif";
 import { Button } from "@/components";
 import BlurIn from "@/components/ui/blur-in";
 // import TypingAnimation from "@/components/ui/typing-animation";
@@ -215,7 +216,7 @@ function Hero() {
             src={productImage.src}
             alt="Noodle Image"
             width={1024}
-            className="hidden md:absolute md:inset-0 md:mx-auto md:my-auto md:block"
+            className="hidden rounded-xl md:absolute md:inset-0 md:mx-auto md:my-auto md:block"
             style={{ translateY, rotate: 0 }}
           />
         </div>

@@ -160,16 +160,17 @@ export async function fetchPaymentProducts(): Promise<any> {
   }
 }
 
-export async function fetchStripeCheckout({ session, priceId }: {session: CustomSession | null, priceId: string}): Promise<any> {
+export async function fetchStripeCheckout({ session, checkoutBody }: {session: CustomSession | null, checkoutBody: any}): Promise<any> {
   if(session)
     try {
-      const responseStripeCheckout: Response = await fetch(baseUrl + `/stripe/checkout/${priceId}`, {
-        method: "GET",
+      const responseStripeCheckout: Response = await fetch(baseUrl + `/stripe/checkout`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session?.data.session.user.token}`,
           "ngrok-skip-browser-warning": "1",
         },
+        body: JSON.stringify(checkoutBody),
       });
 
       if (responseStripeCheckout.ok) {
