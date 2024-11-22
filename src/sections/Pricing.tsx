@@ -75,14 +75,23 @@ function Pricing() {
   const cancelUrl = `${baseUrl}/${locale}`;
 
   // Add state for checkout param
-  const [checkout, setCheckout] = useState<string | null>(null);
 
   // Add new useEffect to handle URL params
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
 
-    setCheckout(urlParams.get("checkout"));
-  }, []);
+    const checkout = urlParams.get("checkout");
+
+    if (safeSession && checkout) {
+      const checkoutBody = {
+        priceId: checkout,
+        successUrl,
+        cancelUrl,
+      };
+
+      stripeCheckout.mutate({ session: safeSession, checkoutBody });
+    }
+  }, [safeSession]);
 
   const { data: paymentProducts, isLoading } = useQuery("paymentProducts", fetchPaymentProducts, {
     refetchOnWindowFocus: true,
@@ -96,18 +105,6 @@ function Pricing() {
       }
     },
   });
-
-  useEffect(() => {
-    if (checkout) {
-      const checkoutBody = {
-        priceId: checkout,
-        successUrl,
-        cancelUrl,
-      };
-
-      stripeCheckout.mutate({ session: safeSession, checkoutBody });
-    }
-  }, [cancelUrl, checkout, safeSession, stripeCheckout, successUrl]);
 
   if (isLoading) {
     return <section className="py-64">Loading...</section>;
