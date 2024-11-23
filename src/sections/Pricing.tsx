@@ -192,7 +192,7 @@ function Pricing() {
 
   if (paymentProducts)
     return (
-      <section className="pt-56 bg-[radial-gradient(ellipse_80%_40%_at_top,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] md:overflow-x-clip">
+      <section className="pt-56 bg-[radial-gradient(ellipse_80%_40%_at_top,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_top,#0627FF7F,#00000000_100%)] md:overflow-x-clip">
         <div className="container">
           <div className="section-heading">
             <h2 className="section-title bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text">
