@@ -358,8 +358,7 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
         Here is your task: 'Create a visually appealing, modern website featuring a table summarizing the mindmap's content. Incorporate a multi-section navigation with varying layouts and optimal letter spacing. Enhance the content with relevant images sourced from Unsplash or Pexels, ensuring they are free for commercial use. Prioritize readability and aesthetic appeal.'
         
         Important:
-        Validate Image URLs: Before generating the HTML, verify the validity of each image URL.
-        Use Valid Image URLs: Employ URLs like [invalid URL removed]"`,
+        Validate Image URLs: Before generating the HTML, verify the validity of each image URL"`,
     },
     {
       name: "Write E-mail",
