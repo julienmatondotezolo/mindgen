@@ -335,3 +335,10 @@ export const viewPortScaleState = atom({
   key: "viewPortScaleState",
   default: {},
 });
+
+// ================   MODAL STATES   ================== //
+
+export const globalCursorState = atom({
+  key: "globalCursorState",
+  default: false,
+});

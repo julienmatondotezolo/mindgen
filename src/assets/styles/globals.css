@@ -156,7 +156,15 @@
   }
 
   .card {
-    @apply w-full max-w-xs rounded-3xl border border-[#F1F1F1] bg-white dark:bg-slate-500 dark:bg-opacity-20 p-10 shadow-[0_7px_14px_#EAEAEA] dark:shadow-none;
+    @apply w-full max-w-xs rounded-3xl border bg-white backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-10 shadow-[0_7px_14px_#EAEAEA] dark:shadow-none;
+  }
+
+  .landingFeatureTitle {
+    @apply section-title bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text;
+  }
+
+  .landingFeatureDescription {
+    @apply section-description mt-5 text-[#010d3e] dark:text-primary-foreground;
   }
 
   .language-html {

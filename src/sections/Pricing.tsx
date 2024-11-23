@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMutation, useQuery } from "react-query";
 import { twMerge } from "tailwind-merge";
 
@@ -98,6 +98,53 @@ function Pricing() {
     refetchOnMount: true,
   });
 
+  // const paymentProducts = [
+  //   {
+  //     id: "string",
+  //     name: "Free",
+  //     description: "Try for free",
+  //     active: true,
+  //     createdAt: "2024-11-22T16:33:05.772Z",
+  //     updatedAt: "2024-11-22T16:33:05.772Z",
+  //     prices: [
+  //       {
+  //         id: "string",
+  //         currency: "string",
+  //         unitAmount: 10,
+  //         active: true,
+  //         createdAt: "2024-11-22T16:33:05.772Z",
+  //         interval: "NONE",
+  //       },
+  //     ],
+  //     type: "string",
+  //     plan: "FREE",
+  //     maxMindmaps: 0,
+  //     maxCredits: 0,
+  //   },
+  //   {
+  //     id: "string",
+  //     name: "Premium",
+  //     description: "Try for free",
+  //     active: true,
+  //     createdAt: "2024-11-22T16:33:05.772Z",
+  //     updatedAt: "2024-11-22T16:33:05.772Z",
+  //     prices: [
+  //       {
+  //         id: "string",
+  //         currency: "string",
+  //         unitAmount: 20,
+  //         active: true,
+  //         createdAt: "2024-11-22T16:33:05.772Z",
+  //         interval: "NONE",
+  //       },
+  //     ],
+  //     type: "string",
+  //     plan: "FREE",
+  //     maxMindmaps: 0,
+  //     maxCredits: 0,
+  //   },
+  // ];
+
   const stripeCheckout = useMutation(fetchStripeCheckout, {
     onSuccess: async (data: any) => {
       if (data) {
@@ -145,7 +192,7 @@ function Pricing() {
 
   if (paymentProducts)
     return (
-      <section className="py-64 bg-[radial-gradient(ellipse_80%_40%_at_top,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]">
+      <section className="pt-56 bg-[radial-gradient(ellipse_80%_40%_at_top,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] md:overflow-x-clip">
         <div className="container">
           <div className="section-heading">
             <h2 className="section-title bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text">
@@ -155,11 +202,11 @@ function Pricing() {
               Free forever. Upgrade for unlimited tasks, better security, and exclusive features.
             </p>
           </div>
-          <div className="mt-10 flex flex-col items-center gap-6 lg:flex-row lg:items-end lg:justify-center">
+          <div className="mt-20 flex flex-col items-center gap-6 lg:flex-row lg:items-end lg:justify-center">
             {paymentProducts.map((product: SubscriptionPlan, index: number) => (
               <div
                 key={index}
-                className={twMerge("card", product.name === "Premium" && "border-4 border-t-8 border-primary-color")}
+                className={twMerge("card", product.name === "Premium" && "!border-4 !border-t-8 !border-primary-color")}
               >
                 <div className="flex justify-between">
                   <h3 className={twMerge("text-lg font-bold text-primary-color/50")}>{product.name}</h3>
@@ -180,6 +227,9 @@ function Pricing() {
                     </div>
                   )}
                 </div>
+                <article className="pt-4">
+                  <p>{product.description}</p>
+                </article>
                 {product.prices.map((product: any, productIndex: number) => (
                   <div key={productIndex} className="mt-[30px] flex items-baseline gap-1">
                     <span className="text-4xl font-bold leading-none tracking-tighter">€ {product.unitAmount}</span>
@@ -195,13 +245,13 @@ function Pricing() {
                 </Button>
                 <ul className="mt-8 flex flex-col gap-5">
                   <li className="flex items-center gap-4 text-sm">
-                    <Check size={6} />
+                    <Check size={20} />
                     <span>
                       Total mindmap: <b>{product.maxMindmaps}</b>
                     </span>
                   </li>
                   <li className="flex items-center gap-4 text-sm">
-                    <Check size={6} />
+                    <Check size={20} />
                     <span>
                       Monthly credits: <b>{product.maxCredits}</b>
                     </span>

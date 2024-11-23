@@ -8,35 +8,61 @@ interface TypingAnimationProps {
   text: string;
   duration?: number;
   className?: string;
+  pauseDuration?: number; // Duration to pause when text is complete
+  clearDuration?: number; // Duration to pause before clearing
 }
 
-export default function TypingAnimation({ text, duration = 200, className }: TypingAnimationProps) {
+export default function TypingAnimation({
+  text,
+  duration = 100,
+  className,
+  pauseDuration = 1000, // Default 2 second pause when complete
+  clearDuration = 500, // Default 1 second pause before clearing
+}: TypingAnimationProps) {
   const [displayedText, setDisplayedText] = useState<string>("");
-  const [i, setI] = useState<number>(0);
+  const [isTyping, setIsTyping] = useState<boolean>(true);
+  const [isClearing, setIsClearing] = useState<boolean>(false);
 
   useEffect(() => {
-    const typingEffect = setInterval(() => {
-      if (i < text.length) {
-        setDisplayedText(text.substring(0, i + 1));
-        setI(i + 1);
+    let timer: any;
+
+    if (isTyping) {
+      // Typing animation
+      if (displayedText.length < text.length) {
+        timer = setTimeout(() => {
+          setDisplayedText(text.substring(0, displayedText.length + 1));
+        }, duration);
       } else {
-        clearInterval(typingEffect);
+        // Text is complete, pause before clearing
+        timer = setTimeout(() => {
+          setIsTyping(false);
+          setIsClearing(true);
+        }, pauseDuration);
       }
-    }, duration);
+    } else if (isClearing) {
+      // Clearing animation
+      if (displayedText.length > 0) {
+        timer = setTimeout(() => {
+          setDisplayedText(displayedText.substring(0, displayedText.length - 1));
+        }, duration);
+      } else {
+        // Text is cleared, restart typing
+        timer = setTimeout(() => {
+          setIsTyping(true);
+          setIsClearing(false);
+        }, clearDuration);
+      }
+    }
 
     return () => {
-      clearInterval(typingEffect);
+      if (timer) clearTimeout(timer);
     };
-  }, [duration, i, text]);
+  }, [displayedText, isTyping, isClearing, text, duration, pauseDuration, clearDuration]);
 
   return (
-    <h1
-      className={cn(
-        "font-display text-center text-4xl font-bold leading-[5rem] tracking-[-0.02em] drop-shadow-sm",
-        className,
-      )}
-    >
-      {displayedText ? displayedText : text}
+    <h1 className={cn("font-display text-left", className)}>
+      {displayedText}
+      <span className="animate-pulse">|</span>
     </h1>
   );
 }

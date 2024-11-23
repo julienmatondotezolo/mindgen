@@ -1,59 +1,29 @@
 "use client";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { MousePointer2, MoveRight } from "lucide-react";
+import { MoveRight } from "lucide-react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useRef } from "react";
+import { useRecoilState } from "recoil";
 
 import { CustomSession } from "@/_types";
 // import productImage from "@/assets/section/product-image.png";
 import productImage from "@/assets/section/hero.gif";
 import { Button } from "@/components";
 import BlurIn from "@/components/ui/blur-in";
+import { ManualCursor } from "@/components/whiteboard/collaborate";
 // import TypingAnimation from "@/components/ui/typing-animation";
 import { Link } from "@/navigation";
-import { connectionIdToColor } from "@/utils";
-
-export default function Cursor({
-  x,
-  y,
-  name,
-  connectionId,
-  duration,
-}: {
-  x: number;
-  y: number;
-  name: string;
-  connectionId: number;
-  duration?: number;
-}) {
-  return (
-    <div
-      style={{
-        transform: `translateX(${x}px) translateY(${y}px)`,
-      }}
-      className={`${name == "You" ? "" : `transition-all duration-${duration}00 ease-in-out`} drop-shadow-md absolute`}
-    >
-      <MousePointer2
-        className="h-5 w-5"
-        style={{
-          fill: connectionIdToColor(connectionId),
-          color: connectionIdToColor(connectionId),
-        }}
-      />
-      <div
-        className="absolute left-5 px-1.5 py-0.5 rounded-md text-xs text-white font-semibold"
-        style={{
-          backgroundColor: connectionIdToColor(connectionId),
-        }}
-      >
-        {name}
-      </div>
-    </div>
-  );
-}
+import { globalCursorState } from "@/state";
+import { uppercaseFirstLetter } from "@/utils";
 
 function Hero() {
   const session: any = useSession();
+
+  const text = useTranslations("Index");
+  const locale = useLocale();
+  const landingText = useTranslations("landing");
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const heroRef = useRef(null);
@@ -63,24 +33,10 @@ function Hero() {
   });
   const translateY = useTransform(scrollYProgress, [0, 1.5], [900, -120]);
 
-  const [cursorVisible, setCursorVisible] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [cursorVisible, setCursorVisible] = useRecoilState(globalCursorState);
 
   const handleMouseEnter = () => setCursorVisible(true);
   const handleMouseLeave = () => setCursorVisible(false);
-
-  const handleMouseMove = (event: MouseEvent) => {
-    // {{ edit_5 }}
-    setCursorPosition({ x: event.clientX, y: event.clientY });
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
 
   const allCursorsProps = [
     {
@@ -129,20 +85,46 @@ function Hero() {
     },
   ];
 
+  const moveX = 290;
+  const moveY = 20;
+
   return (
     <section
       ref={heroRef}
-      className={`${
-        cursorVisible ? "!cursor-none" : "cursor-auto"
-      } relative bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]`}
+      className="relative bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] pb-20 pt-32 md:overflow-x-clip md:pb-10 md:pt-32 h-[100vh]"
     >
       <div className="container">
-        <div className="md:flex flex-col md:items-center text-left md:text-center ">
+        <div className="relative md:flex flex-col md:items-center text-left md:text-center ">
+          {allCursorsProps.map((cursorProps, index) => (
+            <motion.div
+              key={index}
+              animate={{
+                translateY: cursorProps.translateY,
+                transition: {
+                  repeat: Infinity,
+                  repeatType: "mirror",
+                  duration: cursorProps.duration,
+                  ease: "easeInOut",
+                },
+              }}
+              className="absolute top-0 hidden md:block transition-all duration-1000 ease-out"
+              style={{ filter: `blur(${cursorVisible ? cursorProps.blur : 0}px)` }}
+            >
+              <ManualCursor
+                x={cursorVisible ? cursorProps.onHoverX - moveX : cursorProps.x - moveX}
+                y={cursorVisible ? cursorProps.onHoverY + moveY : cursorProps.y + moveY}
+                name={cursorProps.name}
+                connectionId={cursorProps.connectionId}
+                duration={cursorProps.duration}
+              />
+            </motion.div>
+          ))}
           <div
-            className="group md:w-[578px] my-6 relative transition-all duration-600 ease-in-out hover:border-2 border-primary-color hover:bg-[rgba(77,107,255,0.05)] backdrop-filter backdrop-blur-sm"
+            className="group md:w-[578px] my-6 relative"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
+            <div className="hidden group-hover:block absolute top-0 left-0 border-2 border-primary-color bg-[rgba(77,107,255,0.05)] w-full h-full transition-all duration-200 ease-in-out"></div>
             <div className="hidden group-hover:block absolute -right-2 -top-2 w-4 h-4 rounded-[3px] bg-primary-color"></div>
             <div className="hidden group-hover:block absolute -left-2 -top-2 w-4 h-4 rounded-[3px] bg-primary-color"></div>
             <div className="hidden group-hover:block absolute -left-2 -bottom-2 w-4 h-4 rounded-[3px] bg-primary-color"></div>
@@ -150,7 +132,7 @@ function Hero() {
             {/* <div className="tag">Beta version </div> */}
 
             <h1 className="md:text-7xl bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text text-5xl font-bold tracking-tighter text-transparent">
-              Unleash Your Creativity with
+              {landingText("title")}
             </h1>
             <BlurIn
               word="Mindgen"
@@ -159,41 +141,17 @@ function Hero() {
             />
 
             <p className="mt-6 text-xl tracking-tight text-[#010d3e] dark:text-primary-foreground default">
-              Transform your ideas into visual masterpieces with Mindgen. Collaborate seamlessly and generate
-              professional documents in minutes!
+              {landingText("description")}
             </p>
-
-            {allCursorsProps.map((cursorProps, index) => (
-              <motion.div
-                key={index}
-                animate={{
-                  translateY: cursorProps.translateY,
-                  transition: {
-                    repeat: Infinity,
-                    repeatType: "mirror",
-                    duration: cursorProps.duration,
-                    ease: "easeInOut",
-                  },
-                }}
-                className="absolute top-0 hidden md:block transition-all duration-1000 ease-out"
-                style={{ filter: `blur(${cursorVisible ? cursorProps.blur : 0}px)` }}
-              >
-                <Cursor
-                  x={cursorVisible ? cursorProps.onHoverX : cursorProps.x}
-                  y={cursorVisible ? cursorProps.onHoverY : cursorProps.y}
-                  name={cursorProps.name}
-                  connectionId={cursorProps.connectionId}
-                  duration={cursorProps.duration}
-                />
-              </motion.div>
-            ))}
 
             <div className="mt-[30px] flex flex-col items-start md:items-center">
               <div className="space-x-4">
                 {safeSession?.data?.session ? (
                   <Link href={`/dashboard`}>
                     <Button className="w-auto gap-2 !cursor-none">
-                      <span>Open app</span>
+                      <span>
+                        {uppercaseFirstLetter(text("open"))} {locale == "fr" && "l'"}app
+                      </span>
                       <MoveRight size={20} />
                     </Button>
                   </Link>
@@ -211,17 +169,21 @@ function Hero() {
               </div>
             </div>
           </div>
-
-          <motion.img
-            src={productImage.src}
-            alt="Noodle Image"
-            width={1024}
-            className="hidden rounded-xl md:absolute md:inset-0 md:mx-auto md:my-auto md:block"
+          <motion.figure
+            className="rounded-[50px] border border-white dark:border-slate-800 w-[1024px] h-[576px] hidden md:absolute md:inset-0 md:mx-auto md:my-auto md:flex bg-[rgba(77,107,255,0.05)] backdrop-filter backdrop-blur-sm z-10"
             style={{ translateY, rotate: 0 }}
-          />
+          >
+            <div className="relative rounded-[40px] p-4 overflow-hidden w-[97%] h-[95%] m-auto">
+              <Image
+                src={productImage}
+                alt="product_image"
+                layout="fill"
+                // objectFit="contain"
+              />
+            </div>
+          </motion.figure>
         </div>
       </div>
-      {cursorVisible && <Cursor x={cursorPosition.x + 10} y={cursorPosition.y - 570} name="You" connectionId={4} />}
     </section>
   );
 }

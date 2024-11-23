@@ -132,5 +132,17 @@
   },
   "Organization": {
     "organization": "organisation"
+  },
+  "landing": {
+    "title": "Libérez votre créativité avec",
+    "description": "Transformez vos idées en chefs-d'œuvre visuels avec Mindgen. Collaborez en toute transparence et générez des documents professionnels en quelques minutes !",
+    "transformIdeaText": "Transformez vos idées en informations exploitables sans effort",
+    "transformIdeaDescription": "Avec Mindgen, vos mindmap et flowchart deviennent de puissants outils de productivité. Générez rapidement des user stories, des e-mails, des PDF et des résumés en quelques clics à l'aide d'invites rapides. Facilitez votre processus de travail et augmentez votre productivité.",
+    "writeQueryTitle": "Ecrivez un prompt personnalisée",
+    "writeQueryDescription": "Saisissez rapidement du texte ou posez une question directement dans l'invite.\n\n\n\n \n\n Parfait pour noter des pensées, poser des questions ou ajouter des données personnalisées en quelques mots",
+    "uploadDocumentTitle": "Importer un document ou un fichier",
+    "uploadDocumentDescription": "Importez facilement des PDF, des documents ou des images pour ajouter du contenu enrichi à votre mindgen. Le téléchargement de fichiers vous permet d'intégrer des informations détaillées provenant de plusieurs sources.",
+    "connectExternalDataTitle": "Connexion à une source de données externe",
+    "connectExternalDataDescription": "Connectez-vous à des sites web externes, des bases de données ou des dépôts GitHub pour récupérer des données en direct ou intégrer des informations depuis vos sources préférées pour un traitement en temps réel."
   }
 }

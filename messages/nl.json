@@ -132,5 +132,17 @@
   },
   "Organization": {
     "organization": "organisatie"
+  },
+  "landing": {
+    "title": "Laat uw creativiteit de vrije loop met",
+    "description": "Transformeer uw ideeën in visuele meesterwerken met Mindgen. Werk naadloos samen en genereer professionele documenten in enkele minuten!",
+    "transformIdeaText": "Transformeer ideeën moeiteloos naar bruikbare informatie",
+    "transformIdeaDescription": "Met Mindgen worden uw mindmaps krachtige tools voor productiviteit. Genereer snel user stories, e-mails, PDF's en samenvattingen met een paar klikken met behulp van snelle prompts. Stroomlijn uw workflow en verhoog de productiviteit.",
+    "writeQueryTitle": "Schrijf een aangepaste prompt",
+    "writeQueryDescription": "Voer snel tekst in of stel direct een vraag in de prompt. Perfect voor het noteren van gedachten, het stellen van vragen of het toevoegen van aangepaste gegevens in enkele woorden",
+    "uploadDocumentTitle": "Document of bestand uploaden",
+    "uploadDocumentDescription": "Importeer eenvoudig PDF's, documenten of afbeeldingen om rijke inhoud toe te voegen aan uw mindgen. Door bestanden te uploaden kunt u gedetailleerde informatie uit verschillende bronnen integreren.",
+    "connectExternalDataTitle": "Verbinding maken met externe gegevensbron",
+    "connectExternalDataDescription": "Maak verbinding met externe websites, databases of GitHub-repositories om live gegevens op te halen of informatie te integreren vanuit uw favoriete bronnen voor realtime verwerking."
   }
 }
