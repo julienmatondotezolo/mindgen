@@ -2,7 +2,7 @@
 import { CirclePlus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Organization } from "@/_types";
@@ -35,9 +35,21 @@ export default function Dashboard() {
   const text = useTranslations("Index");
   const textOrga = useTranslations("Organization");
 
+  // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Set loading to false once selectedOrganization is initialized
+    setIsLoading(false);
+  }, [selectedOrganization]);
+
   const handleClick = () => {
     setOrganization(!isOrganization);
   };
+
+  if (isLoading) {
+    return <div>Loading Organization...</div>;
+  }
 
   return (
     <>
