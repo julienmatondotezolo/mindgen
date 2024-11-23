@@ -1,3 +1,5 @@
+"use client";
+
 // socket.ts
 import { io } from "socket.io-client";
 
