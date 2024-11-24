@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { twMerge } from "tailwind-merge";
 
@@ -153,6 +153,12 @@ function Pricing() {
     },
   });
 
+  const [billingInterval, setBillingInterval] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
+
+  const handleIntervalChange = () => {
+    setBillingInterval((prev) => (prev === "MONTHLY" ? "YEARLY" : "MONTHLY"));
+  };
+
   if (isLoading) {
     return <section className="py-64">Loading...</section>;
   }
@@ -202,6 +208,20 @@ function Pricing() {
               Free forever. Upgrade for unlimited tasks, better security, and exclusive features.
             </p>
           </div>
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <span className={billingInterval === "MONTHLY" ? "font-bold" : ""}>Monthly</span>
+            <button
+              onClick={handleIntervalChange}
+              className="w-14 h-7 bg-gray-200 rounded-full p-1 duration-300 ease-in-out"
+            >
+              <div
+                className={`bg-primary-color w-5 h-5 rounded-full shadow-md transform duration-300 ease-in-out ${
+                  billingInterval === "YEARLY" ? "translate-x-7" : ""
+                }`}
+              />
+            </button>
+            <span className={billingInterval === "YEARLY" ? "font-bold" : ""}>Yearly</span>
+          </div>
           <div className="mt-20 flex flex-col items-center gap-6 lg:flex-row lg:items-end lg:justify-center">
             {paymentProducts.map((product: SubscriptionPlan, index: number) => (
               <div
@@ -230,14 +250,20 @@ function Pricing() {
                 <article className="pt-4">
                   <p>{product.description}</p>
                 </article>
-                {product.prices.map((product: any, productIndex: number) => (
-                  <div key={productIndex} className="mt-[30px] flex items-baseline gap-1">
-                    <span className="text-4xl font-bold leading-none tracking-tighter">€ {product.unitAmount}</span>
-                    <span className="font-bold tracking-tight text-black/50 dark:text-white">/month</span>
-                  </div>
-                ))}
+                {product.prices
+                  .filter((price) => price.interval === billingInterval)
+                  .map((price: any, productIndex: number) => (
+                    <div key={productIndex} className="mt-[30px] flex items-baseline gap-1">
+                      <span className="text-4xl font-bold leading-none tracking-tighter">€ {price.unitAmount}</span>
+                      <span className="font-bold tracking-tight text-black/50 dark:text-white">
+                        /{billingInterval.toLowerCase() === "monthly" ? "month" : "year"}
+                      </span>
+                    </div>
+                  ))}
                 <Button
-                  onClick={() => handleCheckout(product.prices[0].id)}
+                  onClick={() =>
+                    handleCheckout(product.prices.find((price) => price.interval === billingInterval)?.id || "")
+                  }
                   className={twMerge("mt-[30px] w-full")}
                   disabled={stripeCheckout.isLoading}
                 >

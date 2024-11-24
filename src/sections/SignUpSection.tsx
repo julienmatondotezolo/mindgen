@@ -22,11 +22,13 @@ function SignUpSection() {
       className="relative py-56 bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)] md:overflow-x-clip"
     >
       <div className="flex flex-col items-center space-y-2">
-        <div className="relative">
+        <div className="flex flex-col relative">
           <h2 className="landingFeatureTitle">Sign up for free today</h2>
-          <p className="landingFeatureDescription">
-            Celebrate the joy of accomplishment with an app designed to track your progress and motivate your efforts.
-          </p>
+          <article className="w-3/4 m-auto py-4">
+            <p className="landingFeatureDescription">
+              Celebrate the joy of accomplishment with an app designed to track your progress and motivate your efforts.
+            </p>
+          </article>
           <motion.img
             src={starImage.src}
             alt="Star Image"
