@@ -42,6 +42,8 @@
     "forgotPassword": "Mot de passe oublié",
     "alreadyAccount": "Vous avez déjà un compte?",
     "noAccount": "Pas encore de compte?",
+    "accountActivated": "Compte activé",
+    "accountActivatedText": "Ce compte a été confirmé. Vous serez redirigé vers la page de connexion.",
     "connect": "Connexion",
     "register": "S'incrire",
     "registerText": "Entrez votre email, nom d'utilisateur et mot de passe ci-dessous pour vous inscrire.",

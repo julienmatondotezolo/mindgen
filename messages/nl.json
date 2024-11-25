@@ -42,6 +42,8 @@
     "forgotPassword": "Wachtwoord vergeten",
     "alreadyAccount": "Heb je al een account?",
     "noAccount": "Nog geen account?",
+    "accountActivated": "Compte activé",
+    "accountActivatedText": "Ce compte a été confirmé. Vous serez redirigé vers la page de connexion.",
     "connect": "Inloggen",
     "register": "Registreren",
     "registerText": "Vul hieronder uw e-mailadres, gebruikersnaam en wachtwoord in om te registreren.",

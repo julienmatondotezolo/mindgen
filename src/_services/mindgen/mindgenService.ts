@@ -315,6 +315,27 @@ export async function deleteOrganizationById({ organizationId }: { organizationI
   }
 }
 
+export async function acceptOrgInvitation({ session, invitationId }: { session: CustomSession | null, invitationId: string }): Promise<any> {
+  try {
+    const responseAcceptOrgInvitation: Response = await fetch(baseUrl + `/organization/invitation/accept/${invitationId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.data.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseAcceptOrgInvitation.ok) {
+      return responseAcceptOrgInvitation;
+    } else {
+      return responseAcceptOrgInvitation.json();
+    }
+  } catch (error) {
+    console.error("Impossible to fetch confirm email:", error);
+  }
+}
+
 /* ================================================== */  
 /* ==================   MINDMAPS   ================== */
 /* ================================================== */ 
@@ -665,30 +686,6 @@ export async function createInvitations({ session, invitationObject }: { session
     } catch (error) {
       console.error("Impossible to fetch invitations:", error);
     }
-}
-
-export async function acceptInvitation(invitationId: string): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responseInvitations: Response = await fetch(baseUrl + `/mindmap/invitation/accept/${invitationId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseInvitations.ok) {
-      return responseInvitations;
-    } else {
-      throw responseInvitations;
-    }
-  } catch (error) {
-    console.error("Impossible to accept invitations:", error);
-  }
 }
 
 /* ========================================================= */  

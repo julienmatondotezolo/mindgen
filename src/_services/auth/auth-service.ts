@@ -49,7 +49,7 @@ export async function signUp(body: any) {
   }
 }
 
-export async function validateToken(token: string): Promise<boolean> {
+export async function validateToken(token: string) {
   try {
     const res: Response = await fetch(`${baseUrl}/password/validate-reset-token/${token}`, {
       method: "GET",
@@ -69,7 +69,7 @@ export async function validateToken(token: string): Promise<boolean> {
   }
 }
 
-export async function resetPassword(token: string, newPassword: string): Promise<boolean> {
+export async function resetPassword(token: string, newPassword: string) {
   try {
     const res: Response = await fetch(`${baseUrl}/password/reset`, {
       method: "POST",
@@ -103,7 +103,7 @@ export async function requestPasswordReset(email: string) {
   }
 }
 
-export async function changePassword(session: any, body: any): Promise<boolean> {
+export async function changePassword(session: any, body: any) {
   try {
     const res: Response = await fetch(`${baseUrl}/password/change`, {
       method: "PUT",
@@ -118,5 +118,25 @@ export async function changePassword(session: any, body: any): Promise<boolean> 
     return res.ok;
   } catch (error) {
     console.error(error);
+  }
+}
+
+export async function confirmEmail({ tokenId }: { tokenId: string }): Promise<any> {
+  try {
+    const responseConfirmEmail: Response = await fetch(baseUrl + `auth/confirm-email/${tokenId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseConfirmEmail.ok) {
+      return responseConfirmEmail;
+    } else {
+      return responseConfirmEmail.json();
+    }
+  } catch (error) {
+    console.error("Impossible to fetch confirm email:", error);
   }
 }
