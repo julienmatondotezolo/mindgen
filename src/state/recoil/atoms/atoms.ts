@@ -59,6 +59,11 @@ export const boardIdState = atom<string>({
   default: "", // valeur par défaut (alias valeur initials)
 });
 
+export const boardsLengthState = atom<number>({
+  key: "boardsLengthState",
+  default: 1,
+});
+
 // ================   LAYER EFFECTS   ================== //
 
 const socketLayerEffect = ({ setSelf }: any) => {
@@ -280,6 +285,11 @@ export const qaState = atom<QuestionAnswersProps[]>({
 });
 
 // ================   MODAL STATES   ================== //
+
+export const newBoardState = atom({
+  key: "newBoardState",
+  default: false,
+});
 
 export const modalState = atom({
   key: "modalState",

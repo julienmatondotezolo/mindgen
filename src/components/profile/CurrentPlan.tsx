@@ -32,7 +32,7 @@ function CurrentPlan() {
   const percentageUsed = calculatePercentageUsed(MAX_CREDITS, usedCredits);
 
   return (
-    <div className="w-full !mt-12 p-4 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 rounded-2xl space-y-4">
+    <div className="w-full p-4 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 rounded-2xl space-y-4">
       <p className="font-bold">Manage plan</p>
       <p className="text-sm">
         {capitalize(userProfile?.plan.toLowerCase())}: <span className="font-bold">{percentageUsed}%</span> used

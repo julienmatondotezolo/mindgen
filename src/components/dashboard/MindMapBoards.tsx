@@ -6,13 +6,13 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { deleteMindmapById, fetchMindmaps } from "@/_services";
 import { MindmapObject, Organization } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
-import { selectedOrganizationState } from "@/state";
+import { boardsLengthState, selectedOrganizationState } from "@/state";
 import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
@@ -20,6 +20,8 @@ import { Link } from "../../navigation";
 function MindMapBoards() {
   const text = useTranslations("Index");
   const dateText = useTranslations("Dashboard");
+
+  const setBoardLength = useSetRecoilState(boardsLengthState);
 
   const size = 10;
 
@@ -45,6 +47,9 @@ function MindMapBoards() {
       return dateB - dateA;
 
     }),
+    onSuccess: (data: MindmapObject[]) => {
+      if (data) setBoardLength(data.length);
+    },
   });
   const [, setIsDeleting] = useState(false);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });

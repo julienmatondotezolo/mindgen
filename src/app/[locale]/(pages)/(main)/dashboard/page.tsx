@@ -1,6 +1,7 @@
 "use client";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, LayoutDashboard, Star } from "lucide-react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -10,12 +11,14 @@ import boardElement from "@/assets/images/elements.svg";
 import {
   BackDropGradient,
   Button,
+  CurrentPlan,
   GenerateMindmapDialog,
   MindmapDialog,
   OrganizationDialog,
   OrganizationSettingsDialog,
 } from "@/components";
-import { HeroProfile, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
+import { LeftBoards, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
+import { Link } from "@/navigation";
 import {
   generateModalState,
   modalState,
@@ -26,14 +29,20 @@ import {
 import { uppercaseFirstLetter } from "@/utils";
 
 export default function Dashboard() {
+  const text = useTranslations("Index");
+  const textOrga = useTranslations("Organization");
+  const recentMindmapText = useTranslations("Dashboard");
+
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useRecoilState(generateModalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
   const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
 
   const selectedOrganization = useRecoilValue<Organization | undefined>(selectedOrganizationState);
-  const text = useTranslations("Index");
-  const textOrga = useTranslations("Organization");
+
+  const searchParams = useSearchParams();
+
+  const favourites = searchParams.get("favourites");
 
   // Add loading state
   const [isLoading, setIsLoading] = useState(true);
@@ -57,14 +66,52 @@ export default function Dashboard() {
       <div className="relative flex justify-center pt-32">
         <BackDropGradient />
         <section className="space-y-12 max-w-7xl w-[90%]">
-          <HeroProfile />
+          {/* <HeroProfile /> */}
           <article className="flex justify-between">
             <div className="w-[25%]">
-              <OrgSidebar />
+              <div className="w-full pr-8 space-y-8">
+                <OrgSidebar />
+                <div className="w-full space-y-2">
+                  <Button
+                    variant={favourites ? "ghost" : "boardClicked"}
+                    asChild
+                    size="lg"
+                    className="justify-start px-2 w-full"
+                  >
+                    <Link href="/dashboard">
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      Team Boards
+                    </Link>
+                  </Button>
+                  <Button
+                    variant={favourites ? "boardClicked" : "ghost"}
+                    asChild
+                    size="lg"
+                    className="justify-start px-2 w-full"
+                  >
+                    <Link
+                      href={{
+                        pathname: "/dashboard",
+                        query: {
+                          favourites: "true",
+                        },
+                      }}
+                    >
+                      <Star className="h-4 w-4 mr-2" />
+                      Favourite Boards
+                    </Link>
+                  </Button>
+                </div>
+                <CurrentPlan />
+              </div>
             </div>
             {selectedOrganization ? (
               <div className="w-full space-y-12">
                 <MindGenTemplates />
+                <section className="flex flex-wrap items-center justify-between space-y-4">
+                  <p className="text-xl font-medium dark:text-white">{recentMindmapText("myRecentBoards")}</p>
+                  <LeftBoards />
+                </section>
                 <RecentMindMap />
               </div>
             ) : (
