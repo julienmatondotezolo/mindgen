@@ -2,10 +2,12 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import React from "react";
 import { useQuery } from "react-query";
+import { useSetRecoilState } from "recoil";
 
 import { fetchProfile } from "@/_services";
-import { CustomSession } from "@/_types";
+import { CustomSession, ProfileProps } from "@/_types";
 import profileIcon from "@/assets/icons/profile.svg";
+import { profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 import { Popover, PopoverContent, PopoverTrigger, Skeleton } from "../ui";
@@ -13,6 +15,8 @@ import { ProfileMenu } from "./ProfileMenu";
 
 function NavProfile() {
   const session = useSession();
+
+  const setMaxMindmap = useSetRecoilState(profilMaxMindmapState);
   // const text = useTranslations("Index");
   // const dateText = useTranslations("Dashboard");
   // const [isAccepting, setIsAccepting] = useState(false);
@@ -24,6 +28,9 @@ function NavProfile() {
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
   const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile, {
     enabled: session.data ? true : false,
+    onSuccess: (data: ProfileProps) => {
+      if (data) setMaxMindmap(data.subscriptionDetails.maxMindmaps);
+    },
   });
 
   // const fetchUserInvitations = () => fetchInvitations({ session: safeSession });

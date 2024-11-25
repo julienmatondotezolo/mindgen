@@ -336,7 +336,14 @@ export const viewPortScaleState = atom({
   default: {},
 });
 
-// ================   MODAL STATES   ================== //
+// ================   PROFIL STATES   ================== //
+
+export const profilMaxMindmapState = atom<number>({
+  key: "profilMaxMindmapState",
+  default: 1,
+});
+
+// ================   CURSORS STATES   ================== //
 
 export const globalCursorState = atom({
   key: "globalCursorState",
