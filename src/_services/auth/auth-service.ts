@@ -27,7 +27,7 @@ export async function connectUser(credentials: any): Promise<Response> {
   }
 }
 
-export async function signUp(body: any) {
+export async function signUp({ signUpBody }: { signUpBody: any }) {
   try {
     const response = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
@@ -35,7 +35,7 @@ export async function signUp(body: any) {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "1",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(signUpBody),
     });
 
     if (!response.ok) {
@@ -69,7 +69,7 @@ export async function validateToken(token: string) {
   }
 }
 
-export async function resetPassword(token: string, newPassword: string) {
+export async function resetPassword({ token, newPassword }: { token: string; newPassword: string }) {
   try {
     const res: Response = await fetch(`${baseUrl}/password/reset`, {
       method: "POST",
@@ -86,7 +86,7 @@ export async function resetPassword(token: string, newPassword: string) {
   }
 }
 
-export async function requestPasswordReset(email: string) {
+export async function requestPasswordReset({ passwordResetBody }: { passwordResetBody: any }) {
   try {
     const res: Response = await fetch(`${baseUrl}/password/reset-request`, {
       method: "POST",
@@ -94,7 +94,7 @@ export async function requestPasswordReset(email: string) {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "1",
       },
-      body: JSON.stringify(email),
+      body: JSON.stringify(passwordResetBody),
     });
 
     return res.json();
@@ -123,7 +123,7 @@ export async function changePassword(session: any, body: any) {
 
 export async function confirmEmail({ tokenId }: { tokenId: string }): Promise<any> {
   try {
-    const responseConfirmEmail: Response = await fetch(baseUrl + `auth/confirm-email/${tokenId}`, {
+    const responseConfirmEmail: Response = await fetch(baseUrl + `/auth/confirm-email/${tokenId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -134,7 +134,7 @@ export async function confirmEmail({ tokenId }: { tokenId: string }): Promise<an
     if (responseConfirmEmail.ok) {
       return responseConfirmEmail;
     } else {
-      return responseConfirmEmail.json();
+      return responseConfirmEmail;
     }
   } catch (error) {
     console.error("Impossible to fetch confirm email:", error);

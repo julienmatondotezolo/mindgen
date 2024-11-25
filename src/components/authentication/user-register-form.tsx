@@ -1,9 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import React, { ChangeEvent, useEffect, useState } from "react";
+import { useMutation } from "react-query";
 
 import { signUp } from "@/_services/auth/auth-service";
+import { ErrorMessage } from "@/_types/ErrorMessage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,15 +16,15 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   const authText = useTranslations("Auth");
+  const locale = useLocale();
 
   const router = useRouter();
   const [callbackUrl, setCallbackUrl] = useState<string | null>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [errorMessages, setErrorMessages] = useState<string[]>([]);
+  const [errorMessages, setErrorMessages] = useState<ErrorMessage>();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -31,27 +33,55 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
     if (callbackUrl) setCallbackUrl(callbackUrl);
   }, []);
 
+  // Define the mutation
+  const signUpMutation = useMutation(signUp, {
+    onSuccess: (data) => {
+      if (data.status == 200) {
+        if (callbackUrl) {
+          const newCallbackUrl = `/auth/login?callbackUrl=${callbackUrl}`;
+
+          router.push(newCallbackUrl);
+        } else {
+          router.push("/auth/login");
+        }
+
+        return;
+      }
+
+      setErrorMessages(data);
+      console.error("data:", data);
+      return;
+    },
+  });
+
   const fieldsValidated = () => {
-    const newErrorMessages: string[] = [];
+    const errorMessage: ErrorMessage = {
+      errorCode: "",
+      errors: [],
+      message: "",
+    };
+    const errors: string[] = [];
 
     if (password !== confirmPassword) {
-      newErrorMessages.push("PASSWORDS_NOT_MATCHING");
+      errors.push("PASSWORDS_NOT_MATCHING");
     }
 
     if (password.length < 8) {
-      newErrorMessages.push("PASSWORD_TOO_SHORT");
+      errors.push("PASSWORD_TOO_SHORT");
     }
 
     if (username === "" || username.length < 4) {
-      newErrorMessages.push("USERNAME_TOO_SHORT");
+      errors.push("USERNAME_TOO_SHORT");
     }
 
     if (email === "") {
-      newErrorMessages.push("EMAIL_EMPTY");
+      errors.push("EMAIL_EMPTY");
     }
 
-    setErrorMessages(newErrorMessages);
-    return newErrorMessages.length === 0;
+    errorMessage.errors = errors;
+
+    setErrorMessages(errorMessage);
+    return errors.length === 0;
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, source: string) => {
@@ -82,25 +112,10 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         password: password,
       };
 
-      setIsLoading(true);
-
       try {
-        const result = await signUp(body);
-
-        if (result.errorCode) {
-          setIsLoading(false);
-          setErrorMessages(result);
-          return;
-        }
-
-        if (callbackUrl) {
-          window.location.href = callbackUrl;
-        } else {
-          router.push("/auth/login");
-        }
+        await signUpMutation.mutateAsync({ signUpBody: body });
       } catch (error) {
         console.error("Login error:", error);
-        setIsLoading(false);
       }
     }
   }
@@ -118,10 +133,10 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
-              disabled={isLoading}
+              disabled={signUpMutation.isLoading}
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "email")}
             />
-            {errorMessages.includes("EMAIL_ALREADY_EXISTS") && (
+            {errorMessages?.errors?.includes("EMAIL_ALREADY_EXISTS") && (
               <div className="text-red-500 text-sm">Adresse mail déjà utilisé</div>
             )}
           </div>
@@ -134,13 +149,13 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="username"
               autoCorrect="off"
-              disabled={isLoading}
+              disabled={signUpMutation.isLoading}
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "username")}
             />
-            {errorMessages.includes("USERNAME_ALREADY_EXISTS") && (
+            {errorMessages?.errors?.includes("USERNAME_ALREADY_EXISTS") && (
               <div className="text-red-500 text-sm">Nom d&apos;utilisateur déjà pris</div>
             )}
-            {errorMessages.includes("USERNAME_TOO_SHORT") && (
+            {errorMessages?.errors?.includes("USERNAME_TOO_SHORT") && (
               <div className="text-red-500 text-sm">Nom d&apos;utilisateur trop court</div>
             )}
           </div>
@@ -153,15 +168,15 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="password"
               autoCorrect="off"
-              disabled={isLoading}
+              disabled={signUpMutation.isLoading}
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "password")}
             />
-            {errorMessages.includes("PASSWORD_TOO_SHORT") && (
+            {errorMessages?.errors?.includes("PASSWORD_TOO_SHORT") && (
               <div className="text-red-500 text-sm">Mot de passe trop court</div>
             )}
           </div>
           <div className="grid gap-1 space-y-2">
-            <Label htmlFor="password">Confirmer le mot de passe</Label>
+            <Label htmlFor="password">{authText("confirmPasswordInput")}</Label>
             <Input
               id="password"
               placeholder={authText("confirmPasswordInput")}
@@ -169,15 +184,15 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="password"
               autoCorrect="off"
-              disabled={isLoading}
+              disabled={signUpMutation.isLoading}
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "confirmPassword")}
             />
-            {errorMessages.includes("PASSWORDS_NOT_MATCHING") && (
+            {errorMessages?.errors?.includes("PASSWORDS_NOT_MATCHING") && (
               <div className="text-red-500 text-sm">Les mots de passe ne correspondent pas</div>
             )}
           </div>
-          <Button type="submit" className="mt-4" disabled={isLoading}>
-            {isLoading ? <p>Loading...</p> : <p>{authText("registerButton")}</p>}
+          <Button type="submit" className="mt-4" disabled={signUpMutation.isLoading}>
+            {signUpMutation.isLoading ? <p>Loading...</p> : <p>{authText("registerButton")}</p>}
           </Button>
         </div>
       </form>
@@ -190,7 +205,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         </div>
       </div>
       <Link href={`/auth/login${callbackUrl ? "?callbackUrl=" + callbackUrl : ""}`}>
-        <Button className="w-full" variant="outline" type="button" disabled={isLoading}>
+        <Button className="w-full" variant="outline" type="button" disabled={signUpMutation.isLoading}>
           {authText("connectionButton")}
         </Button>
       </Link>

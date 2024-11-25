@@ -153,6 +153,8 @@
   "Error": {
     "pageNotFound": "Page Not Found",
     "pageNotFoundDescription": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "linkExpired": "Link expired",
+    "linkExpiredDescription": "The password reset link is no longer valid.",
     "backHome": "Back to Home"
   }
 }

@@ -19,16 +19,16 @@ export default function ConfirmEmailPage({ params }: { params: { id: string } })
   const fetchConfirmEmail = async () => {
     const response = await confirmEmail({ tokenId: params.id });
 
-    if (response.status !== 200) {
-      throw Error;
+    if (response.status == 200) {
+      return response;
     }
 
-    return response;
+    return response.json();
   };
 
   const { isLoading, isError } = useQuery(["confirmEmail", params.id], fetchConfirmEmail, {
     enabled: true,
-    onSuccess: () => router.push("auth/login"),
+    onSuccess: () => router.push("/auth/login"),
   });
 
   if (isLoading)

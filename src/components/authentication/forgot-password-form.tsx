@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import React, { ChangeEvent, useEffect, useState } from "react";
+import { useMutation } from "react-query";
 
 import { requestPasswordReset } from "@/_services/auth/auth-service";
 import { ErrorMessage } from "@/_types/ErrorMessage";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Link } from "@/navigation";
+import { Link, useRouter } from "@/navigation";
 
 import { BackDropGradient } from "../ui";
 
@@ -18,9 +19,9 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
   const authText = useTranslations("Auth");
   const text = useTranslations("Index");
+  const router = useRouter();
 
   const [callbackUrl, setCallbackUrl] = useState<string | null>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [errorMessages, setErrorMessages] = useState<ErrorMessage>();
 
@@ -31,30 +32,44 @@ export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
     if (callbackUrl) setCallbackUrl(callbackUrl);
   }, []);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, source: string) => {
-    switch (source) {
-      case "username":
-        setEmail(event.target.value);
-    }
+  // Define the mutation
+  const requestPasswordResetMutation = useMutation(requestPasswordReset, {
+    onSuccess: (data) => {
+      setEmail("");
+
+      if (data.status == 200) {
+        router.push("/dashboard");
+        return;
+      }
+
+      setErrorMessages(data);
+      console.error("data:", data);
+      return;
+    },
+  });
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
   };
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
-    setIsLoading(true);
-    try {
-      const result = await requestPasswordReset(email);
+    if (email) {
+      try {
+        const passwordResetBody = {
+          email: email,
+        };
+        const result = await requestPasswordResetMutation.mutateAsync({ passwordResetBody });
 
-      if (result.errorCode) {
-        setIsLoading(false);
-        setErrorMessages(result);
-        setEmail("");
-        return;
+        if (result.errorCode) {
+          setErrorMessages(result);
+          return;
+        }
+      } catch (error) {
+        console.error("Login error:", error);
       }
-
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Login error:", error);
-      setIsLoading(false);
+    } else {
+      alert("Fill in email");
     }
   }
 
@@ -72,15 +87,15 @@ export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
-              disabled={isLoading}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "email")}
+              disabled={requestPasswordResetMutation.isLoading}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
             />
           </div>
           {errorMessages?.errorCode === "USER_RETRIEVAL_FAILED" && (
             <div className="text-red-500 text-sm">{errorMessages?.errorCode}</div>
           )}
-          <Button type="submit" className="mt-4" disabled={isLoading}>
-            {isLoading ? <p>{text("loading")}</p> : <p>{authText("sendCode")}</p>}
+          <Button type="submit" className="mt-4" disabled={requestPasswordResetMutation.isLoading}>
+            {requestPasswordResetMutation.isLoading ? <p>{text("loading")}</p> : <p>{authText("sendCode")}</p>}
           </Button>
         </div>
       </form>
@@ -93,8 +108,8 @@ export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
         </div>
       </div>
       <Link href={`/auth/login${callbackUrl ? "?callbackUrl=" + callbackUrl : ""}`}>
-        <Button className="w-full" variant="outline" type="button" disabled={isLoading}>
-          {authText("connectionButton")}
+        <Button className="w-full" variant="outline" type="submit" disabled={requestPasswordResetMutation.isLoading}>
+          {requestPasswordResetMutation.isLoading ? text("loading") : authText("connectionButton")}
         </Button>
       </Link>
     </div>

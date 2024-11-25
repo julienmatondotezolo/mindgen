@@ -153,6 +153,8 @@
   "Error": {
     "pageNotFound": "Page Non Trouvée",
     "pageNotFoundDescription": "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
+    "linkExpired": "Lien expiré",
+    "linkExpiredDescription": "Le lien de réinitialisation du mot de passe n'est plus valide.",
     "backHome": "Retour à l'Accueil"
   }
 }

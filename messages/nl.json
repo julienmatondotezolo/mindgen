@@ -151,8 +151,8 @@
     "connectExternalDataDescription": "Maak verbinding met externe websites, databases of GitHub-repositories om live gegevens op te halen of informatie te integreren vanuit uw favoriete bronnen voor realtime verwerking."
   },
   "Error": {
-    "pageNotFound": "Pagina Niet Gevonden",
-    "pageNotFoundDescription": "Sorry, de pagina die je zoekt bestaat niet of is verplaatst.",
+    "linkExpired": "Link vervallen",
+    "linkExpiredDescription": "De link voor wachtwoord opnieuw instellen is niet meer geldig.",
     "backHome": "Terug naar Home"
   }
 }
