@@ -7,15 +7,15 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 
-import { updateMindmapById } from "@/_services";
-import { CanvasMode, CustomSession, MindMapDetailsProps, Organization } from "@/_types";
+import { updateBoardMetadataById } from "@/_services";
+import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, Switch } from "@/components/ui";
-import { canvasStateAtom, edgesAtomState, layerAtomState, selectedOrganizationState } from "@/state";
-import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
+import { canvasStateAtom } from "@/state";
+import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
@@ -43,7 +43,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const queryClient = useQueryClient();
   // Define the mutation
-  const updateMindmapMutation = useMutation(updateMindmapById, {
+  const updateMindmapMutation = useMutation(updateBoardMetadataById, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmaps");
@@ -85,23 +85,15 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     setNewMindMapVisibility(checked ? "PRIVATE" : "PUBLIC");
   };
 
-  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
-
-  const currentLayers = useRecoilValue(layerAtomState);
-  const currentEdges = useRecoilValue(edgesAtomState);
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Do something with formData
 
-    const newMindmapObject = emptyMindMapObject({
+    const newMindmapObject = {
       name: newMindMapName ?? "",
       description: newMindMapDescription ?? "",
-      layers: currentLayers,
-      edges: currentEdges,
-      organizationId: selectedOrga!.id,
       visibility: newMindMapVisibility ?? "PRIVATE",
-    });
+    };
 
     updateMindmapMutation.mutate({
       session: safeSession,

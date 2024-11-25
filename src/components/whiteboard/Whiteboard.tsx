@@ -10,7 +10,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { updateMindmapById } from "@/_services/mindgen/mindgenService";
+import { updateBoardLayersById } from "@/_services/mindgen/mindgenService";
 import {
   CanvasMode,
   Color,
@@ -20,7 +20,6 @@ import {
   Layer,
   LayerType,
   MindMapDetailsProps,
-  Organization,
   Point,
   Side,
   XYWH,
@@ -37,7 +36,6 @@ import {
   isEdgeNearLayerAtom,
   layerAtomState,
   nearestLayerAtom,
-  selectedOrganizationState,
   useAddEdgeElement,
   useAddElement,
   useRemoveEdge,
@@ -53,7 +51,6 @@ import {
   calculateNewLayerPositions,
   checkPermission,
   connectionIdToColor,
-  emptyMindMapObject,
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   getHandlePosition,
@@ -182,9 +179,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const queryClient = useQueryClient();
 
-  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+  // const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
-  const updateMindmapMutation = useMutation(updateMindmapById, {
+  const updateBoardMutation = useMutation(updateBoardLayersById, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmaps");
@@ -214,34 +211,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const saveMindmap = useCallback(async () => {
     if (!checkPermission(PERMISSIONS, "UPDATE")) return;
 
-    const newMindmapObject = emptyMindMapObject({
-      name: userMindmapDetails.name,
-      description: userMindmapDetails.description,
+    const newMindmapObject = {
       layers,
       edges,
-      organizationId: selectedOrga!.id,
-      visibility: userMindmapDetails.visibility,
       pictureUrl: await takeScreenshot(),
-    });
+    };
 
-    updateMindmapMutation.mutate({
+    updateBoardMutation.mutate({
       session: session,
       mindmapId: userMindmapDetails.id,
       mindmapObject: newMindmapObject,
     });
-  }, [
-    PERMISSIONS,
-    edges,
-    layers,
-    selectedOrga,
-    session,
-    takeScreenshot,
-    updateMindmapMutation,
-    userMindmapDetails.description,
-    userMindmapDetails.id,
-    userMindmapDetails.name,
-    userMindmapDetails.visibility,
-  ]);
+  }, [PERMISSIONS, edges, layers, session, takeScreenshot, updateBoardMutation, userMindmapDetails.id]);
 
   // Handle window/tab close and navigation away
   useEffect(() => {

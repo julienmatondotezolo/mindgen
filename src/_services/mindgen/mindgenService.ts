@@ -508,7 +508,7 @@ export async function getMindmapById({ session, mindmapId }: {session: CustomSes
     }
 }
 
-export async function updateMindmapById({
+export async function updateBoardLayersById({
   session,
   mindmapId,
   mindmapObject,
@@ -519,7 +519,39 @@ export async function updateMindmapById({
 }): Promise<any> {
   if(session)
     try {
-      const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+      const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/content/${mindmapId}`, {
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify(mindmapObject),
+      });
+
+      if (responseUpdatedMindMap.ok) {
+        return responseUpdatedMindMap;
+      } else {
+        throw responseUpdatedMindMap;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch profiles:", error);
+    }
+}
+
+export async function updateBoardMetadataById({
+  session,
+  mindmapId,
+  mindmapObject,
+}: {
+  session: CustomSession | null
+  mindmapId: string | undefined;
+  mindmapObject: any;
+}): Promise<any> {
+  if(session)
+    try {
+      const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/metadata/${mindmapId}`, {
         method: "PUT",
         cache: "no-store",
         headers: {

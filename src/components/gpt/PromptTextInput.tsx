@@ -103,9 +103,6 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const sendPrompt = ({ event, prompt }: { event: any; prompt?: string }) => {
     event.preventDefault();
 
-    console.log("event:", event);
-    console.log("prompt:", prompt);
-
     if (text) {
       setAnswerMessages([{ text: "", sender: "server" }]);
       setIsLoading(true);
