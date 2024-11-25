@@ -97,7 +97,7 @@ export async function requestPasswordReset({ passwordResetBody }: { passwordRese
       body: JSON.stringify(passwordResetBody),
     });
 
-    return res.json();
+    return res;
   } catch (error) {
     console.error(error);
   }

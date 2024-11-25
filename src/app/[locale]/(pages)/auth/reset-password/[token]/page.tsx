@@ -130,7 +130,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
   }
 
   return (
-    <div className="relative w-screen h-screen flex bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)]">
+    <div className="relative h-screen flex bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)]">
       <div className="w-full md:w-2/5 m-auto">
         {passwordResetSuccess ? (
           <div className="flex items-center justify-center">

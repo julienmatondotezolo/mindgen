@@ -15,12 +15,12 @@ export default function AuthenticationPage() {
   return (
     <>
       <ArrowLeft
-        className="absolute left-8 top-4 md:top-8 hover:cursor-pointer z-50"
+        className="fixed left-8 top-4 md:top-8 hover:cursor-pointer z-50"
         onClick={() => {
           router.back();
         }}
       />
-      <div className="relative w-screen h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)]">
+      <div className="relative h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)]">
         {/* <div className="hidden md:flex w-full h-full md:dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)]">
           <article className="m-auto w-[90%] md:w-3/4">
             <h1 className="md:text-7xl text-5xl bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text font-bold tracking-tighter text-transparent text-center md:text-left">
