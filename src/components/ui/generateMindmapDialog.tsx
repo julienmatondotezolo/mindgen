@@ -11,12 +11,14 @@ import { generatedMindmap } from "@/_services";
 import { CustomSession, Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
 import { Button, Switch, Textarea } from "@/components/ui";
+import { useRouter } from "@/navigation";
 import { selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   const session: any = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
@@ -28,9 +30,14 @@ const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const queryClient = useQueryClient();
   const fetchGenerateMindmap = useMutation(generatedMindmap, {
     mutationKey: "GENERATE_MINDMAP",
-    onSuccess: async () => {
-      // Invalidate the query to cause a re-fetch
-      queryClient.invalidateQueries("userMindmap");
+    onSuccess: async (data: any) => {
+      const response = await data;
+
+      if (response.id !== "") {
+        router.push(`/board/${data.id}`);
+        // Invalidate the query to cause a re-fetch
+        queryClient.invalidateQueries("userMindmap");
+      }
     },
   });
 
@@ -56,6 +63,7 @@ const GenerateMindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         session: safeSession,
         organizationId: selectedOrga?.id,
         task: inputDescription,
+        layoutType: "PYRAMID",
       });
       handleClose();
     } catch (error) {

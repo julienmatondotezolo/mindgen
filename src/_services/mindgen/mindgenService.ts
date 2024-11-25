@@ -340,7 +340,7 @@ export async function acceptOrgInvitation({ session, invitationId }: { session: 
 /* ==================   MINDMAPS   ================== */
 /* ================================================== */ 
 
-export async function generatedMindmap({ session, organizationId, task }: { session: CustomSession | null, organizationId: any, task: string }): Promise<ReadableStream<Uint8Array>> {
+export async function generatedMindmap({ session, organizationId, task, layoutType }: { session: CustomSession | null, organizationId: any, task: string, layoutType: string }) {
   if(session)
     try {
       const responseGeneratedMindmap: Response = await fetch(baseUrl + `/ai/${organizationId}/mindmap/text`, {
@@ -350,18 +350,21 @@ export async function generatedMindmap({ session, organizationId, task }: { sess
           "Authorization": `Bearer ${session?.data.session.user.token}`,
           "ngrok-skip-browser-warning": "1",
         },
-        body: task,
+        body: JSON.stringify({
+          task,
+          layoutType,
+        }),
       });
 
       if (responseGeneratedMindmap.ok) {
-        return responseGeneratedMindmap.body as ReadableStream<Uint8Array>;
+        return responseGeneratedMindmap.json();
       } else {
         console.error("Failed to post data and stream response");
         // If the response is not okay, return a default ReadableStream<Uint8Array> with a message
         return new ReadableStream<Uint8Array>({
           start(controller) {
           // Convert a string to Uint8Array and enqueue it to the stream
-            const message = "An error occurred while fetching the summary text.";
+            const message = "An error occurred while gnerating a mindmap.";
 
             controller.enqueue(new TextEncoder().encode(message));
             controller.close();
@@ -467,7 +470,7 @@ export async function createMindmap({ mindmapObject }: {mindmapObject: any}): Pr
     });
 
     if (responseCreatedMindMap.ok) {
-      return responseCreatedMindMap.body;
+      return responseCreatedMindMap.json();
     } else {
       throw responseCreatedMindMap;
     }
