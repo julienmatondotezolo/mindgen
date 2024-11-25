@@ -147,5 +147,10 @@
     "uploadDocumentDescription": "Importez facilement des PDF, des documents ou des images pour ajouter du contenu enrichi à votre mindgen. Le téléchargement de fichiers vous permet d'intégrer des informations détaillées provenant de plusieurs sources.",
     "connectExternalDataTitle": "Connexion à une source de données externe",
     "connectExternalDataDescription": "Connectez-vous à des sites web externes, des bases de données ou des dépôts GitHub pour récupérer des données en direct ou intégrer des informations depuis vos sources préférées pour un traitement en temps réel."
+  },
+  "Error": {
+    "pageNotFound": "Page Non Trouvée",
+    "pageNotFoundDescription": "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'Accueil"
   }
 }

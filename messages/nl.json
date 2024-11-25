@@ -147,5 +147,10 @@
     "uploadDocumentDescription": "Importeer eenvoudig PDF's, documenten of afbeeldingen om rijke inhoud toe te voegen aan uw mindgen. Door bestanden te uploaden kunt u gedetailleerde informatie uit verschillende bronnen integreren.",
     "connectExternalDataTitle": "Verbinding maken met externe gegevensbron",
     "connectExternalDataDescription": "Maak verbinding met externe websites, databases of GitHub-repositories om live gegevens op te halen of informatie te integreren vanuit uw favoriete bronnen voor realtime verwerking."
+  },
+  "Error": {
+    "pageNotFound": "Pagina Niet Gevonden",
+    "pageNotFoundDescription": "Sorry, de pagina die je zoekt bestaat niet of is verplaatst.",
+    "backHome": "Terug naar Home"
   }
 }

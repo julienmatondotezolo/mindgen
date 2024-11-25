@@ -147,5 +147,10 @@
     "uploadDocumentDescription": "Easily import PDFs, documents, or images to add rich content to your mindgen. Uploading files lets you integrate detailed information from multiple sources.",
     "connectExternalDataTitle": "Connect to External Data Source",
     "connectExternalDataDescription": "Link to external websites, databases, or GitHub repositories to fetch live data or integrate information from your preferred sources for real-time processing."
+  },
+  "Error": {
+    "pageNotFound": "Page Not Found",
+    "pageNotFoundDescription": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home"
   }
 }
