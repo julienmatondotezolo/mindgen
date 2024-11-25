@@ -3,9 +3,9 @@
 import { AlignJustify, LayoutGrid, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-import { newBoardState } from "@/state";
+import { boardsLengthState, newBoardState, profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 import { Button } from "../ui";
@@ -14,9 +14,19 @@ import { MindMapBoards } from "./MindMapBoards";
 function RecentMindMap() {
   const text = useTranslations("Index");
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
+  const maxMindmap = useRecoilValue(profilMaxMindmapState);
+  const boardLength = useRecoilValue(boardsLengthState);
+  const leftBoards = maxMindmap - boardLength;
+
+  const canCreateNewBoard = leftBoards > 0;
 
   const handleNewBoard = () => {
-    setIsOpen(!isOpen);
+    if (canCreateNewBoard) {
+      setIsOpen(!isOpen);
+      return;
+    }
+
+    alert("Upgrade required! Upgrade to create unlimited boards for you and your clients");
   };
 
   const size = 15;

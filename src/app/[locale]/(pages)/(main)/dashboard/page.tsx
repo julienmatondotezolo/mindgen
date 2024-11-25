@@ -80,7 +80,7 @@ export default function Dashboard() {
                   >
                     <Link href="/dashboard">
                       <LayoutDashboard className="h-4 w-4 mr-2" />
-                      Team Boards
+                      Organisation Boards
                     </Link>
                   </Button>
                   <Button

@@ -42,7 +42,7 @@ const DiagramBuilder = ({ diagramType, setDiagramType }: { diagramType: any; set
         <button
           type="button"
           className={`${diagramSelectorStyle} ${
-            diagramType === "Flow Chart" ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            diagramType === "PYRAMID" ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
           onClick={() => handleDiagramTypeChange("PYRAMID")}
         >
@@ -206,6 +206,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
             value={inputDescription}
             onChange={handleDescriptionChange}
             required
+            disabled={fetchGenerateMindmap.isLoading}
           />
         </section>
       </article>
@@ -214,7 +215,11 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
           <p className="font-semibold">{text("private")}</p>
           <p className="text-grey dark:text-grey-blue text-sm">{text("onlyViewable")}</p>
         </article>
-        <Switch checked={inputVisibility == "PRIVATE" ? true : false} onCheckedChange={handleVisibilityChange} />
+        <Switch
+          checked={inputVisibility == "PRIVATE" ? true : false}
+          onCheckedChange={handleVisibilityChange}
+          disabled={fetchGenerateMindmap.isLoading}
+        />
       </div>
       <div className="flex flex-wrap items-center justify-end space-x-4 mt-4">
         <Button variant="outline" onClick={handleClose}>
