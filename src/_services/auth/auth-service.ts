@@ -27,7 +27,7 @@ export async function connectUser(credentials: any): Promise<Response> {
   }
 }
 
-export async function signUp(body: any): Promise<Response> {
+export async function signUp(body: any) {
   try {
     const response = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
@@ -39,10 +39,11 @@ export async function signUp(body: any): Promise<Response> {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error status: ${response.status}`);
+      console.error(`HTTP error status: ${response.status}`);
+      return response.json();
     }
 
-    return response; // Directly return the response
+    return response.json(); // Directly return the response
   } catch (error) {
     console.error(error);
   }

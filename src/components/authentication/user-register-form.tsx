@@ -2,15 +2,14 @@
 
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import * as React from "react";
-import { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 
 import { signUp } from "@/_services/auth/auth-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useRouter } from "@/navigation";
+import { Link, useRouter } from "@/navigation";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -18,12 +17,20 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   const authText = useTranslations("Auth");
 
   const router = useRouter();
+  const [callbackUrl, setCallbackUrl] = useState<string | null>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const callbackUrl = urlParams.get("callbackUrl");
+
+    if (callbackUrl) setCallbackUrl(callbackUrl);
+  }, []);
 
   const fieldsValidated = () => {
     const newErrorMessages: string[] = [];
@@ -78,7 +85,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
 
       setIsLoading(true);
       signUp(body).then(async (res: Response) => {
-        if (res.ok) {
+        if (res) {
           setIsLoading(false);
           signIn("credentials", {
             redirect: false,
@@ -86,12 +93,16 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             password: password,
           }).then((res: any) => {
             if (res.error) {
-              setErrorMessages(["Une erreur s'est produise"]);
+              setErrorMessages(["bad credentials"]);
               return;
             }
-            router.replace("/auth/login");
+            if (callbackUrl) {
+              window.location.href = callbackUrl;
+            } else {
+              router.push("/auth/login");
+            }
           });
-        } else if (res.status == 400) {
+        } else {
           setIsLoading(false);
           const errors = await res.json();
 
@@ -104,11 +115,9 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={onSubmit}>
-        <div className="grid gap-2">
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="email">
-              Adresse mail
-            </Label>
+        <div className="grid gap-2 space-y-4">
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="email">Adresse mail</Label>
             <Input
               id="email"
               placeholder={authText("mailInput")}
@@ -123,10 +132,8 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               <div className="text-red-500 text-sm">Adresse mail déjà utilisé</div>
             )}
           </div>
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="username">
-              Nom d&apos;utilisateur
-            </Label>
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="username">Nom d&apos;utilisateur</Label>
             <Input
               id="username"
               placeholder={authText("usernameInput")}
@@ -144,10 +151,8 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               <div className="text-red-500 text-sm">Nom d&apos;utilisateur trop court</div>
             )}
           </div>
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="password">
-              Mot de passe
-            </Label>
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="password">Mot de passe</Label>
             <Input
               id="password"
               placeholder={authText("passwordInput")}
@@ -162,10 +167,8 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               <div className="text-red-500 text-sm">Mot de passe trop court</div>
             )}
           </div>
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="password">
-              Confirmer le mot de passe
-            </Label>
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="password">Confirmer le mot de passe</Label>
             <Input
               id="password"
               placeholder={authText("confirmPasswordInput")}
@@ -180,7 +183,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               <div className="text-red-500 text-sm">Les mots de passe ne correspondent pas</div>
             )}
           </div>
-          <Button className="bg-m-color text-white hover:bg-green-600" disabled={isLoading}>
+          <Button type="submit" className="mt-4" disabled={isLoading}>
             {isLoading ? <p>Loading...</p> : <p>{authText("registerButton")}</p>}
           </Button>
         </div>
@@ -193,17 +196,11 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
           <span className="bg-background px-2 text-muted-foreground">{authText("alreadyAccount")}</span>
         </div>
       </div>
-      <Button
-        className="border-m-color text-m-color hover:bg-m-color hover:text-white"
-        onClick={() => {
-          router.push("/auth/login");
-        }}
-        variant="outline"
-        type="button"
-        disabled={isLoading}
-      >
-        {authText("connectionButton")}
-      </Button>
+      <Link href={`/auth/login${callbackUrl ? "?callbackUrl=" + callbackUrl : ""}`}>
+        <Button className="w-full" variant="outline" type="button" disabled={isLoading}>
+          {authText("connectionButton")}
+        </Button>
+      </Link>
     </div>
   );
 }

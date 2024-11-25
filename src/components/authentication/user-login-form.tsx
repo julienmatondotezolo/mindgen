@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,18 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
   const authText = useTranslations("Auth");
   const text = useTranslations("Index");
 
+  const [callbackUrl, setCallbackUrl] = useState<string | null>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showBadCredentialsMessage, setShowBadCredentialsMessage] = useState<boolean>(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const callbackUrl = urlParams.get("callbackUrl");
+
+    if (callbackUrl) setCallbackUrl(callbackUrl);
+  }, []);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, source: string) => {
     switch (source) {
@@ -37,9 +45,6 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
     event.preventDefault();
     setIsLoading(true);
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const callbackUrl = urlParams.get("callbackUrl");
-
       const result = await signIn("credentials", {
         redirect: false,
         username: username,
@@ -71,28 +76,12 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
     }
   }
 
-  // useEffect(() => {
-  //   console.log("Session:", session);
-  //   if (session) {
-  //     const urlParams = new URLSearchParams(window.location.search);
-  //     const callbackUrl = urlParams.get("callbackUrl");
-
-  //     if (callbackUrl) {
-  //       router.push(callbackUrl);
-  //     } else {
-  //       router.push("/dashboard");
-  //     }
-  //   }
-  // }, [session]);
-
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={onSubmit}>
-        <div className="grid gap-2">
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="username">
-              Username
-            </Label>
+        <div className="grid gap-2 space-y-4">
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="username">Username</Label>
             <Input
               id="username"
               placeholder={authText("usernameInput")}
@@ -104,10 +93,8 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "username")}
             />
           </div>
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="password">
-              Password
-            </Label>
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               placeholder={authText("passwordInput")}
@@ -120,10 +107,10 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
             />
           </div>
           {showBadCredentialsMessage && <div className="text-red-500 text-sm">{authText("wrongCredentials")}</div>}
-          <Link href="/auth/forgot-password" target="_blank" className=" underline underline-offset-4">
+          <Link href="/auth/forgot-password" target="_blank" className="underline underline-offset-4">
             <small>{authText("forgotPassword")}?</small>
           </Link>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" className="mt-4" disabled={isLoading}>
             {isLoading ? <p>{text("loading")}</p> : <p>{authText("connectionButton")}</p>}
           </Button>
         </div>
@@ -136,7 +123,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
           <span className="bg-background px-2 text-muted-foreground">{authText("noAccount")}</span>
         </div>
       </div>
-      <Link href={"/auth/register"}>
+      <Link href={`/auth/register${callbackUrl ? "?callbackUrl=" + callbackUrl : ""}`}>
         <Button className="w-full" variant="outline" type="button" disabled={isLoading}>
           {authText("registerButton")}
         </Button>

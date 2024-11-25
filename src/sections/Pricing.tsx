@@ -220,7 +220,7 @@ function Pricing() {
                 }`}
               />
             </button>
-            <span className={billingInterval === "YEARLY" ? "font-bold" : ""}>Yearly</span>
+            <span className={billingInterval === "YEARLY" ? "font-bold" : ""}>Yearly (Save 20%)</span>
           </div>
           <div className="mt-20 flex flex-col items-center gap-6 lg:flex-row lg:items-end lg:justify-center">
             {paymentProducts.map((product: SubscriptionPlan, index: number) => (

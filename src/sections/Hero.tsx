@@ -170,7 +170,7 @@ function Hero() {
             </div>
           </div>
           <motion.figure
-            className="rounded-[50px] border border-white dark:border-slate-800 w-[1024px] h-[576px] hidden md:absolute md:inset-0 md:mx-auto md:my-auto md:flex bg-[rgba(77,107,255,0.05)] backdrop-filter backdrop-blur-sm z-10"
+            className="rounded-[50px] border border-white dark:border-slate-800 bg-[rgba(77,107,255,0.05)] backdrop-filter backdrop-blur-sm w-[1024px] h-[576px] hidden md:absolute md:inset-0 md:mx-auto md:my-auto md:flex z-10"
             style={{ translateY, rotate: 0 }}
           >
             <div className="relative rounded-[40px] p-4 overflow-hidden w-[97%] h-[95%] m-auto">
