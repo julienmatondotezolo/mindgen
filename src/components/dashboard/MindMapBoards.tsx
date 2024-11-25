@@ -25,6 +25,8 @@ function MindMapBoards() {
 
   const [deletingMindmapId, setDeletingMindmapId] = useState("");
 
+  const PLACEHOLDER_IMAGE = "https://cdn.discordapp.com/attachments/764028770196914176/1310656624125546589/Screenshot_2024-11-25_at_18.21.25.png?ex=6746039a&is=6744b21a&hm=3932410d3cb84067c8640c4c0ff242640933efc6b7438fca65ef93c89fd09c38&";
+
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation(deleteMindmapById);
 
@@ -80,7 +82,7 @@ function MindMapBoards() {
                 deletingMindmapId === mindmap.id ? "opacity-20" : "opacity-100"
               } cursor-pointer rounded-xl group overflow-hidden border dark:border-slate-900`}
               style={{
-                backgroundImage: `url(${mindmap.pictureUrl})`,
+                backgroundImage: `url(${mindmap.pictureUrl || PLACEHOLDER_IMAGE})`,
                 backgroundSize: "150%",
                 backgroundPosition: "center center",
                 backgroundRepeat: "no-repeat",
