@@ -1,6 +1,5 @@
 "use client";
 
-import Error from "next/error";
 import { useTranslations } from "next-intl";
 import { useQuery } from "react-query";
 

@@ -91,6 +91,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   }, [done, isLoading, updateQa]);
 
   const handleTextareaChange = (event: any) => {
+    console.log("event:", event);
     setText(event.target.value);
 
     // Reset height before calculating new height
@@ -403,9 +404,8 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
                 mode: CanvasMode.Typing,
               })
             }
-            onKeyDown={handleSendPrompt}
-            onChange={handleTextareaChange}
-            disabled={isLoading || createdPDF.isLoading}
+            onChange={(event) => handleTextareaChange(event)}
+            disabled={isLoading}
             style={{ height: textareaHeight }}
             required
           />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useMutation } from "react-query";
 
@@ -16,7 +16,6 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   const authText = useTranslations("Auth");
-  const locale = useLocale();
 
   const router = useRouter();
   const [callbackUrl, setCallbackUrl] = useState<string | null>("");
