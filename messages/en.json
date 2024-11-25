@@ -54,7 +54,10 @@
     "usernameInput": "Username",
     "passwordInput": "Password",
     "wrongCredentials": "Incorrect username or password.",
-    "confirmPasswordInput": "Confirm Password"
+    "confirmPasswordInput": "Confirm Password",
+    "sendCode": "Send Code",
+    "rememberPassword": "Remember Password",
+    "forgotPasswordText": "Enter your email address below and we'll send you a code to log in and reset your password."
   },
   "Welcome": {
     "hero1": "Unlock your creativity",

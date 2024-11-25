@@ -54,7 +54,10 @@
     "usernameInput": "Nom d'utilisateur",
     "passwordInput": "Mot de passe",
     "wrongCredentials": "Nom d'utilisateur ou mot de passe incorrect.",
-    "confirmPasswordInput": "Confirmer le mot de passe"
+    "confirmPasswordInput": "Confirmer le mot de passe",
+    "sendCode": "Envoyer le Code",
+    "rememberPassword": "Se Souvenir du Mot de Passe",
+    "forgotPasswordText": "Entrez votre adresse e-mail ci-dessous et nous vous enverrons un code pour vous connecter et réinitialiser votre mot de passe."
   },
   "Welcome": {
     "hero1": "Libérez votre créativité",

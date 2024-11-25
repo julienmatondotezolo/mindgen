@@ -107,7 +107,10 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
             />
           </div>
           {showBadCredentialsMessage && <div className="text-red-500 text-sm">{authText("wrongCredentials")}</div>}
-          <Link href="/auth/forgot-password" target="_blank" className="underline underline-offset-4">
+          <Link
+            href={`/auth/forgot-password${callbackUrl ? "?callbackUrl=" + callbackUrl : ""}`}
+            className="underline underline-offset-4"
+          >
             <small>{authText("forgotPassword")}?</small>
           </Link>
           <Button type="submit" className="mt-4" disabled={isLoading}>

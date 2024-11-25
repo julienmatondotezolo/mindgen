@@ -54,7 +54,10 @@
     "usernameInput": "Gebruikersnaam",
     "passwordInput": "Wachtwoord",
     "wrongCredentials": "Foute gebruikersnaam of wachtwoord.",
-    "confirmPasswordInput": "Bevestig wachtwoord"
+    "confirmPasswordInput": "Bevestig wachtwoord",
+    "sendCode": "Stuur Code",
+    "rememberPassword": "Wachtwoord Onthouden",
+    "forgotPasswordText": "Voer hieronder je e-mailadres in en we sturen je een code om in te loggen en je wachtwoord opnieuw in te stellen."
   },
   "Welcome": {
     "hero1": "Ontgrendel je creativiteit",

@@ -86,7 +86,7 @@ export async function resetPassword(token: string, newPassword: string): Promise
   }
 }
 
-export async function requestPasswordReset(email: string): Promise<boolean> {
+export async function requestPasswordReset(email: string) {
   try {
     const res: Response = await fetch(`${baseUrl}/password/reset-request`, {
       method: "POST",
@@ -97,7 +97,7 @@ export async function requestPasswordReset(email: string): Promise<boolean> {
       body: JSON.stringify(email),
     });
 
-    return res.ok;
+    return res.json();
   } catch (error) {
     console.error(error);
   }

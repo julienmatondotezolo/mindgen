@@ -3,6 +3,8 @@
 import { ArrowLeft } from "lucide-react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 import { AgreementText, BackDropGradient } from "@/components";
 import { UserRegisterForm } from "@/components/authentication/user-register-form";
