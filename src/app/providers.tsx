@@ -8,9 +8,9 @@ import { ReactFlowProvider } from "reactflow";
 import { RecoilRoot } from "recoil";
 
 // Manually import messages for each locale
-import enMessages from "../../../messages/en.json";
-import frMessages from "../../../messages/fr.json";
-import nlMessages from "../../../messages/nl.json";
+import enMessages from "../../messages/en.json";
+import frMessages from "../../messages/fr.json";
+import nlMessages from "../../messages/nl.json";
 
 type Props = {
   children?: ReactNode;

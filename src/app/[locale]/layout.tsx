@@ -1,30 +1,15 @@
-import "../../assets/styles/globals.css";
+"use client";
 
-import { Analytics } from "@vercel/analytics/next";
-import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
 import React from "react";
 
-const dmSans = DM_Sans({ subsets: ["latin"] });
+import Providers from "@/app/providers";
 
-export const metadata: Metadata = {
-  title: "MindGen - Generate * with mindmap",
-  description: "Generated everything with a mindmap",
-};
-
-export default function RootLayout({
+export default function LocaleLayout({
   children,
   params: { locale },
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  return (
-    <html suppressHydrationWarning={true} lang={locale}>
-      <body className={`${dmSans.className}`}>
-        {children}
-        <Analytics />
-      </body>
-    </html>
-  );
+  return <Providers locale={locale}>{children}</Providers>;
 }

@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Link } from "@/navigation";
 
+import { BackDropGradient } from "../ui";
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
@@ -58,6 +60,7 @@ export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
 
   return (
     <div className={cn("grid gap-6 ", className)} {...props}>
+      <BackDropGradient />
       <form onSubmit={onSubmit}>
         <div className="grid gap-2 space-y-4">
           <div className="grid gap-1 space-y-2">

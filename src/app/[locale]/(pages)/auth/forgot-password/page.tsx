@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useTranslations } from "next-intl";
 
-import { AgreementText, BackDropGradient } from "@/components";
+import { AgreementText } from "@/components";
 import { ForgotPasswordForm } from "@/components/authentication/forgot-password-form";
 import { useRouter } from "@/navigation";
 
@@ -21,8 +21,6 @@ export default function AuthenticationPage() {
         }}
       />
       <div className="container relative h-screen flex-col items-center justify-center grid lg:px-0 bg-[radial-gradient(ellipse_80%_40%_at_bottom,#C8CFFFFF,#FCFDFFFF_100%)] dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)]">
-        {/* <BackDropGradient /> */}
-
         {/* <div className="hidden md:flex w-full h-full md:dark:bg-[radial-gradient(ellipse_50%_30%_at_bottom,#0627FF7F,#00000000_100%)]">
           <article className="m-auto w-[90%] md:w-3/4">
             <h1 className="md:text-7xl text-5xl bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text font-bold tracking-tighter text-transparent text-center md:text-left">
