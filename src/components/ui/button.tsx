@@ -13,7 +13,9 @@ const buttonVariants = cva(
         outline: "text-foreground dark:text-grey-blue border-2 border-grey-blue dark:text-white p-4",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        board: "bg-gray-50 hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600",
+        board:
+          "hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20",
+        boardClicked: "bg-primary-opaque dark:bg-blue-800 dark:bg-opacity-10 text-primary font-bold",
         boardActive: "bg-primary text-white dark:text-foreground",
       },
       size: {

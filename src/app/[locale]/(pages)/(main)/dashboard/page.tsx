@@ -69,7 +69,7 @@ export default function Dashboard() {
           {/* <HeroProfile /> */}
           <article className="flex justify-between">
             <div className="w-[25%]">
-              <div className="w-full pr-8 space-y-8">
+              <div className="w-full pr-10 space-y-8">
                 <OrgSidebar />
                 <div className="w-full space-y-2">
                   <Button

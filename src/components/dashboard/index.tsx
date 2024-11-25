@@ -1,5 +1,6 @@
 export * from "../navigation/Navigation";
 export * from "./HeroProfile";
+export * from "./LeftBoards";
 export * from "./MindGenTemplates";
 export * from "./OrgInvitation";
 export * from "./OrgMembers";

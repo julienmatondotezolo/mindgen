@@ -1,11 +1,7 @@
-import { useTranslations } from "next-intl";
 import React from "react";
-
-import { OpenOurNewMindmap } from "./OpenOurNewMindmap";
 
 function MindGenTemplates() {
   // const templateText = useTranslations("Index");
-  const recentMindmapText = useTranslations("Dashboard");
 
   const flowchart =
     "https://images.ctfassets.net/qop92tnevinq/1lEYvPKjoo9uEifWosROJK/a280c582634b0731c2a6b4386485ef6d/Flowchart-thumb.svg";
@@ -15,10 +11,6 @@ function MindGenTemplates() {
 
   return (
     <div>
-      <section className="flex flex-wrap items-center justify-between mb-8">
-        <p className="text-xl font-medium dark:text-white">{recentMindmapText("myRecentMindmaps")}</p>
-        <OpenOurNewMindmap />
-      </section>
       <div className="p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20">
         <article className="grid sm:grid-cols-6 grid-cols-1 gap-8 w-full">
           <div className="float-left w-full">

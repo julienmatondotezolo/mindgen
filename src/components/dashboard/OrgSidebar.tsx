@@ -1,7 +1,6 @@
 "use client";
 
-import { CirclePlus, LayoutDashboard, Settings, Star } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { CirclePlus, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useIsMutating, useQuery, useQueryClient } from "react-query";
 import { useRecoilState } from "recoil";
@@ -12,15 +11,9 @@ import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, 
 import { organizationSettingsState, organizationState, selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
-import { Link } from "../../navigation";
-
 export function OrgSidebar() {
   const text = useTranslations("Index");
   const textOrga = useTranslations("Organization");
-
-  const searchParams = useSearchParams();
-
-  const favourites = searchParams.get("favourites");
 
   const [isOpen, setIsOpen] = useRecoilState(organizationState);
   const [isOpenSettings, setIsOpenSettings] = useRecoilState(organizationSettingsState);
@@ -73,7 +66,7 @@ export function OrgSidebar() {
   if (isLoading) return <>Loading...</>;
 
   return (
-    <div className="hidden lg:flex flex-col space-y-4 w-[206px]">
+    <div className="hidden lg:flex flex-col space-y-4">
       {isCreatingOrga ? (
         <Skeleton className="w-full h-10 bg-grey-blue" />
       ) : (
@@ -103,35 +96,6 @@ export function OrgSidebar() {
           </span>
           {`${uppercaseFirstLetter(text("settings"))}`}
         </Button>
-      )}
-
-      {selectedOrganization && (
-        <div className="!mt-14 w-full h-full">
-          <Button variant="ghost" asChild size="lg" className="font-normal justify-start px-2 w-full">
-            <Link href="/dashboard">
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              Team Boards
-            </Link>
-          </Button>
-          <Button
-            variant={favourites ? "secondary" : "ghost"}
-            asChild
-            size="lg"
-            className="font-normal justify-start px-2 w-full"
-          >
-            <Link
-              href={{
-                pathname: "/dashboard",
-                query: {
-                  favourites: "true",
-                },
-              }}
-            >
-              <Star className="h-4 w-4 mr-2" />
-              Favourite Boards
-            </Link>
-          </Button>
-        </div>
       )}
     </div>
   );
