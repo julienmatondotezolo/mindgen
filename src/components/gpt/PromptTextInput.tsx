@@ -91,7 +91,6 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   }, [done, isLoading, updateQa]);
 
   const handleTextareaChange = (event: any) => {
-    console.log("event:", event);
     setText(event.target.value);
 
     // Reset height before calculating new height
@@ -101,34 +100,41 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     setTextareaHeight(`${newHeight}px`);
   };
 
-  const sendPrompt = ({ prompt }: { prompt?: string }) => {
-    setAnswerMessages([{ text: "", sender: "server" }]);
-    setIsLoading(true);
-    setPromptResult(true);
-    setPromptValue(text);
+  const sendPrompt = ({ event, prompt }: { event: any; prompt?: string }) => {
+    event.preventDefault();
 
-    const mindMapArray = convertToMermaid(layers, edges);
+    console.log("event:", event);
+    console.log("prompt:", prompt);
 
-    const fetchStreamData = fetchGeneratedSummaryText({
-      session: safeSession,
-      conversationId: userMindmapDetails.conversation ? userMindmapDetails.conversation?.id : "",
-      mindmapId: userMindmapDetails.id,
-      organizationMemberId: userMemberID,
-      description,
-      task: prompt ?? text,
-      data: mindMapArray,
-    });
+    if (text) {
+      setAnswerMessages([{ text: "", sender: "server" }]);
+      setIsLoading(true);
+      setPromptResult(true);
+      setPromptValue(text);
 
-    handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone, setIsLoading);
+      const mindMapArray = convertToMermaid(layers, edges);
 
-    const newQA = {
-      text: prompt ?? text,
-      message: answerMessages[0].text,
-    };
+      const fetchStreamData = fetchGeneratedSummaryText({
+        session: safeSession,
+        conversationId: userMindmapDetails.conversation ? userMindmapDetails.conversation?.id : "",
+        mindmapId: userMindmapDetails.id,
+        organizationMemberId: userMemberID,
+        description,
+        task: prompt ?? text,
+        data: mindMapArray,
+      });
 
-    setQa((prevQa) => [...prevQa, newQA]);
+      handleStreamGPTData(fetchStreamData, setAnswerMessages, setDone, setIsLoading);
 
-    setText("");
+      const newQA = {
+        text: prompt ?? text,
+        message: answerMessages[0].text,
+      };
+
+      setQa((prevQa) => [...prevQa, newQA]);
+
+      setText("");
+    }
   };
 
   const createPDF = (prompt: any) => {
@@ -252,25 +258,14 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     }
 
     setText(prompt);
-    sendPrompt({ prompt });
+    sendPrompt({ event: e, prompt: prompt });
   };
 
   const handleSendPrompt = (event: any) => {
-    event.preventDefault();
-    if (text) {
-      setCanvasState({
-        mode: CanvasMode.Typing,
-      });
-
-      if (event.code === "Enter") {
-        event.preventDefault();
-        sendPrompt({});
-      }
-
-      if (event.type === "click") {
-        event.preventDefault();
-        sendPrompt({});
-      }
+    if (event.code === "Enter") {
+      event.preventDefault();
+      sendPrompt({ event });
+      return;
     }
   };
 
@@ -392,13 +387,14 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
     return (
       <>
         <form
-          onSubmit={handleSendPrompt}
+          onSubmit={(event: any) => sendPrompt({ event })}
           className="relative flex flex-row items-start max-h-36 p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
         >
           <Textarea
             className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
             placeholder={chatText("promptInput")}
             value={text}
+            onKeyDown={handleSendPrompt}
             onClick={() =>
               setCanvasState({
                 mode: CanvasMode.Typing,
@@ -409,7 +405,12 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
             style={{ height: textareaHeight }}
             required
           />
-          <Button className="absolute bottom-2 right-2" size="icon" disabled={isLoading || createdPDF.isLoading}>
+          <Button
+            className="absolute bottom-2 right-2 z-50"
+            size="icon"
+            disabled={isLoading || createdPDF.isLoading}
+            type="submit"
+          >
             <Image
               className={isLoading || createdPDF.isLoading ? "animate-spin" : ""}
               src={starsIcon}

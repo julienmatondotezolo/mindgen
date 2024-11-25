@@ -1803,6 +1803,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   return (
     <main className="h-full w-full relative">
+      {checkPermission(PERMISSIONS, "UPDATE") && <Toolbar />}
       {isCapturing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-4 rounded-lg text-center">
@@ -1857,7 +1858,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           </div>
         </div>
       )}
-      {checkPermission(PERMISSIONS, "UPDATE") && <Toolbar />}
       <figure id="canvas" className="h-[100vh] w-[100vw]">
         <svg
           ref={svgRef}
