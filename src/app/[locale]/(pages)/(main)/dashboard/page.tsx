@@ -13,15 +13,15 @@ import {
   Button,
   CurrentPlan,
   GenerateMindmapDialog,
-  MindmapDialog,
   OrganizationDialog,
   OrganizationSettingsDialog,
 } from "@/components";
 import { LeftBoards, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
+import { NewBoardDialog } from "@/components/ui/newBoardDialog";
 import { Link } from "@/navigation";
 import {
   generateModalState,
-  modalState,
+  newBoardState,
   organizationSettingsState,
   organizationState,
   selectedOrganizationState,
@@ -33,7 +33,7 @@ export default function Dashboard() {
   const textOrga = useTranslations("Organization");
   const recentMindmapText = useTranslations("Dashboard");
 
-  const [isOpen, setIsOpen] = useRecoilState(modalState);
+  const [isOpen, setIsOpen] = useRecoilState(newBoardState);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useRecoilState(generateModalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
   const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
@@ -129,7 +129,7 @@ export default function Dashboard() {
           </article>
         </section>
       </div>
-      <MindmapDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
+      <NewBoardDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
       <GenerateMindmapDialog open={isGenerateModalOpen} setIsOpen={setIsGenerateModalOpen} update={false} />
       <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
       <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />
