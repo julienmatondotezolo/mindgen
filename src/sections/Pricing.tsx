@@ -153,7 +153,7 @@ function Pricing() {
     },
   });
 
-  const [billingInterval, setBillingInterval] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
+  const [billingInterval, setBillingInterval] = useState<"MONTHLY" | "YEARLY">("YEARLY");
 
   const handleIntervalChange = () => {
     setBillingInterval((prev) => (prev === "MONTHLY" ? "YEARLY" : "MONTHLY"));
@@ -209,7 +209,7 @@ function Pricing() {
             </p>
           </div>
           <div className="flex justify-center items-center gap-4 mt-8">
-            <span className={billingInterval === "MONTHLY" ? "font-bold" : ""}>Monthly</span>
+            <span className={billingInterval === "MONTHLY" ? "text-primary font-bold" : "font-bold"}>Monthly</span>
             <button
               onClick={handleIntervalChange}
               className="w-14 h-7 bg-gray-200 rounded-full p-1 duration-300 ease-in-out"
@@ -220,7 +220,9 @@ function Pricing() {
                 }`}
               />
             </button>
-            <span className={billingInterval === "YEARLY" ? "font-bold" : ""}>Yearly (Save 20%)</span>
+            <span className={billingInterval === "YEARLY" ? "text-primary font-bold" : "font-bold"}>
+              Yearly (Save 20%)
+            </span>
           </div>
           <div className="mt-20 flex flex-col items-center gap-6 lg:flex-row lg:items-end lg:justify-center">
             {paymentProducts.map((product: SubscriptionPlan, index: number) => (
@@ -254,9 +256,11 @@ function Pricing() {
                   .filter((price) => price.interval === billingInterval)
                   .map((price: any, productIndex: number) => (
                     <div key={productIndex} className="mt-[30px] flex items-baseline gap-1">
-                      <span className="text-4xl font-bold leading-none tracking-tighter">€ {price.unitAmount}</span>
+                      <span className="text-4xl font-bold leading-none tracking-tighter">
+                        € {billingInterval === "YEARLY" ? price.unitAmount / 12 : price.unitAmount}
+                      </span>
                       <span className="font-bold tracking-tight text-black/50 dark:text-white">
-                        /{billingInterval.toLowerCase() === "monthly" ? "month" : "year"}
+                        /{billingInterval === "MONTHLY" ? "month" : "year"}
                       </span>
                     </div>
                   ))}

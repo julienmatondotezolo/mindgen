@@ -1,6 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
@@ -84,31 +83,25 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
       };
 
       setIsLoading(true);
-      signUp(body).then(async (res: Response) => {
-        if (res) {
-          setIsLoading(false);
-          signIn("credentials", {
-            redirect: false,
-            username: username,
-            password: password,
-          }).then((res: any) => {
-            if (res.error) {
-              setErrorMessages(["bad credentials"]);
-              return;
-            }
-            if (callbackUrl) {
-              window.location.href = callbackUrl;
-            } else {
-              router.push("/auth/login");
-            }
-          });
-        } else {
-          setIsLoading(false);
-          const errors = await res.json();
 
-          setErrorMessages((prevErrors: string[]) => [...prevErrors, ...errors]);
+      try {
+        const result = await signUp(body);
+
+        if (result.errorCode) {
+          setIsLoading(false);
+          setErrorMessages(result);
+          return;
         }
-      });
+
+        if (callbackUrl) {
+          window.location.href = callbackUrl;
+        } else {
+          router.push("/auth/login");
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        setIsLoading(false);
+      }
     }
   }
 

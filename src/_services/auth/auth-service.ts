@@ -43,7 +43,7 @@ export async function signUp(body: any) {
       return response.json();
     }
 
-    return response.json(); // Directly return the response
+    return response; // Directly return the response
   } catch (error) {
     console.error(error);
   }
