@@ -402,12 +402,7 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
             style={{ height: textareaHeight }}
             required
           />
-          <Button
-            className="absolute bottom-2 right-2 z-50"
-            size="icon"
-            disabled={isLoading || createdPDF.isLoading}
-            type="submit"
-          >
+          <Button className="absolute bottom-2 right-2 z-50" size="icon" disabled={isLoading} type="submit">
             <Image
               className={isLoading || createdPDF.isLoading ? "animate-spin" : ""}
               src={starsIcon}
