@@ -48,7 +48,7 @@ function Footer() {
             alt="Stars icon"
           />
         </div>
-        <p className="mt-6">&copy; 2024 Your Company, Inc. All rights reserved.</p>
+        <p className="mt-6">&copy; 2024 Mindgen, Inc. All rights reserved.</p>
       </div>
     </footer>
   );
