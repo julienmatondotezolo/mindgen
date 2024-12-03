@@ -54,7 +54,7 @@ function Pricing() {
     },
   });
 
-  const [billingInterval, setBillingInterval] = useState<"MONTHLY" | "YEARLY">("YEARLY");
+  const [billingInterval, setBillingInterval] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
 
   const handleIntervalChange = () => {
     setBillingInterval((prev) => (prev === "MONTHLY" ? "YEARLY" : "MONTHLY"));
