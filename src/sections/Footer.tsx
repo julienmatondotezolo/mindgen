@@ -14,10 +14,10 @@ function Footer() {
   return (
     <footer className="bg-black py-10 text-center text-sm text-[#BCBCBC]">
       <div className="container">
-        <div className="before:content-[' '] relative inline-flex before:absolute before:bottom-0 before:top-2 before:w-full before:bg-[linear-gradient(to_right,#F87BFF,#FB92CF,#FFDD98,#C2F0B1,#2FD8FE)] before:blur">
-          {/* <Image src={Logo} alt="Sass Logo" height={40} className="relative" /> */}
+        {/* <div className="before:content-[' '] relative inline-flex before:absolute before:bottom-0 before:top-2 before:w-full before:bg-[linear-gradient(to_right,#F87BFF,#FB92CF,#FFDD98,#C2F0B1,#2FD8FE)] before:blur">
+          <Image src={Logo} alt="Sass Logo" height={40} className="relative" />
           <p>Add logo here</p>
-        </div>
+        </div> */}
         <div className="mt-6 flex justify-center gap-6">
           <Image
             src={SocialX}

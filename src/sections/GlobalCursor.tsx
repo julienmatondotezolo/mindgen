@@ -10,13 +10,8 @@ const GlobalCursor = () => {
   const [cursorVisible, setCursorVisible] = useRecoilState(globalCursorState);
 
   useEffect(() => {
-    // Get current pathname
-    const pathname = window.location.pathname;
-
-    if (pathname != "/en" && pathname != "/fr" && pathname != "/nl") setCursorVisible(false);
-
     // Toggle cursor style based on cursorVisible state
-    document.body.style.cursor = cursorVisible ? "none" : "auto";
+    // document.body.style.cursor = cursorVisible ? "none" : "auto";
 
     const handleMouseMove = (event: MouseEvent) => {
       setCursorPosition({ x: event.clientX, y: event.clientY });

@@ -145,7 +145,7 @@ function Hero() {
             </p>
 
             <div className="mt-[30px] flex flex-col items-start md:items-center">
-              <div className="space-x-4">
+              <div className="space-x-4 z-50">
                 {safeSession?.data?.session ? (
                   <Link href={`/dashboard`}>
                     <Button className="w-auto gap-2 !cursor-none">
