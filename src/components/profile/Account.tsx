@@ -1,9 +1,9 @@
+import { motion } from "framer-motion";
+import { Lock, Mail, Save, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "react-query";
-import { motion } from "framer-motion";
-import { User, Mail, Lock, Save } from "lucide-react";
 
 import { fetchProfile } from "@/_services";
 import { ProfileProps } from "@/_types";
@@ -47,30 +47,30 @@ function Account() {
       y: 0,
       transition: {
         duration: 0.5,
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    visible: { opacity: 1, x: 0 },
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="w-full max-w-4xl mx-auto p-6 rounded-2xl bg-white/50 dark:bg-slate-800/30 backdrop-blur-sm shadow-lg"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      <motion.p 
+      <motion.p
         className="text-2xl mb-8 font-bold bg-gradient-to-r from-primary-color to-blue-600 bg-clip-text text-transparent"
         variants={itemVariants}
       >
         {profileText("account")}
       </motion.p>
-      
+
       {isLoading ? (
         <Spinner className="flex flex-col items-center" loadingText={`${text("loading")} `} />
       ) : (
@@ -78,14 +78,14 @@ function Account() {
           <motion.section variants={itemVariants} whileHover={{ scale: 1.01 }} className="group">
             <div className="flex items-center gap-2 mb-2">
               <User className="w-4 h-4 text-gray-400 group-hover:text-primary-color transition-colors" />
-              <p className="text-grey dark:text-grey-blue text-sm">
-                {uppercaseFirstLetter(profileText("username"))}
-              </p>
+              <p className="text-grey dark:text-grey-blue text-sm">{uppercaseFirstLetter(profileText("username"))}</p>
             </div>
             <Input
               id="username"
               type="text"
-              className={`max-w-sm w-full transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${errors.username ? "border-red-500" : "hover:border-primary-color"}`}
+              className={`max-w-sm w-full transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${
+                errors.username ? "border-red-500" : "hover:border-primary-color"
+              }`}
               {...register("username", { required: true })}
               placeholder={`${profileText("update")} ${profileText("username").toLowerCase()}`}
             />
@@ -100,7 +100,9 @@ function Account() {
             <Input
               id="email"
               type="text"
-              className={`max-w-sm w-full transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${errors.email ? "border-red-500" : "hover:border-primary-color"}`}
+              className={`max-w-sm w-full transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${
+                errors.email ? "border-red-500" : "hover:border-primary-color"
+              }`}
               {...register("email", { required: true })}
               placeholder={`${profileText("update")} ${profileText("email").toLowerCase()}`}
             />
@@ -120,7 +122,9 @@ function Account() {
                   type="password"
                   {...register("password", { required: true })}
                   placeholder={profileText("newPassword")}
-                  className={`transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${errors.password ? "border-red-500" : "hover:border-primary-color"}`}
+                  className={`transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${
+                    errors.password ? "border-red-500" : "hover:border-primary-color"
+                  }`}
                 />
                 {errors.password && <span className="text-red-500 text-sm mt-1">{text("requiredInput")}</span>}
               </section>
@@ -134,7 +138,9 @@ function Account() {
                     required: true,
                     validate: (value) => value === password || text("passwordNotMatching"),
                   })}
-                  className={`transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${errors.confirmNewPassword ? "border-red-500" : "hover:border-primary-color"}`}
+                  className={`transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${
+                    errors.confirmNewPassword ? "border-red-500" : "hover:border-primary-color"
+                  }`}
                 />
                 {errors.confirmNewPassword && (
                   <span className="text-red-500 text-sm mt-1">{errors.confirmNewPassword.message}</span>
@@ -143,13 +149,9 @@ function Account() {
             </div>
           </motion.section>
 
-          <motion.div
-            variants={itemVariants}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button 
-              disabled={hasErrors} 
+          <motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button
+              disabled={hasErrors}
               type="submit"
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-primary-color to-blue-600 hover:opacity-90 transition-all duration-200"
             >

@@ -1,15 +1,10 @@
-import { Gem, Presentation } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Presentation } from "lucide-react";
 import React from "react";
 import { useRecoilValue } from "recoil";
 
-import { Link } from "@/navigation";
 import { boardsLengthState, profilMaxMindmapState } from "@/state";
 
-import { Button } from "../ui";
-
 function LeftBoards() {
-  const navigationText = useTranslations("Navigation");
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
   const leftBoards = maxMindmap - boardLength;
@@ -19,9 +14,9 @@ function LeftBoards() {
       <article className="flex items-center space-x-2">
         <Presentation size={15} />
         <p className="font-bold text-sm">{`${leftBoards} boards left.`}</p>
-    {/*     <p className="text-sm">Upgrade to get unlimited access</p> */}
+        {/*     <p className="text-sm">Upgrade to get unlimited access</p> */}
       </article>
-{/*       <Link href={`/#pricing`}>
+      {/*       <Link href={`/#pricing`}>
         <Button variant={"outline"}>
           <Gem className="mr-4" size={14} />
           {navigationText("upgradeButton")}

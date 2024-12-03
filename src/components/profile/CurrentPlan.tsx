@@ -1,20 +1,15 @@
 import { capitalize } from "lodash";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
 
 import { fetchProfile } from "@/_services";
 import { CustomSession, ProfileProps } from "@/_types";
-import diamondsIcon from "@/assets/icons/diamonds.svg";
-import { Link } from "@/navigation";
 
-import { Button, Progress } from "..";
+import { Progress } from "..";
 
 function CurrentPlan() {
   const session = useSession();
-  const navigationText = useTranslations("Navigation");
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
@@ -44,7 +39,7 @@ function CurrentPlan() {
           <span className="font-bold">{userProfile?.subscriptionDetails.maxCredits}</span> credits
         </p>
       </section>
-{/*       <Link href={`/pricing`}>
+      {/*       <Link href={`/pricing`}>
         <Button className="mt-4 w-full">
           <Image className="mr-2" src={diamondsIcon} alt="Diamonds icon" />
           {navigationText("upgradeButton")}

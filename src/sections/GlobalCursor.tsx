@@ -1,15 +1,20 @@
 import { MousePointer2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 
 import { globalCursorState } from "@/state";
 import { connectionIdToColor } from "@/utils";
 
 const GlobalCursor = () => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
-  const cursorVisible = useRecoilValue(globalCursorState);
+  const [cursorVisible, setCursorVisible] = useRecoilState(globalCursorState);
 
   useEffect(() => {
+    // Get current pathname
+    const pathname = window.location.pathname;
+
+    if (pathname != "/en" && pathname != "/fr" && pathname != "/nl") setCursorVisible(false);
+
     // Toggle cursor style based on cursorVisible state
     document.body.style.cursor = cursorVisible ? "none" : "auto";
 
@@ -21,7 +26,7 @@ const GlobalCursor = () => {
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [cursorVisible]);
+  }, [cursorVisible, setCursorVisible]);
 
   if (cursorVisible === false) return <></>;
 

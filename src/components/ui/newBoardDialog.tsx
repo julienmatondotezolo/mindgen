@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { motion, AnimatePresence } from "framer-motion";
-import { BarChart, BrainCircuit, Cpu, LineChart, Sparkles, Workflow, X, ArrowRight, Lock, Globe } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { BarChart, BrainCircuit, Cpu, Globe, LineChart, Lock, Sparkles, Workflow, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
@@ -16,16 +16,16 @@ import { useRouter } from "@/navigation";
 import { selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
-const DiagramOption = ({ 
-  icon: Icon, 
-  title, 
-  isSelected, 
+const DiagramOption = ({
+  icon: Icon,
+  title,
+  isSelected,
   onClick,
   description,
-  disabled
-}: { 
-  icon: any; 
-  title: string; 
+  disabled,
+}: {
+  icon: any;
+  title: string;
   isSelected: boolean;
   onClick: () => void;
   description: string;
@@ -36,8 +36,8 @@ const DiagramOption = ({
     whileTap={{ scale: disabled ? 1 : 0.98 }}
     onClick={disabled ? undefined : onClick}
     className={`relative w-full p-4 rounded-xl transition-all duration-300 ${
-      isSelected 
-        ? "bg-primary text-white shadow-lg shadow-primary/25" 
+      isSelected
+        ? "bg-primary text-white shadow-lg shadow-primary/25"
         : "bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700"
     } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
   >
@@ -45,7 +45,7 @@ const DiagramOption = ({
       initial={false}
       animate={{
         scale: isSelected ? 1 : 0.9,
-        opacity: isSelected ? 1 : 0.7
+        opacity: isSelected ? 1 : 0.7,
       }}
       className="flex flex-col items-center space-y-2"
     >
@@ -78,11 +78,23 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
   const diagramOptions = [
-    { id: "CIRCLE", icon: BrainCircuit, title: "Mind Map", description: "Organize ideas hierarchically", disabled: false },
-    { id: "PYRAMID", icon: Workflow, title: "Flow Chart", description: "Visualize processes and workflows", disabled: false },
+    {
+      id: "CIRCLE",
+      icon: BrainCircuit,
+      title: "Mind Map",
+      description: "Organize ideas hierarchically",
+      disabled: false,
+    },
+    {
+      id: "PYRAMID",
+      icon: Workflow,
+      title: "Flow Chart",
+      description: "Visualize processes and workflows",
+      disabled: false,
+    },
     { id: "SWOT", icon: Cpu, title: "SWOT", description: "Analyze strengths and weaknesses", disabled: true },
     { id: "BAR", icon: BarChart, title: "Bar Chart", description: "Compare data categories", disabled: true },
-    { id: "LINE", icon: LineChart, title: "Line Chart", description: "Track trends over time", disabled: true }
+    { id: "LINE", icon: LineChart, title: "Line Chart", description: "Track trends over time", disabled: true },
   ];
 
   const handleClose = () => {
@@ -143,18 +155,18 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
   const overlayVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1 }
+    visible: { opacity: 1 },
   };
 
   const modalVariants = {
     hidden: { scale: 0.9, opacity: 0, y: 20 },
-    visible: { 
-      scale: 1, 
-      opacity: 1, 
+    visible: {
+      scale: 1,
+      opacity: 1,
       y: 0,
-      transition: { type: "spring", duration: 0.5 }
+      transition: { type: "spring", duration: 0.5 },
     },
-    exit: { scale: 0.9, opacity: 0, y: 20 }
+    exit: { scale: 0.9, opacity: 0, y: 20 },
   };
 
   return (
@@ -174,7 +186,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
             variants={modalVariants}
           >
             <div className="p-6 space-y-6">
-              <motion.div 
+              <motion.div
                 className="flex justify-between items-center"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -183,10 +195,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   <Sparkles className="w-6 h-6 text-primary animate-pulse" />
                   <h2 className="text-2xl font-bold">Create New Board</h2>
                 </div>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
+                <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-700">
                   <X className="w-5 h-5" />
                 </button>
               </motion.div>
@@ -210,7 +219,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                 ))}
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="space-y-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -223,7 +232,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     transition={{ delay: 0.4 }}
                     className="flex items-center space-x-2"
                   >
-{/*                     <p className="text-xl font-bold text-primary">
+                    {/*                     <p className="text-xl font-bold text-primary">
                       {uppercaseFirstLetter(text("new"))}
                     </p> */}
                   </motion.div>
@@ -251,7 +260,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                           cursor-text
                           resize-none"
                       />
-                      <motion.div 
+                      <motion.div
                         className="absolute bottom-0 left-0 h-0.5 bg-primary"
                         initial={{ width: "0%" }}
                         animate={{ width: inputDescription ? "100%" : "0%" }}
@@ -261,7 +270,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   </div>
                 </article>
 
-                <motion.div 
+                <motion.div
                   className="flex flex-wrap justify-between items-center p-6 rounded-xl bg-gray-50 dark:bg-slate-800/50"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -271,14 +280,14 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   <article className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <motion.div
-                        animate={{ 
+                        animate={{
                           scale: [1, 1.2, 1],
-                          rotate: [0, 10, -10, 0]
+                          rotate: [0, 10, -10, 0],
                         }}
-                        transition={{ 
+                        transition={{
                           duration: 1.5,
                           repeat: Infinity,
-                          repeatDelay: 3
+                          repeatDelay: 3,
                         }}
                       >
                         {inputVisibility === "PRIVATE" ? (
@@ -289,11 +298,9 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                       </motion.div>
                       <p className="font-semibold">{text("private")}</p>
                     </div>
-                    <p className="text-grey dark:text-grey-blue text-sm max-w-md">
-                      {text("onlyViewable")}
-                    </p>
+                    <p className="text-grey dark:text-grey-blue text-sm max-w-md">{text("onlyViewable")}</p>
                   </article>
-                  
+
                   <div className="relative">
                     <Switch
                       checked={inputVisibility === "PRIVATE"}
@@ -301,12 +308,12 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                       disabled={fetchGenerateMindmap.isLoading}
                       className="group"
                     >
-                      <motion.div 
+                      <motion.div
                         className="absolute inset-0 bg-primary/20 rounded-full"
                         initial={false}
                         animate={{
                           scale: inputVisibility === "PRIVATE" ? 1.5 : 1,
-                          opacity: inputVisibility === "PRIVATE" ? 0.2 : 0
+                          opacity: inputVisibility === "PRIVATE" ? 0.2 : 0,
                         }}
                         transition={{ duration: 0.3 }}
                       />
@@ -314,50 +321,36 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   </div>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   className="flex flex-wrap items-center justify-end space-x-4 mt-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <Button 
-                    variant="outline" 
-                    onClick={handleClose}
-                    className="relative overflow-hidden"
-                  >
-                    <span className="relative z-10">
-                      {uppercaseFirstLetter(text("cancel"))}
-                    </span>
-                    <div
-                      className="absolute inset-0 bg-gray-100 dark:bg-slate-700"
-                    />
+                  <Button variant="outline" onClick={handleClose} className="relative overflow-hidden">
+                    <span className="relative z-10">{uppercaseFirstLetter(text("cancel"))}</span>
+                    <div className="absolute inset-0 bg-gray-100 dark:bg-slate-700" />
                   </Button>
-                  
-                  <Button 
-                    type="submit" 
-                    disabled={fetchGenerateMindmap.isLoading}
-                    className="relative group"
-                  >
+
+                  <Button type="submit" disabled={fetchGenerateMindmap.isLoading} className="relative group">
                     <motion.div
                       className="absolute inset-0 bg-primary/20 rounded-lg"
-                      animate={{ 
-                        scale: fetchGenerateMindmap.isLoading ? [1, 1.1, 1] : 1 
+                      animate={{
+                        scale: fetchGenerateMindmap.isLoading ? [1, 1.1, 1] : 1,
                       }}
-                      transition={{ 
+                      transition={{
                         duration: 1,
-                        repeat: fetchGenerateMindmap.isLoading ? Infinity : 0
+                        repeat: fetchGenerateMindmap.isLoading ? Infinity : 0,
                       }}
                     />
                     <span className="relative z-10 flex items-center space-x-2">
-                      <Sparkles 
-                        className={fetchGenerateMindmap.isLoading ? "animate-spin" : "group-hover:animate-bounce"} 
-                        height={15} 
+                      <Sparkles
+                        className={fetchGenerateMindmap.isLoading ? "animate-spin" : "group-hover:animate-bounce"}
+                        height={15}
                       />
                       <span>
                         {uppercaseFirstLetter(
-                          fetchGenerateMindmap.isLoading 
-                            ? text("generating") + "..." 
-                            : text("generate")
+                          fetchGenerateMindmap.isLoading ? text("generating") + "..." : text("generate"),
                         )}
                       </span>
                     </span>

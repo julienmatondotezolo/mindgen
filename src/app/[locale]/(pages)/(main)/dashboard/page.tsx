@@ -128,9 +128,9 @@ export default function Dashboard() {
             )}
           </article>
         </section>
-      <NewBoardDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
-      <GenerateMindmapDialog open={isGenerateModalOpen} setIsOpen={setIsGenerateModalOpen} update={false} />
-      <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
+        <NewBoardDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
+        <GenerateMindmapDialog open={isGenerateModalOpen} setIsOpen={setIsGenerateModalOpen} update={false} />
+        <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
         <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />
       </div>
     </>

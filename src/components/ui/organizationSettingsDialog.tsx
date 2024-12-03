@@ -9,7 +9,7 @@ import { useRecoilValue } from "recoil";
 import { getOrganizationById } from "@/_services";
 import { Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
-import { OrgInvitation, OrgMembers, OrgSettings } from "@/components/dashboard";
+import { OrgMembers, OrgSettings } from "@/components/dashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { organizationSettingsState, selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
@@ -64,7 +64,7 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
           <TabsTrigger className={triggerStyle} value="members">
             <p>{uppercaseFirstLetter(text("members"))}</p>
           </TabsTrigger>
-{/*           <TabsTrigger className={triggerStyle} value="invitation">
+          {/*           <TabsTrigger className={triggerStyle} value="invitation">
             <p>{uppercaseFirstLetter(text("invitation"))}</p>
           </TabsTrigger> */}
         </TabsList>
@@ -74,7 +74,7 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
         <TabsContent value="members" className="w-[70%]">
           <OrgMembers userOrgaData={userOrgaData} isLoading={isLoading} />
         </TabsContent>
-{/*         <TabsContent value="invitation" className="w-[70%]">
+        {/*         <TabsContent value="invitation" className="w-[70%]">
           <OrgInvitation />
         </TabsContent> */}
       </Tabs>

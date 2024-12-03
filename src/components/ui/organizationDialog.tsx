@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, Building2, Sparkles, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useSetRecoilState } from "recoil";
-import { Building2, X, Sparkles, ArrowRight } from "lucide-react";
 
 import { createOrganization } from "@/_services";
 import { Organization } from "@/_types";
@@ -48,7 +48,7 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
   const handleConfirm = async () => {
     if (!inputTitle.trim()) return;
-    
+
     setIsLoading(true);
     const organizationObject = {
       name: inputTitle,
@@ -106,7 +106,7 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
           >
             <div className="p-6 space-y-6">
               <div className="flex justify-between items-center">
-                <motion.div 
+                <motion.div
                   className="flex items-center space-x-3"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -146,7 +146,7 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                         onChange={handleTitleChange}
                         className="w-full transition-all duration-200 focus:ring-2 focus:ring-primary-color"
                       />
-                      <motion.p 
+                      <motion.p
                         className="text-sm text-gray-500 dark:text-gray-400"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -167,12 +167,7 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
               </AnimatePresence>
 
               <div className="flex justify-end space-x-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={handleClose}
-                  className="px-4 py-2"
-                  disabled={isLoading}
-                >
+                <Button variant="outline" onClick={handleClose} className="px-4 py-2" disabled={isLoading}>
                   {uppercaseFirstLetter(text("cancel"))}
                 </Button>
                 <Button
@@ -184,7 +179,7 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     <Sparkles className="animate-spin mr-2" />
                   ) : (
                     <>
-                      <span>{step === 1 ? 'Next' : uppercaseFirstLetter(text("create"))}</span>
+                      <span>{step === 1 ? "Next" : uppercaseFirstLetter(text("create"))}</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}

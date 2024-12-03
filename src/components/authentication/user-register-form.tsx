@@ -1,10 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { CheckCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useMutation } from "react-query";
-import { motion } from "framer-motion";
-import { CheckCircle } from "lucide-react";
 
 import { signUp } from "@/_services/auth/auth-service";
 import { ErrorMessage } from "@/_types/ErrorMessage";
@@ -43,6 +43,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         setTimeout(() => {
           if (callbackUrl) {
             const newCallbackUrl = `/auth/login?callbackUrl=${callbackUrl}`;
+
             router.push(newCallbackUrl);
           } else {
             router.push("/auth/login");
@@ -138,21 +139,19 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
           >
             <div className="flex items-center space-x-2">
               <motion.div
-                animate={{ 
+                animate={{
                   scale: [1, 1.2, 1],
-                  rotate: [0, 10, -10, 0]
+                  rotate: [0, 10, -10, 0],
                 }}
-                transition={{ 
+                transition={{
                   duration: 1.5,
                   repeat: Infinity,
-                  repeatDelay: 3
+                  repeatDelay: 3,
                 }}
               >
                 <CheckCircle className="w-5 h-5" />
               </motion.div>
-              <p className="text-sm font-medium">
-                {authText("registerSuccessMessage")}
-              </p>
+              <p className="text-sm font-medium">{authText("registerSuccessMessage")}</p>
             </div>
           </motion.div>
         )}

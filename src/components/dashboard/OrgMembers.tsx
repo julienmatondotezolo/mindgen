@@ -1,16 +1,16 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { Mail, Shield, UserPlus, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, Users, Mail, Shield, Trash2 } from "lucide-react";
 
 import { createInvitations } from "@/_services";
 import { CustomSession, Member, Organization } from "@/_types";
 import {
   Button,
   Card,
-  CardContent, 
+  CardContent,
   CardFooter,
   Label,
   Skeleton,
@@ -60,6 +60,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
 
   function isValidEmail(email: string): boolean {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     return regex.test(email);
   }
 
@@ -103,27 +104,19 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
       y: 0,
       transition: {
         duration: 0.5,
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    visible: { opacity: 1, x: 0 },
   };
 
   return (
-    <motion.div 
-      className="w-full"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
-      <motion.div 
-        className="flex items-center space-x-3 pb-4 border-b dark:border-slate-800"
-        variants={itemVariants}
-      >
+    <motion.div className="w-full" initial="hidden" animate="visible" variants={containerVariants}>
+      <motion.div className="flex items-center space-x-3 pb-4 border-b dark:border-slate-800" variants={itemVariants}>
         <Users className="w-6 h-6 text-primary" />
         <p className="font-bold text-lg">{uppercaseFirstLetter(text("members"))}</p>
       </motion.div>
@@ -140,11 +133,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
 
           <AnimatePresence>
             {userOrgaData && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {openInvite ? (
                   <motion.div
                     initial={{ scale: 0.95, opacity: 0 }}
@@ -187,18 +176,14 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                             </select>
                           </div>
                           <div className="space-x-2">
-                            <Button 
-                              onClick={() => setOpenInvite(false)} 
+                            <Button
+                              onClick={() => setOpenInvite(false)}
                               variant="outline"
                               className="hover:bg-gray-100 dark:hover:bg-slate-800"
                             >
                               {text("cancel")}
                             </Button>
-                            <Button 
-                              type="submit" 
-                              disabled={createInvMutation.isLoading}
-                              className="relative group"
-                            >
+                            <Button type="submit" disabled={createInvMutation.isLoading} className="relative group">
                               <motion.div
                                 className="absolute inset-0 bg-primary/20 rounded-lg"
                                 animate={{ scale: createInvMutation.isLoading ? [1, 1.1, 1] : 1 }}
@@ -215,17 +200,14 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                   </motion.div>
                 ) : (
                   currentMember?.organizationRole == "OWNER" && (
-                    <Button 
-                      onClick={() => setOpenInvite(true)} 
-                      className="mt-8 group"
-                    >
+                    <Button onClick={() => setOpenInvite(true)} className="mt-8 group">
                       <UserPlus className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" />
                       {textMember("inviteMembers")}
                     </Button>
                   )
                 )}
 
-                <motion.div 
+                <motion.div
                   className="text-sm w-full mt-8 p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 border dark:border-slate-800 shadow-lg transition-shadow hover:shadow-xl"
                   variants={itemVariants}
                   layout
@@ -256,7 +238,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                     </TableHeader>
                     <TableBody>
                       {members?.map((member) => (
-                        <TableRow 
+                        <TableRow
                           key={member.memberId}
                           className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
                         >
@@ -264,11 +246,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                           <TableCell>{member.email}</TableCell>
                           <TableCell>{member.organizationRole}</TableCell>
                           <TableCell className="text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              className="hover:text-red-500 transition-colors"
-                            >
+                            <Button variant="ghost" size="sm" className="hover:text-red-500 transition-colors">
                               Delete member
                             </Button>
                           </TableCell>

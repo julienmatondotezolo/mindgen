@@ -1,7 +1,8 @@
 "use client";
 
-import { Pricing } from "@/sections/Pricing";
 import React from "react";
+
+import { Pricing } from "@/sections/Pricing";
 
 export default function PricingPage() {
   return (
