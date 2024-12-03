@@ -35,9 +35,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-src/assets/data/mindmap.json
-src/assets/data/mindgen.txt
-src/assets/data/mindmap_object.json
-src/assets/data/empty_mindmap.json
 src/assets/data/mindgen_mindmap.json
-src/assets/data/space_mindmap.json
+src/assets/data/mindgen_flowchart.json
+src/assets/data/planet_mindmap.json

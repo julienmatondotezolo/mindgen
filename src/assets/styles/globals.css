@@ -95,19 +95,79 @@
   }
   
 @layer components {
-    .nodeTextInput {
-        @apply block m-auto bg-transparent text-center outline-none w-full h-full
-    }
+  .nodeTextInput {
+      @apply block m-auto bg-transparent text-center outline-none w-full h-full
+  }
 
-    .gradientWhiteText {
-      @apply bg-gradient-to-br from-foreground to-blue-200 text-transparent bg-clip-text
-    }
+  .gradientWhiteText {
+    @apply bg-gradient-to-br from-foreground to-blue-200 text-transparent bg-clip-text
+  }
 
-    .gradientPrimary {
-        @apply bg-gradient-to-r from-primary-color to-secondary-color
-    }
+  .gradientPrimary {
+      @apply bg-gradient-to-r from-primary-color to-secondary-color
+  }
 
-    .gradientSecondary {
-        @apply bg-gradient-to-r from-secondary-color to-tertiary-color
-    }
+  .tag {
+    @apply inline-flex rounded-lg border border-[#222]/10 px-3 py-1 text-sm tracking-tight;
+  }
+
+  .gradientSecondary {
+      @apply bg-gradient-to-r from-secondary-color to-tertiary-color
+  }
+
+  .promptContainer {
+    @apply bg-slate-100 dark:bg-slate-800 rounded-lg p-6 box-content;
+  }
+
+  .promptContainer > h1 {
+    @apply text-2xl my-6;
+  }
+
+  .promptContainer > h2 {
+    @apply text-xl my-5;
+  }
+
+  .promptContainer > h3 {
+    @apply text-lg my-4;
+  }
+
+  .promptContainer > p {
+    @apply text-sm my-2;
+  }
+
+  .promptContainer li {
+    @apply list-item text-left box-content ml-4
+  }
+
+  .promptContainer > ul, .promptContainer > ol {
+    @apply list-disc text-sm space-y-4
+  }
+
+  .section-title {
+    @apply bg-gradient-to-b from-black to-[#001e80] bg-clip-text text-center text-3xl font-bold tracking-tighter text-transparent md:text-[54px] md:leading-[60px];
+  }
+
+  .section-description {
+    @apply text-center text-[22px] leading-[30px] tracking-tight text-[#010d3e];
+  }
+
+  .section-heading {
+    @apply mx-auto max-w-[540px];
+  }
+
+  .card {
+    @apply w-full max-w-xs rounded-3xl border bg-white backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 p-10 shadow-[0_7px_14px_#EAEAEA] dark:shadow-none;
+  }
+
+  .landingFeatureTitle {
+    @apply section-title bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text;
+  }
+
+  .landingFeatureDescription {
+    @apply section-description mt-5 text-[#010d3e] dark:text-primary-foreground;
+  }
+
+  .language-html {
+    width: 100%;
+  }
 }

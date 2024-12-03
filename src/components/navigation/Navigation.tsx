@@ -1,10 +1,9 @@
 "use client";
-import Image from "next/image";
+import { MoveRight } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 
-import diamondsIcon from "@/assets/icons/diamonds.svg";
 import { Button, Input } from "@/components/ui";
 
 import { Link } from "../../navigation";
@@ -15,7 +14,7 @@ function Navigation() {
   const navigationText = useTranslations("Navigation");
 
   return (
-    <nav className="flex justify-center fixed z-50 top-0 w-full shadow-lg shadow-gray-200 py-3 bg-white bg-opacity-90 border-b-2 backdrop-filter backdrop-blur-lg dark:bg-slate-800 dark:bg-opacity-50 dark:shadow-slate-900 dark:border-slate-800">
+    <nav className="flex justify-center fixed z-50 top-0 w-full py-3 bg-white border-b dark:border-none bg-opacity-60 backdrop-filter backdrop-blur-md dark:bg-slate-800 dark:bg-opacity-50 dark:shadow-slate-900 dark:border-slate-800">
       <div className="flex justify-between max-w-7xl w-[96%]">
         <section className="flex items-center">
           <Link href={`/dashboard`}>
@@ -33,18 +32,16 @@ function Navigation() {
         </section>
 
         <div className="block space-x-10">
-          <Link href={`/pricing`}>
-            <Button>
-              <Image className="mr-2" src={diamondsIcon} alt="Collaborate icon" />
-              {navigationText("upgradeButton")}
-            </Button>
+          <Link href={`/dashboard`}>
+            {session?.session == undefined && (
+              <Button className="gap-2" variant={"outline"}>
+                {navigationText("tryNow")}
+                <MoveRight size={20} />
+              </Button>
+            )}
           </Link>
 
-          <Link href={`/auth/login`}>
-            {session?.session == undefined && <Button variant={"outline"}>{navigationText("loginButton")}</Button>}
-          </Link>
-
-          <NavProfile />
+          {session?.session && <NavProfile />}
         </div>
       </div>
     </nav>

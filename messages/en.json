@@ -2,6 +2,7 @@
   "Index": {
     "add": "add",
     "remove": "remove",
+    "leave": "leave",
     "invite": "invite",
     "invitation": "invitation",
     "invitations": "invitations",
@@ -28,7 +29,12 @@
     "share": "Share",
     "collaborate": "Collaborate",
     "requiredInput": "This field is required",
-    "passwordNotMatching": "Passwords do not match"
+    "passwordNotMatching": "Passwords do not match",
+    "settings": "settings",
+    "general": "general",
+    "members": "members",
+    "generate": "generate",
+    "generating": "generating"
   },
   "Auth": {
     "connection": "Connection",
@@ -36,6 +42,8 @@
     "forgotPassword": "Forgot Password",
     "alreadyAccount": "Already have an account?",
     "noAccount": "No account yet?",
+    "accountActivated": "Account activated",
+    "accountActivatedText": "This account has been confirmed. You will be redirected to the login page.",
     "connect": "Log In",
     "register": "Register",
     "registerText": "Enter your email, username and password below to register.",
@@ -48,7 +56,16 @@
     "usernameInput": "Username",
     "passwordInput": "Password",
     "wrongCredentials": "Incorrect username or password.",
-    "confirmPasswordInput": "Confirm Password"
+    "confirmPasswordInput": "Confirm Password",
+    "sendCode": "Send Code",
+    "rememberPassword": "Remember Password",
+    "forgotPasswordText": "Enter your email address below and we'll send you a code to log in and reset your password.",
+    "registerSuccessMessage": "An email confirmation has been sent to continue your registration.",
+    "emailAlreadyExists": "Email already exists",
+    "usernameAlreadyExists": "Username already exists",
+    "usernameTooShort": "Username too short",
+    "passwordTooShort": "Password too short",
+    "passwordsNotMatching": "Passwords do not match"
   },
   "Welcome": {
     "hero1": "Unlock your creativity",
@@ -59,11 +76,12 @@
   "Navigation": {
     "searchInput": "Search mindmap",
     "upgradeButton": "Upgrade",
-    "loginButton": "Login"
+    "loginButton": "Login",
+    "tryNow": "Try now"
   },
   "Dashboard": {
     "welcome": "Welcome to Mindgen,",
-    "myRecentMindmaps": "My recent mind maps",
+    "myRecentBoards": "My recent boards",
     "yesterday": "Yesterday",
     "today": "Today"
   },
@@ -104,16 +122,45 @@
     "promptInput": "Ask/generate anything about this mindmap...",
     "answer": "Answer"
   },
-  "Collaborator": {
-    "collaboratorText": "Enable a collaborations session and invite new people to create awesome mind maps together.",
-    "noCollaborator": "No collaborator",
-    "collaborator": "Collaborator",
-    "collaborators": "Collaborators",
-    "addCollaborator": "Add collaborator",
-    "inviteCollaborator": "Invite collaborator",
+  "Member": {
+    "memberText": "Enable a collaborations session and invite new people to create awesome mind maps together.",
+    "noMember": "No member",
+    "member": "member",
+    "members": "members",
+    "addMember": "Add member",
+    "inviteMembers": "Invite member",
+    "inviteMembersText": "Enter or paste one or more email addresses, separated by spaces or commas.",
     "admin": "Admin",
     "contributor": "Contributor",
     "owner": "Owner",
-    "viewer": "Viewer"
+    "viewer": "Viewer",
+    "guest": "Guest"
+  },
+  "Whiteboard": {
+    "typeSomething": "Type something...",
+    "chooseColor": "Choose Color",
+    "addLayerPlaceHolder": "Add text"
+  },
+  "Organization": {
+    "organization": "organization"
+  },
+  "landing": {
+    "title": "Unleash Your Creativity with",
+    "description": "Transform your ideas into visual masterpieces with Mindgen. Collaborate seamlessly and generate professional documents in minutes!",
+    "transformIdeaText": "Transform Ideas into Actionable Insights Effortlessly",
+    "transformIdeaDescription": "With Mindgen, your mindmaps become powerful tools for productivity. Quickly generate user stories, emails, PDF and summaries with a few clicks using quick prompts. Streamline your workflow and boost productivity.",
+    "writeQueryTitle": "Write a Custom Prompt",
+    "writeQueryDescription": "Quickly input text or ask a question directly in the prompt. Perfect for jotting down thoughts, posing inquiries, or adding custom data in a few words",
+    "uploadDocumentTitle": "Upload Document or File",
+    "uploadDocumentDescription": "Easily import PDFs, documents, or images to add rich content to your mindgen. Uploading files lets you integrate detailed information from multiple sources.",
+    "connectExternalDataTitle": "Connect to External Data Source",
+    "connectExternalDataDescription": "Link to external websites, databases, or GitHub repositories to fetch live data or integrate information from your preferred sources for real-time processing."
+  },
+  "Error": {
+    "pageNotFound": "Page Not Found",
+    "pageNotFoundDescription": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "linkExpired": "Link expired",
+    "linkExpiredDescription": "The password reset link is no longer valid.",
+    "backHome": "Back to Home"
   }
 }

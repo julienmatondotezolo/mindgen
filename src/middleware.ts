@@ -5,45 +5,47 @@ import createMiddleware from "next-intl/middleware";
 
 import { localePrefix, locales } from "./navigation";
 
-export default createMiddleware({
+// Create the internationalization middleware
+const intlMiddleware = createMiddleware({
   defaultLocale: "en",
   localePrefix,
   locales,
 });
 
-export const config = {
-  // Match only internationalized pathnames and the protected paths
-  matcher: ["/", "/(fr|nl)/:path*", "/dashboard", "/board/:id"],
-};
-
-export async function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  const protectedPaths = ["/dashboard", "/board/:id"]; // Define your protected paths here
 
-  const isPathProtected = protectedPaths.some((protectedPath) => {
-    // Handle internationalized paths by removing the locale prefix before checking
-    const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
+  // Define protected paths
+  const protectedPaths = ["/dashboard", "/board", "/profile"];
 
-    if (protectedPath.includes(":")) {
-      // For dynamic paths like /board/:id, use a regex test instead of startsWith
-      return new RegExp(`^${protectedPath.replace(":id", "\\d+")}`).test(sanitizedPath);
-    } else {
-      return sanitizedPath.startsWith(protectedPath);
-    }
-  });
+  // Handle internationalized paths by removing the locale prefix
+  const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
 
-  const res = NextResponse.next();
+  // Check if the current path is protected
+  const isPathProtected = protectedPaths.some((path) => sanitizedPath.startsWith(path));
 
   if (isPathProtected) {
     const token = await getToken({ req });
 
     if (!token) {
-      const url = new URL(`/auth/login`, req.url);
+      // Extract the current locale from the pathname
+      const localeMatch = pathname.match(/^\/(en|fr|nl)/);
+      const currentLocale = localeMatch ? localeMatch[0] : "/en";
+
+      // Create redirect URL with proper locale prefix
+      const url = new URL(`${currentLocale}/auth/login`, req.url);
 
       url.searchParams.set("callbackUrl", pathname);
+
       return NextResponse.redirect(url);
     }
   }
 
-  return res;
+  // Handle internationalization for all routes
+  return intlMiddleware(req);
 }
+
+export const config = {
+  // Match all routes that need internationalization or protection
+  matcher: ["/", "/(en|fr|nl)/:path*", "/dashboard/:path*", "/board/:path*", "/profile/:path*"],
+};

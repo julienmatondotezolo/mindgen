@@ -2,6 +2,7 @@
   "Index": {
     "add": "ajouter",
     "remove": "supprimer",
+    "leave": "quitter",
     "invite": "inviter",
     "invitation": "invitation",
     "invitations": "invitations",
@@ -28,7 +29,12 @@
     "share": "Partager",
     "collaborate": "Collaborer",
     "requiredInput": "Ce champ est obligatoire",
-    "passwordNotMatching": "Les mots de passe ne correspondent pas"
+    "passwordNotMatching": "Les mots de passe ne correspondent pas",
+    "settings": "paramètres",
+    "general": "general",
+    "members": "membres",
+    "generate": "générer",
+    "generating": "génération"
   },
   "Auth": {
     "connection": "Connexion",
@@ -36,6 +42,8 @@
     "forgotPassword": "Mot de passe oublié",
     "alreadyAccount": "Vous avez déjà un compte?",
     "noAccount": "Pas encore de compte?",
+    "accountActivated": "Compte activé",
+    "accountActivatedText": "Ce compte a été confirmé. Vous serez redirigé vers la page de connexion.",
     "connect": "Connexion",
     "register": "S'incrire",
     "registerText": "Entrez votre email, nom d'utilisateur et mot de passe ci-dessous pour vous inscrire.",
@@ -48,7 +56,16 @@
     "usernameInput": "Nom d'utilisateur",
     "passwordInput": "Mot de passe",
     "wrongCredentials": "Nom d'utilisateur ou mot de passe incorrect.",
-    "confirmPasswordInput": "Confirmer le mot de passe"
+    "confirmPasswordInput": "Confirmer le mot de passe",
+    "sendCode": "Envoyer le Code",
+    "rememberPassword": "Se Souvenir du Mot de Passe",
+    "forgotPasswordText": "Entrez votre adresse e-mail ci-dessous et nous vous enverrons un code pour vous connecter et réinitialiser votre mot de passe.",
+    "registerSuccessMessage": "Un email de confirmation vous a été envoyé pour continuer votre inscription.",
+    "emailAlreadyExists": "Adresse mail déjà utilisé",
+    "usernameAlreadyExists": "Nom d'utilisateur déjà pris",
+    "usernameTooShort": "Nom d'utilisateur trop court",
+    "passwordTooShort": "Mot de passe trop court",
+    "passwordsNotMatching": "Les mots de passe ne correspondent pas"
   },
   "Welcome": {
     "hero1": "Libérez votre créativité",
@@ -59,16 +76,17 @@
   "Navigation": {
     "searchInput": "Rechercher un mindmap",
     "upgradeButton": "Mettre à niveau",
-    "loginButton": "Se connecter"
+    "loginButton": "Se connecter",
+    "tryNow": "Essayer maintenant"
   },
   "Dashboard": {
     "welcome": "Bienvenue sur Mindgen,",
-    "myRecentMindmaps": "Mes mind map récentes",
+    "myRecentBoards": "Mes tableaux récents",
     "yesterday": "Hier",
     "today": "Aujourd'hui"
   },
   "Pricing": {
-    "hero": "Tarification",
+    "hero": "Prix",
     "heroExplanation": "Payez seulement pour ce que vous utilisez avec la tarification à la demande.",
     "planButton": "Commencer avec",
     "freePlan": "Gratuit",
@@ -104,16 +122,45 @@
     "promptInput": "Demandez/Génére tout à propos de ce mindmap...",
     "answer": "Réponse"
   },
-  "Collaborator": {
-    "collaboratorText": "Activez une session de collaboration et invitez de nouvelles personnes à créer des superbes mind map ensembles.",
-    "noCollaborator": "Pas de collaborateur",
-    "collaborator": "Collaborateur",
-    "collaborators": "Collaborateurs",
-    "addCollaborator": "Ajouter un collaborateur",
-    "inviteCollaborator": "Inviter un collaborator",
+  "Member": {
+    "memberText": "Activez une session de collaboration et invitez de nouvelles personnes à créer des superbes mind map ensembles.",
+    "noMember": "Pas de membres",
+    "member": "Membres",
+    "members": "Membres",
+    "addMember": "Ajouter un membre",
+    "inviteMembers": "Inviter un membre",
+    "inviteMembersText": "Saisissez ou collez une ou plusieurs adresses e-mail, séparées par des espaces ou des virgules.",
     "admin": "Administrateur",
     "contributor": "Contributor",
     "owner": "Propriétaire",
-    "viewer": "Visiteur"
+    "viewer": "Visiteur",
+    "guest": "invité(e)"
+  },
+  "Whiteboard": {
+    "typeSomething": "Tapez quelque chose...",
+    "chooseColor": "Choisir une couleur",
+    "addLayerPlaceHolder": "Ajouter du texte"
+  },
+  "Organization": {
+    "organization": "organisation"
+  },
+  "landing": {
+    "title": "Libérez votre créativité avec",
+    "description": "Transformez vos idées en chefs-d'œuvre visuels avec Mindgen. Collaborez en toute transparence et générez des documents professionnels en quelques minutes !",
+    "transformIdeaText": "Transformez vos idées en informations exploitables sans effort",
+    "transformIdeaDescription": "Avec Mindgen, vos mindmap et flowchart deviennent de puissants outils de productivité. Générez rapidement des user stories, des e-mails, des PDF et des résumés en quelques clics à l'aide de prompt rapide. Facilitez votre processus de travail et augmentez votre productivité.",
+    "writeQueryTitle": "Ecrivez un prompt personnalisée",
+    "writeQueryDescription": "Saisissez rapidement du texte ou posez une question directement dans l'invite.\n\n\n\n \n\n Parfait pour noter des pensées, poser des questions ou ajouter des données personnalisées en quelques mots",
+    "uploadDocumentTitle": "Importer un document ou un fichier",
+    "uploadDocumentDescription": "Importez facilement des PDF, des documents ou des images pour ajouter du contenu enrichi à votre mindgen. Le téléchargement de fichiers vous permet d'intégrer des informations détaillées provenant de plusieurs sources.",
+    "connectExternalDataTitle": "Connexion à une source de données externe",
+    "connectExternalDataDescription": "Connectez-vous à des sites web externes, des bases de données ou des dépôts GitHub pour récupérer des données en direct ou intégrer des informations depuis vos sources préférées pour un traitement en temps réel."
+  },
+  "Error": {
+    "pageNotFound": "Page Non Trouvée",
+    "pageNotFoundDescription": "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
+    "linkExpired": "Lien expiré",
+    "linkExpiredDescription": "Le lien de réinitialisation du mot de passe n'est plus valide.",
+    "backHome": "Retour à l'Accueil"
   }
 }

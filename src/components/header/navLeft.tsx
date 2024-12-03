@@ -3,23 +3,31 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { useSetRecoilState } from "recoil";
 
-import { updateMindmapById } from "@/_services";
-import { MindMapDetailsProps } from "@/_types";
+import { updateBoardMetadataById } from "@/_services";
+import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import hamburgerIcon from "@/assets/icons/hamburger.svg";
 import { Button, Input, Textarea } from "@/components/";
-import { Sheet, SheetContent, SheetTrigger, Switch } from "@/components/ui";
-import { checkPermission, emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, Switch } from "@/components/ui";
+import { canvasStateAtom } from "@/state";
+import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
+  const session = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
   const text = useTranslations("Index");
 
-  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
+
+  const PERMISSIONS = userMindmapDetails?.connectedMemberPermissions;
 
   const [newMindMapName, setNewMindMapName] = useState("");
   const [newMindMapDescription, setNewMindMapDescription] = useState("");
@@ -35,7 +43,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   const queryClient = useQueryClient();
   // Define the mutation
-  const updateMindmapMutation = useMutation(updateMindmapById, {
+  const updateMindmapMutation = useMutation(updateBoardMetadataById, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmaps");
@@ -48,6 +56,20 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     if (mindMapDescription) setNewMindMapDescription(mindMapDescription);
     if (mindMapVisibility) setNewMindMapVisibility(mindMapVisibility);
   }, [mindMapName, mindMapDescription, mindMapVisibility]);
+
+  const handleSheetOpenChange = (open: boolean) => {
+    setIsSheetOpen(!isSheetOpen);
+    // Set canvas state to Grab mode when sheet is open
+    if (open === true) {
+      setCanvasState({
+        mode: CanvasMode.Typing,
+      });
+    } else {
+      setCanvasState({
+        mode: CanvasMode.None,
+      });
+    }
+  };
 
   // Update state when input changes
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,22 +89,21 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     e.preventDefault();
     // Do something with formData
 
-    const newMindmapObject = emptyMindMapObject({
+    const newMindmapObject = {
       name: newMindMapName ?? "",
       description: newMindMapDescription ?? "",
-      nodes: userMindmapDetails?.nodes,
-      edges: userMindmapDetails?.edges,
       visibility: newMindMapVisibility ?? "PRIVATE",
-    });
+    };
 
     updateMindmapMutation.mutate({
+      session: safeSession,
       mindmapId: mindMapId,
       mindmapObject: newMindmapObject,
     });
   };
 
   return (
-    <Sheet open={isSheetOpen} onOpenChange={() => setIsSheetOpen(!isSheetOpen)}>
+    <Sheet open={isSheetOpen} onOpenChange={(open) => handleSheetOpenChange(open)}>
       <div className="flex px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
         <ul className="flex flex-row items-center justify-between px-1">
           <li className="flex mr-4">
@@ -107,7 +128,9 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         <ul className="w-full h-full">
           <form className="h-full flex flex-col justify-between pt-4" onSubmit={handleSubmit}>
             <section className="space-y-4">
-              <p className="font-bold text-xl">{uppercaseFirstLetter(text("save"))} mind map</p>
+              <SheetHeader>
+                <SheetTitle>{uppercaseFirstLetter(text("save"))} mind map</SheetTitle>
+              </SheetHeader>
               <section>
                 <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("name")}</p>
                 <Input

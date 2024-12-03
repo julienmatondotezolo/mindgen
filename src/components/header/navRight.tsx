@@ -7,7 +7,7 @@ import { useQuery } from "react-query";
 import { useRecoilState } from "recoil";
 
 import { fetchProfile } from "@/_services";
-import { Collaborator, MindMapDetailsProps, ProfileProps } from "@/_types";
+import { CustomSession, Member, MindMapDetailsProps, ProfileProps } from "@/_types";
 import collaborateIcon from "@/assets/icons/collaborate.svg";
 import importIcon from "@/assets/icons/import.svg";
 import shareIcon from "@/assets/icons/share.svg";
@@ -15,20 +15,22 @@ import { Button } from "@/components/";
 import { collaborateModalState, importModalState, shareModalState, upgradePlanModalState } from "@/state";
 import { checkPermission } from "@/utils";
 
-const fetchUserProfile = () => fetchProfile();
-
 function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const text = useTranslations("Index");
+  const session = useSession();
 
-  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
-  const collaborators = userMindmapDetails ? userMindmapDetails?.collaborators : [];
-  const MAX_COLLABORATORS_SHOWED = 3;
+  const PERMISSIONS = userMindmapDetails?.connectedMemberPermissions;
+  const members = userMindmapDetails ? userMindmapDetails?.members : [];
+  const MAX_MEMBERS_SHOWED = 3;
 
   const [importModal, setImportModal] = useRecoilState(importModalState);
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
-  const session = useSession();
+
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const fetchUserProfile = () => fetchProfile({ session: safeSession });
 
   const handleImportClick = () => {
     setImportModal(!importModal);
@@ -46,9 +48,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
     setUpgradePlanModal(!upgradePlanModal);
   };
 
-  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile, {
-    enabled: session.data?.session?.user !== undefined,
-  });
+  const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
 
   return (
     <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
@@ -57,7 +57,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
           <li className="m-1">
             <Button
               variant={"outline"}
-              onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleImportClick}
+              onClick={userProfile?.plan != "FREE" ? handleImportClick : handleUpgratePlanClick}
             >
               <Image
                 className="mr-2 dark:invert"
@@ -88,15 +88,15 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
         )}
         <li className="m-1">
           <Button
-            variant={collaborators!.length > 1 ? "outline" : "default"}
-            onClick={userProfile?.plan != "FREE" ? handleUpgratePlanClick : handleCollaborateClick}
+            variant={members!.length > 1 ? "outline" : "default"}
+            onClick={userProfile?.plan != "FREE" ? handleCollaborateClick : handleUpgratePlanClick}
           >
-            {collaborators?.length > 1 ? (
-              collaborators?.slice(0, MAX_COLLABORATORS_SHOWED).map((collaborator: Collaborator, index: number) => (
+            {members?.length > 1 ? (
+              members?.slice(0, MAX_MEMBERS_SHOWED).map((collaborator: Member, index: number) => (
                 <figure
                   key={index}
-                  className={`flex h-6 w-6 rounded-full -ml-2 border ${
-                    collaborator.role == "OWNER" ? "bg-primary-color" : "bg-[#1fb865]"
+                  className={`flex h-6 w-6 rounded-full -ml-2 text-white border ${
+                    collaborator.mindmapRole == "CREATOR" ? "bg-primary-color" : "bg-[#1fb865]"
                   }`}
                 >
                   <p className="m-auto text-xs">{collaborator.username.substring(0, 1).toUpperCase()}</p>
@@ -113,19 +113,13 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
               />
             )}
 
-            {collaborators?.slice(1, collaborators.length).length >= MAX_COLLABORATORS_SHOWED ? (
+            {members?.slice(1, members.length).length >= MAX_MEMBERS_SHOWED && (
               <figure className="flex h-6 w-6 rounded-full -ml-2 border bg-white dark:bg-slate-800">
-                <p className="m-auto text-[10px]">{`+${collaborators.length - MAX_COLLABORATORS_SHOWED}`}</p>
+                <p className="m-auto text-[10px]">{`+${members.length - MAX_MEMBERS_SHOWED}`}</p>
               </figure>
-            ) : (
-              <></>
             )}
 
-            {collaborators?.length > 1 ? (
-              <Plus className="p-1 ml-2 border-2 rounded-full" />
-            ) : (
-              <p>{text("collaborate")}</p>
-            )}
+            {members?.length > 1 ? <Plus className="p-1 ml-2 border-2 rounded-full" /> : <p>{text("collaborate")}</p>}
           </Button>
         </li>
       </ul>

@@ -2,26 +2,33 @@
 
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-
-import { Link, useRouter } from "../../navigation";
+import { Link, useRouter } from "@/navigation";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
+  const router = useRouter();
   const authText = useTranslations("Auth");
   const text = useTranslations("Index");
 
-  const router = useRouter();
+  const [callbackUrl, setCallbackUrl] = useState<string | null>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showBadCredentialsMessage, setShowBadCredentialsMessage] = useState<boolean>(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const callbackUrl = urlParams.get("callbackUrl");
+
+    if (callbackUrl) setCallbackUrl(callbackUrl);
+  }, []);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, source: string) => {
     switch (source) {
@@ -37,26 +44,44 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     setIsLoading(true);
-    await signIn("credentials", { redirect: false, username: username, password: password }).then((res: any) => {
-      setIsLoading(false);
-      if (res.error) {
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        username: username,
+        password: password,
+      });
+
+      if (result?.error) {
         setShowBadCredentialsMessage(true);
+        setIsLoading(false);
         return;
       }
+
       setShowBadCredentialsMessage(false);
 
-      router.push("/dashboard");
-    });
+      // Wait for the session to be updated
+      // await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Force a hard redirect using window.location
+      if (callbackUrl) {
+        window.location.href = callbackUrl;
+      } else {
+        router.push("/dashboard");
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      setIsLoading(false);
+    }
   }
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={onSubmit}>
-        <div className="grid gap-2">
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="username">
-              Username
-            </Label>
+        <div className="grid gap-2 space-y-4">
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="username">Username</Label>
             <Input
               id="username"
               placeholder={authText("usernameInput")}
@@ -68,10 +93,8 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "username")}
             />
           </div>
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="password">
-              Password
-            </Label>
+          <div className="grid gap-1 space-y-2">
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               placeholder={authText("passwordInput")}
@@ -84,10 +107,13 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
             />
           </div>
           {showBadCredentialsMessage && <div className="text-red-500 text-sm">{authText("wrongCredentials")}</div>}
-          <Link href="/auth/forgot-password" target="_blank" className=" underline underline-offset-4">
+          <Link
+            href={`/auth/forgot-password${callbackUrl ? "?callbackUrl=" + callbackUrl : ""}`}
+            className="underline underline-offset-4"
+          >
             <small>{authText("forgotPassword")}?</small>
           </Link>
-          <Button disabled={isLoading}>
+          <Button type="submit" className="mt-4" disabled={isLoading}>
             {isLoading ? <p>{text("loading")}</p> : <p>{authText("connectionButton")}</p>}
           </Button>
         </div>
@@ -100,7 +126,7 @@ export function UserLoginForm({ className, ...props }: UserAuthFormProps) {
           <span className="bg-background px-2 text-muted-foreground">{authText("noAccount")}</span>
         </div>
       </div>
-      <Link href={"/auth/register"}>
+      <Link href={`/auth/register${callbackUrl ? "?callbackUrl=" + callbackUrl : ""}`}>
         <Button className="w-full" variant="outline" type="button" disabled={isLoading}>
           {authText("registerButton")}
         </Button>

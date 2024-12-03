@@ -33,6 +33,7 @@ function ProfileMenu() {
 
   function handleLogout() {
     try {
+      localStorage.removeItem("selected-organization");
       signOut({
         callbackUrl: process.env.NEXT_PUBLIC_URL + "/",
       });

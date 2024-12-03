@@ -3,23 +3,37 @@
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { useRecoilValue } from "recoil";
 
 import { createMindmap } from "@/_services";
+import { Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
 import { Button, Input, Switch, Textarea } from "@/components/ui";
+import { useRouter } from "@/navigation";
+import { selectedOrganizationState } from "@/state";
 import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
-  const modalRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   const handleClose = () => {
     setIsOpen(false);
   };
 
   const queryClient = useQueryClient();
-  const { mutateAsync } = useMutation(createMindmap, {
+  const fetchCreateMindmap = useMutation(createMindmap, {
     mutationKey: "CREATE_MINDMAP",
+    onSuccess: async (data: any) => {
+      const response = await data;
+
+      if (response.id !== "") {
+        router.push(`/board/${data.id}`);
+        // Invalidate the query to cause a re-fetch
+        queryClient.invalidateQueries("userMindmap");
+      }
+    },
   });
 
   // Initialize state for title and description
@@ -40,21 +54,20 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
     setInputVisibility(checked ? "PRIVATE" : "PUBLIC");
   };
 
-  const handleConfirm = async () => {
+  const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+
+  const handleConfirm = async (e: any) => {
+    e.preventDefault();
     const emptyMindmapObject = emptyMindMapObject({
       name: inputTitle,
       description: inputDescription,
       pictureUrl: "",
+      organizationId: selectedOrga!.id,
       visibility: inputVisibility,
     });
 
     try {
-      await mutateAsync(emptyMindmapObject, {
-        onSuccess: () => {
-          // Invalidate the query to cause a re-fetch
-          queryClient.invalidateQueries("userMindmap");
-        },
-      });
+      fetchCreateMindmap.mutate({ mindmapObject: emptyMindmapObject });
       handleClose();
     } catch (error) {
       if (error instanceof Error) {
@@ -81,8 +94,9 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   }, []);
 
   return (
-    <div
+    <form
       ref={modalRef}
+      onSubmit={handleConfirm}
       className={`${
         open ? "block" : "hidden"
       } fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 sm:w-11/12 md:w-4/12 bg-white border-2 p-6 space-y-8 rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:bg-slate-900 dark:bg-opacity-70 dark:shadow-slate-900 dark:border-slate-800`}
@@ -96,6 +110,7 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
             placeholder={`Mind map ${text("name").toLowerCase()}`}
             value={inputTitle}
             onChange={handleTitleChange}
+            required
           />
         </section>
 
@@ -105,6 +120,7 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
             placeholder={`Mind map ${text("description").toLowerCase()}`}
             value={inputDescription}
             onChange={handleDescriptionChange}
+            required
           />
         </section>
         <div className="flex flex-wrap justify-between items-center">
@@ -115,13 +131,13 @@ const MindmapDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
           <Switch checked={inputVisibility == "PRIVATE" ? true : false} onCheckedChange={handleVisibilityChange} />
         </div>
       </article>
-      <div className="flex flex-wrap justify-end space-y-2 space-x-4 mt-4">
+      <div className="flex flex-wrap items-center justify-end space-x-4 mt-4">
         <Button variant="outline" onClick={handleClose}>
           {uppercaseFirstLetter(text("cancel"))}
         </Button>
-        <Button onClick={handleConfirm}>{uppercaseFirstLetter(text("create"))}</Button>
+        <Button type="submit">{uppercaseFirstLetter(text("create"))}</Button>
       </div>
-    </div>
+    </form>
   );
 };
 

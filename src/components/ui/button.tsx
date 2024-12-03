@@ -5,17 +5,21 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "text-sm inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-xl",
+  "text-sm inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-xl transition-all duration-200 ease-in-out hover:scale-105",
   {
     variants: {
       variant: {
-        default:
-          "text-white shadow-inner shadow-white/30 dark:shadow-white/20 gradientPrimary transition-all duration-200 ease-in-out hover:scale-105 hover:",
-        outline: "text-foreground dark:text-grey-blue border-2 border-grey-blue dark:text-white",
+        default: "text-white bg-primary-color",
+        outline: "text-foreground dark:text-grey-blue border-2 border-grey-blue dark:text-white p-4",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        board:
+          "hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20",
+        boardClicked: "bg-primary-opaque dark:bg-blue-800 dark:bg-opacity-10 text-primary font-bold",
+        boardActive: "bg-primary text-white dark:text-foreground",
       },
       size: {
-        default: "px-4 py-2",
+        default: "px-4 py-3",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-9 w-10",

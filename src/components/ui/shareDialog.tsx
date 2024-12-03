@@ -3,20 +3,23 @@
 import { FileDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
-import { useReactFlow } from "reactflow";
+import { useRecoilValue } from "recoil";
 
 import { DialogProps } from "@/_types";
-import { exportMindmap, uppercaseFirstLetter } from "@/utils";
+import { edgesAtomState, layerAtomState } from "@/state";
+import { exportMindmap, generateMermaidFlowchart, uppercaseFirstLetter } from "@/utils";
 
 import { Button, Input } from ".";
 
 const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLDivElement>(null);
-  const { getEdges, getNodes } = useReactFlow();
   const [url, setUrl] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const layers = useRecoilValue(layerAtomState);
+  const edges = useRecoilValue(edgesAtomState);
 
   const handleClose = () => {
     // setIsOpen(false);
@@ -54,11 +57,10 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
       });
   };
 
-  const handleExport = () => {
-    const edges = getEdges();
-    const nodes = getNodes();
-
-    exportMindmap(edges, nodes);
+  const handleExport = async (e: any) => {
+    e.preventDefault();
+    await exportMindmap(edges, layers);
+    generateMermaidFlowchart(edges, layers);
     setIsOpen(false);
   };
 
@@ -90,10 +92,12 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
             </Button>
           </div>
         </article>
-        <Button className="space-x-2" onClick={handleExport}>
-          <FileDown />
-          <p>{text("export")} mindmap</p>
-        </Button>
+        {layers?.length > 0 && (
+          <Button className="space-x-2" onClick={(e: any) => handleExport(e)}>
+            <FileDown />
+            <p>{text("export")} mindmap</p>
+          </Button>
+        )}
       </div>
     </div>
   );

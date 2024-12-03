@@ -1,6 +1,6 @@
 type SubscriptionDetails = {
-  MAX_MINDMAPS: number;
-  MAX_CREDITS: number;
+  maxMindmaps: number;
+  maxCredits: number;
 };
 
 export type ProfileProps = {

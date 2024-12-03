@@ -1,7 +1,248 @@
-import { Edge, Node } from "reactflow";
+import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import { ChatMessageProps, HistoryState, QuestionAnswersProps } from "@/_types";
+import { Camera, CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
+import { Organization } from "@/_types/Organization";
+import { socket } from "@/socket";
+
+// ================   CANVAS STATE   ================== //
+
+export const cameraStateAtom = atom<Camera>({
+  key: "cameraStateAtom", // unique ID (with respect to other atoms/selectors)
+  default: { x: 0, y: 0, scale: 1 }, // valeur par défaut (alias valeur initials)
+});
+
+export const canvasStateAtom = atom<CanvasState>({
+  key: "canvasState", // unique ID (with respect to other atoms/selectors)
+  default: {
+    mode: CanvasMode.None,
+  }, // valeur par défaut (alias valeur initials)
+});
+
+// ================   USER STATE   ================== //
+
+export const currentUserState = atom<User | {}>({
+  key: "currentUserState", // unique ID (with respect to other atoms/selectors)
+  default: {}, // valeur par défaut (alias valeur initials)
+});
+
+export const connectedUsersState = atom<User[]>({
+  key: "connectedUsersState", // unique ID (with respect to other atoms/selectors)
+  default: [], // valeur par défaut (alias valeur initials)
+});
+
+// ================   ORGANIZATION EFFECTS   ================== //
+
+const organizationlocalStorageEffect = ({ onSet, setSelf }: any) => {
+  const savedOrganization = localStorage.getItem("selected-organization");
+
+  if (savedOrganization && savedOrganization !== "undefined") {
+    setSelf(JSON.parse(savedOrganization)); // Load from local storage
+  }
+
+  // Subscribe to changes and save to local storage
+  onSet((newValue: Organization) => {
+    localStorage.setItem("selected-organization", JSON.stringify(newValue)); // Save to local storage
+  });
+};
+
+// ================   ORGA & BOARD STATE   ================== //
+
+export const selectedOrganizationState = atom<Organization | undefined>({
+  key: "selectedOrganizationState", // unique ID (with respect to other atoms/selectors)
+  default: undefined, // valeur par défaut (alias valeur initials)
+  effects: [organizationlocalStorageEffect],
+});
+
+export const boardIdState = atom<string>({
+  key: "boardIdState", // unique ID (with respect to other atoms/selectors)
+  default: "", // valeur par défaut (alias valeur initials)
+});
+
+export const boardsLengthState = atom<number>({
+  key: "boardsLengthState",
+  default: 1,
+});
+
+// ================   LAYER EFFECTS   ================== //
+
+const socketLayerEffect = ({ setSelf }: any) => {
+  // Define the event handler function outside the effect to avoid redefining it on every call
+  const handleAddLayer = (addedLayer: Layer) => {
+    setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);
+  };
+
+  const handleUpdateLayer = (updatedLayer: Layer) => {
+    setSelf((prevLayers: Layer[]) => prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
+  };
+
+  const handleRemoveLayer = (layerIdsToDelete: string[]) => {
+    setSelf((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
+  };
+
+  // Attach the event listener when the effect runs
+  socket.on("remote-add-layer", handleAddLayer);
+  socket.on("remote-update-layer", handleUpdateLayer);
+  socket.on("remote-remove-layer", handleRemoveLayer);
+
+  // Return a cleanup function to detach the event listener when the effect is no longer needed
+  return () => {
+    socket.off("remote-add-layer", handleAddLayer);
+    socket.off("remote-update-layer", handleUpdateLayer);
+    socket.off("remote-remove-layer", handleRemoveLayer);
+  };
+};
+
+const socketActiveLayerEffect = ({ setSelf }: any) => {
+  // Define the event handler function outside the effect to avoid redefining it on every call
+  const handleAddActiveLayer = (socketSelectedData: any) => {
+    setSelf((prevSelectedData: any) => {
+      if (Object.keys(prevSelectedData).length === 0) {
+        return socketSelectedData;
+      }
+
+      const result = prevSelectedData.map((item: any) => ({ ...item }));
+
+      // Then, update layerIds for matching users
+      socketSelectedData.forEach((selecteData: any) => {
+        const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
+
+        if (existingItem) {
+          const existingLayerIds = selecteData.layerIds;
+
+          existingItem.layerIds = [...new Set(existingLayerIds)];
+        } else {
+          result.push(selecteData);
+        }
+      });
+
+      return result;
+    });
+  };
+
+  // Attach the event listener when the effect runs
+  socket.on("remote-select-layer", handleAddActiveLayer);
+
+  // Return a cleanup function to detach the event listener when the effect is no longer needed
+  return () => {
+    socket.off("remote-select-layer", handleAddActiveLayer);
+  };
+};
+
+// ================   LAYER STATES   ================== //
+
+export const layerAtomState = atom<Layer[]>({
+  key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
+  default: [], // valeur par défaut (alias valeur initials)
+  effects: [socketLayerEffect],
+});
+
+export const activeLayersAtom = atom({
+  key: "activeLayersAtom",
+  default: [{}], // Start with no active layers
+  effects: [socketActiveLayerEffect],
+});
+
+export const hoveredLayerIdAtomState = atom<string>({
+  key: "hoveredLayerIdAtomState", // unique ID (with respect to other atoms/selectors)
+  default: "", // valeur par défaut (alias valeur initials)
+});
+
+// ================   EDGE EFFECTS   ================== //
+
+const socketEdgeEffect = ({ setSelf }: any) => {
+  // Define the event handler function outside the effect to avoid redefining it on every call
+  const handleAddEdge = (addedEdge: Edge) => {
+    setSelf((prevEdges: Edge[]) => [...prevEdges, addedEdge]);
+  };
+
+  const handleUpdateEdge = (updatedEdge: Edge) => {
+    setSelf((prevEdges: Edge[]) => prevEdges.map((edge) => (edge.id === updatedEdge.id ? updatedEdge : edge)));
+  };
+
+  const handleRemoveEdge = (edgeIdsToDelete: string[]) => {
+    setSelf((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
+  };
+
+  // Attach the event listener when the effect runs
+  socket.on("remote-add-edge", handleAddEdge);
+  socket.on("remote-update-edge", handleUpdateEdge);
+  socket.on("remote-remove-edge", handleRemoveEdge);
+
+  // Return a cleanup function to detach the event listener when the effect is no longer needed
+  return () => {
+    socket.off("remote-add-edge", handleAddEdge);
+    socket.off("remote-update-edge", handleUpdateEdge);
+    socket.off("remote-remove-edge", handleRemoveEdge);
+  };
+};
+
+const socketActiveEdgeEffect = ({ setSelf }: any) => {
+  // Define the event handler function outside the effect to avoid redefining it on every call
+  const handleAddActiveEdge = (socketSelectedData: any) => {
+    setSelf((prevSelectedData: any) => {
+      if (Object.keys(prevSelectedData).length === 0) {
+        return socketSelectedData;
+      }
+
+      const result = prevSelectedData.map((item: any) => ({ ...item }));
+
+      // Then, update layerIds for matching users
+      socketSelectedData.forEach((selecteData: any) => {
+        const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
+
+        if (existingItem) {
+          const existingEdgeIds = selecteData.edgeIds;
+
+          existingItem.edgeIds = [...new Set(existingEdgeIds)];
+        } else {
+          result.push(selecteData);
+        }
+      });
+
+      return result;
+    });
+  };
+
+  // Attach the event listener when the effect runs
+  socket.on("remote-select-edge", handleAddActiveEdge);
+
+  // Return a cleanup function to detach the event listener when the effect is no longer needed
+  return () => {
+    socket.off("remote-select-edge", handleAddActiveEdge);
+  };
+};
+
+// ================   EDGES STATES   ================== //
+
+export const edgesAtomState = atom<Edge[]>({
+  key: "edgesAtomState",
+  default: [],
+  effects: [socketEdgeEffect],
+});
+
+export const activeEdgeIdAtom = atom({
+  key: "activeEdgeIdAtom",
+  default: [{}],
+  effects: [socketActiveEdgeEffect],
+});
+
+export const hoveredEdgeIdAtom = atom<string | null>({
+  key: "hoveredEdgeIdAtom",
+  default: null,
+});
+
+export const isEdgeNearLayerAtom = atom<boolean>({
+  key: "isEdgeNearLayerAtom",
+  default: true,
+});
+
+export const nearestLayerAtom = atom<Layer | null>({
+  key: "nearestLayerAtom",
+  default: null,
+});
+
+// ================   PROMPT STATES  ================== //
 
 export const promptValueState = atom({
   key: "promptValueState", // unique ID (with respect to other atoms/selectors)
@@ -11,11 +252,6 @@ export const promptValueState = atom({
 export const promptResultState = atom({
   key: "promptResultState",
   default: false,
-});
-
-export const historyState = atom<HistoryState[]>({
-  key: "historyState",
-  default: [],
 });
 
 export const historyIndexState = atom({
@@ -33,10 +269,10 @@ export const nodesState = atom<Node[]>({
   default: [],
 });
 
-export const edgesState = atom<Edge[]>({
-  key: "edgesState",
-  default: [],
-});
+// export const edgesState = atom<Edge[]>({
+//   key: "edgesState",
+//   default: [],
+// });
 
 export const streamedAnswersState = atom<ChatMessageProps[]>({
   key: "streamedAnswersState",
@@ -48,8 +284,30 @@ export const qaState = atom<QuestionAnswersProps[]>({
   default: [],
 });
 
+// ================   MODAL STATES   ================== //
+
+export const newBoardState = atom({
+  key: "newBoardState",
+  default: false,
+});
+
 export const modalState = atom({
   key: "modalState",
+  default: false,
+});
+
+export const generateModalState = atom({
+  key: "generateModalState",
+  default: false,
+});
+
+export const organizationState = atom({
+  key: "organizationState",
+  default: false,
+});
+
+export const organizationSettingsState = atom({
+  key: "organizationSettingsState",
   default: false,
 });
 
@@ -73,6 +331,11 @@ export const upgradePlanModalState = atom({
   default: false,
 });
 
+export const usernameState = atom({
+  key: "usernameState",
+  default: "",
+});
+
 export const collaboratorNameState = atom({
   key: "collaboratorNameState",
   default: "",
@@ -81,4 +344,18 @@ export const collaboratorNameState = atom({
 export const viewPortScaleState = atom({
   key: "viewPortScaleState",
   default: {},
+});
+
+// ================   PROFIL STATES   ================== //
+
+export const profilMaxMindmapState = atom<number>({
+  key: "profilMaxMindmapState",
+  default: 1,
+});
+
+// ================   CURSORS STATES   ================== //
+
+export const globalCursorState = atom({
+  key: "globalCursorState",
+  default: false,
 });

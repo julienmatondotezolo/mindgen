@@ -43,11 +43,12 @@ const useSocket = () => {
     }
   };
 
-  const socketJoinRoom = (roomdId: string | undefined, username: string) => {
+  const socketJoinRoom = (roomdId: string | undefined, id: string, user: string) => {
     try {
       socket.emit("join-room", {
         roomId: roomdId,
-        username: username,
+        username: user,
+        userId: id,
       });
     } catch (error) {
       return error;
@@ -65,11 +66,28 @@ const useSocket = () => {
     }
   };
 
+  const socketDisconnect = () => {
+    try {
+      socket.emit("disconnect");
+    } catch (error) {
+      return error;
+    }
+  };
+
   const socketOff = (event: string) => {
     socket.off(event);
   };
 
-  return { socket, isConnected, socketEmit, socketListen, socketJoinRoom, socketLeaveRoom, socketOff };
+  return {
+    socket,
+    isConnected,
+    socketEmit,
+    socketListen,
+    socketJoinRoom,
+    socketLeaveRoom,
+    socketDisconnect,
+    socketOff,
+  };
 };
 
 export { useSocket };

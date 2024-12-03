@@ -1,62 +1,41 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable indent */
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
-import { getMindmapById, inviteAllCollaborators, removeCollaboratorById, updateCollaborators } from "@/_services";
-import { Collaborator, DialogProps, Invitations, MindMapDetailsProps } from "@/_types";
+import { inviteAllMembers, removeMemberById, updateMembers } from "@/_services";
+import { CustomSession, DialogProps, Member, MindMapDetailsProps, MindmapRole } from "@/_types";
 import { Button, Input, Skeleton } from "@/components";
 import { useSyncMutation } from "@/hooks";
 import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
 interface CollaborateDialogProps extends DialogProps {
   mindmapId: string;
+  userMindmap: MindMapDetailsProps;
 }
 
-const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindmapId }) => {
+const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindmapId, userMindmap }) => {
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
   const text = useTranslations("Index");
-  const collaboratorText = useTranslations("Collaborator");
+  const memberText = useTranslations("Member");
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [inviteCollaborator, setInviteCollaborator] = useState({ mindmapId, username: "", role: "ADMIN" });
-  const [collaborators, setCollaborators] = useState<Collaborator[] | undefined>([]);
+  const [inviteMembers, setInviteMembers] = useState({ mindmapId, username: "", role: "ADMIN" });
+  const [members, setMembers] = useState<Member[] | undefined>(userMindmap.members);
   const [isDeleting, setIsDeleting] = useState(false);
   const [notFoundUsers, setNotFoundUsers] = useState([]);
   const [currentRole, setCurrentRole] = useState("");
 
   const queryClient = useQueryClient();
 
-  const getUserMindmapById = () => getMindmapById(mindmapId);
-  const session = useSession();
+  const PERMISSIONS = userMindmap.connectedMemberPermissions;
 
-  const { isLoading, data: userMindmap } = useQuery<MindMapDetailsProps>("mindmap", getUserMindmapById, {
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    onSuccess: (data) => {
-      // Assuming data contains the collaborators array under a property named 'collaborators'
-      setCollaborators(data.collaborators);
-    },
-  });
+  const membersLength = userMindmap ? userMindmap.members.length - 1 : 0;
 
-  useEffect(() => {
-    const userId = session.data?.session?.user.id;
-    let collaborator: Collaborator;
-
-    if (userId && userMindmap) {
-      collaborator = userMindmap?.collaborators.filter((collaborator) => collaborator.userId == userId)[0];
-      setCurrentRole(collaborator.role);
-    }
-  }, [session, userMindmap]);
-
-  const PERMISSIONS = userMindmap?.connectedCollaboratorPermissions;
-
-  const collaboratorsLength = userMindmap ? userMindmap?.collaborators.length - 1 : 0;
-
-  const fetchInviteCollaborator = useSyncMutation(inviteAllCollaborators, {
+  const fetchInviteMembers = useSyncMutation(inviteAllMembers, {
     onSuccess: (response: any) => {
       setNotFoundUsers([]);
       if (response.notFoundUsernames.length > 0 && response.notFoundUsernames != null)
@@ -66,23 +45,30 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     },
   });
 
-  const fetchUpdateCollaborator = useSyncMutation(updateCollaborators, {
+  const fetchUpdateCollaborator = useMutation(updateMembers, {
     onSuccess: () => {
       // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("mindmap");
+      setIsDeleting(false);
     },
   });
 
-  const { mutateAsync } = useMutation(removeCollaboratorById);
+  const fetchRemoveMemberById = useMutation(removeMemberById, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmap");
+      setIsDeleting(false);
+    },
+  });
 
-  const handleRemove = async (collaboratorId: string) => {
+  const handleRemoveMember = async (memberId: string) => {
     try {
       setIsDeleting(true);
-      await mutateAsync(collaboratorId, {
-        onSuccess: () => {
-          // Invalidate the query to cause a re-fetch
-          queryClient.invalidateQueries("mindmap");
-          setIsDeleting(false);
+      fetchRemoveMemberById.mutate({
+        session: safeSession,
+        mindmapId: mindmapId,
+        membersToDelete: {
+          memberIds: [memberId],
         },
       });
     } catch (error) {
@@ -92,14 +78,32 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     }
   };
 
+  useEffect(() => {
+    const userId = session.data?.session?.user.id;
+    let collaborator: Member;
+
+    if (userId && userMindmap) {
+      collaborator = userMindmap?.members.filter((collaborator) => collaborator.userId == userId)[0];
+      setCurrentRole(collaborator.mindmapRole);
+    }
+  }, [currentRole, session, userMindmap]);
+
+  // Invalidate the query when the dialog opens
+  useEffect(() => {
+    if (open) {
+      queryClient.invalidateQueries("mindmap");
+    }
+  }, [open, queryClient]);
+
   const handleClose = () => {
-    // setIsOpen(false);
+    queryClient.invalidateQueries("mindmap");
     setIsOpen(false);
   };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!modalRef.current?.contains(event.target as Node)) {
+        queryClient.invalidateQueries("mindmap");
         setIsOpen(false);
       }
     };
@@ -108,68 +112,73 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [queryClient, setIsOpen]);
 
   // Update state when input changes
-  const handleCollaborator = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInviteCollaborator({ ...inviteCollaborator, username: e.target.value });
+  const handleMember = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInviteMembers({ ...inviteMembers, username: e.target.value });
   };
 
-  const handleCollaboratorRole = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setInviteCollaborator({ ...inviteCollaborator, role: e.target.value });
+  const handleMemberRole = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setInviteMembers({ ...inviteMembers, role: e.target.value });
   };
 
-  const handleInviteCollaborator = async () => {
+  const handleInviteMembers = async () => {
     try {
-      const mappedCollaborators = {
+      const mappedmembers = {
         mindmapId,
-        invitedCollaborators: [
+        invitedmembers: [
           {
-            username: inviteCollaborator.username,
-            role: inviteCollaborator.role == "" ? "ADMIN" : inviteCollaborator.role,
+            username: inviteMembers.username,
+            role: inviteMembers.role == "" ? "ADMIN" : inviteMembers.role,
           },
         ],
       };
 
-      fetchInviteCollaborator.mutate(mappedCollaborators);
+      fetchInviteMembers.mutate(mappedmembers);
     } catch (error) {
       if (error instanceof Error) {
         console.error(`An error has occurred: ${error.message}`);
       }
     }
 
-    setInviteCollaborator({ mindmapId, username: "", role: "" });
+    setInviteMembers({ mindmapId, username: "", role: "" });
   };
 
-  const handleCollaboratorRoleChange = (e: React.ChangeEvent<HTMLSelectElement>, collaboratorIndex: number) => {
-    // Assert that collaborators is an array
-    const collaboratorsArray = collaborators as Collaborator[];
+  const handleMemberRoleChange = (e: React.ChangeEvent<HTMLSelectElement>, memberIndex: number) => {
+    // Assert that members is an array
+    const membersArray = members as Member[];
 
     // Find the index of the collaborator to update
-
-    if (collaboratorIndex !== -1) {
+    if (memberIndex !== -1) {
       // Create a new array with the updated collaborator role
-      const updatedCollaborators = [...collaboratorsArray];
+      const updatedmembers = [...membersArray];
 
-      updatedCollaborators[collaboratorIndex].role = e.target.value;
+      updatedmembers[memberIndex].mindmapRole = e.target.value as MindmapRole;
 
-      // Update the collaborators state
-      setCollaborators(updatedCollaborators);
+      // Update the members state
+      setMembers(updatedmembers);
     }
   };
 
-  const handleSave = () => {
-    if (collaborators) {
-      const mappedCollaborators = [
-        collaborators.map((item) => ({
-          collaboratorId: item.collaboratorId,
-          role: item.role,
-        })),
-      ];
+  const handleSave = async () => {
+    if (members) {
+      const memberRoles = members.reduce((acc: any, item) => {
+        acc[item.memberId] = item.mindmapRole;
+        return acc;
+      }, {});
 
-      fetchUpdateCollaborator.mutate(mappedCollaborators[0].slice(1));
+      await fetchUpdateCollaborator.mutateAsync({
+        session: safeSession,
+        mindmapId: mindmapId,
+        membersToUpdate: {
+          memberRoles: { ...memberRoles },
+        },
+      });
+
+      handleClose();
     } else {
-      console.warn("No collaborators to be saved");
+      console.warn("No members to be saved");
     }
   };
 
@@ -186,27 +195,27 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
       </article>
       <div className="w-full mt-4 space-y-6">
         <article className="w-full">
-          <p className="text-md font-bold mb-2">{uppercaseFirstLetter(collaboratorText("addCollaborator"))}</p>
-          <p className="text-sm">{collaboratorText("collaboratorText")}</p>
+          <p className="text-md font-bold mb-2">{uppercaseFirstLetter(memberText("addMember"))}</p>
+          <p className="text-sm">{memberText("memberText")}</p>
           {checkPermission(PERMISSIONS, "UPDATE") && (
             <>
               <div className="flex flex-wrap justify-between w-full mt-4">
                 <Input
-                  value={inviteCollaborator.username}
-                  onChange={handleCollaborator}
-                  placeholder={`${uppercaseFirstLetter(collaboratorText("inviteCollaborator"))}`}
+                  value={inviteMembers.username}
+                  onChange={handleMember}
+                  placeholder={`${uppercaseFirstLetter(memberText("addMember"))}`}
                   className="py-4 w-fit"
                 />
                 <select
                   className="bg-transparent border-2 rounded-xl text-sm"
-                  value={inviteCollaborator.role}
-                  onChange={(e) => handleCollaboratorRole(e)}
+                  value={inviteMembers.role}
+                  onChange={(e) => handleMemberRole(e)}
                 >
-                  <option value="ADMIN">{collaboratorText("admin")}</option>
-                  <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
-                  <option value="VIEWER">{collaboratorText("viewer")}</option>
+                  <option value="ADMIN">{memberText("admin")}</option>
+                  <option value="CONTRIBUTOR">{memberText("contributor")}</option>
+                  <option value="VIEWER">{memberText("viewer")}</option>
                 </select>
-                <Button onClick={handleInviteCollaborator}>{uppercaseFirstLetter(text("invite"))}</Button>
+                <Button onClick={handleInviteMembers}>{uppercaseFirstLetter(text("add"))}</Button>
               </div>
               <section className="w-full space-y-1 mt-4">
                 {notFoundUsers.map((notFoundUser, index) => (
@@ -218,7 +227,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
             </>
           )}
         </article>
-        {checkPermission(PERMISSIONS, "UPDATE") && (
+        {/* {checkPermission(PERMISSIONS, "UPDATE") && (
           <p className="text-md font-bold mb-2">
             {userMindmap?.invitations.length
               ? `${userMindmap?.invitations.length} ${text(
@@ -226,8 +235,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                 )}`
               : null}
           </p>
-        )}
-        {checkPermission(PERMISSIONS, "UPDATE") &&
+        )} */}
+        {/* {checkPermission(PERMISSIONS, "UPDATE") &&
           userMindmap?.invitations.map((invitations: Invitations) => (
             <article
               key={invitations.id}
@@ -252,50 +261,48 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                 {uppercaseFirstLetter(text(invitations.status.toLowerCase()))}
               </p>
             </article>
-          ))}
+          ))} */}
         <p className="text-md font-bold mb-2">
-          {collaboratorsLength < 1
-            ? collaboratorText("noCollaborator")
-            : `${collaboratorsLength} ${collaboratorText(
-                collaboratorsLength > 1 ? `collaborators` : `collaborator`,
-              ).toLowerCase()}`}
+          {membersLength < 1
+            ? memberText("noMember")
+            : `${membersLength + 1} ${memberText(membersLength > 1 ? `member` : `members`).toLowerCase()}`}
         </p>
-        {isLoading ? (
+        {!userMindmap ? (
           <>
             <Skeleton className="w-full h-16 bg-slate-600" />
             <Skeleton className="w-full h-16 bg-slate-600" />
           </>
         ) : (
-          userMindmap?.collaborators.map((collaborator: Collaborator, index) => (
+          userMindmap?.members.map((member: Member, index) => (
             <article
-              key={collaborator.collaboratorId}
+              key={member.memberId}
               className="flex flex-wrap items-center justify-between p-4 bg-gray-100 hover:bg-primary-opaque dark:bg-slate-800 hover:dark:bg-slate-600 rounded-xl"
             >
               <section className="flex items-center">
                 <figure
-                  className={`flex h-6 w-6 ${
-                    collaborator.role == "OWNER" ? "bg-primary-color" : "bg-[#1fb865]"
+                  className={`flex h-6 w-6 text-white ${
+                    member.mindmapRole == "CREATOR" ? "bg-primary-color" : "bg-[#1fb865]"
                   } mr-4 rounded-full`}
                 >
-                  <p className="m-auto text-xs">{collaborator.username.substring(0, 1).toUpperCase()}</p>
+                  <p className="m-auto text-xs dark:text-">{member.username.substring(0, 1).toUpperCase()}</p>
                 </figure>
-                <div>{uppercaseFirstLetter(collaborator.username)}</div>
+                <div>{uppercaseFirstLetter(member.username)}</div>
               </section>
-              {collaborator.role == "OWNER" ? (
+              {member.organizationRole == "OWNER" ? (
                 <div className="text-sm px-4 py-2 border rounded-lg opacity-50">
-                  {collaboratorText(collaborator.role.toLowerCase())}
+                  {memberText(member.organizationRole.toLowerCase())}
                 </div>
               ) : (
                 <div className="flex items-center space-x-4">
                   <select
                     className="bg-transparent border p-2 rounded-lg text-sm"
-                    value={collaborators ? collaborators[index]?.role : ""}
-                    onChange={(e) => handleCollaboratorRoleChange(e, index)}
+                    value={members ? members[index]?.mindmapRole : ""}
+                    onChange={(e) => handleMemberRoleChange(e, index)}
                     disabled={!checkPermission(PERMISSIONS, "UPDATE")}
                   >
-                    <option value="ADMIN">{collaboratorText("admin")}</option>
-                    <option value="CONTRIBUTOR">{collaboratorText("contributor")}</option>
-                    <option value="VIEWER">{collaboratorText("viewer")}</option>
+                    <option value="ADMIN">{memberText("admin")}</option>
+                    <option value="CONTRIBUTOR">{memberText("contributor")}</option>
+                    <option value="VIEWER">{memberText("viewer")}</option>
                   </select>
                   {checkPermission(PERMISSIONS, "DELETE") && (
                     <>
@@ -303,8 +310,8 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                         <p className="text-xs text-[#ee6a63]">Deleting....</p>
                       ) : (
                         <button
-                          onClick={() => handleRemove(collaborator.collaboratorId)}
-                          className="text-xs text-[#ee6a63] cursor-pointer"
+                          onClick={() => handleRemoveMember(member.memberId)}
+                          className="text-xs text-[#ee6a63] font-bold cursor-pointer"
                         >
                           {uppercaseFirstLetter(text("remove"))}
                         </button>
@@ -317,14 +324,13 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
           ))
         )}
       </div>
-      {currentRole == "OWNER" && collaborators!.length > 1 ? (
-        <button className="text-xs text-[#ee6a63] cursor-pointer">Transfer ownsership</button>
-      ) : (
-        <button className="text-xs text-[#ee6a63] cursor-pointer">Leave project</button>
-      )}
-      {checkPermission(PERMISSIONS, "UPDATE") && collaborators!.length > 1 && (
+      {checkPermission(PERMISSIONS, "UPDATE") && membersLength > 0 && (
         <section className="flex justify-end">
-          <Button onClick={handleSave}>{uppercaseFirstLetter(text("save"))}</Button>
+          <Button onClick={handleSave} disabled={fetchUpdateCollaborator.isLoading}>
+            {fetchUpdateCollaborator.isLoading
+              ? uppercaseFirstLetter(text("loading")) + "..."
+              : uppercaseFirstLetter(text("save"))}
+          </Button>
         </section>
       )}
     </div>

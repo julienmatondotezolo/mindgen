@@ -1,50 +1,64 @@
-import { Bell, Mail } from "lucide-react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
-import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useSession } from "next-auth/react";
+import React from "react";
+import { useQuery } from "react-query";
+import { useSetRecoilState } from "recoil";
 
-import { acceptInvitation, fetchInvitations, fetchProfile } from "@/_services";
+import { fetchProfile } from "@/_services";
+import { CustomSession, ProfileProps } from "@/_types";
 import profileIcon from "@/assets/icons/profile.svg";
-import { formatDate, uppercaseFirstLetter } from "@/utils";
+import { profilMaxMindmapState } from "@/state";
+import { uppercaseFirstLetter } from "@/utils";
 
-import { Button, Popover, PopoverContent, PopoverTrigger, Skeleton } from "../ui";
+import { Popover, PopoverContent, PopoverTrigger, Skeleton } from "../ui";
 import { ProfileMenu } from "./ProfileMenu";
 
-const fetchUserProfile = () => fetchProfile();
-const fetchUserInvitations = () => fetchInvitations();
-
 function NavProfile() {
-  const text = useTranslations("Index");
-  const dateText = useTranslations("Dashboard");
-  const [isAccepting, setIsAccepting] = useState(false);
+  const session = useSession();
 
-  const queryClient = useQueryClient();
-  const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile);
-  const { data: userInvitations } = useQuery("userInvitations", fetchUserInvitations, {
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
+  const setMaxMindmap = useSetRecoilState(profilMaxMindmapState);
+  // const text = useTranslations("Index");
+  // const dateText = useTranslations("Dashboard");
+  // const [isAccepting, setIsAccepting] = useState(false);
+
+  // const queryClient = useQueryClient();
+
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const fetchUserProfile = () => fetchProfile({ session: safeSession });
+  const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile, {
+    enabled: session.data ? true : false,
+    onSuccess: (data: ProfileProps) => {
+      if (data) setMaxMindmap(data.subscriptionDetails.maxMindmaps);
+    },
   });
 
-  const invitationLength = userInvitations && userInvitations.length;
+  // const fetchUserInvitations = () => fetchInvitations({ session: safeSession });
+  // const { data: userInvitations } = useQuery("userInvitations", fetchUserInvitations, {
+  //   refetchOnMount: true,
+  //   enabled: session.data ? true : false,
+  // });
 
-  const { mutateAsync } = useMutation(acceptInvitation);
-  const handleAccept = async (invitationId: string) => {
-    try {
-      setIsAccepting(true);
-      await mutateAsync(invitationId, {
-        onSuccess: async () => {
-          // Invalidate the query to cause a re-fetch
-          await queryClient.invalidateQueries("userInvitations");
-          setIsAccepting(false);
-        },
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
-    }
-  };
+  // const invitationLength = userInvitations && userInvitations.length;
+
+  // const { mutateAsync } = useMutation(acceptInvitation);
+  // const handleAccept = async (invitationId: string) => {
+  //   try {
+  //     setIsAccepting(true);
+  //     await mutateAsync(invitationId, {
+  //       onSuccess: async () => {
+  //         // Invalidate the query to cause a re-fetch
+  //         await queryClient.invalidateQueries("userInvitations");
+  //         await queryClient.invalidateQueries("userMindmap");
+  //         setIsAccepting(false);
+  //       },
+  //     });
+  //   } catch (error) {
+  //     if (error instanceof Error) {
+  //       console.error(`An error has occurred: ${error.message}`);
+  //     }
+  //   }
+  // };
 
   const listStyle =
     "flex w-8 h-8 text-center bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-700 hover:dark:bg-slate-500";
@@ -62,7 +76,7 @@ function NavProfile() {
     return (
       <div className="flex float-right">
         <section className="flex flex-wrap space-x-4">
-          <figure className={`relative ${listStyle} cursor-pointer`}>
+          {/* <figure className={`relative ${listStyle} cursor-pointer`}>
             {invitationLength > 0 && (
               <div className="absolute flex -top-1 -right-2 w-5 h-5 rounded-full bg-red-600 text-xs">
                 <p className="m-auto text-white">{invitationLength < 9 ? invitationLength : "+9"}</p>
@@ -105,7 +119,7 @@ function NavProfile() {
                 </div>
               </PopoverContent>
             </Popover>
-          </figure>
+          </figure> */}
           <figure className={`${listStyle} cursor-pointer`}>
             <Popover>
               <PopoverTrigger asChild>

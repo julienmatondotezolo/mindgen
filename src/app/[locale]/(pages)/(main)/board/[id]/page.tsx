@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import Image from "next/image";
@@ -6,29 +5,33 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
-import { MindMapDetailsProps } from "@/_types";
+import { CustomSession, MindMapDetailsProps, MindMapMessages, User } from "@/_types";
 import arrowIcon from "@/assets/icons/arrow.svg";
-import { BackDropGradient, Spinner } from "@/components";
+import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
-import { NavLeft, NavRight, ToolBar } from "@/components/header";
-import { Mindmap } from "@/components/mindmap/";
+import { NavLeft, NavRight } from "@/components/header";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
+  boardIdState,
   collaborateModalState,
+  currentUserState,
+  edgesAtomState,
   importModalState,
+  layerAtomState,
   promptResultState,
   promptValueState,
   qaState,
   shareModalState,
   upgradePlanModalState,
+  usernameState,
 } from "@/state";
-import { checkPermission, refreshPage, uppercaseFirstLetter } from "@/utils";
+import { refreshPage } from "@/utils";
 import { scrollToBottom, scrollToTop } from "@/utils/scroll";
 
 export default function Board({ params }: { params: { id: string } }) {
@@ -38,55 +41,81 @@ export default function Board({ params }: { params: { id: string } }) {
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
+  const setBoardId = useSetRecoilState(boardIdState);
+  const setLayers = useSetRecoilState(layerAtomState);
+  const setEdges = useSetRecoilState(edgesAtomState);
   const promptValue = useRecoilValue(promptValueState);
   const [qa, setQa] = useRecoilState(qaState);
 
-  const [collaUsername, setCollaUsername] = useState("");
-  const [collaCursorPos, setCollaCursorPos] = useState<any>({});
+  const [currentCollaUsername, setCurrentCollaUsername] = useRecoilState(usernameState);
+  // const [collaUsername, setCollaUsername] = useRecoilState(collaboratorNameState);
+  const setCurrentUser = useSetRecoilState(currentUserState);
 
-  const session = useSession();
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+  const [enabled, setEnabled] = useState(true);
 
-  const { socketEmit, socketListen, socketOff, socketJoinRoom } = useSocket();
+  const { socketJoinRoom } = useSocket();
 
   useEffect(() => {
-    const username = session.data?.session?.user.username;
+    const user: User = {
+      id: session.data?.session?.user?.id,
+      username: session.data?.session?.user?.username,
+    };
 
-    if (username) {
-      setCollaUsername(username);
+    if (user.username) {
+      setCurrentCollaUsername(user.username);
     } else {
       const usernameFromStorage = sessionStorage.getItem("collaUsername");
       let username = usernameFromStorage ?? generateUsername();
 
       sessionStorage.setItem("collaUsername", username);
 
-      setCollaUsername(username);
+      socketJoinRoom(params.id, user.id, currentCollaUsername);
     }
-  }, []);
 
-  useEffect(() => {
-    if (collaUsername) socketJoinRoom(params.id, collaUsername);
-  }, [collaUsername]);
+    setEnabled(false);
+    setCurrentUser(user);
+  }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser, socketJoinRoom]);
 
-  useEffect(() => {
-    // Listen for cursor movements
-    socketListen("remote-cursor-move", (data) => {
-      const { cursorPos, username } = data;
+  const fetchUserMindmapById = async () => {
+    const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
 
-      setCollaUsername(username);
-      setCollaCursorPos(cursorPos);
-    });
+    return mindmapData;
+  };
 
-    // Cleanup
-    return () => {
-      socketOff("cursor-move");
-    };
-  }, []);
+  const {
+    data: userMindmapDetails,
+    isLoading,
+    isError,
+  } = useQuery(["mindmap", params.id], fetchUserMindmapById, {
+    enabled,
+    staleTime: Infinity,
+    onSuccess: (data: MindMapDetailsProps) => {
+      const userId = session.data?.session?.user?.id;
 
-  useEffect(() => {
-    if (promptResult) {
-      scrollToBottom();
-    }
-  }, [promptResult]);
+      socketJoinRoom(params.id, userId, currentCollaUsername);
+
+      setLayers(data.layers);
+      setEdges(data.edges);
+      setBoardId(data.id);
+
+      if (data.conversation) {
+        const newQaItems = data.conversation?.messages.map((mindMapQA: MindMapMessages) => {
+          const newMessages = {
+            text: mindMapQA.request,
+            message: mindMapQA.response,
+          };
+
+          return newMessages;
+        });
+
+        setQa(newQaItems);
+      } else {
+        setQa([]);
+      }
+    },
+  });
 
   function handleScrollTop() {
     if (promptResult) {
@@ -95,46 +124,6 @@ export default function Board({ params }: { params: { id: string } }) {
     } else {
       scrollToBottom();
       setPromptResult(true);
-    }
-  }
-
-  const getUserMindmapById = async () => {
-    const mindmapData = await getMindmapById(params.id);
-
-    return mindmapData;
-  };
-
-  const { isLoading, data: userMindmapDetails } = useQuery<MindMapDetailsProps>(
-    ["mindmap", params.id],
-    getUserMindmapById,
-    {
-      // refetchOnMount: "always",
-      onSuccess: async (data) => {
-        if (data.messages) {
-          // await joinRoom(data);
-          setQa([]);
-          const newQaItems = data.messages.map((mindMapQA) => ({
-            text: mindMapQA.request,
-            message: mindMapQA.response,
-          }));
-
-          setQa((prevQa) => [...prevQa, ...newQaItems]);
-        }
-      },
-    },
-  );
-
-  const PERMISSIONS = userMindmapDetails?.connectedCollaboratorPermissions;
-
-  async function handleCursorMove(event: { clientX: any; clientY: any }) {
-    const cursorPos = { x: event.clientX, y: event.clientY };
-
-    if (checkPermission(PERMISSIONS, "UPDATE")) {
-      socketEmit("cursor-move", {
-        roomId: params.id,
-        username: collaUsername,
-        cursorPos,
-      });
     }
   }
 
@@ -152,32 +141,25 @@ export default function Board({ params }: { params: { id: string } }) {
   if (userMindmapDetails)
     return (
       <>
-        <main onMouseMove={handleCursorMove} className="relative flex justify-between w-screen h-screen scroll-smooth">
+        <main className="relative flex justify-between w-screen h-screen scroll-smooth">
           <BackDropGradient />
-          <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
-            <NavLeft userMindmapDetails={userMindmapDetails} />
-            {checkPermission(PERMISSIONS, "UPDATE") && <ToolBar userMindmapDetails={userMindmapDetails} />}
-            <NavRight userMindmapDetails={userMindmapDetails} />
-          </div>
 
-          {session.data?.session && (
-            <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
-              {userMindmapDetails ? (
-                <PromptTextInput userMindmapDetails={userMindmapDetails} />
-              ) : (
-                <Skeleton className="w-full max-h-36 h-12 bg-grey-blue rounded-xl" />
-              )}
-            </div>
-          )}
+          <div className="sm:w-[40%] w-[90%] fixed left-2/4 -translate-x-2/4 bottom-6 z-10">
+            {userMindmapDetails ? (
+              <PromptTextInput userMindmapDetails={userMindmapDetails} />
+            ) : (
+              <Skeleton className="w-full max-h-36 h-12 bg-grey-blue rounded-xl" />
+            )}
+          </div>
 
           <div
             className={`fixed right-5 bottom-6 z-10 ${
               promptValue || qa.length > 0 ? "opacity-100 ease-in duration-500" : "opacity-0 ease-out duration-500"
             }`}
           >
-            <Button onClick={handleScrollTop} className="absolute bottom-2 right-2" size="icon">
+            <Button onClick={handleScrollTop} className="fixed bottom-6 right-6" size="icon">
               <Image
-                className={`${!promptResult ? "rotate-180" : "rotate-0"} transition-all duration-500`}
+                className={`${promptResult ? "rotate-0" : "rotate-180"} transition-all duration-500`}
                 src={arrowIcon}
                 alt="Stars icon"
               />
@@ -185,8 +167,12 @@ export default function Board({ params }: { params: { id: string } }) {
           </div>
 
           <div className="w-full">
+            <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
+              <NavLeft userMindmapDetails={userMindmapDetails} />
+              <NavRight userMindmapDetails={userMindmapDetails} />
+            </div>
             <div className="relative w-full h-full">
-              {isLoading && collaUsername !== undefined ? (
+              {!userMindmapDetails && currentCollaUsername !== undefined ? (
                 <div className="relative flex w-full h-full">
                   <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
                   <Spinner
@@ -195,42 +181,29 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Mindmap userMindmapDetails={userMindmapDetails} collaUsername={collaUsername} />
+                <Whiteboard userMindmapDetails={userMindmapDetails} />
               )}
             </div>
-            {qa.length > 0 ? (
+            {qa.length > 0 && (
               <div className="relative w-full h-full flex flex-row justify-center bg-background">
                 <Answers />
               </div>
-            ) : (
-              ""
             )}
           </div>
         </main>
-        {/* <Button
-          onClick={async () => {
-            await socketLeaveRoom(userMindmapDetails?.id, collaUsername);
-            router.back();
-          }}
-          className="fixed right-5 bottom-5"
-        >
-          Leave room
-        </Button> */}
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
         <ShareDialog open={shareModal} setIsOpen={setShareModal} />
-        <CollaborateDialog open={collaborateModal} setIsOpen={setCollaborateModal} mindmapId={params.id} />
+        <CollaborateDialog
+          open={collaborateModal}
+          setIsOpen={setCollaborateModal}
+          mindmapId={params.id}
+          userMindmap={userMindmapDetails}
+        />
         <UpgradePlanDialog open={upgradePlanModal} setIsOpen={setUpgradePlanModal} />
-        <div
-          style={{ left: collaCursorPos.x, top: collaCursorPos.y }}
-          className="fixed bg-[#FF4DC4] px-6 py-2 w-fit max-h-10 rounded-full z-50"
-        >
-          <p>{uppercaseFirstLetter(collaUsername)}</p>
-        </div>
-        ;
       </>
     );
 
-  if (!isLoading)
+  if (isError)
     return (
       <>
         <main className="relative flex justify-between w-screen h-screen">
