@@ -59,7 +59,13 @@
     "confirmPasswordInput": "Bevestig wachtwoord",
     "sendCode": "Stuur Code",
     "rememberPassword": "Wachtwoord Onthouden",
-    "forgotPasswordText": "Voer hieronder je e-mailadres in en we sturen je een code om in te loggen en je wachtwoord opnieuw in te stellen."
+    "forgotPasswordText": "Voer hieronder je e-mailadres in en we sturen je een code om in te loggen en je wachtwoord opnieuw in te stellen.",
+    "registerSuccessMessage": "Een e-mail bevestiging is naar u verstuurd om uw registratie te voltooien.",
+    "emailAlreadyExists": "E-mailadres al in gebruik",
+    "usernameAlreadyExists": "Gebruikersnaam al in gebruik",
+    "usernameTooShort": "Gebruikersnaam te kort",
+    "passwordTooShort": "Wachtwoord te kort",
+    "passwordsNotMatching": "Wachtwoorden komen niet overeen"
   },
   "Welcome": {
     "hero1": "Ontgrendel je creativiteit",

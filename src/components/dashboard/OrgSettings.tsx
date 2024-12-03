@@ -3,6 +3,8 @@ import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilState, useSetRecoilState } from "recoil";
+import { motion, AnimatePresence } from "framer-motion";
+import { Settings2, Trash2, Save } from "lucide-react";
 
 import { deleteOrganizationById, updateOrganization } from "@/_services";
 import { CustomSession, Member } from "@/_types";
@@ -29,10 +31,9 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
   const textOrga = useTranslations("Organization");
   const textProfile = useTranslations("Profile");
 
-  // Initialize state for title and description
   const [inputTitle, setInputTitle] = useState("");
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Update state when input changes
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputTitle(e.target.value);
   };
@@ -47,7 +48,6 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
   const updateOrgaMutation = useMutation(updateOrganization, {
     onSuccess: (updatedOrga) => {
       setSelectedOrga(updatedOrga);
-      // Optionally, invalidate or refetch other queries to update the UI
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
     },
@@ -89,56 +89,111 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0 }
+  };
+
   return (
-    <div className="w-full">
-      <p className="font-bold text-lg pb-4 border-b dark:border-slate-800">{uppercaseFirstLetter(text("general"))}</p>
+    <motion.div 
+      className="w-full"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div 
+        className="flex items-center space-x-2 pb-4 border-b dark:border-slate-800"
+        variants={itemVariants}
+      >
+        <Settings2 className="w-6 h-6 text-primary" />
+        <p className="font-bold text-lg">{uppercaseFirstLetter(text("general"))}</p>
+      </motion.div>
+
       {isLoading && (
-        <div className="space-y-4">
-          <Skeleton className=" mt-12 w-full h-24 bg-grey-blue" />
-          <Skeleton className=" mt-12 w-full h-24 bg-grey-blue" />
-          <Skeleton className=" mt-12 w-full h-24 bg-grey-blue" />
+        <div className="space-y-4 mt-8">
+          <Skeleton className="w-full h-24 bg-grey-blue animate-pulse" />
+          <Skeleton className="w-full h-24 bg-grey-blue animate-pulse" />
+          <Skeleton className="w-full h-24 bg-grey-blue animate-pulse" />
         </div>
       )}
-      {userOrgaData && (
-        <div className="text-sm w-full mt-8 p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 pb-4 border-b dark:border-slate-800">
-          <form onSubmit={handleSubmit} className="flex pb-4 border-b dark:border-slate-800">
-            <p className="mr-4">{`${textProfile("update")} ${text("name")}:`}</p>
-            <section className="space-y-4">
-              {/* <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("name")}</p> */}
-              <Input
-                type="text"
-                placeholder={`${uppercaseFirstLetter(textOrga("organization"))} ${text("name").toLowerCase()}`}
-                value={inputTitle}
-                onChange={handleTitleChange}
-              />
-              <Button type="submit" disabled={updateOrgaMutation.isLoading}>
-                {updateOrgaMutation.isLoading ? text("loading") : uppercaseFirstLetter(text("save"))}
-              </Button>
-            </section>
-          </form>
-          {/* <article className="flex py-4 border-b dark:border-slate-800">
-            <p className="mr-4">{`${uppercaseFirstLetter(text("leave"))} ${textOrga("organization")}:`}</p>
-            <p className="cursor-pointer font-semibold text-red-500">
-              {`${uppercaseFirstLetter(text("leave"))} ${textOrga("organization")}`}
-            </p>
-          </article> */}
-          {currentMember?.organizationRole == "OWNER" && (
-            <article className="flex py-4">
-              <p className="mr-4">{`${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}:`}</p>
-              <button
-                onClick={() => handleDeleteOrga()}
-                disabled={deleteOrgaMutation.isLoading}
-                className={`cursor-pointer font-semibold text-red-500 ${deleteOrgaMutation.isLoading && "opacity-50"}`}
+
+      <AnimatePresence>
+        {userOrgaData && (
+          <motion.div 
+            className="text-sm w-full mt-8 p-6 rounded-2xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 border dark:border-slate-800 shadow-lg transition-shadow hover:shadow-xl"
+            variants={itemVariants}
+            layout
+          >
+            <form onSubmit={handleSubmit} className="flex flex-col pb-4 border-b dark:border-slate-800 space-y-4">
+              <motion.div className="flex items-center space-x-4" variants={itemVariants}>
+                <p className="font-medium">{`${textProfile("update")} ${text("name")}:`}</p>
+                <div className="flex-1 relative">
+                  <Input
+                    type="text"
+                    placeholder={`${uppercaseFirstLetter(textOrga("organization"))} ${text("name").toLowerCase()}`}
+                    value={inputTitle}
+                    onChange={handleTitleChange}
+                    className="w-full transition-all duration-300 focus:ring-2 focus:ring-primary"
+                  />
+                  <motion.div 
+                    className="absolute bottom-0 left-0 h-0.5 bg-primary"
+                    initial={{ width: "0%" }}
+                    animate={{ width: inputTitle ? "100%" : "0%" }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={updateOrgaMutation.isLoading}
+                  className="flex items-center space-x-2 hover:scale-105 transition-transform"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>
+                    {updateOrgaMutation.isLoading ? text("loading") : uppercaseFirstLetter(text("save"))}
+                  </span>
+                </Button>
+              </motion.div>
+            </form>
+
+            {currentMember?.organizationRole == "OWNER" && (
+              <motion.div 
+                className="pt-4"
+                variants={itemVariants}
+                onHoverStart={() => setIsHovered(true)}
+                onHoverEnd={() => setIsHovered(false)}
               >
-                {deleteOrgaMutation.isLoading
-                  ? `${uppercaseFirstLetter(text("loading"))}...`
-                  : `${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}`}
-              </button>
-            </article>
-          )}
-        </div>
-      )}
-    </div>
+                <motion.button
+                  onClick={() => handleDeleteOrga()}
+                  disabled={deleteOrgaMutation.isLoading}
+                  className="flex items-center space-x-2 text-red-500 hover:text-red-600 transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Trash2 className={`w-4 h-4 ${isHovered ? 'animate-shake' : ''}`} />
+                  <span className="font-medium">
+                    {deleteOrgaMutation.isLoading
+                      ? `${uppercaseFirstLetter(text("loading"))}...`
+                      : `${uppercaseFirstLetter(text("remove"))} ${textOrga("organization")}`}
+                  </span>
+                </motion.button>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 

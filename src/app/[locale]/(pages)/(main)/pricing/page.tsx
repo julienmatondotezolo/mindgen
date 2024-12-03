@@ -1,43 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { Pricing } from "@/sections/Pricing";
 import React from "react";
-import { useQuery } from "react-query";
 
-import { fetchPaymentProducts } from "@/_services";
-import { BackDropGradient } from "@/components";
-import { Navigation } from "@/components/dashboard";
-import { Plans } from "@/components/plans";
-
-export default function Pricing() {
-  const pricingPageText = useTranslations("Pricing");
-
-  const { data: paymentProducts, isLoading } = useQuery("paymentProducts", fetchPaymentProducts, {
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-  });
-
-  if (isLoading) {
-    return <div className="relative">Loading...</div>;
-  }
-
-  if (paymentProducts)
-    return (
-      <div className="relative">
-        <BackDropGradient />
-        <Navigation />
-        <div className="flex flex-wrap justify-center py-32">
-          <article className="w-full space-y-3 text-center">
-            <h1 className="text-5xl text-primary-color font-bold">{pricingPageText("hero")}</h1>
-            <h1 className="text-2xl font-medium dark:text-white">{pricingPageText("heroExplanation")}</h1>
-          </article>
-
-          <div className="grid sm:grid-cols-3 grid-cols-1 gap-12 mt-20">
-            <Plans title={pricingPageText("freePlan")} price={0} />
-            <Plans title={pricingPageText("payAsYouGoPlan")} price={5} />
-            <Plans title={pricingPageText("EnterprisePlan")} price={10} />
-          </div>
-        </div>
-      </div>
-    );
+export default function PricingPage() {
+  return (
+    <div>
+      <Pricing />
+    </div>
+  );
 }

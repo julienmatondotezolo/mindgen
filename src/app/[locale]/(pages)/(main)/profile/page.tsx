@@ -31,9 +31,9 @@ export default function Profile() {
             <TabsTrigger className={triggerStyle} value="account">
               <p>{profileText("account")}</p>
             </TabsTrigger>
-            <TabsTrigger className={triggerStyle} value="collaborations">
+{/*             <TabsTrigger className={triggerStyle} value="collaborations">
               <p>{profileText("yourCollaborations")}</p>
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger className={triggerStyle} value="billing">
               <p>{profileText("billing")}</p>
             </TabsTrigger>
@@ -43,9 +43,9 @@ export default function Profile() {
             <TabsContent value="account">
               <Account />
             </TabsContent>
-            <TabsContent value="collaborations">
+{/*             <TabsContent value="collaborations">
               <Collaborations />
-            </TabsContent>
+            </TabsContent> */}
             <TabsContent value="billing">
               <Billing />
             </TabsContent>

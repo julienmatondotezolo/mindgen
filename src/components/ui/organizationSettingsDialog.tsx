@@ -64,9 +64,9 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
           <TabsTrigger className={triggerStyle} value="members">
             <p>{uppercaseFirstLetter(text("members"))}</p>
           </TabsTrigger>
-          <TabsTrigger className={triggerStyle} value="invitation">
+{/*           <TabsTrigger className={triggerStyle} value="invitation">
             <p>{uppercaseFirstLetter(text("invitation"))}</p>
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
         <TabsContent value="general" className="w-[70%]">
           <OrgSettings userOrgaData={userOrgaData} isLoading={isLoading} />
@@ -74,9 +74,9 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
         <TabsContent value="members" className="w-[70%]">
           <OrgMembers userOrgaData={userOrgaData} isLoading={isLoading} />
         </TabsContent>
-        <TabsContent value="invitation" className="w-[70%]">
+{/*         <TabsContent value="invitation" className="w-[70%]">
           <OrgInvitation />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
       <X size={20} onClick={handleClose} className="cursor-pointer absolute right-5 top-0" />
     </div>

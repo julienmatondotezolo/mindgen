@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useMutation } from "react-query";
+import { motion } from "framer-motion";
+import { CheckCircle } from "lucide-react";
 
 import { signUp } from "@/_services/auth/auth-service";
 import { ErrorMessage } from "@/_types/ErrorMessage";
@@ -24,6 +26,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [errorMessages, setErrorMessages] = useState<ErrorMessage>();
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -36,14 +39,15 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   const signUpMutation = useMutation(signUp, {
     onSuccess: (data) => {
       if (data.status == 200) {
-        if (callbackUrl) {
-          const newCallbackUrl = `/auth/login?callbackUrl=${callbackUrl}`;
-
-          router.push(newCallbackUrl);
-        } else {
-          router.push("/auth/login");
-        }
-
+        setShowSuccessMessage(true);
+        setTimeout(() => {
+          if (callbackUrl) {
+            const newCallbackUrl = `/auth/login?callbackUrl=${callbackUrl}`;
+            router.push(newCallbackUrl);
+          } else {
+            router.push("/auth/login");
+          }
+        }, 10000);
         return;
       }
 
@@ -122,9 +126,39 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={onSubmit}>
+        {showSuccessMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 
+              border border-green-200 dark:border-green-800 
+              text-green-800 dark:text-green-200 
+              px-6 py-4 rounded-xl relative mb-6
+              backdrop-filter backdrop-blur-lg"
+          >
+            <div className="flex items-center space-x-2">
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 10, -10, 0]
+                }}
+                transition={{ 
+                  duration: 1.5,
+                  repeat: Infinity,
+                  repeatDelay: 3
+                }}
+              >
+                <CheckCircle className="w-5 h-5" />
+              </motion.div>
+              <p className="text-sm font-medium">
+                {authText("registerSuccessMessage")}
+              </p>
+            </div>
+          </motion.div>
+        )}
         <div className="grid gap-2 space-y-4">
           <div className="grid gap-1 space-y-2">
-            <Label htmlFor="email">Adresse mail</Label>
+            <Label htmlFor="email">{authText("mailInput")}</Label>
             <Input
               id="email"
               placeholder={authText("mailInput")}
@@ -136,11 +170,11 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "email")}
             />
             {errorMessages?.errors?.includes("EMAIL_ALREADY_EXISTS") && (
-              <div className="text-red-500 text-sm">Adresse mail déjà utilisé</div>
+              <div className="text-red-500 text-sm">{authText("emailAlreadyExists")}</div>
             )}
           </div>
           <div className="grid gap-1 space-y-2">
-            <Label htmlFor="username">Nom d&apos;utilisateur</Label>
+            <Label htmlFor="username">{authText("usernameInput")}</Label>
             <Input
               id="username"
               placeholder={authText("usernameInput")}
@@ -152,14 +186,14 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "username")}
             />
             {errorMessages?.errors?.includes("USERNAME_ALREADY_EXISTS") && (
-              <div className="text-red-500 text-sm">Nom d&apos;utilisateur déjà pris</div>
+              <div className="text-red-500 text-sm">{authText("usernameAlreadyExists")}</div>
             )}
             {errorMessages?.errors?.includes("USERNAME_TOO_SHORT") && (
-              <div className="text-red-500 text-sm">Nom d&apos;utilisateur trop court</div>
+              <div className="text-red-500 text-sm">{authText("usernameTooShort")}</div>
             )}
           </div>
           <div className="grid gap-1 space-y-2">
-            <Label htmlFor="password">Mot de passe</Label>
+            <Label htmlFor="password">{authText("passwordInput")}</Label>
             <Input
               id="password"
               placeholder={authText("passwordInput")}
@@ -171,7 +205,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "password")}
             />
             {errorMessages?.errors?.includes("PASSWORD_TOO_SHORT") && (
-              <div className="text-red-500 text-sm">Mot de passe trop court</div>
+              <div className="text-red-500 text-sm">{authText("passwordTooShort")}</div>
             )}
           </div>
           <div className="grid gap-1 space-y-2">
@@ -187,7 +221,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, "confirmPassword")}
             />
             {errorMessages?.errors?.includes("PASSWORDS_NOT_MATCHING") && (
-              <div className="text-red-500 text-sm">Les mots de passe ne correspondent pas</div>
+              <div className="text-red-500 text-sm">{authText("passwordsNotMatching")}</div>
             )}
           </div>
           <Button type="submit" className="mt-4" disabled={signUpMutation.isLoading}>

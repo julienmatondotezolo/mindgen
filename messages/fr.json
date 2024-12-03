@@ -59,7 +59,13 @@
     "confirmPasswordInput": "Confirmer le mot de passe",
     "sendCode": "Envoyer le Code",
     "rememberPassword": "Se Souvenir du Mot de Passe",
-    "forgotPasswordText": "Entrez votre adresse e-mail ci-dessous et nous vous enverrons un code pour vous connecter et réinitialiser votre mot de passe."
+    "forgotPasswordText": "Entrez votre adresse e-mail ci-dessous et nous vous enverrons un code pour vous connecter et réinitialiser votre mot de passe.",
+    "registerSuccessMessage": "Un email de confirmation vous a été envoyé pour continuer votre inscription.",
+    "emailAlreadyExists": "Adresse mail déjà utilisé",
+    "usernameAlreadyExists": "Nom d'utilisateur déjà pris",
+    "usernameTooShort": "Nom d'utilisateur trop court",
+    "passwordTooShort": "Mot de passe trop court",
+    "passwordsNotMatching": "Les mots de passe ne correspondent pas"
   },
   "Welcome": {
     "hero1": "Libérez votre créativité",
