@@ -1,6 +1,7 @@
 import { CustomSession } from "@/_types";
 
 /* eslint-disable prettier/prettier */
+// add url for DEV
 const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 // const baseUrl: string = process.env.NEXT_PUBLIC_TEST_API_URL + "/api/mindgen";
 
