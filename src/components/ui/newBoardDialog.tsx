@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { AnimatePresence, motion } from "framer-motion";
-import { BarChart, BrainCircuit, Cpu, Globe, LineChart, Lock, Sparkles, Workflow, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BarChart, BrainCircuit, Cpu, LineChart, Sparkles, Workflow, X, Lock, Globe, Network, CircleDot } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
@@ -16,16 +16,16 @@ import { useRouter } from "@/navigation";
 import { selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
-const DiagramOption = ({
-  icon: Icon,
-  title,
-  isSelected,
+const DiagramOption = ({ 
+  icon: Icon, 
+  title, 
+  isSelected, 
   onClick,
   description,
-  disabled,
-}: {
-  icon: any;
-  title: string;
+  disabled
+}: { 
+  icon: any; 
+  title: string; 
   isSelected: boolean;
   onClick: () => void;
   description: string;
@@ -36,8 +36,8 @@ const DiagramOption = ({
     whileTap={{ scale: disabled ? 1 : 0.98 }}
     onClick={disabled ? undefined : onClick}
     className={`relative w-full p-4 rounded-xl transition-all duration-300 ${
-      isSelected
-        ? "bg-primary text-white shadow-lg shadow-primary/25"
+      isSelected 
+        ? "bg-primary text-white shadow-lg shadow-primary/25" 
         : "bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700"
     } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
   >
@@ -45,7 +45,7 @@ const DiagramOption = ({
       initial={false}
       animate={{
         scale: isSelected ? 1 : 0.9,
-        opacity: isSelected ? 1 : 0.7,
+        opacity: isSelected ? 1 : 0.7
       }}
       className="flex flex-col items-center space-y-2"
     >
@@ -64,12 +64,39 @@ const DiagramOption = ({
   </motion.button>
 );
 
+const LayoutOption = ({
+  icon: Icon,
+  title,
+  isSelected,
+  onClick
+}: {
+  icon: any;
+  title: string;
+  isSelected: boolean;
+  onClick: () => void;
+}) => (
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={onClick}
+    className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+      isSelected 
+        ? "bg-primary text-white" 
+        : "bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700"
+    }`}
+  >
+    <Icon size={20} />
+    <span>{title}</span>
+  </motion.button>
+);
+
 const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const modalRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
-  const [diagramType, setDiagramType] = useState("CIRCLE");
+  const [selectedType, setSelectedType] = useState("MIND_MAP");
+  const [layoutType, setLayoutType] = useState("CIRCLE");
   const [inputDescription, setInputDescription] = useState("");
   const [inputVisibility, setInputVisibility] = useState("PUBLIC");
 
@@ -78,23 +105,16 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
   const diagramOptions = [
-    {
-      id: "CIRCLE",
-      icon: BrainCircuit,
-      title: "Mind Map",
-      description: "Organize ideas hierarchically",
-      disabled: false,
-    },
-    {
-      id: "PYRAMID",
-      icon: Workflow,
-      title: "Flow Chart",
-      description: "Visualize processes and workflows",
-      disabled: false,
-    },
+    { id: "MIND_MAP", icon: BrainCircuit, title: "Mind Map", description: "Organize ideas hierarchically", disabled: false },
+    { id: "FLOW_CHART", icon: Workflow, title: "Flow Chart", description: "Visualize processes and workflows", disabled: true },
     { id: "SWOT", icon: Cpu, title: "SWOT", description: "Analyze strengths and weaknesses", disabled: true },
     { id: "BAR", icon: BarChart, title: "Bar Chart", description: "Compare data categories", disabled: true },
-    { id: "LINE", icon: LineChart, title: "Line Chart", description: "Track trends over time", disabled: true },
+    { id: "LINE", icon: LineChart, title: "Line Chart", description: "Track trends over time", disabled: true }
+  ];
+
+  const layoutOptions = [
+    { id: "CIRCLE", icon: CircleDot, title: "Radial Layout" },
+    { id: "PYRAMID", icon: Network, title: "Hierarchical Layout" }
   ];
 
   const handleClose = () => {
@@ -109,7 +129,6 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
       if (response.id !== "") {
         router.push(`/board/${data.id}`);
-        // Invalidate the query to cause a re-fetch
         queryClient.invalidateQueries("userMindmap");
       }
     },
@@ -127,7 +146,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         session: safeSession,
         organizationId: selectedOrga?.id,
         task: inputDescription,
-        layoutType: diagramType,
+        layoutType,
       });
       handleClose();
     } catch (error) {
@@ -155,18 +174,17 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
   const overlayVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1 },
+    visible: { opacity: 1 }
   };
 
   const modalVariants = {
-    hidden: { scale: 0.9, opacity: 0, y: 20 },
-    visible: {
-      scale: 1,
+    hidden: { scale: 0.95, opacity: 0 },
+    visible: { 
+      scale: 1, 
       opacity: 1,
-      y: 0,
-      transition: { type: "spring", duration: 0.5 },
+      transition: { duration: 0.3 }
     },
-    exit: { scale: 0.9, opacity: 0, y: 20 },
+    exit: { scale: 0.95, opacity: 0 }
   };
 
   return (
@@ -186,25 +204,27 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
             variants={modalVariants}
           >
             <div className="p-6 space-y-6">
-              <motion.div
+              <motion.div 
                 className="flex justify-between items-center"
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <div className="flex items-center space-x-3">
                   <Sparkles className="w-6 h-6 text-primary animate-pulse" />
                   <h2 className="text-2xl font-bold">Create New Board</h2>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-700">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </motion.div>
 
               <motion.div
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
               >
                 {diagramOptions.map((option) => (
                   <DiagramOption
@@ -212,36 +232,51 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     icon={option.icon}
                     title={option.title}
                     description={option.description}
-                    isSelected={diagramType === option.id}
-                    onClick={() => setDiagramType(option.id)}
+                    isSelected={selectedType === option.id}
+                    onClick={() => setSelectedType(option.id)}
                     disabled={option.disabled}
                   />
                 ))}
               </motion.div>
 
-              <motion.div
+              {selectedType === "MIND_MAP" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="flex flex-col space-y-2"
+                >
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Select Layout Type</p>
+                  <div className="flex space-x-4">
+                    {layoutOptions.map((option) => (
+                      <LayoutOption
+                        key={option.id}
+                        icon={option.icon}
+                        title={option.title}
+                        isSelected={layoutType === option.id}
+                        onClick={() => setLayoutType(option.id)}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              <motion.div 
                 className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
               >
                 <article className="space-y-4">
                   <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     className="flex items-center space-x-2"
                   >
-                    {/*                     <p className="text-xl font-bold text-primary">
-                      {uppercaseFirstLetter(text("new"))}
-                    </p> */}
                   </motion.div>
 
                   <div className="relative">
                     <motion.div
-                      initial={{ scale: 0.95, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.6 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
                       className="relative group"
                     >
                       <Textarea
@@ -260,7 +295,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                           cursor-text
                           resize-none"
                       />
-                      <motion.div
+                      <motion.div 
                         className="absolute bottom-0 left-0 h-0.5 bg-primary"
                         initial={{ width: "0%" }}
                         animate={{ width: inputDescription ? "100%" : "0%" }}
@@ -270,87 +305,62 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   </div>
                 </article>
 
-                <motion.div
+                <motion.div 
                   className="flex flex-wrap justify-between items-center p-6 rounded-xl bg-gray-50 dark:bg-slate-800/50"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                 >
                   <article className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.2, 1],
-                          rotate: [0, 10, -10, 0],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          repeatDelay: 3,
-                        }}
-                      >
-                        {inputVisibility === "PRIVATE" ? (
-                          <Lock className="w-5 h-5 text-primary" />
-                        ) : (
-                          <Globe className="w-5 h-5 text-primary" />
-                        )}
-                      </motion.div>
+                      {inputVisibility === "PRIVATE" ? (
+                        <Lock className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Globe className="w-5 h-5 text-primary" />
+                      )}
                       <p className="font-semibold">{text("private")}</p>
                     </div>
-                    <p className="text-grey dark:text-grey-blue text-sm max-w-md">{text("onlyViewable")}</p>
+                    <p className="text-grey dark:text-grey-blue text-sm max-w-md">
+                      {text("onlyViewable")}
+                    </p>
                   </article>
-
-                  <div className="relative">
-                    <Switch
-                      checked={inputVisibility === "PRIVATE"}
-                      onCheckedChange={(checked) => setInputVisibility(checked ? "PRIVATE" : "PUBLIC")}
-                      disabled={fetchGenerateMindmap.isLoading}
-                      className="group"
-                    >
-                      <motion.div
-                        className="absolute inset-0 bg-primary/20 rounded-full"
-                        initial={false}
-                        animate={{
-                          scale: inputVisibility === "PRIVATE" ? 1.5 : 1,
-                          opacity: inputVisibility === "PRIVATE" ? 0.2 : 0,
-                        }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </Switch>
-                  </div>
+                  
+                  <Switch
+                    checked={inputVisibility === "PRIVATE"}
+                    onCheckedChange={(checked) => setInputVisibility(checked ? "PRIVATE" : "PUBLIC")}
+                    disabled={fetchGenerateMindmap.isLoading}
+                  />
                 </motion.div>
 
-                <motion.div
+                <motion.div 
                   className="flex flex-wrap items-center justify-end space-x-4 mt-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8 }}
                 >
-                  <Button variant="outline" onClick={handleClose} className="relative overflow-hidden">
-                    <span className="relative z-10">{uppercaseFirstLetter(text("cancel"))}</span>
-                    <div className="absolute inset-0 bg-gray-100 dark:bg-slate-700" />
+                  <Button 
+                    variant="outline" 
+                    onClick={handleClose}
+                    className="relative overflow-hidden"
+                  >
+                    <span className="relative z-10">
+                      {uppercaseFirstLetter(text("cancel"))}
+                    </span>
                   </Button>
-
-                  <Button type="submit" disabled={fetchGenerateMindmap.isLoading} className="relative group">
-                    <motion.div
-                      className="absolute inset-0 bg-primary/20 rounded-lg"
-                      animate={{
-                        scale: fetchGenerateMindmap.isLoading ? [1, 1.1, 1] : 1,
-                      }}
-                      transition={{
-                        duration: 1,
-                        repeat: fetchGenerateMindmap.isLoading ? Infinity : 0,
-                      }}
-                    />
+                  
+                  <Button 
+                    type="submit" 
+                    disabled={fetchGenerateMindmap.isLoading}
+                    className="relative group"
+                  >
                     <span className="relative z-10 flex items-center space-x-2">
-                      <Sparkles
-                        className={fetchGenerateMindmap.isLoading ? "animate-spin" : "group-hover:animate-bounce"}
-                        height={15}
+                      <Sparkles 
+                        className={fetchGenerateMindmap.isLoading ? "animate-spin" : ""} 
+                        height={15} 
                       />
                       <span>
                         {uppercaseFirstLetter(
-                          fetchGenerateMindmap.isLoading ? text("generating") + "..." : text("generate"),
+                          fetchGenerateMindmap.isLoading 
+                            ? text("generating") + "..." 
+                            : text("generate")
                         )}
                       </span>
                     </span>
