@@ -430,28 +430,26 @@ export async function reGenerateMindmap({ session, mindmapReqObject }: { session
   }); 
 }
 
-export async function fetchMindmaps({ organizationId }: {organizationId: string}): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
+export async function fetchMindmaps({ session, organizationId }: {session: CustomSession | null, organizationId: string}): Promise<any> {
+  if(session)
+    try {
+      const responseMindmap: Response = await fetch(baseUrl + `/mindmap/organization/${organizationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
 
-    const responseMindmap: Response = await fetch(baseUrl + `/mindmap/organization/${organizationId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseMindmap.ok) {
-      return responseMindmap.json();
-    } else {
-      throw responseMindmap;
+      if (responseMindmap.ok) {
+        return responseMindmap.json();
+      } else {
+        throw responseMindmap;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch mindmaps:", error);
     }
-  } catch (error) {
-    console.error("Impossible to fetch mindmaps:", error);
-  }
 }
 
 export async function createMindmap({ mindmapObject }: {mindmapObject: any}): Promise<any> {

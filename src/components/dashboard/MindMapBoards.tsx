@@ -5,13 +5,14 @@
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { deleteMindmapById, favoriteMindmap, fetchMindmaps } from "@/_services";
-import { MindmapObject, Organization } from "@/_types";
+import { CustomSession, MindmapObject, Organization } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import boardElement from "@/assets/images/elements.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
@@ -23,6 +24,9 @@ import { Link } from "../../navigation";
 function MindMapBoards() {
   const text = useTranslations("Index");
   const dateText = useTranslations("Dashboard");
+
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const setBoardLength = useSetRecoilState(boardsLengthState);
 
@@ -39,16 +43,26 @@ function MindMapBoards() {
 
   const searchParams = useSearchParams();
   const showFavorites = searchParams.get('favourites') === 'true';
+  const showUserMindmaps = searchParams.get('usermindmaps') === 'true';
 
-  const fetchUserMindmaps = () => fetchMindmaps({ organizationId: selectedOrga!.id });
+  const fetchUserMindmaps = () => fetchMindmaps({ session:safeSession, organizationId: selectedOrga!.id });
   const { isLoading, data: userMindmap } = useQuery(["userMindmap", selectedOrga?.id], fetchUserMindmaps, {
-    enabled: !!selectedOrga?.id, // Only run the query if selectedOrga.id is available
+    enabled: !!selectedOrga?.id,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    // Add sorting logic here
     select: (data) => {
-      // First filter by favorites if needed
-      let filteredData = showFavorites ? data.filter((mindmap: MindmapObject) => mindmap.favorite) : data;
+      // First filter by favorites and/or user mindmaps if needed
+      let filteredData = data;
+      
+      if (showFavorites) {
+        filteredData = filteredData.filter((mindmap: MindmapObject) => mindmap.favorite);
+      }
+      
+      if (showUserMindmaps) {
+        filteredData = filteredData.filter((mindmap: MindmapObject) => 
+          mindmap.creatorUsername === safeSession?.data.session.user.username
+        );
+      }
       
       // Then sort by date
       return filteredData.sort((a: any, b: any) => {

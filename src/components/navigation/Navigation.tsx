@@ -19,7 +19,9 @@ function Navigation() {
         <section className="flex items-center relative">
           <Link href={`/dashboard`}>
             <figure className="relative mr-8">
-              <div className="absolute -top-2 -right-5 bg-red-500 text-white text-[8px] px-2 py-0.5 rounded">BETA</div>
+              <div className="absolute -top-2 -right-5 bg-red-500 text-white text-[8px] px-2 py-0.5 rounded">
+                <p className="font-bold tracking-wider">BETA</p>
+              </div>
               <p className="font-bold text-base dark:text-white">
                 MIND<span className="text-primary-color">GEN</span>
               </p>

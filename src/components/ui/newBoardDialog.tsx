@@ -356,7 +356,11 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative group">
                       <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("description")}</p>
                       <Textarea
-                        placeholder={`${text("description").toLowerCase()}`}
+                        placeholder={`${
+                          selectedType == "BLANK"
+                            ? text("description").toLowerCase()
+                            : "Write your prompt here to generate a board."
+                        }`}
                         value={inputDescription}
                         onChange={handleDescriptionChange}
                         required

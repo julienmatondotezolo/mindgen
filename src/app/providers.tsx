@@ -43,7 +43,7 @@ export default function Providers({ children, locale }: Props): JSX.Element {
     <SessionProvider>
       <RecoilRoot>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
               <ReactFlowProvider>{children}</ReactFlowProvider>
             </NextIntlClientProvider>

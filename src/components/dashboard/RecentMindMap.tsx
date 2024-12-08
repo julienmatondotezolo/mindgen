@@ -1,10 +1,12 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { AlignJustify, LayoutGrid, Sparkles } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
+import { Link } from "@/navigation";
 import { boardsLengthState, newBoardState, profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
@@ -17,6 +19,9 @@ function RecentMindMap() {
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
   const leftBoards = maxMindmap - boardLength;
+
+  const searchParams = useSearchParams();
+  const showFavorites = searchParams.get("usermindmaps") === "true";
 
   const canCreateNewBoard = leftBoards > 0;
 
@@ -31,19 +36,23 @@ function RecentMindMap() {
 
   const size = 15;
 
-  const btnBackground = "p-2 rounded-md bg-gray-100 dark:bg-slate-900";
+  const btnBackground = "p-2 rounded-md bg-gray-100 dark:bg-slate-900 hover:bg-primary-opaque hover:dark:bg-slate-600";
 
   return (
     <div className="pb-16">
       <div className="w-full flex justify-between items-center mb-8">
         <section className="grid grid-cols-2 gap-8">
           <div className="flex space-x-2">
-            <article className={btnBackground}>
-              <p className="text-xs">Recently viewed</p>
-            </article>
-            <article className="p-2 rounded-md">
-              <p className="text-xs">My mindmaps</p>
-            </article>
+            <Link href="/dashboard">
+              <article className={!showFavorites ? btnBackground : "p-2"}>
+                <p className="text-xs">Recently viewed</p>
+              </article>
+            </Link>
+            <Link href={{ pathname: "/dashboard", query: { usermindmaps: "true" } }}>
+              <article className={showFavorites ? btnBackground : "p-2"}>
+                <p className="text-xs">My mindmaps</p>
+              </article>
+            </Link>
           </div>
           <div className="flex space-x-2">
             <section className={btnBackground}>
