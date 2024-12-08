@@ -1845,7 +1845,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           className="h-full w-full absolute inset-0"
           style={{
             backgroundPosition: `${camera.x}px ${camera.y}px`,
-            backgroundImage: `radial-gradient(${theme === "dark" ? "#111212FF" : "#e5e7eb"} ${
+            backgroundImage: `radial-gradient(${theme === "dark" ? "#111212" : "#e5e7eb"} ${
               1 * camera.scale
             }px, transparent 1px)`,
             backgroundSize: `${16 * camera.scale}px ${16 * camera.scale}px`,
