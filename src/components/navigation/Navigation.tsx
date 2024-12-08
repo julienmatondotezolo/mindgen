@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
 
 import { Link } from "../../navigation";
 import { NavProfile } from "./NavProfile";

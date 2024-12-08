@@ -8,12 +8,11 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { boardsLengthState, newBoardState, profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
-import { Button, Input } from "../ui";
+import { Button } from "../ui";
 import { MindMapBoards } from "./MindMapBoards";
 
 function RecentMindMap() {
   const text = useTranslations("Index");
-  const navigationText = useTranslations("Navigation");
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
