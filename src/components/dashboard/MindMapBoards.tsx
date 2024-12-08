@@ -2,11 +2,13 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
+import { image } from "html2canvas/dist/types/css/types/image";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -27,6 +29,8 @@ function MindMapBoards() {
 
   const session: any = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const { theme } = useTheme();
 
   const setBoardLength = useSetRecoilState(boardsLengthState);
   const globalFilter = useRecoilValue(globalFilterState);
@@ -128,58 +132,64 @@ function MindMapBoards() {
         {isLoading
           ? Array.from({ length: 3 }).map((_, index) => <SkeletonMindMapBoard key={index} />)
           : userMindmap.map((mindmap: MindmapObject) => (
-            <div
-              key={mindmap.id}
-              className={`relative ${
-                deletingMindmapId === mindmap.id ? "opacity-20" : "opacity-100"
-              } cursor-pointer rounded-xl group overflow-hidden border dark:border-slate-900`}
-              style={{
-                backgroundImage: `${globalFilter === Filter.Grid ? `url(${mindmap.pictureUrl || PLACEHOLDER_IMAGE})` : "url()"}`,
-                backgroundSize: "150%",
-                backgroundPosition: "center center",
-                backgroundRepeat: "no-repeat",
-              }}
-            >
-              <figure onClick={() => handleFavoriteMindmap(mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute top-4 right-4 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
-                <Star size={16} color="black" fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
-              </figure>
-              {globalFilter === Filter.Grid && <Link href={`/board/${mindmap.id}`}>
-                <figure className="w-full h-24" />
-              </Link>}
-              <article className="flex flex-wrap justify-between items-start p-2 bg-white bg-opacity-60 backdrop-filter backdrop-blur-md dark:bg-slate-800 dark:bg-opacity-50">
-                <section className={`w-[90%] ${globalFilter === Filter.List && "p-3 grid grid-cols-3 items-center h-18 overflow-hidden"}`}>
-                  
-                  <article>
-                    <p className="mb-2 text-sm font-medium dark:text-white truncate overflow-hidden text-ellipsis">{mindmap.name}</p>
-                    {globalFilter === Filter.List && <p className="text-xs">{mindmap.description}</p>}
-                  </article>
-                  <article>
-                    <p className="text-xs text-grey">
-                      {text("createdBy")}{" "}
-                      <span className="text-primary-color cursor-pointer hover:underline">
-                        {uppercaseFirstLetter(mindmap.creatorUsername)}
-                      </span>
-                    </p>
-                    <p className="text-xs text-grey">Updated <span className="cursor-pointer hover:underline">{formatDate(mindmap.updatedAt, dateText)}</span></p>
-                  </article>
-                </section>
-                {globalFilter === Filter.List && <figure onClick={() => handleFavoriteMindmap(mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute ${globalFilter === Filter.List ? "translate-y-1/2 bottom-1/2 right-16" : "top-4"} right-4 px-2 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
-                  <Star size={16} color="black" fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
-                </figure>}
-                {checkPermission(mindmap.connectedMemberPermissions, "DELETE") && (
-                  <figure
-                    onClick={() => handleDelete(mindmap.id)}
-                    className={`hidden absolute ${globalFilter === Filter.List ? "translate-y-1/2 bottom-1/2" : "bottom-4"} right-4 group-hover:block bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%]`}
-                  >
-                    {!deletingMindmapId || deletingMindmapId !== mindmap.id ? (
-                      <Image src={deleteIcon} height={size} alt="document icon" />
-                    ) : (
-                      <Spinner />
-                    )}
-                  </figure>
-                )}
-              </article>
-            </div>
+            <Link key={mindmap.id} href={`/board/${mindmap.id}`}>
+              <div
+                className={`relative ${
+                  deletingMindmapId === mindmap.id ? "opacity-20" : "opacity-100"
+                } cursor-pointer rounded-xl group overflow-hidden border dark:border-slate-900`}
+                style={{
+                  backgroundImage: `${globalFilter === Filter.Grid ? `url(${mindmap.pictureUrl || PLACEHOLDER_IMAGE})` : "url()"}`,
+                  backgroundSize: "150%",
+                  backgroundPosition: "center center",
+                  backgroundRepeat: "no-repeat",
+                }}
+              >
+                <figure onClick={() => handleFavoriteMindmap(mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute top-4 right-4 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
+                  <Star size={16} color={theme == "dark" ? "white" : "black"} fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
+                </figure>
+                {globalFilter === Filter.Grid &&
+                <figure className="w-full h-24" />}
+                <article className="flex flex-wrap justify-between items-start p-2 bg-white bg-opacity-60 backdrop-filter backdrop-blur-md dark:bg-slate-800 dark:bg-opacity-50">
+                  <section className={`w-[90%] ${globalFilter === Filter.List && "p-3 grid grid-cols-3 items-center h-18 overflow-hidden"}`}>
+                    <article className="flex space-x-6 items-center">
+                      {globalFilter === Filter.List && (
+                        <figure>
+                          <Image src={mindmap.pictureUrl} width={70} height={30} alt="document icon" />
+                        </figure>)
+                      }
+                      <section>
+                        <p className="mb-2 text-sm font-medium dark:text-white">{mindmap.name}</p>
+                        {globalFilter === Filter.List && <p className="text-xs">{mindmap.description}</p>}
+                      </section>
+                    </article>
+                    <article>
+                      <p className="text-xs text-grey">
+                        {text("createdBy")}{" "}
+                        <span className="text-primary-color cursor-pointer hover:underline">
+                          {uppercaseFirstLetter(mindmap.creatorUsername)}
+                        </span>
+                      </p>
+                      <p className="text-xs text-grey">Updated <span className="cursor-pointer hover:underline">{formatDate(mindmap.updatedAt, dateText)}</span></p>
+                    </article>
+                  </section>
+                  {globalFilter === Filter.List && <figure onClick={() => handleFavoriteMindmap(mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute ${globalFilter === Filter.List ? "translate-y-1/2 bottom-1/2 right-16" : "top-4"} right-4 px-2 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
+                    <Star size={16} color={theme == "dark" ? "white" : "black"} fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
+                  </figure>}
+                  {checkPermission(mindmap.connectedMemberPermissions, "DELETE") && (
+                    <figure
+                      onClick={() => handleDelete(mindmap.id)}
+                      className={`hidden absolute z-50 ${globalFilter === Filter.List ? "translate-y-1/2 bottom-1/2" : "bottom-4"} right-4 group-hover:block bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%]`}
+                    >
+                      {!deletingMindmapId || deletingMindmapId !== mindmap.id ? (
+                        <Image src={deleteIcon} height={size} alt="document icon" />
+                      ) : (
+                        <Spinner />
+                      )}
+                    </figure>
+                  )}
+                </article>
+              </div>
+            </Link>
           ))}
         {isCreatingMindmap ? <SkeletonMindMapBoard /> : <></>}
       </>
