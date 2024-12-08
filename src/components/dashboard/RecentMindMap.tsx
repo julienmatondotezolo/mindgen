@@ -6,8 +6,9 @@ import { useTranslations } from "next-intl";
 import React from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
+import { Filter } from "@/_types";
 import { Link } from "@/navigation";
-import { boardsLengthState, newBoardState, profilMaxMindmapState } from "@/state";
+import { boardsLengthState, globalFilterState, newBoardState, profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 import { Button } from "../ui";
@@ -16,6 +17,7 @@ import { MindMapBoards } from "./MindMapBoards";
 function RecentMindMap() {
   const text = useTranslations("Index");
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
+  const [globalFilter, setGlobalFilter] = useRecoilState(globalFilterState);
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
   const leftBoards = maxMindmap - boardLength;
@@ -36,7 +38,9 @@ function RecentMindMap() {
 
   const size = 15;
 
-  const btnBackground = "p-2 rounded-md bg-gray-100 dark:bg-slate-900 hover:bg-primary-opaque hover:dark:bg-slate-600";
+  const btnBackground =
+    "cursor-pointer p-2 rounded-md bg-gray-100 dark:bg-slate-900 hover:bg-primary-opaque hover:dark:bg-slate-600";
+  const btnBackgroundHover = "cursor-pointer p-2 rounded-md hover:bg-primary-opaque hover:dark:bg-slate-600";
 
   return (
     <div className="pb-16">
@@ -44,21 +48,27 @@ function RecentMindMap() {
         <section className="grid grid-cols-2 gap-8">
           <div className="flex space-x-2">
             <Link href="/dashboard">
-              <article className={!showFavorites ? btnBackground : "p-2"}>
+              <article className={!showFavorites ? btnBackground : btnBackgroundHover}>
                 <p className="text-xs">Recently viewed</p>
               </article>
             </Link>
             <Link href={{ pathname: "/dashboard", query: { usermindmaps: "true" } }}>
-              <article className={showFavorites ? btnBackground : "p-2"}>
+              <article className={showFavorites ? btnBackground : btnBackgroundHover}>
                 <p className="text-xs">My mindmaps</p>
               </article>
             </Link>
           </div>
           <div className="flex space-x-2">
-            <section className={btnBackground}>
+            <section
+              onClick={() => setGlobalFilter(Filter.Grid)}
+              className={globalFilter === Filter.Grid ? btnBackground : btnBackgroundHover}
+            >
               <LayoutGrid size={15} />
             </section>
-            <section className="p-2 rounded-md">
+            <section
+              onClick={() => setGlobalFilter(Filter.List)}
+              className={globalFilter === Filter.List ? btnBackground : btnBackgroundHover}
+            >
               <AlignJustify size={15} />
             </section>
           </div>
@@ -72,8 +82,12 @@ function RecentMindMap() {
           </Button>
         </section>
       </div>
-      <article className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-3 gap-8 w-full">
-        {/* <div onClick={handleClick} className="cursor-pointer">
+      <article
+        className={`grid grid-cols-1 ${
+          globalFilter === Filter.List ? "grid-cols-1" : "md:grid-cols-4 lg:grid-cols-3"
+        } gap-8 w-full`}
+      >
+        {/* <div className="cursor-pointer">
           <figure className="flex w-full h-24 border-2 border-primary-color mb-2 rounded-xl opacity-70 hover:opacity-100">
             <article className="m-auto text-primary-color text-center">
               <span className="text-4xl">+</span>

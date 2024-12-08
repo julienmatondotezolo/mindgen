@@ -3,6 +3,7 @@ export * from "./ChatMessageProps";
 export * from "./CustomNodeProps";
 export * from "./CustomSession";
 export * from "./DialogProps";
+export * from "./filters";
 export * from "./HistoryState";
 export * from "./Invitations";
 export * from "./Member";

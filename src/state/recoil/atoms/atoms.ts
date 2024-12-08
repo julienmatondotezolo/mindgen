@@ -1,7 +1,17 @@
 import { Node } from "reactflow";
 import { atom } from "recoil";
 
-import { Camera, CanvasMode, CanvasState, ChatMessageProps, Edge, Layer, QuestionAnswersProps, User } from "@/_types";
+import {
+  Camera,
+  CanvasMode,
+  CanvasState,
+  ChatMessageProps,
+  Edge,
+  Filter,
+  Layer,
+  QuestionAnswersProps,
+  User,
+} from "@/_types";
 import { Organization } from "@/_types/Organization";
 import { socket } from "@/socket";
 
@@ -358,4 +368,11 @@ export const profilMaxMindmapState = atom<number>({
 export const globalCursorState = atom({
   key: "globalCursorState",
   default: false,
+});
+
+// ================   GLOBAL FILTER   ================== //
+
+export const globalFilterState = atom<Filter>({
+  key: "globalFilterState",
+  default: Filter.Grid,
 });
