@@ -10,6 +10,7 @@ import {
   LineChart,
   Lock,
   Network,
+  Plus,
   Sparkles,
   Workflow,
   X,
@@ -20,13 +21,13 @@ import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilValue } from "recoil";
 
-import { generatedMindmap } from "@/_services";
+import { createMindmap, generatedMindmap } from "@/_services";
 import { CustomSession, Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
-import { Button, Switch, Textarea } from "@/components/ui";
+import { Button, Input, Switch, Textarea } from "@/components/ui";
 import { useRouter } from "@/navigation";
 import { selectedOrganizationState } from "@/state";
-import { uppercaseFirstLetter } from "@/utils";
+import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
 const DiagramOption = ({
   icon: Icon,
@@ -61,8 +62,10 @@ const DiagramOption = ({
       }}
       className="flex flex-col items-center space-y-2"
     >
-      <Icon size={24} className={isSelected ? "text-white" : "text-primary"} />
-      <span className="font-medium">{title}</span>
+      <div className="flex items-center space-x-2">
+        <Icon size={18} className={isSelected ? "text-white" : "text-primary"} />
+        <span className="font-medium">{title}</span>
+      </div>
       <p className="text-xs opacity-75">{description}</p>
     </motion.div>
     {isSelected && (
@@ -95,7 +98,7 @@ const LayoutOption = ({
       isSelected ? "bg-primary text-white" : "bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700"
     }`}
   >
-    <Icon size={20} />
+    <Icon size={18} />
     <span>{title}</span>
   </motion.button>
 );
@@ -107,6 +110,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState("MIND_MAP");
   const [layoutType, setLayoutType] = useState("CIRCLE");
+  const [inputTitle, setInputTitle] = useState("");
   const [inputDescription, setInputDescription] = useState("");
   const [inputVisibility, setInputVisibility] = useState("PUBLIC");
 
@@ -115,6 +119,13 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
   const diagramOptions = [
+    {
+      id: "BLANK",
+      icon: Plus,
+      title: "Blank board",
+      description: "Create a board from scratch",
+      disabled: false,
+    },
     {
       id: "MIND_MAP",
       icon: BrainCircuit,
@@ -156,24 +167,60 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
     },
   });
 
+  const fetchCreateMindmap = useMutation(createMindmap, {
+    mutationKey: "CREATE_MINDMAP",
+    onSuccess: async (data: any) => {
+      const response = await data;
+
+      if (response.id !== "") {
+        router.push(`/board/${data.id}`);
+        // Invalidate the query to cause a re-fetch
+        queryClient.invalidateQueries("userMindmap");
+      }
+    },
+  });
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputTitle(e.target.value);
+  };
+
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputDescription(e.target.value);
   };
 
-  const handleConfirm = async (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    try {
-      await fetchGenerateMindmap.mutateAsync({
-        session: safeSession,
-        organizationId: selectedOrga?.id,
-        task: inputDescription,
-        layoutType,
+    if (selectedType !== "BLANK") {
+      try {
+        await fetchGenerateMindmap.mutateAsync({
+          session: safeSession,
+          organizationId: selectedOrga?.id,
+          task: inputDescription,
+          layoutType,
+        });
+        handleClose();
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(`An error has occurred: ${error.message}`);
+        }
+      }
+    } else {
+      const emptyMindmapObject = emptyMindMapObject({
+        name: inputTitle,
+        description: inputDescription,
+        pictureUrl: "",
+        organizationId: selectedOrga!.id,
+        visibility: inputVisibility,
       });
-      handleClose();
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
+
+      try {
+        fetchCreateMindmap.mutate({ mindmapObject: emptyMindmapObject });
+        handleClose();
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(`An error has occurred: ${error.message}`);
+        }
       }
     }
 
@@ -221,7 +268,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         >
           <motion.form
             ref={modalRef}
-            onSubmit={handleConfirm}
+            onSubmit={handleSubmit}
             className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden"
             variants={modalVariants}
           >
@@ -258,7 +305,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                 ))}
               </motion.div>
 
-              {selectedType === "MIND_MAP" && (
+              {selectedType !== "BLANK" && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -287,8 +334,28 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     className="flex items-center space-x-2"
                   ></motion.div>
 
-                  <div className="relative">
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative group">
+                  <div className="relative space-y-4">
+                    {selectedType == "BLANK" && (
+                      <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative group">
+                        <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("name")}</p>
+                        <Input
+                          type="text"
+                          placeholder={`Mind map ${text("name").toLowerCase()}`}
+                          value={inputTitle}
+                          onChange={handleTitleChange}
+                          required
+                        />
+                        <motion.div
+                          className="absolute bottom-0 left-0 h-0.5 bg-primary"
+                          initial={{ width: "0%" }}
+                          animate={{ width: inputDescription ? "100%" : "0%" }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </motion.section>
+                    )}
+
+                    <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative group">
+                      <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("description")}</p>
                       <Textarea
                         placeholder={`${text("description").toLowerCase()}`}
                         value={inputDescription}
@@ -311,7 +378,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                         animate={{ width: inputDescription ? "100%" : "0%" }}
                         transition={{ duration: 0.3 }}
                       />
-                    </motion.div>
+                    </motion.section>
                   </div>
                 </article>
 
@@ -320,7 +387,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
-                  <article className="space-y-2">
+                  <article className="flex items-center space-x-2">
                     <div className="flex items-center space-x-2">
                       {inputVisibility === "PRIVATE" ? (
                         <Lock className="w-5 h-5 text-primary" />
@@ -348,16 +415,23 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     <span className="relative z-10">{uppercaseFirstLetter(text("cancel"))}</span>
                   </Button>
 
-                  <Button type="submit" disabled={fetchGenerateMindmap.isLoading} className="relative group">
-                    <span className="relative z-10 flex items-center space-x-2">
-                      <Sparkles className={fetchGenerateMindmap.isLoading ? "animate-spin" : ""} height={15} />
-                      <span>
-                        {uppercaseFirstLetter(
-                          fetchGenerateMindmap.isLoading ? text("generating") + "..." : text("generate"),
-                        )}
+                  {selectedType !== "BLANK" ? (
+                    <Button type="submit" disabled={fetchGenerateMindmap.isLoading} className="relative group">
+                      <span className="relative z-10 flex items-center space-x-2">
+                        <Sparkles className={fetchGenerateMindmap.isLoading ? "animate-spin" : ""} height={15} />
+                        <span>
+                          {uppercaseFirstLetter(
+                            fetchGenerateMindmap.isLoading ? text("generating") + "..." : text("generate"),
+                          )}
+                        </span>
                       </span>
-                    </span>
-                  </Button>
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="space-x-2">
+                      <Plus className={fetchCreateMindmap.isLoading ? "animate-spin" : ""} height={15} />
+                      {uppercaseFirstLetter(text("create"))}
+                    </Button>
+                  )}
                 </motion.div>
               </motion.div>
             </div>
