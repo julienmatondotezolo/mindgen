@@ -42,7 +42,7 @@ function RecentMindMap() {
               <p className="text-xs">Recently viewed</p>
             </article>
             <article className="p-2 rounded-md">
-              <p className="text-xs">Shared mindmaps</p>
+              <p className="text-xs">My mindmaps</p>
             </article>
           </div>
           <div className="flex space-x-2">

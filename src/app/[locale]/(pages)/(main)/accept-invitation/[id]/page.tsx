@@ -20,7 +20,7 @@ export default function AcceptInvitationPage({ params }: { params: { id: string 
   // Define the mutation
   const acceptOrgInvitationMutation = useMutation(acceptOrgInvitation, {
     onSuccess: (data) => {
-      if (data.errors.length > 0) {
+      if (data?.errors?.length > 0) {
         console.error("data:", data);
         return;
       }

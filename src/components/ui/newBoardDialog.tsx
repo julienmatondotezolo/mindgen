@@ -52,7 +52,7 @@ const DiagramOption = ({
       isSelected
         ? "bg-primary text-white shadow-lg shadow-primary/25"
         : "bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700"
-    } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+    } ${disabled ? " opacity-40 cursor-not-allowed" : ""}`}
   >
     <motion.div
       initial={false}
@@ -151,6 +151,9 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   ];
 
   const handleClose = () => {
+    setInputTitle("");
+    setInputVisibility("PUBLIC");
+    setInputDescription("");
     setIsOpen(false);
   };
 
@@ -224,6 +227,8 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       }
     }
 
+    setInputTitle("");
+    setInputVisibility("PUBLIC");
     setInputDescription("");
     handleClose();
   };
@@ -231,7 +236,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!modalRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
+        handleClose();
       }
     };
 
@@ -345,12 +350,6 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                           onChange={handleTitleChange}
                           required
                         />
-                        <motion.div
-                          className="absolute bottom-0 left-0 h-0.5 bg-primary"
-                          initial={{ width: "0%" }}
-                          animate={{ width: inputDescription ? "100%" : "0%" }}
-                          transition={{ duration: 0.3 }}
-                        />
                       </motion.section>
                     )}
 
@@ -371,12 +370,6 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                           hover:border-primary/50
                           cursor-text
                           resize-none"
-                      />
-                      <motion.div
-                        className="absolute bottom-0 left-0 h-0.5 bg-primary"
-                        initial={{ width: "0%" }}
-                        animate={{ width: inputDescription ? "100%" : "0%" }}
-                        transition={{ duration: 0.3 }}
                       />
                     </motion.section>
                   </div>

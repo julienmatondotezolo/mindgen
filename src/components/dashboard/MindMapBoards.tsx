@@ -2,15 +2,18 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
+import { Star } from "lucide-react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { deleteMindmapById, fetchMindmaps } from "@/_services";
+import { deleteMindmapById, favoriteMindmap, fetchMindmaps } from "@/_services";
 import { MindmapObject, Organization } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
+import boardElement from "@/assets/images/elements.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
 import { boardsLengthState, selectedOrganizationState } from "@/state";
 import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
@@ -27,12 +30,15 @@ function MindMapBoards() {
 
   const [deletingMindmapId, setDeletingMindmapId] = useState("");
 
-  const PLACEHOLDER_IMAGE = "https://cdn.discordapp.com/attachments/764028770196914176/1310656624125546589/Screenshot_2024-11-25_at_18.21.25.png?ex=6746039a&is=6744b21a&hm=3932410d3cb84067c8640c4c0ff242640933efc6b7438fca65ef93c89fd09c38&";
+  const PLACEHOLDER_IMAGE = "https://fakeimg.pl/600x400/94baf7/0566fe?text=Mindgen";
 
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation(deleteMindmapById);
 
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
+
+  const searchParams = useSearchParams();
+  const showFavorites = searchParams.get('favourites') === 'true';
 
   const fetchUserMindmaps = () => fetchMindmaps({ organizationId: selectedOrga!.id });
   const { isLoading, data: userMindmap } = useQuery(["userMindmap", selectedOrga?.id], fetchUserMindmaps, {
@@ -40,19 +46,45 @@ function MindMapBoards() {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     // Add sorting logic here
-    select: (data) => data?.sort((a: any, b: any) => {
-      const dateA = new Date(a.updatedAt).getTime();
-      const dateB = new Date(b.updatedAt).getTime();
+    select: (data) => {
+      // First filter by favorites if needed
+      let filteredData = showFavorites ? data.filter((mindmap: MindmapObject) => mindmap.favorite) : data;
+      
+      // Then sort by date
+      return filteredData.sort((a: any, b: any) => {
+        const dateA = new Date(a.updatedAt).getTime();
+        const dateB = new Date(b.updatedAt).getTime();
 
-      return dateB - dateA;
-
-    }),
+        return dateB - dateA;
+      });
+    },
     onSuccess: (data: MindmapObject[]) => {
       if (data) setBoardLength(data.length);
     },
   });
   const [, setIsDeleting] = useState(false);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });
+
+  const fetchFavoriteMindmap = useMutation(favoriteMindmap, {
+    onSuccess: async (data: any) => {
+      const response = await data;
+
+      if (response.id !== "") {
+        // Invalidate the query to cause a re-fetch
+        queryClient.invalidateQueries("userMindmap");
+      }
+    },
+  });
+
+  const handleFavoriteMindmap = async (mindmapId: string) => {
+    try {
+      await fetchFavoriteMindmap.mutateAsync({ mindmapId });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`An error has occurred: ${error.message}`);
+      }
+    }
+  };
 
   const handleDelete = async (mindMapId: string) => {
     try {
@@ -75,7 +107,7 @@ function MindMapBoards() {
 
   if (isLoading) return Array.from({ length: 3 }).map((_, index) => <SkeletonMindMapBoard key={index} />);
 
-  if (userMindmap)
+  if (userMindmap && userMindmap!.length > 0) {
     return (
       <>
         {isLoading
@@ -93,6 +125,9 @@ function MindMapBoards() {
                 backgroundRepeat: "no-repeat",
               }}
             >
+              <figure onClick={() => handleFavoriteMindmap(mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute top-4 right-4 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
+                <Star size={16} color="black" fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
+              </figure>
               <Link href={`/board/${mindmap.id}`}>
                 <figure className="w-full h-24" />
               </Link>
@@ -125,6 +160,21 @@ function MindMapBoards() {
         {isCreatingMindmap ? <SkeletonMindMapBoard /> : <></>}
       </>
     );
+  } else {
+    return (
+      <>
+        <div></div>
+        <div className="flex flex-col items-center overflow-hidden rounded-xl h-48">
+          <div className="m-auto space-y-4">
+            <Image className="m-auto" src={boardElement} alt="Empty" height={60} />
+            <article className="m-auto text-center w-3/4">
+              <p className="text-sm font-medium dark:text-white">There are no boards</p>
+              <p className="text-xs opacity-50">Create a new board to start from scratch. Or, generate on using a template.</p>
+            </article>
+          </div>
+        </div>
+      </>);
+  }
 }
 
 export { MindMapBoards };

@@ -186,13 +186,6 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                 </Button>
               </div>
             </div>
-
-            <motion.div
-              className="absolute inset-x-0 bottom-0 h-1 bg-primary-color"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: step === 2 ? 1 : 0.5 }}
-              transition={{ duration: 0.3 }}
-            />
           </motion.div>
         </motion.div>
       )}

@@ -4,6 +4,7 @@ export type MindmapObject = {
   connectedMemberPermissions: string[];
   creatorUsername: string;
   description: string;
+  favorite: boolean;
   id: string;
   name: string;
   userMindmapDetails: string;

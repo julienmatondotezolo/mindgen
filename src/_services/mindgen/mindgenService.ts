@@ -480,6 +480,31 @@ export async function createMindmap({ mindmapObject }: {mindmapObject: any}): Pr
   }
 }
 
+export async function favoriteMindmap({ mindmapId }: {mindmapId: string}): Promise<any> {
+  try {
+    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
+    const session = await response.json();
+
+    const responseFavoriteMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/favorite`, {
+      method: "PUT",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.session.user.token}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
+
+    if (responseFavoriteMindMap.ok) {
+      return responseFavoriteMindMap.json();
+    } else {
+      throw responseFavoriteMindMap;
+    }
+  } catch (error) {
+    console.error("Impossible to favorite mindmap:", error);
+  }
+}
+
 export async function getMindmapById({ session, mindmapId }: {session: CustomSession | null, mindmapId: string}): Promise<any> {
   if(session)
     try {
