@@ -8,11 +8,12 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { boardsLengthState, newBoardState, profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
-import { Button } from "../ui";
+import { Button, Input } from "../ui";
 import { MindMapBoards } from "./MindMapBoards";
 
 function RecentMindMap() {
   const text = useTranslations("Index");
+  const navigationText = useTranslations("Navigation");
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
@@ -55,10 +56,13 @@ function RecentMindMap() {
           </div>
         </section>
 
-        <Button onClick={handleNewBoard}>
-          <Sparkles height={size} />
-          {uppercaseFirstLetter(text("new"))} board
-        </Button>
+        <section className="flex items-center space-x-4">
+          {/* <Input className="w-96" type="text" placeholder={navigationText("searchInput")} /> */}
+          <Button onClick={handleNewBoard}>
+            <Sparkles height={size} />
+            {uppercaseFirstLetter(text("new"))} board
+          </Button>
+        </section>
       </div>
       <article className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-3 gap-8 w-full">
         {/* <div onClick={handleClick} className="cursor-pointer">
