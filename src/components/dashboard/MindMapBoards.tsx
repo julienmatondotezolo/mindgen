@@ -146,7 +146,7 @@ function MindMapBoards() {
                     <article className="flex space-x-6 items-center w-full">
                       {globalFilter === Filter.List && (
                         <figure className="border dark:border-none w-1/4">
-                          <Image src={mindmap.pictureUrl} width={0} height={0} className="w-full h-auto" sizes="100vw"
+                          <Image src={mindmap.pictureUrl || PLACEHOLDER_IMAGE} width={0} height={0} className="w-full h-auto" sizes="100vw"
                             alt="document icon" />
                         </figure>)
                       }
