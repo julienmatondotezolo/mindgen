@@ -11,4 +11,5 @@ export * from "./promiseReader";
 export * from "./refreshPage";
 export * from "./scroll";
 export * from "./setTargetHandle";
+export * from "./truncateText";
 export * from "./uppercaseFirstLetter";

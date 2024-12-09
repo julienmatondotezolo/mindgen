@@ -144,22 +144,23 @@ function MindMapBoards() {
                   backgroundRepeat: "no-repeat",
                 }}
               >
-                <figure onClick={() => handleFavoriteMindmap(mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute top-4 right-4 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
+                <figure onClick={(e) => handleFavoriteMindmap(e, mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute top-4 right-4 px-3 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
                   <Star size={16} color={theme == "dark" ? "white" : "black"} fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
                 </figure>
                 {globalFilter === Filter.Grid &&
                 <figure className="w-full h-24" />}
                 <article className="flex flex-wrap justify-between items-start p-2 bg-white bg-opacity-60 backdrop-filter backdrop-blur-md dark:bg-slate-800 dark:bg-opacity-50">
                   <section className={`w-[90%] ${globalFilter === Filter.List && "p-3 grid grid-cols-3 items-center h-18 overflow-hidden"}`}>
-                    <article className="flex space-x-6 items-center">
+                    <article className="flex space-x-6 items-center w-full">
                       {globalFilter === Filter.List && (
-                        <figure>
-                          <Image src={mindmap.pictureUrl} width={70} height={30} alt="document icon" />
+                        <figure className="border dark:border-none w-1/4">
+                          <Image src={mindmap.pictureUrl} width={0} height={0} className="w-full h-auto" sizes="100vw"
+                            alt="document icon" />
                         </figure>)
                       }
-                      <section>
-                        <p className="mb-2 text-sm font-medium dark:text-white">{mindmap.name}</p>
-                        {globalFilter === Filter.List && <p className="text-xs">{mindmap.description}</p>}
+                      <section className="w-3/4">
+                        <p className="mb-2 text-sm font-medium dark:text-white w-full">{mindmap.name}</p>
+                        {globalFilter === Filter.List && <p className="text-xs">{truncateText({ string: mindmap.description, maxLength: 30 })}</p>}
                       </section>
                     </article>
                     <article>
