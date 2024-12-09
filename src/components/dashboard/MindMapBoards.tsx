@@ -2,7 +2,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { image } from "html2canvas/dist/types/css/types/image";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -13,13 +12,13 @@ import React, { useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "react-query";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { deleteMindmapById, favoriteMindmap, fetchMindmaps } from "@/_services";
+import { favoriteMindmap, fetchMindmaps } from "@/_services";
 import { CustomSession, Filter, MindmapObject, Organization } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import boardElement from "@/assets/images/elements.svg";
 import { SkeletonMindMapBoard, Spinner } from "@/components/ui";
-import { boardsLengthState, globalFilterState, selectedOrganizationState } from "@/state";
-import { checkPermission, formatDate, uppercaseFirstLetter } from "@/utils";
+import { boardsLengthState, boardToDeleteState, deleteBoardModalState, globalFilterState, selectedOrganizationState } from "@/state";
+import { checkPermission, formatDate, truncateText, uppercaseFirstLetter } from "@/utils";
 
 import { Link } from "../../navigation";
 
@@ -33,16 +32,18 @@ function MindMapBoards() {
   const { theme } = useTheme();
 
   const setBoardLength = useSetRecoilState(boardsLengthState);
+  const setBoardToDelete = useSetRecoilState(boardToDeleteState);
+  const setBoardModalState = useSetRecoilState(deleteBoardModalState);
+
   const globalFilter = useRecoilValue(globalFilterState);
 
   const size = 10;
 
-  const [deletingMindmapId, setDeletingMindmapId] = useState("");
+  const [deletingBoardId, setDeletingBoardId] = useState("");
 
   const PLACEHOLDER_IMAGE = "https://fakeimg.pl/600x400/94baf7/0566fe?text=Mindgen";
 
   const queryClient = useQueryClient();
-  const { mutateAsync } = useMutation(deleteMindmapById);
 
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
@@ -81,8 +82,8 @@ function MindMapBoards() {
       if (data) setBoardLength(data.length);
     },
   });
-  const [, setIsDeleting] = useState(false);
   const isCreatingMindmap = useIsMutating({ mutationKey: "CREATE_MINDMAP" });
+  const isDeletingMindmap = useIsMutating({ mutationKey: "DELETE_MINDMAP" });
 
   const fetchFavoriteMindmap = useMutation(favoriteMindmap, {
     onSuccess: async (data: any) => {
@@ -95,7 +96,9 @@ function MindMapBoards() {
     },
   });
 
-  const handleFavoriteMindmap = async (mindmapId: string) => {
+  const handleFavoriteMindmap = async (e: any, mindmapId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       await fetchFavoriteMindmap.mutateAsync({ mindmapId });
     } catch (error) {
@@ -105,23 +108,12 @@ function MindMapBoards() {
     }
   };
 
-  const handleDelete = async (mindMapId: string) => {
-    try {
-      setDeletingMindmapId(mindMapId);
-      setIsDeleting(true);
-      await mutateAsync(mindMapId, {
-        onSuccess: () => {
-          // Invalidate the query to cause a re-fetch
-          queryClient.invalidateQueries("userMindmap");
-          setIsDeleting(false);
-          setDeletingMindmapId("");
-        },
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
-    }
+  const handleDelete = async (e: any, board: MindmapObject) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBoardModalState(true);
+    setBoardToDelete(board);
+    setDeletingBoardId(board.id);
   };
 
   if (isLoading) return Array.from({ length: 3 }).map((_, index) => <SkeletonMindMapBoard key={index} />);
@@ -135,7 +127,7 @@ function MindMapBoards() {
             <Link key={mindmap.id} href={`/board/${mindmap.id}`}>
               <div
                 className={`relative ${
-                  deletingMindmapId === mindmap.id ? "opacity-20" : "opacity-100"
+                  deletingBoardId === mindmap.id && isDeletingMindmap ? "opacity-20" : "opacity-100"
                 } cursor-pointer rounded-xl group overflow-hidden border dark:border-slate-900`}
                 style={{
                   backgroundImage: `${globalFilter === Filter.Grid ? `url(${mindmap.pictureUrl || PLACEHOLDER_IMAGE})` : "url()"}`,
@@ -173,15 +165,17 @@ function MindMapBoards() {
                       <p className="text-xs text-grey">Updated <span className="cursor-pointer hover:underline">{formatDate(mindmap.updatedAt, dateText)}</span></p>
                     </article>
                   </section>
-                  {globalFilter === Filter.List && <figure onClick={() => handleFavoriteMindmap(mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute ${globalFilter === Filter.List ? "translate-y-1/2 bottom-1/2 right-16" : "top-4"} right-4 px-2 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
-                    <Star size={16} color={theme == "dark" ? "white" : "black"} fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
-                  </figure>}
+                  {globalFilter === Filter.List && (
+                    <figure onClick={(e) => handleFavoriteMindmap(e, mindmap.id)} className={`${mindmap.favorite ? "block" : "hidden"} group-hover:block absolute ${globalFilter === Filter.List ? "translate-y-1/2 bottom-1/2 right-16" : "top-4"} px-2 py-2 cursor-pointer rounded-[10%] hover:bg-primary-opaque hover:dark:bg-slate-600 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20`}>
+                      <Star size={16} color={theme == "dark" ? "white" : "black"} fill={mindmap.favorite ? "#ffcd29" : "transparent"} />
+                    </figure>
+                  )}
                   {checkPermission(mindmap.connectedMemberPermissions, "DELETE") && (
                     <figure
-                      onClick={() => handleDelete(mindmap.id)}
+                      onClick={(e) => handleDelete(e, mindmap)}
                       className={`hidden absolute z-50 ${globalFilter === Filter.List ? "translate-y-1/2 bottom-1/2" : "bottom-4"} right-4 group-hover:block bg-[rgba(255,0,0,0.05)] hover:bg-[rgba(255,0,0,0.15)] dark:bg-[rgba(255,0,0,0.15)] dark:hover:bg-[rgba(255,111,111,0.25)] px-3 py-2 cursor-pointer rounded-[10%]`}
                     >
-                      {!deletingMindmapId || deletingMindmapId !== mindmap.id ? (
+                      {!deletingBoardId || deletingBoardId !== mindmap.id ? (
                         <Image src={deleteIcon} height={size} alt="document icon" />
                       ) : (
                         <Spinner />

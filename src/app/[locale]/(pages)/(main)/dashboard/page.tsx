@@ -12,6 +12,7 @@ import {
   BackDropGradient,
   Button,
   CurrentPlan,
+  DeleteBoardDialog,
   GenerateMindmapDialog,
   OrganizationDialog,
   OrganizationSettingsDialog,
@@ -20,6 +21,7 @@ import { LeftBoards, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } f
 import { NewBoardDialog } from "@/components/ui/newBoardDialog";
 import { Link } from "@/navigation";
 import {
+  deleteBoardModalState,
   generateModalState,
   newBoardState,
   organizationSettingsState,
@@ -34,6 +36,7 @@ export default function Dashboard() {
   const recentMindmapText = useTranslations("Dashboard");
 
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
+  const [isDeleteBoardState, setIsDeleteBoardState] = useRecoilState(deleteBoardModalState);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useRecoilState(generateModalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
   const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
@@ -129,6 +132,7 @@ export default function Dashboard() {
           </article>
         </section>
         <NewBoardDialog open={isOpen} setIsOpen={setIsOpen} update={false} />
+        <DeleteBoardDialog open={isDeleteBoardState} setIsOpen={setIsDeleteBoardState} update={false} />
         <GenerateMindmapDialog open={isGenerateModalOpen} setIsOpen={setIsGenerateModalOpen} update={false} />
         <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
         <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />

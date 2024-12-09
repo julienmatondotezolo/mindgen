@@ -9,6 +9,7 @@ import {
   Edge,
   Filter,
   Layer,
+  MindmapObject,
   QuestionAnswersProps,
   User,
 } from "@/_types";
@@ -298,6 +299,16 @@ export const qaState = atom<QuestionAnswersProps[]>({
 
 export const newBoardState = atom({
   key: "newBoardState",
+  default: false,
+});
+
+export const boardToDeleteState = atom<MindmapObject>({
+  key: "boardToDeleteState",
+  default: undefined,
+});
+
+export const deleteBoardModalState = atom({
+  key: "deleteBoardModalState",
   default: false,
 });
 
