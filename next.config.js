@@ -14,7 +14,7 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ["cdn.builder.io"],
+    domains: ["cdn.builder.io", "fakeimg.pl"],
   },
   typescript: {
     // !! WARN !!
