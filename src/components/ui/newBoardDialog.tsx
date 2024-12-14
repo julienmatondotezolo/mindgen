@@ -418,7 +418,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                         <Sparkles className={fetchGenerateMindmap.isLoading ? "animate-spin" : ""} height={15} />
                         <span>
                           {uppercaseFirstLetter(
-                            fetchGenerateMindmap.isLoading ? text("generating") + "..." : text("generate"),
+                            fetchGenerateMindmap.isLoading ? text("generating") + "...." : text("generate"),
                           )}
                         </span>
                       </span>
