@@ -49,6 +49,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   const [openInvite, setOpenInvite] = useState(false);
   const [textAreaValue, setTextAreaValue] = useState("");
   const [memberState, setMemberState] = useState("ADMIN");
+  const [invMembersError, setInvMembersError] = useState([]);
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(e.target.value);
@@ -65,7 +66,13 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   }
 
   const createInvMutation = useMutation(createInvitations, {
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setInvMembersError([]);
+      if (data.unsuccessfulInvites.length > 0) {
+        setInvMembersError(data.unsuccessfulInvites);
+        return;
+      }
+
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
       setOpenInvite(false);
@@ -159,6 +166,17 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                                 placeholder="example@email.com, example2@email.com"
                                 required
                               />
+                              {invMembersError.length > 0 && (
+                                <div className="py-2 text-xs text-red-500">
+                                  <article className="flex">
+                                    <p className="mr-1">Impossible to invite:</p>
+                                    <section className="flex space-x-1 font-bold">
+                                      {invMembersError?.map((memberError, i) => <p key={i}>{memberError}</p>)}
+                                    </section>
+                                  </article>
+                                  <p>Possible reasons: No account with this email</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardContent>

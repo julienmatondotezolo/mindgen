@@ -47,7 +47,7 @@ export default function AcceptInvitationPage({ params }: { params: { id: string 
               className="md:text-7xl text-5xl font-bold text-primary-color md:text-left"
             />
             <h1 className="md:text-7xl text-5xl bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text font-bold tracking-tighter text-transparent md:text-left !leading-normal">
-              mindmap
+              organization
             </h1>
           </div>
 
