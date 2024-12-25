@@ -1,3 +1,4 @@
+import { ApiError } from "next/dist/server/api-utils";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import React from "react";
@@ -7,6 +8,7 @@ import { useSetRecoilState } from "recoil";
 import { fetchProfile } from "@/_services";
 import { CustomSession, ProfileProps } from "@/_types";
 import profileIcon from "@/assets/icons/profile.svg";
+import { useRouter } from "@/navigation";
 import { profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
@@ -15,6 +17,7 @@ import { ProfileMenu } from "./ProfileMenu";
 
 function NavProfile() {
   const session = useSession();
+  const router = useRouter();
 
   const setMaxMindmap = useSetRecoilState(profilMaxMindmapState);
   // const text = useTranslations("Index");
@@ -27,9 +30,12 @@ function NavProfile() {
 
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
   const { isLoading, data: userProfile } = useQuery("userProfile", fetchUserProfile, {
-    enabled: session.data ? true : false,
+    retry: false,
     onSuccess: (data: ProfileProps) => {
       if (data) setMaxMindmap(data.subscriptionDetails.maxMindmaps);
+    },
+    onError: (data: ApiError) => {
+      if (data.statusCode == 500) router.push("/auth/login");
     },
   });
 

@@ -1,3 +1,5 @@
+import { ApiError } from "next/dist/server/api-utils";
+
 import { CustomSession } from "@/_types";
 
 /* eslint-disable prettier/prettier */
@@ -115,26 +117,33 @@ export async function fetchCreatedPDF({ session, pdfReqObject }: { session: Cust
 /* ==================   PROFILE   ================== */
 /* ================================================= */ 
 
-export async function fetchProfile({ session }: {session: CustomSession | null}): Promise<any> {
-  if(session)
-    try {
-      const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-      });
+export async function fetchProfile({ session }: { session: CustomSession | null }): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
 
-      if (responseProfile.ok) {
-        return responseProfile.json();
-      } else {
-        throw responseProfile;
-      }
-    } catch (error) {
-      console.error("Impossible to fetch profiles:", error);
-    }
+
+  const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseProfile.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Profile fetch",
+      statusCode: responseProfile.status,
+      message: await responseProfile.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseProfile.json();
 }
 
 /* ======================================================== */
