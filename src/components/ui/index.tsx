@@ -13,6 +13,7 @@ export * from "./label";
 export * from "./languageSwitcher";
 export * from "./mindmapDialog";
 export * from "./newBoardDialog";
+export * from "./OrgaMemberLeaveDialog";
 export * from "./organizationDialog";
 export * from "./organizationSettingsDialog";
 export * from "./OrgaRemoveMemberDialog";

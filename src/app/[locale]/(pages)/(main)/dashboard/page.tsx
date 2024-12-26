@@ -14,6 +14,7 @@ import {
   DeleteBoardDialog,
   GenerateMindmapDialog,
   NewBoardDialog,
+  OrgaMemberLeaveDialog,
   OrganizationDialog,
   OrganizationSettingsDialog,
   OrgaRemoveMemberDialog,
@@ -22,6 +23,7 @@ import { Link } from "@/navigation";
 import {
   deleteBoardModalState,
   generateModalState,
+  memberLeaveOrgaModalState,
   newBoardState,
   organizationSettingsState,
   organizationState,
@@ -37,6 +39,7 @@ export default function Dashboard() {
 
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
   const [isDeleteBoardState, setIsDeleteBoardState] = useRecoilState(deleteBoardModalState);
+  const [isMemberToLeaveOrgaState, setIsMemberToLeaveOrgaState] = useRecoilState(memberLeaveOrgaModalState);
   const [isRemoveMemberState, setIsRemoveMemberState] = useRecoilState(removeMemberModalState);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useRecoilState(generateModalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
@@ -137,6 +140,7 @@ export default function Dashboard() {
         <GenerateMindmapDialog open={isGenerateModalOpen} setIsOpen={setIsGenerateModalOpen} update={false} />
         <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
         <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />
+        <OrgaMemberLeaveDialog open={isMemberToLeaveOrgaState} setIsOpen={setIsMemberToLeaveOrgaState} update={false} />
         <OrgaRemoveMemberDialog open={isRemoveMemberState} setIsOpen={setIsRemoveMemberState} update={false} />
       </div>
     </>

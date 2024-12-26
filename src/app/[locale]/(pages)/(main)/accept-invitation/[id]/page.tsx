@@ -52,7 +52,7 @@ export default function AcceptInvitationPage({ params }: { params: { id: string 
           </div>
 
           <p className="hidden md:block mt-6 text-xl text-left md:text-center tracking-tight text-[#010d3e] dark:text-primary-foreground default">
-            Click accept to join this mindmap our cancel to go back to the homepage
+            Click accept to join this organization our cancel to go back to the homepage.
           </p>
         </article>
         <section className="flex md:justify-center w-full space-x-4">

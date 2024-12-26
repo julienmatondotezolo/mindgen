@@ -9,6 +9,7 @@ import {
   Edge,
   Filter,
   Layer,
+  Member,
   MindmapObject,
   QuestionAnswersProps,
   User,
@@ -309,6 +310,26 @@ export const boardToDeleteState = atom<MindmapObject>({
 
 export const deleteBoardModalState = atom({
   key: "deleteBoardModalState",
+  default: false,
+});
+
+export const memberToDeleteState = atom<Member | undefined>({
+  key: "memberToDeleteState",
+  default: undefined,
+});
+
+export const removeMemberModalState = atom({
+  key: "removeMemberModalState",
+  default: false,
+});
+
+export const memberToLeaveOrgaState = atom<{ orgName: any; member: Member } | undefined>({
+  key: "memberToLeaveOrgaState",
+  default: undefined,
+});
+
+export const memberLeaveOrgaModalState = atom({
+  key: "memberLeaveOrgaModalState",
   default: false,
 });
 

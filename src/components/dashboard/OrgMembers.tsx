@@ -24,7 +24,12 @@ import {
   TableRow,
   Textarea,
 } from "@/components/ui/";
-import { memberToDeleteState, removeMemberModalState } from "@/state";
+import {
+  memberLeaveOrgaModalState,
+  memberToDeleteState,
+  memberToLeaveOrgaState,
+  removeMemberModalState,
+} from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 interface OrgProps {
@@ -56,7 +61,9 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   const [invMembersError, setInvMembersError] = useState([]);
 
   const memberToDelete = useSetRecoilState(memberToDeleteState);
+  const memberToLeaveOrg = useSetRecoilState(memberToLeaveOrgaState);
   const setIsRemoveMemberState = useSetRecoilState(removeMemberModalState);
+  const setIsMemberToLeaveOrgaState = useSetRecoilState(memberLeaveOrgaModalState);
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(e.target.value);
@@ -109,6 +116,16 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
     } else {
       alert("Please enter valid email(s).");
     }
+  };
+
+  const handleLeave = async ({ userOrgaData, member }: { userOrgaData: any; member: Member }) => {
+    const memberLeaveData = {
+      orgName: userOrgaData.name,
+      member,
+    };
+
+    memberToLeaveOrg(memberLeaveData);
+    setIsMemberToLeaveOrgaState(true);
   };
 
   const handleRemove = async ({ member }: { member: Member }) => {
@@ -278,7 +295,10 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                           <TableCell className="text-right">
                             {member.organizationRole !== "OWNER" &&
                               (currentUser.email === member.email ? (
-                                <Button className="px-4 py-2 flex items-center space-x-2 bg-red-500">
+                                <Button
+                                  onClick={() => handleLeave({ userOrgaData, member })}
+                                  className="px-4 py-2 flex items-center space-x-2 bg-red-500"
+                                >
                                   {uppercaseFirstLetter(text("leave"))}
                                 </Button>
                               ) : (
