@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { changePassword } from "@/_services";
-import { CustomSession, ProfileProps } from "@/_types";
+import { CustomSession, FetchError, ProfileProps } from "@/_types";
 import { uppercaseFirstLetter } from "@/utils";
 
 import { Button, Input, Spinner } from "..";
@@ -34,6 +34,9 @@ function Account() {
           console.error(`An error has occurred: ${error.message}`);
         }
       }
+    },
+    onError: (data: FetchError) => {
+      data;
     },
   });
 
@@ -146,6 +149,7 @@ function Account() {
                     type="password"
                     {...register("password", { required: true })}
                     placeholder={profileText("newPassword")}
+                    disabled={fetchPasswordChange.isLoading}
                     className={`transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${
                       errors.password ? "border-red-500" : "hover:border-primary-color"
                     }`}
@@ -161,6 +165,7 @@ function Account() {
                     {...register("confirmNewPassword", {
                       required: true,
                     })}
+                    disabled={fetchPasswordChange.isLoading}
                     className={`transition-all duration-200 focus:ring-2 focus:ring-primary-color/50 ${
                       errors.confirmNewPassword ? "border-red-500" : "hover:border-primary-color"
                     }`}
