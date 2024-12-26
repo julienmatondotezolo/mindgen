@@ -89,7 +89,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
         <li className="m-1">
           <Button
             variant={members!.length > 1 ? "outline" : "default"}
-            onClick={userProfile?.plan != "FREE" ? handleCollaborateClick : handleUpgratePlanClick}
+            onClick={checkPermission(PERMISSIONS, "MANAGE_ROLES") ? handleCollaborateClick : handleUpgratePlanClick}
           >
             {members?.length > 1 ? (
               members?.slice(0, MAX_MEMBERS_SHOWED).map((collaborator: Member, index: number) => (

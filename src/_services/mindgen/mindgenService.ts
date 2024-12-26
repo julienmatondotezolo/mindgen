@@ -914,56 +914,36 @@ export async function inviteAllMembers(membersObject: any): Promise<any> {
 }
 
 export async function updateMembers({ session, mindmapId, membersToUpdate }: {session: CustomSession | null, mindmapId: string, membersToUpdate: any}): Promise<any> {
-  if (session)
-    try {
-      const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/member-roles`, {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-        body: JSON.stringify(membersToUpdate),
-      });
-
-      if (responseUpdatedCollaborator.ok) {
-        return responseUpdatedCollaborator.json();
-      } else {
-        throw responseUpdatedCollaborator;
-      }
-    } catch (error) {
-      console.error("Impossible to invite collaborator(s):", error);
-    }
-}
-
-export async function transferOwnership(collaboratorId: any): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responsetransferOwnership: Response = await fetch(
-      baseUrl + `/mindmap/collaborator/ownership/${collaboratorId}`,
-      {
-        method: "PUT",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-      },
-    );
-
-    if (responsetransferOwnership.ok) {
-      return responsetransferOwnership;
-    } else {
-      throw responsetransferOwnership;
-    }
-  } catch (error) {
-    console.error("Impossible to transfer ownership:", error);
+  if (!session) {
+    throw new Error('No session provided');
   }
+
+  const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/member-roles`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(membersToUpdate),
+  });
+
+  if (!responseUpdatedCollaborator.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Search Board Query",
+      statusCode: responseUpdatedCollaborator.status,
+      message: await responseUpdatedCollaborator.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseUpdatedCollaborator.json();
+
 }
+
 
 export async function removeMemberById({ session, mindmapId, membersToDelete }: {session: CustomSession | null, mindmapId: string, membersToDelete: any}): Promise<any> {
   if(session)
