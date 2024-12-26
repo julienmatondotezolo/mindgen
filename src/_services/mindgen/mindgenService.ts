@@ -633,6 +633,39 @@ export async function getMindmapById({ session, mindmapId }: {session: CustomSes
     }
 }
 
+export async function searchBoardQuery({ session, query }: {session: CustomSession | null, query: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+  const responseSearchBoard: Response = await fetch(baseUrl + `/mindmap/search?query=${query}`, {
+    next: {
+      revalidate: 0,
+    },
+    method: "GET",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseSearchBoard.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Search Board Query",
+      statusCode: responseSearchBoard.status,
+      message: await responseSearchBoard.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseSearchBoard.json();
+
+}
+
 export async function updateBoardLayersById({
   session,
   mindmapId,
