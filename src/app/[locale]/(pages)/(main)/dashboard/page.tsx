@@ -8,17 +8,16 @@ import { useRecoilState, useRecoilValue } from "recoil";
 
 import { Organization } from "@/_types";
 import boardElement from "@/assets/images/elements.svg";
+import { BackDropGradient, Button, CurrentPlan } from "@/components";
+import { LeftBoards, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
 import {
-  BackDropGradient,
-  Button,
-  CurrentPlan,
   DeleteBoardDialog,
   GenerateMindmapDialog,
+  NewBoardDialog,
   OrganizationDialog,
   OrganizationSettingsDialog,
-} from "@/components";
-import { LeftBoards, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
-import { NewBoardDialog } from "@/components/ui/newBoardDialog";
+  OrgaRemoveMemberDialog,
+} from "@/components/ui/";
 import { Link } from "@/navigation";
 import {
   deleteBoardModalState,
@@ -26,6 +25,7 @@ import {
   newBoardState,
   organizationSettingsState,
   organizationState,
+  removeMemberModalState,
   selectedOrganizationState,
 } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
@@ -37,6 +37,7 @@ export default function Dashboard() {
 
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
   const [isDeleteBoardState, setIsDeleteBoardState] = useRecoilState(deleteBoardModalState);
+  const [isRemoveMemberState, setIsRemoveMemberState] = useRecoilState(removeMemberModalState);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useRecoilState(generateModalState);
   const [isOrganization, setOrganization] = useRecoilState(organizationState);
   const [isOrgaSettings, setOrgaSettings] = useRecoilState(organizationSettingsState);
@@ -136,6 +137,7 @@ export default function Dashboard() {
         <GenerateMindmapDialog open={isGenerateModalOpen} setIsOpen={setIsGenerateModalOpen} update={false} />
         <OrganizationDialog open={isOrganization} setIsOpen={setOrganization} update={false} />
         <OrganizationSettingsDialog open={isOrgaSettings} setIsOpen={setOrgaSettings} update={false} />
+        <OrgaRemoveMemberDialog open={isRemoveMemberState} setIsOpen={setIsRemoveMemberState} update={false} />
       </div>
     </>
   );

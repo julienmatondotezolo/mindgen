@@ -346,6 +346,68 @@ export async function acceptOrgInvitation({ session, invitationId }: { session: 
   }
 }
 
+/* ======================================================= */  
+/* ==============   ORGANIZATIONS MEMBERS  =============== */
+/* ======================================================= */
+
+export async function removeMemberFromOrg({ session, memberId }: {session: CustomSession | null, memberId: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+
+  const responseRemoveMember: Response = await fetch(baseUrl + `/organization/member/${memberId}/remove`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseRemoveMember.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Remove member from organization",
+      statusCode: responseRemoveMember.status,
+      message: await responseRemoveMember.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseRemoveMember.json();
+}
+
+export async function memberLeaveOrg({ session, memberId }: {session: CustomSession | null, memberId: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+
+  const responseLeaveOrganization: Response = await fetch(baseUrl + `/organization/member/${memberId}/leave`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseLeaveOrganization.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Profile fetch",
+      statusCode: responseLeaveOrganization.status,
+      message: await responseLeaveOrganization.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseLeaveOrganization.json();
+}
+
 /* ================================================== */  
 /* ==================   MINDMAPS   ================== */
 /* ================================================== */ 
