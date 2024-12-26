@@ -146,6 +146,36 @@ export async function fetchProfile({ session }: { session: CustomSession | null 
   return responseProfile.json();
 }
 
+export async function changePassword({ session, passwordBody }: { session: CustomSession | null, passwordBody: any }): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+
+  const responsePasswordChange: Response = await fetch(baseUrl + `/password/change`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(passwordBody),
+  });
+
+  if (!responsePasswordChange.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Password change",
+      statusCode: responsePasswordChange.status,
+      message: await responsePasswordChange.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responsePasswordChange.json();
+}
+
 /* ======================================================== */
 /* ======================   PAYMENT   ===================== */
 /* ======================================================== */
@@ -397,7 +427,7 @@ export async function memberLeaveOrg({ session, memberId }: {session: CustomSess
   if (!responseLeaveOrganization.ok) {
     // Create a structured error object
     const errorData: ApiError = {
-      name: "Profile fetch",
+      name: "Member leave organization",
       statusCode: responseLeaveOrganization.status,
       message: await responseLeaveOrganization.text(),
     };
