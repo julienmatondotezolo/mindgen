@@ -2,51 +2,45 @@ import { toLower } from "lodash";
 
 import { Edge, Layer } from "@/_types";
 
-export async function exportMindmap(edges: Edge[], layer: Layer[]) {
+export async function exportMindmap(edges: Edge[], layers: Layer[]) {
   try {
-    // azerty
-    const mindmapObject: any = {};
-    const filename = toLower(layer[0].value);
+    // Remove the dbId property from each layer
+    const sanitizedEdges = edges.map(({ dbId, ...rest }) => rest);
+    const sanitizedLayers = layers.map(({ dbId, ...rest }) => rest);
 
-    mindmapObject.edges = edges;
-    mindmapObject.layers = layer;
+    const mindmapObject: any = {
+      edges: sanitizedEdges,
+      layers: sanitizedLayers, // Use the sanitized layers
+    };
 
-    // Convert the mindmapObject to a JSON string
+    const filename = toLower(sanitizedLayers[0].value || "mindmap");
+
     const jsonString = JSON.stringify(mindmapObject, null, 2);
-    // Create a Blob object from the JSON string
     const blob = new Blob([jsonString], { type: "application/json" });
-    // Create a URL for the Blob
-    const url = URL.createObjectURL(blob);
 
     // Use the fetch API to trigger the download
+    const url = URL.createObjectURL(blob);
+
     fetch(url)
       .then((response) => response.blob())
       .then((blob) => {
         const url = window.URL.createObjectURL(blob);
-        // Create a temporary anchor element
         const a = document.createElement("a");
 
         a.style.display = "none";
-        // Set the href and download attributes of the anchor element
         a.href = url;
-        a.download = filename;
+        a.download = `${filename}_mindmap.json`;
 
         // Append to the document to make it work in Firefox
-        // Append the anchor element to the body
         document.body.appendChild(a);
-
-        // Simulate a click on the anchor element
         a.click();
 
         // Clean up
         window.URL.revokeObjectURL(url);
-
-        // Remove the anchor element from the body
         document.body.removeChild(a);
       })
       .catch((err) => console.error("Error downloading file:", err));
   } catch (error) {
-    // Handle any errors that occur while reading the PDF
     console.error("Error downloading file:", error);
     return { message: "Error processing file" };
   }
