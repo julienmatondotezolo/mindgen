@@ -74,8 +74,32 @@ export const ShadowLayer: React.FC<ShadowLayerProps> = ({ type, position, width,
           </foreignObject>
         </g>
       );
-    case LayerType.Note:
+    case LayerType.Diamond:
       // Implement note shape here
+      return (
+        <foreignObject
+          className={`relative shadow-md drop-shadow-xl`}
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px)`,
+            backgroundColor: fillRGBA(fill, theme),
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
+            borderColor: theme === "dark" ? "#b4bfcc" : "#475569",
+            borderWidth: 2,
+            borderStyle: "solid",
+            borderRadius: "0", // No border radius for diamond
+            overflow: "hidden",
+            clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)", // Diamond shape
+            opacity: 0.5,
+          }}
+          x={0}
+          y={0}
+          width={width}
+          height={height}
+          strokeWidth={1}
+        ></foreignObject>
+      );
+    case LayerType.Path:
       return <rect {...commonProps} />;
     default:
       return null;

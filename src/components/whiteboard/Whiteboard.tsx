@@ -442,7 +442,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  LAYERS  ================== //
 
   const insertLayer = useCallback(
-    (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path, position: Point) => {
+    (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Diamond | LayerType.Path, position: Point) => {
       if (layers?.length >= MAX_LAYERS) {
         return;
       }

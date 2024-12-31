@@ -82,6 +82,7 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
             canvasState.mode === CanvasMode.EdgeEditing ||
             canvasState.mode === CanvasMode.EdgeDrawing ||
             canvasState.mode === CanvasMode.Translating ||
+            canvasState.mode === CanvasMode.Resizing ||
             canvasState.mode === CanvasMode.Inserting ||
             canvasState.mode === CanvasMode.Importing ||
             activeEdgeId?.includes(edge.id)
@@ -96,7 +97,9 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
             canvasState.mode === CanvasMode.EdgeEditing ||
             canvasState.mode === CanvasMode.EdgeDrawing ||
             canvasState.mode === CanvasMode.Translating ||
+            canvasState.mode === CanvasMode.Resizing ||
             canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Importing ||
             activeEdgeId?.includes(edge.id)
           )
             return;

@@ -45,7 +45,7 @@ export type Edge = {
 };
 
 export enum LayerType {
-  Note = "NOTE",
+  Diamond = "DIAMOND",
   Rectangle = "RECTANGLE",
   Ellipse = "ELLIPSE",
   Path = "PATH",
@@ -61,7 +61,7 @@ export type ValueStyle = {
   textTransform: string;
 };
 
-export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;
+export type Layer = RectangleLayer | EllipseLayer | PathLayer | DiamondLayer;
 
 export type LayerWithGeometry = {
   id: string;
@@ -90,8 +90,8 @@ export type PathLayer = LayerWithGeometry & {
   points: number[][];
 };
 
-export type NoteLayer = LayerWithGeometry & {
-  type: LayerType.Note;
+export type DiamondLayer = LayerWithGeometry & {
+  type: LayerType.Diamond;
 };
 
 // export type TextLayer = {
@@ -158,7 +158,7 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Inserting;
-      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path;
+      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Diamond | LayerType.Path;
     }
   | {
       mode: CanvasMode.Translating;

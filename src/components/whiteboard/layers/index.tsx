@@ -1,3 +1,4 @@
+export * from "./diamond";
 export * from "./ellipse";
 export * from "./layerHandles";
 export * from "./rectangle";

@@ -4,7 +4,7 @@
 import React, { memo } from "react";
 
 import { Layer, LayerType, Point } from "@/_types";
-import { Ellipse, Rectangle } from "@/components/whiteboard/layers";
+import { Diamond, Ellipse, Rectangle } from "@/components/whiteboard/layers";
 
 interface LayerPreviewProps {
   layer: Layer;
@@ -22,6 +22,8 @@ export const LayerPreview = memo(({ layer, onLayerPointerDown, selectionColor }:
       return <Ellipse id={id} layer={layer} onPointerDown={onLayerPointerDown} selectionColor={selectionColor} />;
     case LayerType.Rectangle:
       return <Rectangle id={id} layer={layer} onPointerDown={onLayerPointerDown} selectionColor={selectionColor} />;
+    case LayerType.Diamond:
+      return <Diamond id={id} layer={layer} onPointerDown={onLayerPointerDown} selectionColor={selectionColor} />;
 
     default:
       console.warn("Unknown layer type", layer);

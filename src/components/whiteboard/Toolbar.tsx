@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Circle, Hand, MousePointer2, MoveRight, Redo2, Square, Type, Undo2 } from "lucide-react";
+import { Circle, Diamond, Hand, MousePointer2, MoveRight, Redo2, Square, Type, Undo2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
@@ -71,13 +71,15 @@ const Toolbar = () => {
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Ellipse}
           />
           <ToolButton
-            icon={MoveRight}
-            onClick={() =>
+            icon={Diamond}
+            onClick={() => {
               setCanvasState({
-                mode: CanvasMode.Edge,
-              })
-            }
-            isActive={canvasState.mode === CanvasMode.Edge || (activeEdgeId && activeEdgeId[0] === "")}
+                mode: CanvasMode.Inserting,
+                layerType: LayerType.Diamond,
+              });
+              setActiveLayerIDs([]);
+            }}
+            isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Diamond}
           />
           <ToolButton
             icon={Type}
@@ -87,6 +89,18 @@ const Toolbar = () => {
               })
             }
             isActive={canvasState.mode === CanvasMode.Typing}
+          />
+
+          <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+
+          <ToolButton
+            icon={MoveRight}
+            onClick={() =>
+              setCanvasState({
+                mode: CanvasMode.Edge,
+              })
+            }
+            isActive={canvasState.mode === CanvasMode.Edge || (activeEdgeId && activeEdgeId[0] === "")}
           />
         </ul>
       </div>
