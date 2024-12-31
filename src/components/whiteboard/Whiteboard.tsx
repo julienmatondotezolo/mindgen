@@ -232,22 +232,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const handleVisibilityChange = async () => {
       if (document.visibilityState === "hidden" && !isCapturing) {
         isCapturing = true;
-        // await takeScreenshot();
         await saveMindmap();
         isCapturing = false;
       }
     };
 
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      if (canvasState.mode == CanvasMode.Exporting) return;
+
       // Modern browsers require the event to be canceled and a message to be shown
       e.preventDefault();
 
       if (!isCapturing) {
         isCapturing = true;
-        // await takeScreenshot();
         await saveMindmap();
         isCapturing = false;
-        // saveMindmap();
       }
 
       // Show a standard confirmation dialog
@@ -264,10 +263,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", handleBeforeUnload, { capture: true });
     };
-  }, [saveMindmap]);
+  }, [canvasState.mode, saveMindmap]);
 
   // Handle navigation state changes
   useEffect(() => {
+    // if (canvasState.mode == CanvasMode.Exporting) return;
     // Create a proxy for router.push
     const originalPush = router.push;
 
@@ -280,17 +280,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       // Restore original push method
       router.push = originalPush;
     };
-  }, [pathname, router, saveMindmap, searchParams]);
+  }, [canvasState.mode, pathname, router, saveMindmap, searchParams]);
 
   // Intercept Link component clicks
   const handleLinkClick = useCallback(
     async (e: MouseEvent) => {
+      if (canvasState.mode == CanvasMode.Exporting) return;
+
       const target = e.target as HTMLElement;
       const link = target.closest("a");
 
       if (link?.getAttribute("href") && !link.getAttribute("href")?.startsWith("#")) {
         e.preventDefault();
-
         await saveMindmap();
 
         // Use router.push for internal navigation
@@ -304,7 +305,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
     },
-    [saveMindmap, router],
+    [canvasState.mode, saveMindmap, router],
   );
 
   useEffect(() => {
@@ -543,8 +544,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         position,
         layers,
         LAYER_SPACING,
-        HANDLE_DISTANCE
-      })
+        HANDLE_DISTANCE,
+      });
 
       // Find a non-overlapping position for the new layer
       // const adjustedPosition = findNonOverlappingPosition({
@@ -628,8 +629,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         position,
         layers,
         LAYER_SPACING,
-        HANDLE_DISTANCE
-      })
+        HANDLE_DISTANCE,
+      });
 
       // // Find a non-overlapping position for the new layer
       // const adjustedPosition = findNonOverlappingPosition({

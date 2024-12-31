@@ -787,13 +787,19 @@ export function calculateNonOverlappingLayerPosition({
   // Update newEdgePosition to connect to the adjustedPosition
   switch (position) {
     case HandlePosition.Left:
-      newEdgePosition = { x: adjustedPosition.x + currentLayer.width + HANDLE_DISTANCE, y: adjustedPosition.y + currentLayer.height / 2 };
+      newEdgePosition = {
+        x: adjustedPosition.x + currentLayer.width + HANDLE_DISTANCE,
+        y: adjustedPosition.y + currentLayer.height / 2,
+      };
       break;
     case HandlePosition.Right:
       newEdgePosition = { x: adjustedPosition.x - HANDLE_DISTANCE, y: adjustedPosition.y + currentLayer.height / 2 };
       break;
     case HandlePosition.Top:
-      newEdgePosition = { x: adjustedPosition.x + currentLayer.width / 2, y: adjustedPosition.y + currentLayer.height + HANDLE_DISTANCE };
+      newEdgePosition = {
+        x: adjustedPosition.x + currentLayer.width / 2,
+        y: adjustedPosition.y + currentLayer.height + HANDLE_DISTANCE,
+      };
       break;
     case HandlePosition.Bottom:
       newEdgePosition = { x: adjustedPosition.x + currentLayer.width / 2, y: adjustedPosition.y - HANDLE_DISTANCE };

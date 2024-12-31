@@ -3,11 +3,11 @@
 import { FileDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { DialogProps } from "@/_types";
-import { edgesAtomState, layerAtomState } from "@/state";
-import { exportMindmap, generateMermaidFlowchart, uppercaseFirstLetter } from "@/utils";
+import { CanvasMode, DialogProps } from "@/_types";
+import { canvasStateAtom, edgesAtomState, layerAtomState } from "@/state";
+import { exportMindmap, uppercaseFirstLetter } from "@/utils";
 
 import { Button, Input } from ".";
 
@@ -17,6 +17,8 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const [url, setUrl] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
 
   const layers = useRecoilValue(layerAtomState);
   const edges = useRecoilValue(edgesAtomState);
@@ -59,8 +61,13 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
 
   const handleExport = async (e: any) => {
     e.preventDefault();
-    await exportMindmap(edges, layers);
-    generateMermaidFlowchart(edges, layers);
+    setCanvasState({ mode: CanvasMode.Exporting });
+
+    try {
+      await exportMindmap(edges, layers);
+    } catch (error) {
+      console.error("error:", error);
+    }
     setIsOpen(false);
   };
 

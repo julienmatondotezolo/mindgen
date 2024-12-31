@@ -178,8 +178,10 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Tooling;
+    }
+  | {
+      mode: CanvasMode.Exporting; // New mode for exporting
     };
-
 export enum CanvasMode {
   None,
   Grab,
@@ -195,4 +197,5 @@ export enum CanvasMode {
   EdgeEditing,
   Typing,
   Tooling,
+  Exporting,
 }
