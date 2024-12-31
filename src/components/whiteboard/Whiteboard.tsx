@@ -49,6 +49,7 @@ import {
 } from "@/state";
 import {
   calculateNewLayerPositions,
+  calculateNonOverlappingLayerPosition,
   checkPermission,
   connectionIdToColor,
   findIntersectingLayersWithRectangle,
@@ -537,12 +538,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const startPoint = getHandlePosition(currentLayer, position);
 
-      const { newLayerPosition, newEdgePosition } = calculateNewLayerPositions(
+      const { newLayerPosition, newEdgePosition } = calculateNonOverlappingLayerPosition({
         currentLayer,
         position,
+        layers,
         LAYER_SPACING,
-        HANDLE_DISTANCE,
-      );
+        HANDLE_DISTANCE
+      })
 
       // Find a non-overlapping position for the new layer
       // const adjustedPosition = findNonOverlappingPosition({
@@ -621,12 +623,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       // Calculate the new position based on the clicked handle's position
-      const { newLayerPosition, newEdgePosition } = calculateNewLayerPositions(
+      const { newLayerPosition, newEdgePosition } = calculateNonOverlappingLayerPosition({
         currentLayer,
         position,
+        layers,
         LAYER_SPACING,
-        HANDLE_DISTANCE,
-      );
+        HANDLE_DISTANCE
+      })
 
       // // Find a non-overlapping position for the new layer
       // const adjustedPosition = findNonOverlappingPosition({
