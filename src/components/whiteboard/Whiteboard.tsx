@@ -1,5 +1,5 @@
 import { select } from "d3-selection";
-import { zoom, zoomIdentity } from "d3-zoom";
+import { zoom, zoomIdentity, zoomTransform } from "d3-zoom";
 import html2canvas from "html2canvas";
 import { nanoid } from "nanoid";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -1600,17 +1600,35 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     const svg = select(svgRef.current);
     const g = select(gRef.current);
+    let zoomFactor = { min: 0.1, max: 4 };
 
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.1, 4])
+      .scaleExtent([zoomFactor.min, zoomFactor.max])
       .filter((event: any) => {
+        const isTrackpad = event.wheelDeltaY
+          ? Math.abs(event.wheelDeltaY) === Math.abs(event.deltaY * 3)
+          : Math.abs(event.deltaY) < 50;
+
         // For wheel events, prevent default behavior when Ctrl is pressed
         if (event.type === "wheel") {
           if (event.ctrlKey) {
             event.preventDefault(); // Prevent the default browser zoom
             return true; // Still allow our zoom to work
           }
-          return true;
+          if (isTrackpad) {
+            // Only allow translation (pan), not zoom, for trackpad
+            event.preventDefault();
+            // Get current transform
+            const currentTransform = zoomTransform(svg.node()!);
+            // Create new transform with updated translation
+            const transform = zoomIdentity
+              .translate(currentTransform.x - event.deltaX, currentTransform.y - event.deltaY)
+              .scale(currentTransform.k);
+            // Apply the transform to the svg
+
+            svg.call(zoomBehavior.transform, transform);
+            return false; // Prevent the default zoom behavior
+          }
         }
 
         return canvasState.mode === CanvasMode.Grab && (event.type === "mousedown" || event.type === "mousemove");
@@ -1624,9 +1642,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     zoomBehaviorRef.current = zoomBehavior;
     svg.call(zoomBehavior);
-
-    // Set initial transform
-    // svg.call(zoomBehavior.transform, zoomIdentity);
 
     return () => {
       svg.on(".zoom", null);
@@ -1800,6 +1815,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
             {JSON.stringify(canvasState, null, 2)}
           </p>
+          <article className="text-sm mb-1">
+            <strong>Camera position:</strong>
+            <p>x: {camera.x}</p>
+            <p>y: {camera.y}</p>
+          </article>
           <p className="text-sm mb-1">
             <strong>Camera scale:</strong> {camera.scale}
           </p>
