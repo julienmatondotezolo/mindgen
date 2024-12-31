@@ -48,6 +48,7 @@ const DiagramOption = ({
     whileHover={{ scale: disabled ? 1 : 1.02 }}
     whileTap={{ scale: disabled ? 1 : 0.98 }}
     onClick={disabled ? undefined : onClick}
+    type="button"
     className={`relative w-full p-4 rounded-xl transition-all duration-300 ${
       isSelected
         ? "bg-primary text-white shadow-lg shadow-primary/25"
@@ -94,6 +95,7 @@ const LayoutOption = ({
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
+    type="button"
     className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
       isSelected ? "bg-primary text-white" : "bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700"
     }`}

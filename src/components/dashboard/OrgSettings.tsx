@@ -116,8 +116,6 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
       {isLoading && (
         <div className="space-y-4 mt-8">
           <Skeleton className="w-full h-24 bg-grey-blue animate-pulse" />
-          <Skeleton className="w-full h-24 bg-grey-blue animate-pulse" />
-          <Skeleton className="w-full h-24 bg-grey-blue animate-pulse" />
         </div>
       )}
 
@@ -138,12 +136,6 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
                     value={inputTitle}
                     onChange={handleTitleChange}
                     className="w-full transition-all duration-300 focus:ring-2 focus:ring-primary"
-                  />
-                  <motion.div
-                    className="absolute bottom-0 left-0 h-0.5 bg-primary"
-                    initial={{ width: "0%" }}
-                    animate={{ width: inputTitle ? "100%" : "0%" }}
-                    transition={{ duration: 0.3 }}
                   />
                 </div>
                 <Button

@@ -126,22 +126,24 @@ function NavProfile() {
               </PopoverContent>
             </Popover>
           </figure> */}
-          <figure className={`${listStyle} cursor-pointer`}>
-            <Popover>
-              <PopoverTrigger asChild>
+          {/* <figure className={`${listStyle} cursor-pointer`}> */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <figure className={`${listStyle} cursor-pointer`}>
                 <Image
                   className="m-auto dark:invert dark:group-hover"
                   src={profileIcon}
                   width={size}
                   alt="Profile icon"
                 />
-              </PopoverTrigger>
-              <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
-                <ProfileMenu />
-                {/* Place content for the popover here. */}
-              </PopoverContent>
-            </Popover>
-          </figure>
+              </figure>
+            </PopoverTrigger>
+            <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
+              <ProfileMenu />
+              {/* Place content for the popover here. */}
+            </PopoverContent>
+          </Popover>
+          {/* </figure> */}
         </section>
 
         <div className="w-[1px] h-8 self-center mx-4 bg-slate-200 dark:bg-[#5a5d6d]"></div>
