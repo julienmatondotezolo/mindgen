@@ -1,4 +1,4 @@
-import { ArrowRight, Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
+import { ArrowRight, Ellipsis, Minus, PaintBucket, Spline, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -194,6 +194,7 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
           </ToolButton>
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           {/* <ToolButton icon={ArrowLeft} onClick={() => handleToggleArrow("left")} isActive={selectedEdge.arrowEnd} /> */}
+          <ToolButton icon={Spline} onClick={() => handleToggleArrow("left")} isActive={false} />
           <ToolButton icon={ArrowRight} onClick={() => handleToggleArrow("left")} isActive={selectedEdge.arrowEnd} />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <ToolButton icon={Trash2} onClick={handleRemoveEdge} />

@@ -1,11 +1,22 @@
 "use client";
 
-import { Bold, CaseUpper, Ellipsis, PaintBucket, Trash2 } from "lucide-react";
+import {
+  Bold,
+  CaseUpper,
+  Circle,
+  Diamond,
+  Ellipsis,
+  LucideIcon,
+  PaintBucket,
+  Shapes,
+  Square,
+  Trash2,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue } from "recoil";
 
-import { Camera, CanvasMode, Color, Layer } from "@/_types";
+import { Camera, CanvasMode, Color, Layer, LayerType } from "@/_types";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
 import {
   activeLayersAtom,
@@ -20,6 +31,7 @@ import {
 } from "@/state";
 
 import { ColorPicker } from "../colorPicker";
+import { ShapePicker } from "../shapePicker";
 import { ToolButton } from "../ToolButton";
 
 interface SelectionToolsProps {
@@ -52,12 +64,41 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
   const selectionBounds = useSelectionBounds();
 
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showShapePicker, setShowShapePicker] = useState(false);
   const [showBorderColorPicker, setShowBorderColorPicker] = useState(false);
 
   const [isDashed, setIsDashed] = useState(false);
   const [isThickBorder, setIsThickBorder] = useState(false);
   const [isUppercase, setIsUppercase] = useState(false);
   const [isBold, setIsBold] = useState(false);
+
+  const handleShapeChange = useCallback(
+    (icon: LucideIcon) => {
+      let layerType = LayerType.Rectangle;
+
+      switch (icon) {
+        case Circle:
+          layerType === LayerType.Ellipse;
+          break;
+        case Diamond:
+          layerType === LayerType.Diamond;
+          break;
+        default:
+          layerType === LayerType.Rectangle;
+      }
+
+      for (const layerId of activeLayerIDs) {
+        updateLayer({
+          id: layerId,
+          userId: currentUserId,
+          updatedElementLayer: { type: layerType },
+        });
+      }
+      setShowColorPicker(false);
+      setShowBorderColorPicker(false);
+    },
+    [activeLayerIDs, currentUserId, updateLayer],
+  );
 
   const handleColorChange = useCallback(
     (fill: Color) => {
@@ -236,6 +277,18 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             transformOrigin: "bottom center",
           }}
         >
+          {showShapePicker && (
+            <div
+              className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+              style={{
+                bottom: 70,
+                left: 0,
+                transform: `translate(0px, 0px)`,
+              }}
+            >
+              <ShapePicker onChange={handleShapeChange} onClose={() => setShowColorPicker(false)} />
+            </div>
+          )}
           {showColorPicker && (
             <div
               className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
@@ -249,6 +302,8 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             </div>
           )}
           <ul className="flex flex-row space-x-2 items-center justify-between">
+            <ToolButton icon={Shapes} onClick={() => setShowShapePicker(!showShapePicker)} isActive={showShapePicker} />
+            <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
             <ToolButton
               icon={PaintBucket}
               onClick={() => setShowColorPicker(!showColorPicker)}
