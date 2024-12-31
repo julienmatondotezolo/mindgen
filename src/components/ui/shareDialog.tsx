@@ -3,10 +3,11 @@
 import { FileDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useQuery } from "react-query";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { CanvasMode, DialogProps } from "@/_types";
-import { canvasStateAtom, edgesAtomState, layerAtomState } from "@/state";
+import { CanvasMode, DialogProps, ProfileProps } from "@/_types";
+import { canvasStateAtom, edgesAtomState, layerAtomState, upgradePlanModalState } from "@/state";
 import { exportMindmap, uppercaseFirstLetter } from "@/utils";
 
 import { Button, Input } from ".";
@@ -19,9 +20,16 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const setCanvasState = useSetRecoilState(canvasStateAtom);
+  const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
+
+  const handleUpgratePlanClick = () => {
+    setUpgradePlanModal(!upgradePlanModal);
+  };
 
   const layers = useRecoilValue(layerAtomState);
   const edges = useRecoilValue(edgesAtomState);
+
+  const { data: userProfile } = useQuery<ProfileProps>("userProfile");
 
   const handleClose = () => {
     // setIsOpen(false);
@@ -61,6 +69,14 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
 
   const handleExport = async (e: any) => {
     e.preventDefault();
+
+    if (userProfile?.plan == "FREE") {
+      setIsOpen(false);
+      handleUpgratePlanClick();
+
+      return;
+    }
+
     setCanvasState({ mode: CanvasMode.Exporting });
 
     try {

@@ -1,12 +1,22 @@
+/* eslint-disable no-unused-vars */
 import { toLower } from "lodash";
 
 import { Edge, Layer } from "@/_types";
 
 export async function exportMindmap(edges: Edge[], layers: Layer[]) {
   try {
-    // Remove the dbId property from each layer
-    const sanitizedEdges = edges.map(({ dbId, ...rest }) => rest);
-    const sanitizedLayers = layers.map(({ dbId, ...rest }) => rest);
+    // Remove the dbId property from each layer & edges
+    const sanitizedEdges = edges.map((edge) => {
+      const { dbId, ...rest } = edge as Edge & { dbId?: string };
+
+      return rest;
+    });
+
+    const sanitizedLayers = layers.map((layer) => {
+      const { dbId, ...rest } = layer as Layer & { dbId?: string };
+
+      return rest;
+    });
 
     const mindmapObject: any = {
       edges: sanitizedEdges,
