@@ -2,9 +2,9 @@
 import React from "react";
 import { useRecoilValue } from "recoil";
 
-import { CanvasMode, Edge, Point } from "@/_types";
+import { CanvasMode, Edge, EdgeType, Point } from "@/_types";
 import { cameraStateAtom, canvasStateAtom } from "@/state";
-import { edgeBezierPathString } from "@/utils";
+import { edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
 
 interface EdgeSelectionBoxProps {
   edge: Edge;
@@ -34,7 +34,14 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
   //   y: (edge.start.y + edge.end.y) / 2,
   // };
 
-  const pathString = edgeBezierPathString({ edge });
+  let pathString = edgeBezierPathString({ edge });
+
+  // // Check for bezier our smooth step edge type
+  // if (edge.type === EdgeType.Dashed) {
+  //   pathString = edgeSmoothStepPathString({ edge });
+  // } else {
+  //   pathString = edgeBezierPathString({ edge });
+  // }
 
   return (
     <g>

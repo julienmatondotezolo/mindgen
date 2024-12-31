@@ -7,7 +7,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 
 import { CanvasMode, Edge, EdgeType, HandlePosition } from "@/_types";
 import { activeEdgeIdAtom, canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
-import { colorToCss, edgeBezierPathString } from "@/utils";
+import { colorToCss, edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
 
 interface EdgePreviewProps {
   edge: Edge;
@@ -32,7 +32,14 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
 
   const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId?.includes(edge.id);
 
-  const pathString = edgeBezierPathString({ edge });
+  let pathString = edgeBezierPathString({ edge });
+
+  // // Check for bezier our smooth step edge type
+  // if (edge.type === EdgeType.Dashed) {
+  //   pathString = edgeSmoothStepPathString({ edge });
+  // } else {
+  //   pathString = edgeBezierPathString({ edge });
+  // }
 
   return (
     <g>
