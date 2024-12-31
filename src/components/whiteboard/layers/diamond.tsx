@@ -50,7 +50,7 @@ const calculateDimensions = (text: string, currentWidth: number, currentHeight: 
 
 const calculateFontSize = (width: number, height: number, scale: number, text: string) => {
   const maxFontSize = 96;
-  const scaleFactor = 0.2;
+  const scaleFactor = 0.08;
   // Add dampening factor to make scaling more subtle
   // (0.25 means scale has 25% of its original effect)
   const dampedScale = 1 + (1 - scale) * 0.2;
@@ -67,7 +67,7 @@ const Diamond = ({ id, layer, onPointerDown, selectionColor }: DiamondProps) => 
 
   const { theme } = useTheme();
 
-  const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType, borderColor } = layer;
+  const { x, y, width, height, fill, value, valueStyle, borderColor, borderWidth, borderType } = layer;
 
   const boardId = useRecoilValue(boardIdState);
   const camera = useRecoilValue(cameraStateAtom);
@@ -90,30 +90,24 @@ const Diamond = ({ id, layer, onPointerDown, selectionColor }: DiamondProps) => 
       ? "rgb(180, 191, 204)"
       : "rgb(71, 85, 105)";
 
+  // Rounded corner offset
+  const cornerRadius = Math.min(width, height) * 0.1;
+
   return (
-    <>
+    <g onPointerDown={(e) => onPointerDown(e, id)}>
       <foreignObject
         className={`relative shadow-md drop-shadow-xl`}
-        onPointerDown={(e) => onPointerDown(e, id)}
         style={{
           transform: `translate(${x}px, ${y}px)`,
-          outline: selectionColor ? `3px solid ${selectionColor}` : "none",
           backgroundColor: fillRGBA(fill, theme),
           backdropFilter: "blur(5px)",
           WebkitBackdropFilter: "blur(5px)",
-          borderColor: newBorderColor,
-          borderWidth: borderWidth ? borderWidth : 2,
-          borderStyle: borderType ? borderType : "solid",
-          borderRadius: "0", // No border radius for diamond
-          overflow: "hidden",
-          clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)", // Diamond shape
+          clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
         }}
         x={0}
         y={0}
         width={width}
         height={height}
-        strokeWidth={1}
-        stroke={selectionColor || "transparent"}
       >
         <CustomContentEditable
           value={value || ""}
@@ -124,7 +118,6 @@ const Diamond = ({ id, layer, onPointerDown, selectionColor }: DiamondProps) => 
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            justifyItems: "center",
             textAlign: "center",
             color: fill ? getContrastingTextColor(fill) : "#000",
             fontSize: calculateFontSize(width, height, camera.scale, value || ""),
@@ -135,7 +128,16 @@ const Diamond = ({ id, layer, onPointerDown, selectionColor }: DiamondProps) => 
           }}
         />
       </foreignObject>
-    </>
+      <svg x={x} y={y} width={width} height={height} style={{ position: "absolute", pointerEvents: "none" }}>
+        <path
+          d={`M ${width / 2} 0 L ${width} ${height / 2} L ${width / 2} ${height} L 0 ${height / 2} Z`}
+          fill="none"
+          stroke={selectionColor || newBorderColor}
+          strokeWidth={borderWidth ? borderWidth : 2}
+          strokeDasharray={borderType === "DASHED" ? "4,2.5" : "none"}
+        />
+      </svg>
+    </g>
   );
 };
 
