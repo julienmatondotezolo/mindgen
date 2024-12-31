@@ -174,148 +174,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     });
   }, []); // Run when layers or refs change
 
-  // ================  GENERATE MINDMAPS  ================== //
+  // ================  UPDATE FOR LAYER & EDGE CHANGES ================== //
 
-  // ================  USE QUERY & SAVE MINDMAPS  ================== //
-
-  const queryClient = useQueryClient();
-
-  // const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
-
-  const updateBoardMutation = useMutation(updateBoardLayersById, {
-    onSuccess: () => {
-      // Optionally, invalidate or refetch other queries to update the UI
-      queryClient.invalidateQueries("mindmaps");
-    },
-  });
-
-  const takeScreenshot = useCallback(async () => {
-    setIsCapturing(true);
-    const canvasElement = document.getElementById("canvas");
-
-    if (canvasElement) {
-      canvasElement.style.color = "white";
-      canvasElement.style.fontFamily = "sans-serif";
-      canvasElement.style.backgroundColor = theme === "dark" ? "#050713" : "#fdfdff";
-
-      const canvas = await html2canvas(canvasElement);
-      const base64Image = canvas.toDataURL("image/png");
-
-      canvasElement.style.backgroundColor = "transparent";
-
-      // setPictureUrl(base64Image);
-      setIsCapturing(false);
-      return base64Image;
+  useEffect(() => {
+    if (canvasState.mode == CanvasMode.Importing) {
+      fitView();
+      return;
     }
-  }, [theme]);
-
-  const saveMindmap = useCallback(async () => {
-    if (!checkPermission(PERMISSIONS, "UPDATE")) return;
-
-    const newMindmapObject = {
-      layers,
-      edges,
-      pictureUrl: await takeScreenshot(),
-    };
-
-    updateBoardMutation.mutate({
-      session: session,
-      mindmapId: userMindmapDetails.id,
-      mindmapObject: newMindmapObject,
-    });
-  }, [PERMISSIONS, edges, layers, session, takeScreenshot, updateBoardMutation, userMindmapDetails.id]);
-
-  // Handle window/tab close and navigation away
-  useEffect(() => {
-    let isCapturing = false;
-
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === "hidden" && !isCapturing) {
-        isCapturing = true;
-        await saveMindmap();
-        isCapturing = false;
-      }
-    };
-
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      if (canvasState.mode == CanvasMode.Exporting) return;
-
-      // Modern browsers require the event to be canceled and a message to be shown
-      e.preventDefault();
-
-      if (!isCapturing) {
-        isCapturing = true;
-        await saveMindmap();
-        isCapturing = false;
-      }
-
-      // Show a standard confirmation dialog
-      // Note: Most modern browsers show their own generic message regardless of what we set here
-      return (e.returnValue = "");
-    };
-
-    // Add event listeners
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("beforeunload", handleBeforeUnload, { capture: true });
-
-    // Cleanup
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("beforeunload", handleBeforeUnload, { capture: true });
-    };
-  }, [canvasState.mode, saveMindmap]);
-
-  // Handle navigation state changes
-  useEffect(() => {
-    // if (canvasState.mode == CanvasMode.Exporting) return;
-    // Create a proxy for router.push
-    const originalPush = router.push;
-
-    router.push = async (...args: Parameters<typeof router.push>) => {
-      await saveMindmap();
-      return originalPush.apply(router, args);
-    };
-
-    return () => {
-      // Restore original push method
-      router.push = originalPush;
-    };
-  }, [canvasState.mode, pathname, router, saveMindmap, searchParams]);
-
-  // Intercept Link component clicks
-  const handleLinkClick = useCallback(
-    async (e: MouseEvent) => {
-      if (canvasState.mode == CanvasMode.Exporting) return;
-
-      const target = e.target as HTMLElement;
-      const link = target.closest("a");
-
-      if (link?.getAttribute("href") && !link.getAttribute("href")?.startsWith("#")) {
-        e.preventDefault();
-        await saveMindmap();
-
-        // Use router.push for internal navigation
-        const href = link.getAttribute("href") || "";
-
-        if (href.startsWith("/") || href.startsWith(window.location.origin)) {
-          router.push(href);
-        } else {
-          // For external links, use regular navigation
-          window.location.href = href;
-        }
-      }
-    },
-    [canvasState.mode, saveMindmap, router],
-  );
-
-  useEffect(() => {
-    // Add click handler to document
-    document.addEventListener("click", handleLinkClick as any);
-
-    return () => {
-      document.removeEventListener("click", handleLinkClick as any);
-    };
-  }, [handleLinkClick]);
+  }, [layers, edges, fitView, canvasState.mode]);
 
   // ================  CONSTANT LAYERS  ================== //
 
@@ -419,6 +285,159 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   });
 
   const ARROW_SIZE = 5;
+
+  // ================  USE QUERY & SAVE MINDMAPS  ================== //
+
+  const queryClient = useQueryClient();
+
+  const updateBoardMutation = useMutation(updateBoardLayersById, {
+    onSuccess: () => {
+      // Optionally, invalidate or refetch other queries to update the UI
+      queryClient.invalidateQueries("mindmaps");
+    },
+  });
+
+  // ================  INTERCEPT AND SAVE  ================== //
+
+  const takeScreenshot = useCallback(async () => {
+    setIsCapturing(true);
+    const canvasElement = document.getElementById("canvas");
+
+    if (canvasElement) {
+      canvasElement.style.color = "white";
+      canvasElement.style.fontFamily = "sans-serif";
+      canvasElement.style.backgroundColor = theme === "dark" ? "#050713" : "#fdfdff";
+
+      const canvas = await html2canvas(canvasElement);
+      const base64Image = canvas.toDataURL("image/png");
+
+      canvasElement.style.backgroundColor = "transparent";
+
+      // setPictureUrl(base64Image);
+      setIsCapturing(false);
+      return base64Image;
+    }
+  }, [theme]);
+
+  const saveMindmap = useCallback(async () => {
+    if (!checkPermission(PERMISSIONS, "UPDATE")) return;
+
+    const newMindmapObject = {
+      layers,
+      edges,
+      pictureUrl: await takeScreenshot(),
+    };
+
+    unSelectLayer({ userId: currentUserId });
+
+    updateBoardMutation.mutate({
+      session: session,
+      mindmapId: userMindmapDetails.id,
+      mindmapObject: newMindmapObject,
+    });
+  }, [
+    PERMISSIONS,
+    currentUserId,
+    edges,
+    layers,
+    session,
+    takeScreenshot,
+    unSelectLayer,
+    updateBoardMutation,
+    userMindmapDetails.id,
+  ]);
+
+  // Handle window/tab close and navigation away
+  useEffect(() => {
+    let isCapturing = false;
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === "hidden" && !isCapturing) {
+        isCapturing = true;
+        await saveMindmap();
+        isCapturing = false;
+      }
+    };
+
+    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      if (canvasState.mode == CanvasMode.Exporting) return;
+
+      // Modern browsers require the event to be canceled and a message to be shown
+      e.preventDefault();
+
+      if (!isCapturing) {
+        isCapturing = true;
+        await saveMindmap();
+        isCapturing = false;
+      }
+
+      // Show a standard confirmation dialog
+      // Note: Most modern browsers show their own generic message regardless of what we set here
+      return (e.returnValue = "");
+    };
+
+    // Add event listeners
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload, { capture: true });
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload, { capture: true });
+    };
+  }, [canvasState.mode, saveMindmap]);
+
+  // Handle navigation state changes
+  useEffect(() => {
+    // if (canvasState.mode == CanvasMode.Exporting) return;
+    // Create a proxy for router.push
+    const originalPush = router.push;
+
+    router.push = async (...args: Parameters<typeof router.push>) => {
+      await saveMindmap();
+      return originalPush.apply(router, args);
+    };
+
+    return () => {
+      // Restore original push method
+      router.push = originalPush;
+    };
+  }, [canvasState.mode, pathname, router, saveMindmap, searchParams]);
+
+  // Intercept Link component clicks
+  const handleLinkClick = useCallback(
+    async (e: MouseEvent) => {
+      if (canvasState.mode == CanvasMode.Exporting) return;
+
+      const target = e.target as HTMLElement;
+      const link = target.closest("a");
+
+      if (link?.getAttribute("href") && !link.getAttribute("href")?.startsWith("#")) {
+        e.preventDefault();
+        await saveMindmap();
+
+        // Use router.push for internal navigation
+        const href = link.getAttribute("href") || "";
+
+        if (href.startsWith("/") || href.startsWith(window.location.origin)) {
+          router.push(href);
+        } else {
+          // For external links, use regular navigation
+          window.location.href = href;
+        }
+      }
+    },
+    [canvasState.mode, saveMindmap, router],
+  );
+
+  useEffect(() => {
+    // Add click handler to document
+    document.addEventListener("click", handleLinkClick as any);
+
+    return () => {
+      document.removeEventListener("click", handleLinkClick as any);
+    };
+  }, [handleLinkClick]);
 
   // ================  LAYERS  ================== //
 

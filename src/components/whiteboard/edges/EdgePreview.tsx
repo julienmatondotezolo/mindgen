@@ -83,6 +83,7 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
             canvasState.mode === CanvasMode.EdgeDrawing ||
             canvasState.mode === CanvasMode.Translating ||
             canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Importing ||
             activeEdgeId?.includes(edge.id)
           )
             return;

@@ -181,6 +181,9 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Exporting; // New mode for exporting
+    }
+  | {
+      mode: CanvasMode.Importing; // New mode for exporting
     };
 export enum CanvasMode {
   None,
@@ -198,4 +201,5 @@ export enum CanvasMode {
   Typing,
   Tooling,
   Exporting,
+  Importing,
 }
