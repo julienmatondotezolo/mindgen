@@ -6,10 +6,10 @@ export async function importMindmap(request: File) {
     // Parse the JSON content
     const jsonData = JSON.parse(fileContent);
     // Extract the required data
-    const { nodes, edges } = jsonData;
+    const { layers, edges } = jsonData;
     // Return the extracted data
 
-    return { nodes, edges };
+    return { importedLayers: layers, importedEdges: edges };
   } catch (error) {
     // Handle any errors that occur while reading the PDF
     console.error("Error processing file:", error);
