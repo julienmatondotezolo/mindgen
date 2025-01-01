@@ -1,3 +1,6 @@
+// Importing Ably
+import * as Ably from "ably";
+import { AblyProvider, ChannelProvider, useChannel, useConnectionStateListener } from "ably/react";
 import { enablePatches } from "immer";
 import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
@@ -17,6 +20,10 @@ type Props = {
   locale: string;
 };
 
+const ABLY_API_KEY: string | undefined = process.env.NEXT_ABLY_API_KEY;
+
+// Connect to Ably using the AblyProvider component and your API key
+const client = new Ably.Realtime({ key: ABLY_API_KEY });
 const queryClient = new QueryClient();
 
 // Function to select the correct messages based on the locale
@@ -45,7 +52,9 @@ export default function Providers({ children, locale }: Props): JSX.Element {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
-              <ReactFlowProvider>{children}</ReactFlowProvider>
+              <AblyProvider client={client}>
+                <ReactFlowProvider>{children}</ReactFlowProvider>
+              </AblyProvider>
             </NextIntlClientProvider>
           </ThemeProvider>
         </QueryClientProvider>
