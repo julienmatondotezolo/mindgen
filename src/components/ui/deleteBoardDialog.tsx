@@ -150,7 +150,11 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     className="px-4 py-2 flex items-center space-x-2 bg-red-500"
                     disabled={fetchDeleteMindmapById.isLoading}
                   >
-                    <span>{uppercaseFirstLetter(text("remove"))}</span>
+                    <span>
+                      {uppercaseFirstLetter(
+                        fetchDeleteMindmapById.isLoading ? text("loading") + "..." : text("remove"),
+                      )}
+                    </span>
                   </Button>
                 </div>
               </div>

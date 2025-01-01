@@ -20,7 +20,7 @@ type Props = {
   locale: string;
 };
 
-const ABLY_API_KEY: string | undefined = process.env.NEXT_ABLY_API_KEY;
+const ABLY_API_KEY: string | undefined = process.env.NEXT_PUBLIC_ABLY_API_KEY;
 
 // Connect to Ably using the AblyProvider component and your API key
 const client = new Ably.Realtime({ key: ABLY_API_KEY });
