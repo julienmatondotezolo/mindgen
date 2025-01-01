@@ -53,7 +53,9 @@ export default function Providers({ children, locale }: Props): JSX.Element {
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
               <AblyProvider client={client}>
-                <ReactFlowProvider>{children}</ReactFlowProvider>
+                <ChannelProvider channelName="mindgen-socket">
+                  <ReactFlowProvider>{children}</ReactFlowProvider>
+                </ChannelProvider>
               </AblyProvider>
             </NextIntlClientProvider>
           </ThemeProvider>
