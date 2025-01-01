@@ -19,7 +19,8 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
     !edge ||
     (canvasState.mode !== CanvasMode.EdgeActive &&
       canvasState.mode !== CanvasMode.EdgeEditing &&
-      canvasState.mode !== CanvasMode.None)
+      canvasState.mode !== CanvasMode.None &&
+      canvasState.mode !== CanvasMode.Tooling)
   )
     return;
 

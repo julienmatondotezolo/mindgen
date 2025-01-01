@@ -1,6 +1,7 @@
 // Importing Ably
+import Spaces from "@ably/spaces";
 import * as Ably from "ably";
-import { AblyProvider, ChannelProvider, useChannel, useConnectionStateListener } from "ably/react";
+import { AblyProvider } from "ably/react";
 import { enablePatches } from "immer";
 import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
@@ -41,6 +42,8 @@ function selectMessages(locale: string) {
 
 enablePatches();
 
+export const spaces = new Spaces(client);
+
 export default function Providers({ children, locale }: Props): JSX.Element {
   // const messages = useMessages();
   const timeZone = "Europe/Brussels";
@@ -53,9 +56,7 @@ export default function Providers({ children, locale }: Props): JSX.Element {
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
               <AblyProvider client={client}>
-                <ChannelProvider channelName="mindgen-socket">
-                  <ReactFlowProvider>{children}</ReactFlowProvider>
-                </ChannelProvider>
+                <ReactFlowProvider>{children}</ReactFlowProvider>
               </AblyProvider>
             </NextIntlClientProvider>
           </ThemeProvider>

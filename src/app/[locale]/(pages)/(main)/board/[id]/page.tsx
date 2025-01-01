@@ -1,5 +1,6 @@
 "use client";
 
+import { SpaceProvider, SpacesProvider } from "@ably/spaces/react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -10,6 +11,7 @@ import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps, MindMapMessages, User } from "@/_types";
+import { spaces } from "@/app/providers";
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
@@ -55,6 +57,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const safeSession = session ? (session as unknown as CustomSession) : null;
   const [enabled, setEnabled] = useState(true);
 
+  const spaceName = params.id;
   const { socketJoinRoom } = useSocket();
 
   useEffect(() => {
@@ -181,7 +184,11 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Whiteboard userMindmapDetails={userMindmapDetails} />
+                <SpacesProvider client={spaces}>
+                  <SpaceProvider name={spaceName}>
+                    <Whiteboard userMindmapDetails={userMindmapDetails} />
+                  </SpaceProvider>
+                </SpacesProvider>
               )}
             </div>
             {qa.length > 0 && (
