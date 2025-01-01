@@ -3,6 +3,7 @@ import Spaces from "@ably/spaces";
 import * as Ably from "ably";
 import { AblyProvider } from "ably/react";
 import { enablePatches } from "immer";
+import { nanoid } from "nanoid";
 import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
@@ -24,7 +25,7 @@ type Props = {
 const ABLY_API_KEY: string | undefined = process.env.NEXT_PUBLIC_ABLY_API_KEY;
 
 // Connect to Ably using the AblyProvider component and your API key
-const client = new Ably.Realtime({ key: ABLY_API_KEY });
+const client = new Ably.Realtime({ clientId: nanoid(), key: ABLY_API_KEY });
 const queryClient = new QueryClient();
 
 // Function to select the correct messages based on the locale
@@ -42,6 +43,7 @@ function selectMessages(locale: string) {
 
 enablePatches();
 
+// Initialize Spaces
 export const spaces = new Spaces(client);
 
 export default function Providers({ children, locale }: Props): JSX.Element {

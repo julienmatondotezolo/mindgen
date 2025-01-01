@@ -1,3 +1,4 @@
+import { useSpace } from "@ably/spaces/dist/mjs/react";
 import { select } from "d3-selection";
 import { zoom, zoomIdentity, zoomTransform } from "d3-zoom";
 import html2canvas from "html2canvas";
@@ -105,8 +106,10 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  SOCKETS  ================== //
 
+  const { space } = useSpace();
   const { socketEmit } = useSocket();
   const session: any = useSession();
+  const currentUserName = session.data?.session?.user?.username;
   const currentUserId = session.data?.session?.user?.id;
 
   // ================  SHADOW EDGE & LAYER STATE  ================== //
@@ -174,6 +177,10 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       mode: CanvasMode.None,
     });
   }, []); // Run when layers or refs change
+
+  useEffect(() => {
+    space?.enter({ username: currentUserName, userId: currentUserId });
+  }, [currentUserId, currentUserName, space]);
 
   // ================  UPDATE FOR LAYER & EDGE CHANGES ================== //
 
@@ -1333,7 +1340,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       if (userMindmapDetails.members.length > 1)
         socketEmit("cursor-move", {
           roomId: boardId,
-          userId: currentUserId,
+            userId: currentUserId,
           cursor: current,
         });
       // setMyPresence({ cursor: current });
@@ -1351,8 +1358,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       updateSelectionNet,
       translateSelectedLayer,
       resizeSelectedLayer,
+      layers.length,
+      whiteboardText,
       drawEdgeline,
       updateEdgePosition,
+      space,
+      // socketEmit,
+      // boardId,
+      currentUserId,
     ],
   );
 
