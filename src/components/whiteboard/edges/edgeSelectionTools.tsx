@@ -1,4 +1,4 @@
-import { ArrowRight, Ellipsis, Minus, PaintBucket, Route, Spline, Trash2 } from "lucide-react";
+import { ArrowRight, Ellipsis, PaintBucket, Route, Spline, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";

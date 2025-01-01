@@ -84,7 +84,7 @@ const Toolbar = () => {
             }}
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Diamond}
           />
-          <ToolButton
+          {/* <ToolButton
             icon={Type}
             onClick={() =>
               setCanvasState({
@@ -92,7 +92,7 @@ const Toolbar = () => {
               })
             }
             isActive={canvasState.mode === CanvasMode.Typing}
-          />
+          /> */}
 
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
