@@ -15,6 +15,7 @@ import {
   CanvasMode,
   Color,
   Edge,
+  EdgeShape,
   EdgeType,
   HandlePosition,
   Layer,
@@ -1222,6 +1223,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               b: 255,
             },
             type: EdgeType.Solid,
+            shape: EdgeShape.Curved,
           };
 
           // Update edges state with the new edge
@@ -1248,6 +1250,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               b: 255,
             },
             type: EdgeType.Solid,
+            shape: EdgeShape.Curved,
           };
 
           // Update edges state with the new edge

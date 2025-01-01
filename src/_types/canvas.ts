@@ -25,6 +25,12 @@ export enum EdgeType {
   Dashed,
 }
 
+export enum EdgeShape {
+  SmoothStep = "SMOOTHSTEP",
+  Curved = "CURVED",
+  Line = "LINE",
+}
+
 export type Edge = {
   id: string;
   arrowStart?: boolean;
@@ -42,6 +48,7 @@ export type Edge = {
   thickness: number;
   orientation: EdgeOrientation;
   type: EdgeType;
+  shape: EdgeShape;
 };
 
 export enum LayerType {

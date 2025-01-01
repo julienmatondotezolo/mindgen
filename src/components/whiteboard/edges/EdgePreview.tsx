@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import React, { memo } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { CanvasMode, Edge, EdgeType, HandlePosition } from "@/_types";
+import { CanvasMode, Edge, EdgeShape, EdgeType, HandlePosition } from "@/_types";
 import { activeEdgeIdAtom, canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
 import { colorToCss, edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
 
@@ -34,12 +34,12 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
 
   let pathString = edgeBezierPathString({ edge });
 
-  // // Check for bezier our smooth step edge type
-  // if (edge.type === EdgeType.Dashed) {
-  //   pathString = edgeSmoothStepPathString({ edge });
-  // } else {
-  //   pathString = edgeBezierPathString({ edge });
-  // }
+  // Check for bezier our smooth step edge type
+  if (edge.shape === EdgeShape.SmoothStep) {
+    pathString = edgeSmoothStepPathString({ edge });
+  } else {
+    pathString = edgeBezierPathString({ edge });
+  }
 
   return (
     <g>
