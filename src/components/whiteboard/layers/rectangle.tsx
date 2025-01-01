@@ -101,7 +101,6 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
           backgroundColor: fillRGBA(fill, theme),
           backdropFilter: "blur(5px)",
           WebkitBackdropFilter: "blur(5px)",
-          // borderColor: theme === "dark" ? "#b4bfcc" : "#475569",
           borderColor: newBorderColor,
           borderWidth: borderWidth ? borderWidth : 2,
           borderStyle: borderType ? borderType : "solid",

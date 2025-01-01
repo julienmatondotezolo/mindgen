@@ -2,21 +2,32 @@
 "use client";
 
 import { Circle, Diamond, LucideIcon, Square, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useSetRecoilState } from "recoil";
+import { useSession } from "next-auth/react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-import { CanvasMode, Color } from "@/_types/canvas";
-import { canvasStateAtom } from "@/state";
+import { CanvasMode, LayerType } from "@/_types/canvas";
+import { activeLayersAtom, canvasStateAtom, layerAtomState } from "@/state";
+import { getLayerById } from "@/utils";
 
-import { ToolButton } from "./ToolButton";
+import { Button } from "../ui";
 
 interface ShapePickerProps {
-  onChange: (icon: LucideIcon) => void;
+  onChange: (shape: LayerType) => void;
   onClose: () => void;
 }
 
 export const ShapePicker = ({ onChange, onClose }: ShapePickerProps) => {
-  const whiteboardText = useTranslations("Whiteboard");
+  const session = useSession();
+  const currentUserId = session.data?.session?.user?.id;
+
+  const layers = useRecoilValue(layerAtomState);
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
+
+  const activeLayerIDs = allActiveLayers
+    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
+    .map((item: any) => item.layerIds)[0];
+
+  const currentLayer = getLayerById({ layerId: activeLayerIDs ? activeLayerIDs[0] : 0, layers });
 
   return (
     <div className="p-2">
@@ -26,10 +37,74 @@ export const ShapePicker = ({ onChange, onClose }: ShapePickerProps) => {
         </button>
       </div>
       <ul className="flex flex-wrap gap-2 items-center max-w-[164px]">
-        <ToolButton icon={Circle} onClick={() => onChange} />
-        <ToolButton icon={Square} onClick={() => onChange} />
-        <ToolButton icon={Diamond} onClick={() => onChange} />
+        <ShapeButton
+          icon={Circle}
+          shape={LayerType.Ellipse}
+          onClick={onChange}
+          isActive={currentLayer.type === LayerType.Ellipse}
+        />
+        <ShapeButton
+          icon={Square}
+          shape={LayerType.Rectangle}
+          onClick={onChange}
+          isActive={currentLayer.type === LayerType.Rectangle}
+        />
+        <ShapeButton
+          icon={Diamond}
+          shape={LayerType.Diamond}
+          onClick={onChange}
+          isActive={currentLayer.type === LayerType.Diamond}
+        />
       </ul>
     </div>
+  );
+};
+
+interface ShapeButtonProps {
+  icon: LucideIcon;
+  onClick: (shape: LayerType) => void;
+  isActive?: boolean;
+  disabled?: boolean;
+  shape: LayerType;
+}
+
+export const ShapeButton = ({ icon: Icon, onClick, isActive, disabled, shape }: ShapeButtonProps) => {
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+
+  return (
+    <li className="m-1 cursor-pointer">
+      <Button
+        disabled={disabled}
+        onMouseEnter={() => {
+          setCanvasState({
+            mode: CanvasMode.Tooling,
+          });
+        }}
+        // onMouseLeave={() => {
+        //   if (
+        //     canvasState.mode === CanvasMode.Grab ||
+        //     canvasState.mode === CanvasMode.Inserting ||
+        //     canvasState.mode === CanvasMode.Edge
+        //   )
+        //     return;
+        //   setCanvasState({
+        //     mode: CanvasMode.None,
+        //   });
+        // }}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+
+          onClick(shape);
+        }}
+        onPointerUp={(e) => {
+          e.stopPropagation();
+        }}
+        size={"icon"}
+        variant={isActive ? "boardActive" : "board"}
+        className="p-2 rounded-xl"
+      >
+        {Icon && <Icon />}
+      </Button>
+    </li>
   );
 };

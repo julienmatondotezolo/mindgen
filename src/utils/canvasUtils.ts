@@ -76,8 +76,8 @@ export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera,
 export function colorToCss(color: Color) {
   if (!color) return "#33373b";
 
-  return `#${color.r.toString(16).padStart(2, "0")}${color.g.toString(16).padStart(2, "0")}${color.b
-    .toString(16)
+  return `#${color?.r?.toString(16).padStart(2, "0")}${color?.g?.toString(16).padStart(2, "0")}${color?.b
+    ?.toString(16)
     .padStart(2, "0")}`;
 }
 

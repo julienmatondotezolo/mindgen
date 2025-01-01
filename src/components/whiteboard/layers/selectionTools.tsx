@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  Bold,
-  CaseUpper,
-  Circle,
-  Diamond,
-  Ellipsis,
-  LucideIcon,
-  PaintBucket,
-  Shapes,
-  Square,
-  Trash2,
-} from "lucide-react";
+import { Bold, CaseUpper, Ellipsis, PaintBucket, Shapes, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue } from "recoil";
@@ -29,6 +18,7 @@ import {
   useUnSelectElement,
   useUpdateElement,
 } from "@/state";
+import { getLayerById } from "@/utils";
 
 import { ColorPicker } from "../colorPicker";
 import { ShapePicker } from "../shapePicker";
@@ -52,6 +42,8 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
     .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
     .map((item: any) => item.layerIds)[0];
 
+  const currentLayer = getLayerById({ layerId: activeLayerIDs ? activeLayerIDs[0] : 0, layers });
+
   const boardId = useRecoilValue(boardIdState);
   const canvasState = useRecoilValue(canvasStateAtom);
   const edges = useRecoilValue(edgesAtomState);
@@ -67,24 +59,19 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
   const [showShapePicker, setShowShapePicker] = useState(false);
   const [showBorderColorPicker, setShowBorderColorPicker] = useState(false);
 
-  const [isDashed, setIsDashed] = useState(false);
-  const [isThickBorder, setIsThickBorder] = useState(false);
-  const [isUppercase, setIsUppercase] = useState(false);
-  const [isBold, setIsBold] = useState(false);
-
   const handleShapeChange = useCallback(
-    (icon: LucideIcon) => {
-      let layerType = LayerType.Rectangle;
+    (shape: LayerType) => {
+      let layerType;
 
-      switch (icon) {
-        case Circle:
-          layerType === LayerType.Ellipse;
+      switch (shape) {
+        case LayerType.Ellipse:
+          layerType = LayerType.Ellipse;
           break;
-        case Diamond:
-          layerType === LayerType.Diamond;
+        case LayerType.Diamond:
+          layerType = LayerType.Diamond;
           break;
         default:
-          layerType === LayerType.Rectangle;
+          layerType = LayerType.Rectangle;
       }
 
       for (const layerId of activeLayerIDs) {
@@ -94,8 +81,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
           updatedElementLayer: { type: layerType },
         });
       }
-      setShowColorPicker(false);
-      setShowBorderColorPicker(false);
+      setShowShapePicker(false);
     },
     [activeLayerIDs, currentUserId, updateLayer],
   );
@@ -147,8 +133,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
           userId: currentUserId,
           updatedElementLayer: { borderType: newBorderType },
         });
-
-        setIsDashed(newBorderType === "DASHED");
       }
     }
   }, [activeLayerIDs, currentUserId, layers, updateLayer]);
@@ -165,7 +149,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
           userId: currentUserId,
           updatedElementLayer: { borderWidth: newBorderWidth },
         });
-        setIsThickBorder(newBorderWidth === 4);
       }
     }
   }, [activeLayerIDs, currentUserId, layers, updateLayer]);
@@ -187,7 +170,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             },
           },
         });
-        setIsUppercase(newTextTransform === "uppercase");
       }
     }
   }, [activeLayerIDs, currentUserId, layers, updateLayer]);
@@ -209,7 +191,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             },
           },
         });
-        setIsBold(newFontWeight === "900");
       }
     }
   }, [activeLayerIDs, currentUserId, layers, updateLayer]);
@@ -279,14 +260,14 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         >
           {showShapePicker && (
             <div
-              className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
+              className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-800 dark:bg-opacity-95 dark:border-slate-800"
               style={{
                 bottom: 70,
                 left: 0,
                 transform: `translate(0px, 0px)`,
               }}
             >
-              <ShapePicker onChange={handleShapeChange} onClose={() => setShowColorPicker(false)} />
+              <ShapePicker onChange={handleShapeChange} onClose={() => setShowShapePicker(false)} />
             </div>
           )}
           {showColorPicker && (
@@ -302,11 +283,23 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             </div>
           )}
           <ul className="flex flex-row space-x-2 items-center justify-between">
-            <ToolButton icon={Shapes} onClick={() => setShowShapePicker(!showShapePicker)} isActive={showShapePicker} />
+            <ToolButton
+              icon={Shapes}
+              onClick={() => {
+                setShowColorPicker(false);
+                setShowBorderColorPicker(false);
+                setShowShapePicker(!showShapePicker);
+              }}
+              isActive={showShapePicker}
+            />
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
             <ToolButton
               icon={PaintBucket}
-              onClick={() => setShowColorPicker(!showColorPicker)}
+              onClick={() => {
+                setShowBorderColorPicker(false);
+                setShowShapePicker(false);
+                setShowColorPicker(!showColorPicker);
+              }}
               isActive={showColorPicker && showBorderColorPicker == false}
             />
             <ToolButton onClick={handleBorderColorChange} isActive={showBorderColorPicker ? true : false}>
@@ -317,15 +310,29 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
               ></div>
             </ToolButton>
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-            <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={isDashed} />
-            <ToolButton onClick={handleToggleBorderWidth} isActive={isThickBorder ? true : false}>
+            <ToolButton
+              icon={Ellipsis}
+              onClick={handleToggleBorderType}
+              isActive={currentLayer?.borderType === "DASHED"}
+            />
+            <ToolButton onClick={handleToggleBorderWidth} isActive={currentLayer?.borderWidth === 4 ? true : false}>
               <div
-                className={`w-[20px] h-[5px] dark:bg-slate-200 ${isThickBorder ? "bg-slate-200" : "bg-slate-950"}`}
+                className={`w-[20px] h-[5px] dark:bg-slate-200 ${
+                  currentLayer?.borderWidth ? "bg-slate-200" : "bg-slate-950"
+                }`}
               ></div>
             </ToolButton>
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-            <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={isUppercase} />
-            <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={isBold} />
+            <ToolButton
+              icon={CaseUpper}
+              onClick={handleToggleTextTransform}
+              isActive={currentLayer?.valueStyle?.textTransform === "uppercase"}
+            />
+            <ToolButton
+              icon={Bold}
+              onClick={handleToggleFontWeight}
+              isActive={currentLayer?.valueStyle?.fontWeight === "900"}
+            />
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
             {/* <Button variant="board" size="icon" onClick={handleRemoveLayer}>
               <Trash2 />
