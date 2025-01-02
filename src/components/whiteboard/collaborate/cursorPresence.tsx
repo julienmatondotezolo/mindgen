@@ -17,14 +17,20 @@ const Cursors = () => {
         {Object.values(cursors).map((data, index) => {
           if (!data) return;
 
+          if (!data.member) return;
+
           const cursorUpdate = data.cursorUpdate as CursorUpdate;
-          const { username, userId } = data.member?.profileData as { username: string; userId: string };
+          const { username, userId, userColor } = data.member.profileData as {
+            username: string;
+            userId: string;
+            userColor: string;
+          };
 
           if (cursorUpdate.data.state === "leave") return;
 
           return (
             <g key={index}>
-              <Cursor key={userId} connectionId={index} username={username} position={cursorUpdate.position} />
+              <Cursor key={userId} userColor={userColor} username={username} position={cursorUpdate.position} />
             </g>
           );
         })}

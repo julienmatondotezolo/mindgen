@@ -62,6 +62,8 @@ export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Lay
 
 export const connectionIdToColor = (connectionId: number) => COLORS[connectionId % COLORS.length];
 
+export const randomUserColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
+
 export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera, svgElement: SVGSVGElement | null) => {
   if (!svgElement) return { x: 0, y: 0 };
 

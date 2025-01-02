@@ -60,6 +60,7 @@ import {
   getLayerById,
   getOrientationFromPosition,
   pointerEventToCanvasPoint,
+  randomUserColor,
   resizeBounds,
 } from "@/utils";
 
@@ -181,7 +182,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  ENTERING SPACE ================== //
 
   useEffect(() => {
-    space?.enter({ username: currentUserName, userId: currentUserId });
+    space?.enter({ username: currentUserName, userId: currentUserId, userColor: randomUserColor() });
   }, [currentUserId, currentUserName, space]);
 
   // ================  UPDATE FOR LAYER & EDGE CHANGES ================== //
@@ -1998,7 +1999,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 height={Math.abs(canvasState.origin.y - canvasState.current.y)}
               />
             )}
-            <CursorPresence />
             <SelectionTools
               camera={camera}
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
@@ -2009,6 +2009,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
               setLastUsedColor={setLastUsedColor}
             />
+            <CursorPresence />
           </g>
         </svg>
       </figure>
