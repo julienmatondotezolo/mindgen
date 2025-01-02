@@ -1,4 +1,4 @@
-import { useSpace } from "@ably/spaces/dist/mjs/react";
+import { useSpace } from "@ably/spaces/react";
 import { select } from "d3-selection";
 import { zoom, zoomIdentity, zoomTransform } from "d3-zoom";
 import html2canvas from "html2canvas";
@@ -1602,6 +1602,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       position: { x: 0, y: 0 },
       data: { state: "leave" },
     });
+
+    await space?.leave();
   };
   // ================  CAMERA FUNCTIONS  ================== //
 
