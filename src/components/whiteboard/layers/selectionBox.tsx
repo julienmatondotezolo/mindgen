@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 
+import { useLocks, useMembers } from "@ably/spaces/react";
 import { useSession } from "next-auth/react";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { useRecoilValue } from "recoil";
 
 import { Side, XYWH } from "@/_types";
@@ -17,7 +17,19 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
   const session = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
+  const [isLocked, setIsLocked] = useState(false);
   const camera = useRecoilValue(cameraStateAtom);
+
+  const { self } = useMembers();
+
+  useLocks((lockUpdate) => {
+    const lockHolder = lockUpdate.member;
+    const locked = lockUpdate.status === "locked";
+    const lockedByYou = locked && lockHolder.connectionId === self?.connectionId;
+
+    setIsLocked(lockedByYou);
+  });
+
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   const activeLayerIDs = allActiveLayers
@@ -26,7 +38,7 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
 
   const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
 
-  const isShowingHandles = soleLayerId;
+  const isShowingHandles = isLocked;
 
   const bounds = useSelectionBounds();
 

@@ -231,7 +231,27 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     return layerIdsToColorSelection;
   }, [otherUserSelections]);
 
-  const selectLayer = useSelectElement({ roomId: boardId });
+  // const selectLayer = useSelectElement({ roomId: boardId });
+
+  const selectLayer = useCallback(
+    async ({ userId, layerIds }: { userId: string; layerIds: string[] }) => {
+      if (!space) return;
+
+      layerIds.forEach(async (id) => {
+        const isLocked = space.locks.get(id) !== undefined;
+
+        if (isLocked) return;
+
+        try {
+          await space.locks.acquire(id);
+        } catch {
+          console.error("can't acquire the lock");
+        }
+      });
+    },
+    [space],
+  );
+
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
   const addLayer = useAddElement({ roomId: boardId });
   const updateLayer = useUpdateElement({ roomId: boardId });

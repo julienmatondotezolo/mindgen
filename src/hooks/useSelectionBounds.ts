@@ -1,8 +1,9 @@
-import { useSession } from "next-auth/react";
+import { useLocks, useMembers } from "@ably/spaces/react";
+import { useState } from "react";
 import { useRecoilValue } from "recoil";
 
 import { Layer, XYWH } from "@/_types";
-import { activeLayersAtom, isEdgeNearLayerAtom, layerAtomState, nearestLayerAtom } from "@/state";
+import { isEdgeNearLayerAtom, layerAtomState, nearestLayerAtom } from "@/state";
 
 const boundingBox = (layers: Layer[]): XYWH | null => {
   const first = layers[0];
@@ -43,21 +44,29 @@ const boundingBox = (layers: Layer[]): XYWH | null => {
 };
 
 const useSelectionBounds = () => {
-  const session: any = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const layers = useRecoilValue(layerAtomState);
 
-  const allActiveLayers = useRecoilValue(activeLayersAtom);
   const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
   const nearestLayer = useRecoilValue(nearestLayerAtom);
 
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
+  const [lockedId, setLockedId] = useState<string>("");
+  const { self } = useMembers();
+
+  useLocks((lockUpdate) => {
+    const lockHolder = lockUpdate.member;
+    const locked = lockUpdate.status === "locked";
+    const lockedByYou = locked && lockHolder.connectionId === self?.connectionId;
+
+    if (lockedByYou) {
+      setLockedId(lockUpdate.id);
+      return;
+    }
+
+    setLockedId("");
+  });
 
   // Check if layers is an array before filtering
-  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => activeLayerIDs?.includes(layer.id)) : [];
+  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => layer.id === lockedId) : [];
 
   if (selectedLayers.length > 0) return boundingBox(selectedLayers);
 
