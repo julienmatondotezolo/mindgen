@@ -1,28 +1,30 @@
-import { memo, useEffect } from "react";
-import { useRecoilState } from "recoil";
-
-import { useSocket } from "@/hooks";
-import { connectedUsersState } from "@/state";
+import type { CursorUpdate as _CursorUpdate } from "@ably/spaces";
+import { useCursors } from "@ably/spaces/dist/mjs/react";
+import { memo } from "react";
 
 import { Cursor } from "./cursor";
 
-const Cursors = () => {
-  const { socketListen } = useSocket();
-  const [connectedUsers, setConnectedUsers] = useRecoilState(connectedUsersState);
+type CursorUpdate = Omit<_CursorUpdate, "data"> & {
+  data: { state: "move" | "leave" };
+};
 
-  useEffect(() => {
-    socketListen("connected-users", (data) => {
-      setConnectedUsers(data); // Update state instead of ref
-    });
-  }, [setConnectedUsers, socketListen]);
+const Cursors = () => {
+  const { cursors } = useCursors({ returnCursors: true });
 
   return (
     <>
-      {connectedUsers.map((connectedUser, index) => (
-        <g key={index}>
-          <Cursor key={connectedUser.id} connectionId={index} user={connectedUser} />
-        </g>
-      ))}
+      {Object.values(cursors).map((data, index) => {
+        const cursorUpdate = data.cursorUpdate as CursorUpdate;
+        const { username, userId } = data.member.profileData as { username: string; userId: string };
+
+        if (cursorUpdate.data.state === "leave") return;
+
+        return (
+          <g key={index}>
+            <Cursor key={userId} connectionId={index} username={username} position={cursorUpdate.position} />
+          </g>
+        );
+      })}
     </>
   );
 };

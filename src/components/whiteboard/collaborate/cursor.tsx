@@ -1,49 +1,28 @@
 "use client";
 
+import { CursorPosition } from "@ably/spaces";
 import { MousePointer2 } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo } from "react";
 import { useRecoilValue } from "recoil";
 
-import { useSocket } from "@/hooks";
 import { cameraStateAtom } from "@/state";
 import { connectionIdToColor } from "@/utils";
 
-interface ConnectedUser {
-  id: string; // Assuming IDs are strings, adjust if necessary
-  username: string;
-}
-
 interface CursorProps {
-  user: ConnectedUser;
+  username: string;
   connectionId: number;
+  position: CursorPosition;
 }
 
-export const Cursor = memo(({ user, connectionId }: CursorProps) => {
-  const { socketListen } = useSocket();
+export const Cursor = memo(({ username, connectionId, position }: CursorProps) => {
   const camera = useRecoilValue(cameraStateAtom);
 
-  const info = user.username;
+  if (!username) return null;
 
-  const [cursor, setCursor] = useState(null);
-
-  useEffect(() => {
-    socketListen("remote-cursor-move", (data) => {
-      let { userId, cursor } = data;
-
-      if (userId === user.id) {
-        setCursor(cursor);
-      }
-    });
-  }, [cursor, socketListen, user.id]);
-
-  const name = info || "Viewer";
-
-  if (!cursor) return null;
-
-  const { x, y } = cursor;
+  const { x, y } = position;
 
   const initialHeight = 50;
-  const initialWidth = name.length * 10 + 24;
+  const initialWidth = username.length * 10 + 24;
 
   const height = Math.max(initialHeight, initialHeight / camera.scale);
   const width = Math.max(initialWidth, initialWidth / camera.scale);
@@ -70,7 +49,7 @@ export const Cursor = memo(({ user, connectionId }: CursorProps) => {
           backgroundColor: connectionIdToColor(connectionId),
         }}
       >
-        {name}
+        {username}
       </div>
     </foreignObject>
   );

@@ -178,6 +178,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     });
   }, []); // Run when layers or refs change
 
+  // ================  ENTERING SPACE ================== //
+
   useEffect(() => {
     space?.enter({ username: currentUserName, userId: currentUserId });
   }, [currentUserId, currentUserName, space]);
@@ -1337,23 +1339,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         updateEdgePosition(current);
       }
 
-      if (userMindmapDetails.members.length > 1)
-        socketEmit("cursor-move", {
-          roomId: boardId,
-            userId: currentUserId,
-          cursor: current,
+      if (userMindmapDetails.members.length > 1 && space) {
+        space.cursors.set({
+          position: { ...current },
+          data: { state: "move" },
         });
-      // setMyPresence({ cursor: current });
+      }
     },
     [
-      layers,
-      whiteboardText,
       camera,
       canvasState,
       userMindmapDetails.members.length,
-      socketEmit,
-      boardId,
-      currentUserId,
       startMultiSelection,
       updateSelectionNet,
       translateSelectedLayer,
@@ -1363,9 +1359,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       drawEdgeline,
       updateEdgePosition,
       space,
-      // socketEmit,
-      // boardId,
-      currentUserId,
     ],
   );
 
@@ -1602,6 +1595,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     // setMyPresence({ cursor: null });
   }, [boardId, currentUserId, socketEmit, userMindmapDetails]);
 
+  // ================  LEAVING SPACE WHILE LEAVING BOARD  ================== //
+
+  const handleSelfCursorLeave = async () => {
+    await space?.cursors.set({
+      position: { x: 0, y: 0 },
+      data: { state: "leave" },
+    });
+  };
   // ================  CAMERA FUNCTIONS  ================== //
 
   const handleMouseMove = useCallback(() => {
@@ -1837,7 +1838,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   }, [handleMouseMove]);
 
   return (
-    <main className="h-full w-full relative">
+    <main className="h-full w-full relative" onMouseLeave={handleSelfCursorLeave}>
       {checkPermission(PERMISSIONS, "UPDATE") && <Toolbar />}
       {isCapturing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
