@@ -49,7 +49,7 @@ const useSelectionBounds = () => {
   const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
   const nearestLayer = useRecoilValue(nearestLayerAtom);
 
-  const [lockedId, setLockedId] = useState<string>("");
+  const [lockedIds, setLockedIds] = useState<string[]>([]);
   const { self } = useMembers();
 
   useLocks((lockUpdate) => {
@@ -58,15 +58,19 @@ const useSelectionBounds = () => {
     const lockedByYou = locked && lockHolder.connectionId === self?.connectionId;
 
     if (lockedByYou) {
-      setLockedId(lockUpdate.id);
+      const { layerIds } = lockUpdate.attributes as {
+        layerIds: string[];
+      };
+
+      setLockedIds(layerIds);
       return;
     }
 
-    setLockedId("");
+    setLockedIds([]);
   });
 
   // Check if layers is an array before filtering
-  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => layer.id === lockedId) : [];
+  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => lockedIds.includes(layer.id)) : [];
 
   if (selectedLayers.length > 0) return boundingBox(selectedLayers);
 

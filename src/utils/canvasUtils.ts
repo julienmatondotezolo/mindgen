@@ -166,7 +166,7 @@ export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b
     height: Math.abs(a.y - b.y),
   };
 
-  const ids = [];
+  const ids = new Set<string>();
 
   for (const layer of layers) {
     if (layer == null) {
@@ -176,11 +176,11 @@ export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b
     const { x, y, height, width } = layer;
 
     if (rect.x + rect.width > x && rect.x < x + width && rect.y + rect.height > y && rect.y < y + height) {
-      ids.push(layer.id);
+      ids.add(layer.id); // Set automatically handles duplicates
     }
   }
 
-  return ids;
+  return Array.from(ids);
 }
 
 export function findNearestLayerHandle(point: Point, layers: Layer[], threshold: number) {

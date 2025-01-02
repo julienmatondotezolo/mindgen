@@ -103,8 +103,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const MAX_LAYERS = 100;
   const PERMISSIONS = userMindmapDetails.connectedMemberPermissions;
 
-  const ids: string[] = useMemo(() => [], []);
-
   // ================  SOCKETS  ================== //
 
   const { space } = useSpace();
@@ -234,23 +232,26 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // const selectLayer = useSelectElement({ roomId: boardId });
 
+  const [selectedLayersIds, setSelectedLayersIds] = useState<string[]>([]);
   const selectLayer = useCallback(
     async ({ userId, layerIds }: { userId: string; layerIds: string[] }) => {
       if (!space) return;
 
-      layerIds.forEach(async (id) => {
-        const isLocked = space.locks.get(id) !== undefined;
+      await space.locks.release(boardId);
 
-        if (isLocked) return;
+      const isLocked = space.locks.get(boardId) !== undefined;
 
-        try {
-          await space.locks.acquire(id);
-        } catch {
-          console.error("can't acquire the lock");
-        }
-      });
+      if (isLocked) return;
+
+      try {
+        const attributes = { layerIds };
+
+        await space.locks.acquire(boardId, { attributes });
+      } catch (error) {
+        console.error("can't acquire the lock:", error);
+      }
     },
-    [space],
+    [boardId, space],
   );
 
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
@@ -537,22 +538,23 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
+      // If Shift is held, add the layerId to the activeLayerIds array without removing other
       if (e.shiftKey) {
-        // If Shift is held, add the layerId to the activeLayerIds array without removing others
-
-        ids.push(layerId);
-
-        selectLayer({ userId: currentUserId, layerIds: ids });
+        setSelectedLayersIds((prev) => {
+          if (prev.includes(layerId)) return prev;
+          return [...prev, layerId];
+        });
 
         setCanvasState({
           mode: CanvasMode.SelectionNet,
           origin,
         });
-      } else if (!activeLayerIDs?.includes(layerId)) {
-        // setActiveLayerIDs([layerId]);
-        selectLayer({ userId: currentUserId, layerIds: [layerId] });
-        unSelectEdge({ userId: currentUserId });
+
+        selectLayer({ userId: currentUserId, layerIds: selectedLayersIds });
+        return;
       }
+
+      selectLayer({ userId: currentUserId, layerIds: [layerId] });
 
       setCanvasState({
         mode: CanvasMode.Translating,
@@ -564,13 +566,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       canvasState.mode,
       allOtherUserSelection,
       camera,
-      activeLayerIDs,
       setCanvasState,
       layers,
-      ids,
       selectLayer,
       currentUserId,
-      unSelectEdge,
+      selectedLayersIds,
     ],
   );
 
@@ -911,9 +911,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const ids = findIntersectingLayersWithRectangle(layers, origin, current);
 
-      selectLayer({ userId: currentUserId, layerIds: ids });
+      setSelectedLayersIds(ids);
     },
-    [currentUserId, layers, selectLayer, setCanvasState],
+    [layers, setCanvasState],
   );
 
   const startMultiSelection = useCallback(
@@ -1578,6 +1578,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         });
       } else if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
+      } else if (canvasState.mode === CanvasMode.SelectionNet) {
+        selectLayer({ userId: currentUserId, layerIds: selectedLayersIds });
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
       } else {
         setCanvasState({
           mode: CanvasMode.None,
@@ -1586,6 +1591,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
     },
     [
+      selectedLayersIds,
       camera,
       canvasState,
       handleUnSelectLayer,

@@ -1,22 +1,18 @@
 /* eslint-disable no-unused-vars */
 
 import { useLocks, useMembers } from "@ably/spaces/react";
-import { useSession } from "next-auth/react";
 import React, { memo, useState } from "react";
 import { useRecoilValue } from "recoil";
 
 import { Side, XYWH } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import { activeLayersAtom, cameraStateAtom } from "@/state";
+import { cameraStateAtom } from "@/state";
 
 interface SelectionBoxProps {
   onResizeHandlePointerDown: (corner: Side, initialBounds: XYWH) => void;
 }
 
 export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const [isLocked, setIsLocked] = useState(false);
   const camera = useRecoilValue(cameraStateAtom);
 
@@ -29,14 +25,6 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
 
     setIsLocked(lockedByYou);
   });
-
-  const allActiveLayers = useRecoilValue(activeLayersAtom);
-
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
-
-  const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
 
   const isShowingHandles = isLocked;
 
