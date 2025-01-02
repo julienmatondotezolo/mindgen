@@ -43,7 +43,6 @@ import {
   useRemoveEdge,
   useRemoveElement,
   useSelectEdgeElement,
-  useSelectElement,
   useUnSelectEdgeElement,
   useUnSelectElement,
   useUpdateEdge,
@@ -212,27 +211,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     selectionMap.set(selection.userId, selection.layerIds);
   });
 
-  // Merge users with their selections
-  const otherUserSelections: any = allOtherUsers.map((user) => ({
-    ...user,
-    layerIds: selectionMap.get(user.id) || [],
-  }));
-
-  const layerIdsToColorSelection = useMemo(() => {
-    const layerIdsToColorSelection: Record<string, string> = {};
-
-    for (const userSelection of otherUserSelections) {
-      for (const layerId of userSelection.layerIds) {
-        layerIdsToColorSelection[layerId] = connectionIdToColor(userSelection.socketIndex);
-      }
-    }
-
-    return layerIdsToColorSelection;
-  }, [otherUserSelections]);
-
-  // const selectLayer = useSelectElement({ roomId: boardId });
-
   const [selectedLayersIds, setSelectedLayersIds] = useState<string[]>([]);
+  // const selectLayer = useSelectElement({ roomId: boardId });
   const selectLayer = useCallback(
     async ({ userId, layerIds }: { userId: string; layerIds: string[] }) => {
       if (!space) return;
@@ -1960,7 +1940,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 key={index}
                 layer={layer}
                 onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
-                selectionColor={layerIdsToColorSelection[layer.id]}
               />
             ))}
             {shadowState.showShadow && shadowState.edgePosition && (
