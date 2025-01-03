@@ -12,11 +12,11 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   /** 💡 Use rewind to get the last message from the channel 💡 */
   const layerChannelName = `[?rewind=1]${boardId}-layers`;
 
-  const channel = ablyClient.channels.get(layerChannelName);
+  const layerChannel = ablyClient.channels.get(layerChannelName);
 
   if (!self) return;
 
-  await channel.subscribe((message) => {
+  await layerChannel.subscribe((message) => {
     if (message.connectionId === self.connectionId) return;
 
     if (message.name === "add") {

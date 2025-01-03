@@ -76,37 +76,11 @@ export const boardsLengthState = atom<number>({
   default: 1,
 });
 
-// ================   LAYER EFFECTS   ================== //
-
-const socketLayerEffect = () => {
-  // // Define the event handler function outside the effect to avoid redefining it on every call
-  // const handleAddLayer = (addedLayer: Layer) => {
-  //   setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);
-  // };
-  // const handleUpdateLayer = (updatedLayer: Layer) => {
-  //   setSelf((prevLayers: Layer[]) => prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
-  // };
-  // const handleRemoveLayer = (layerIdsToDelete: string[]) => {
-  //   setSelf((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
-  // };
-  // // Attach the event listener when the effect runs
-  // socket.on("remote-add-layer", handleAddLayer);
-  // socket.on("remote-update-layer", handleUpdateLayer);
-  // socket.on("remote-remove-layer", handleRemoveLayer);
-  // // Return a cleanup function to detach the event listener when the effect is no longer needed
-  // return () => {
-  //   socket.off("remote-add-layer", handleAddLayer);
-  //   socket.off("remote-update-layer", handleUpdateLayer);
-  //   socket.off("remote-remove-layer", handleRemoveLayer);
-  // };
-};
-
 // ================   LAYER STATES   ================== //
 
 export const layerAtomState = atom<Layer[]>({
   key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
   default: [], // valeur par défaut (alias valeur initials)
-  effects: [socketLayerEffect],
 });
 
 export const activeLayersAtom = atom<string[]>({

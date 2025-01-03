@@ -1,10 +1,11 @@
 import { useSpace } from "@ably/spaces/react";
 import { produce } from "immer";
-import { useRecoilCallback, useSetRecoilState } from "recoil";
+import { useRecoilCallback, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { Edge, Layer } from "@/_types";
 import { ablyClient } from "@/app/providers";
 import { useSocket } from "@/hooks";
+import { getLayerById } from "@/utils";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
 import { useAddToHistoryPrivate } from "./History";
@@ -76,7 +77,11 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          await channel.publish("add", { newLayer: layer });
+          // Get presence data to check for other users
+          const presence = await channel.presence.get();
+
+          // Only publish if there are other users (more than 1 person in the channel)
+          if (presence.length > 1) await channel.publish("add", { newLayer: layer });
         } catch (error) {
           console.error("can't add to channel:", error);
         }
@@ -86,39 +91,53 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useUpdateElement = ({ roomId }: { roomId: string }) => {
+  const layers = useRecoilValue(layerAtomState);
   const layerChannelName = `[?rewind=1]${roomId}-layers`;
   const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, updatedElementLayer }: { id: string; updatedElementLayer: any }) => {
+      async ({ id, updatedElementLayer }: { id: string; updatedElementLayer: any }) => {
         set(layerAtomState, (currentLayers: Layer[]) => {
           // Create a new array with the updated layer
           const updatedLayers = currentLayers.map((layer) => {
             if (layer.id === id) {
               // If we find a matching id, merge the current layer with the updates
-              const updatedLayer = {
+              const mergedLayer = {
                 ...layer,
                 ...updatedElementLayer,
               };
 
-              // Publish to channel
-              try {
-                channel.publish("update", { updatedLayer });
-              } catch (error) {
-                console.error("can't update to channel:", error);
-                return layer; // Return original state if publish fails
-              }
-
-              return updatedLayer;
+              return mergedLayer;
             }
             return layer;
           });
 
           return updatedLayers;
         });
+
+        // Publish to channel
+        try {
+          const layer = getLayerById({ layerId: id, layers });
+
+          const updatedLayer = {
+            ...layer,
+            ...updatedElementLayer,
+          };
+
+          // Get presence data to check for other users
+          const presence = await channel.presence.get();
+
+          // Only publish if there are other users (more than 1 person in the channel)
+          if (presence.length > 1 && updatedLayer) {
+            await channel.publish("update", { layer: updatedLayer });
+          }
+        } catch (error) {
+          console.error("can't update to channel:", error);
+          // Return original state if publish fails
+        }
       },
-    [channel],
+    [channel, layers],
   );
 };
 
@@ -137,7 +156,11 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          await channel.publish("remove", { layerIdsToDelete });
+          // Get presence data to check for other users
+          const presence = await channel.presence.get();
+
+          // Only publish if there are other users (more than 1 person in the channel)
+          if (presence.length > 1) await channel.publish("remove", { layerIdsToDelete });
         } catch (error) {
           console.error("can't publish to channel:", error);
         }
