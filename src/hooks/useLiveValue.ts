@@ -17,14 +17,16 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   if (!self) return;
 
   await channel.subscribe((message) => {
-    console.log("message:", message.name);
     if (message.connectionId === self.connectionId) return;
 
     const updatedLayer: Layer = message.data.layer;
 
-    setLayers((prevLayers: Layer[]) =>
-      prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)),
-    );
+    if (message.name === "update") {
+      setLayers((prevLayers: Layer[]) =>
+        prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)),
+      );
+      return;
+    }
 
     return;
   });

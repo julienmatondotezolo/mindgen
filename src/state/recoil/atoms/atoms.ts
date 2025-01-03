@@ -78,7 +78,7 @@ export const boardsLengthState = atom<number>({
 
 // ================   LAYER EFFECTS   ================== //
 
-const socketLayerEffect = ({ setSelf }: any) => {
+const socketLayerEffect = () => {
   // // Define the event handler function outside the effect to avoid redefining it on every call
   // const handleAddLayer = (addedLayer: Layer) => {
   //   setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);

@@ -92,10 +92,6 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useUpdateElement = ({ roomId }: { roomId: string }) => {
-  // const { socketEmit } = useSocket();
-
-  // const addToHistory = useAddToHistoryPrivate();
-
   /** 💡 Use rewind to get the last message from the channel. 💡 */
   const layerChannelName = `[?rewind=1]${roomId}-layers`;
 
@@ -103,29 +99,23 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, userId, updatedElementLayer }: { id: string; userId: string; updatedElementLayer: any }) => {
+      ({ id, updatedElementLayer }: { id: string; userId: string; updatedElementLayer: any }) => {
         set(layerAtomState, (currentLayers) =>
-          produce(
-            currentLayers,
-            (draft) => {
-              const index = draft.findIndex((layer) => layer.id === id);
+          produce(currentLayers, (draft) => {
+            const index = draft.findIndex((layer) => layer.id === id);
 
-              if (index !== -1) {
-                draft[index] = mergeDeep(draft[index], updatedElementLayer);
-              }
-              const updatedLayer = draft[index];
+            if (index !== -1) {
+              draft[index] = mergeDeep(draft[index], updatedElementLayer);
+            }
+            const updatedLayer = draft[index];
 
-              // socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
-              try {
-                channel.publish("update", { layer: updatedLayer });
-              } catch (error) {
-                console.error("can't publish to channel:", error);
-              }
-            },
-            (patches, inversePatches) => {
-              // addToHistory(patches, inversePatches, "layer");
-            },
-          ),
+            // socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
+            try {
+              channel.publish("update", { layer: updatedLayer });
+            } catch (error) {
+              console.error("can't publish to channel:", error);
+            }
+          }),
         );
       },
     [channel],
