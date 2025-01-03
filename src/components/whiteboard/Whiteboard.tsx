@@ -26,7 +26,7 @@ import {
   Side,
   XYWH,
 } from "@/_types";
-import { useSocket } from "@/hooks";
+import { useLiveValue, useSocket } from "@/hooks";
 import {
   activeEdgeIdAtom,
   activeLayersAtom,
@@ -43,6 +43,7 @@ import {
   useRemoveEdge,
   useRemoveElement,
   useSelectEdgeElement,
+  useSelectElement,
   useUnSelectEdgeElement,
   useUnSelectElement,
   useUpdateEdge,
@@ -105,6 +106,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  SOCKETS  ================== //
 
   const { space } = useSpace();
+
+  useLiveValue({ boardId });
   const { socketEmit } = useSocket();
   const session: any = useSession();
   const currentUserName = session.data?.session?.user?.username;
@@ -193,47 +196,28 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  CONSTANT LAYERS  ================== //
 
-  const allActiveLayers: any = useRecoilValue(activeLayersAtom);
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
+  const activeLayerIDs = [{}];
+  // const activeLayerIDs = allActiveLayers
+  //   .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
+  //   .map((item: any) => item.layerIds)[0];
+
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   const connectedUsers = useRecoilValue(connectedUsersState);
 
   const allOtherUsers = connectedUsers.filter((item) => item.id !== currentUserId);
-  const allOtherUserSelection = allActiveLayers.filter((activeLyers: any) => activeLyers.userId !== currentUserId);
+  // const allOtherUserSelection = allActiveLayers.filter((activeLyers: any) => activeLyers.userId !== currentUserId);
 
   // Create a Map to store selections for quick lookup
-  const selectionMap = new Map();
+  // const selectionMap = new Map();
 
   // Populate the selectionMap
-  allOtherUserSelection.forEach((selection: any) => {
-    selectionMap.set(selection.userId, selection.layerIds);
-  });
+  // allOtherUserSelection.forEach((selection: any) => {
+  //   selectionMap.set(selection.userId, selection.layerIds);
+  // });
 
   const [selectedLayersIds, setSelectedLayersIds] = useState<string[]>([]);
-  // const selectLayer = useSelectElement({ roomId: boardId });
-  const selectLayer = useCallback(
-    async ({ userId, layerIds }: { userId: string; layerIds: string[] }) => {
-      if (!space) return;
-
-      await space.locks.release(boardId);
-
-      const isLocked = space.locks.get(boardId) !== undefined;
-
-      if (isLocked) return;
-
-      try {
-        const attributes = { layerIds };
-
-        await space.locks.acquire(boardId, { attributes });
-      } catch (error) {
-        console.error("can't acquire the lock:", error);
-      }
-    },
-    [boardId, space],
-  );
-
+  const selectLayer = useSelectElement({ roomId: boardId });
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
   const addLayer = useAddElement({ roomId: boardId });
   const updateLayer = useUpdateElement({ roomId: boardId });
@@ -340,24 +324,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       pictureUrl: await takeScreenshot(),
     };
 
-    unSelectLayer({ userId: currentUserId });
+    unSelectLayer();
 
     updateBoardMutation.mutate({
       session: session,
       mindmapId: userMindmapDetails.id,
       mindmapObject: newMindmapObject,
     });
-  }, [
-    PERMISSIONS,
-    currentUserId,
-    edges,
-    layers,
-    session,
-    takeScreenshot,
-    unSelectLayer,
-    updateBoardMutation,
-    userMindmapDetails.id,
-  ]);
+  }, [PERMISSIONS, edges, layers, session, takeScreenshot, unSelectLayer, updateBoardMutation, userMindmapDetails.id]);
 
   // Handle window/tab close and navigation away
   useEffect(() => {
@@ -476,7 +450,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       fitView();
 
-      selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+      selectLayer({ layerIds: [newLayer.id] });
 
       setShadowState({
         showShadow: false,
@@ -506,11 +480,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         return;
       }
 
-      const isAlreadySelected = allOtherUserSelection.some((otherUser: any) => {
-        if (otherUser.layerIds) {
-          return otherUser.layerIds.includes(layerId);
-        }
-      });
+      // const isAlreadySelected = allOtherUserSelection.some((otherUser: any) => {
+      //   if (otherUser.layerIds) {
+      //     return otherUser.layerIds.includes(layerId);
+      //   }
+      // });
+
+      const isAlreadySelected = false;
 
       if (isAlreadySelected) return;
 
@@ -530,11 +506,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           origin,
         });
 
-        selectLayer({ userId: currentUserId, layerIds: selectedLayersIds });
+        selectLayer({ layerIds: selectedLayersIds });
         return;
       }
 
-      selectLayer({ userId: currentUserId, layerIds: [layerId] });
+      selectLayer({ layerIds: [layerId] });
 
       setCanvasState({
         mode: CanvasMode.Translating,
@@ -542,16 +518,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         initialLayerBounds: getLayerById({ layerId, layers }),
       });
     },
-    [
-      canvasState.mode,
-      allOtherUserSelection,
-      camera,
-      setCanvasState,
-      layers,
-      selectLayer,
-      currentUserId,
-      selectedLayersIds,
-    ],
+    [canvasState.mode, camera, setCanvasState, layers, selectLayer, selectedLayersIds],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -684,7 +651,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       };
 
       addLayer({ layer: newLayer, userId: currentUserId });
-      selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+      selectLayer({ layerIds: [newLayer.id] });
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
         updateEdge({
@@ -910,8 +877,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   );
 
   const handleUnSelectLayer = useCallback(() => {
-    unSelectLayer({ userId: currentUserId });
-  }, [currentUserId, unSelectLayer]);
+    unSelectLayer();
+  }, [unSelectLayer]);
 
   const sortLayersBySelection = useCallback(
     (layersToSort: Layer[]) => {
@@ -1496,7 +1463,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             addLayer({ layer: newLayer, userId: currentUserId });
 
-            selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+            selectLayer({ layerIds: [newLayer.id] });
 
             if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
               updateEdge({
@@ -1559,7 +1526,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       } else if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
       } else if (canvasState.mode === CanvasMode.SelectionNet) {
-        selectLayer({ userId: currentUserId, layerIds: selectedLayersIds });
+        selectLayer({ layerIds: selectedLayersIds });
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1897,14 +1864,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <div className="text-sm mb-1">
             <strong>Active Layers:</strong>
 
-            {allActiveLayers.map((activeLayer: any, index: any) => (
+            <pre>{JSON.stringify(allActiveLayers, null, 2)}</pre>
+
+            {/* {allActiveLayers.map((activeLayer: any, index: any) => (
               <section key={index}>
                 <p>{activeLayer.userId === currentUserId ? "current user" : activeLayer.userId}</p>
                 <pre>{JSON.stringify(activeLayer.layerIds, null, 2)}</pre>
               </section>
-            ))}
-            {/*             
-            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre> */}
+            ))} */}
           </div>
         </div>
       )}

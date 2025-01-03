@@ -79,66 +79,26 @@ export const boardsLengthState = atom<number>({
 // ================   LAYER EFFECTS   ================== //
 
 const socketLayerEffect = ({ setSelf }: any) => {
-  // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddLayer = (addedLayer: Layer) => {
-    setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);
-  };
-
-  const handleUpdateLayer = (updatedLayer: Layer) => {
-    setSelf((prevLayers: Layer[]) => prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
-  };
-
-  const handleRemoveLayer = (layerIdsToDelete: string[]) => {
-    setSelf((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
-  };
-
-  // Attach the event listener when the effect runs
-  socket.on("remote-add-layer", handleAddLayer);
-  socket.on("remote-update-layer", handleUpdateLayer);
-  socket.on("remote-remove-layer", handleRemoveLayer);
-
-  // Return a cleanup function to detach the event listener when the effect is no longer needed
-  return () => {
-    socket.off("remote-add-layer", handleAddLayer);
-    socket.off("remote-update-layer", handleUpdateLayer);
-    socket.off("remote-remove-layer", handleRemoveLayer);
-  };
-};
-
-const socketActiveLayerEffect = ({ setSelf }: any) => {
-  // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddActiveLayer = (socketSelectedData: any) => {
-    setSelf((prevSelectedData: any) => {
-      if (Object.keys(prevSelectedData).length === 0) {
-        return socketSelectedData;
-      }
-
-      const result = prevSelectedData.map((item: any) => ({ ...item }));
-
-      // Then, update layerIds for matching users
-      socketSelectedData.forEach((selecteData: any) => {
-        const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
-
-        if (existingItem) {
-          const existingLayerIds = selecteData.layerIds;
-
-          existingItem.layerIds = [...new Set(existingLayerIds)];
-        } else {
-          result.push(selecteData);
-        }
-      });
-
-      return result;
-    });
-  };
-
-  // Attach the event listener when the effect runs
-  socket.on("remote-select-layer", handleAddActiveLayer);
-
-  // Return a cleanup function to detach the event listener when the effect is no longer needed
-  return () => {
-    socket.off("remote-select-layer", handleAddActiveLayer);
-  };
+  // // Define the event handler function outside the effect to avoid redefining it on every call
+  // const handleAddLayer = (addedLayer: Layer) => {
+  //   setSelf((prevLayers: Layer[]) => [...prevLayers, addedLayer]);
+  // };
+  // const handleUpdateLayer = (updatedLayer: Layer) => {
+  //   setSelf((prevLayers: Layer[]) => prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
+  // };
+  // const handleRemoveLayer = (layerIdsToDelete: string[]) => {
+  //   setSelf((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
+  // };
+  // // Attach the event listener when the effect runs
+  // socket.on("remote-add-layer", handleAddLayer);
+  // socket.on("remote-update-layer", handleUpdateLayer);
+  // socket.on("remote-remove-layer", handleRemoveLayer);
+  // // Return a cleanup function to detach the event listener when the effect is no longer needed
+  // return () => {
+  //   socket.off("remote-add-layer", handleAddLayer);
+  //   socket.off("remote-update-layer", handleUpdateLayer);
+  //   socket.off("remote-remove-layer", handleRemoveLayer);
+  // };
 };
 
 // ================   LAYER STATES   ================== //
@@ -151,8 +111,7 @@ export const layerAtomState = atom<Layer[]>({
 
 export const activeLayersAtom = atom({
   key: "activeLayersAtom",
-  default: [{}], // Start with no active layers
-  effects: [socketActiveLayerEffect],
+  default: [], // Start with no active layers
 });
 
 export const hoveredLayerIdAtomState = atom<string>({

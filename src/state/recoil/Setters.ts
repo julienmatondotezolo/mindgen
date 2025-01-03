@@ -1,5 +1,4 @@
-import { Message } from "ably";
-import { useChannel } from "ably/react";
+import { useSpace } from "@ably/spaces/react";
 import { produce } from "immer";
 import { useRecoilCallback, useSetRecoilState } from "recoil";
 
@@ -11,72 +10,50 @@ import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } fr
 import { useAddToHistoryPrivate } from "./History";
 
 export const useSelectElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
+  const { space } = useSpace();
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ layerIds, userId }: { layerIds: string[]; userId: string }) => {
-        const userActiveLayers = {
-          userId,
-          layerIds,
-        };
+      async ({ layerIds }: { layerIds: string[] }) => {
+        if (!space) return;
 
         // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, (currentActiveLayers: any) => {
-          // If there are some currentActiveLayers add the selected Layer to it
-          if (
-            !currentActiveLayers?.length ||
-            !currentActiveLayers[0] ||
-            Object.keys(currentActiveLayers[0]).length === 0
-          ) {
-            socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
-            const mergLayers = [...currentActiveLayers, userActiveLayers];
+        set(activeLayersAtom, () => layerIds);
 
-            return mergLayers.filter((obj) => Object.keys(obj).length > 0);
-          }
-
-          const result = currentActiveLayers.map((item: any) => ({ ...item }));
-
-          currentActiveLayers.forEach(() => {
-            const existingItem = result.find((existing: any) => existing.userId === userActiveLayers.userId);
-
-            if (existingItem) {
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
-              existingItem.layerIds = userActiveLayers.layerIds;
-            } else {
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
-              result.push(userActiveLayers);
-            }
+        // Acquire lock with the updated layer IDs
+        try {
+          await space.locks.acquire(roomId, {
+            attributes: { layerIds },
           });
-
-          return result;
-        });
+        } catch (error) {
+          console.error("Failed to acquire lock:", error);
+          // Optionally revert the state change if lock acquisition fails
+        }
       },
-    [roomId, socketEmit],
+    [roomId, space],
   );
 };
 
 export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
+  const { space } = useSpace();
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ userId }: { userId: string }) => {
-        // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, (currentActiveLayers) => {
-          const updatedActiveLayers = currentActiveLayers.map((item: any) => {
-            if (item.userId === userId) {
-              // Emit to socket when userId matches
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ userId, layerIds: [] }] });
-              return { ...item, layerIds: [] };
-            }
-            return item;
-          });
+      async () => {
+        if (!space) return;
 
-          return updatedActiveLayers;
-        });
+        // Update the activeLayersAtom with the provided layer IDs
+        set(activeLayersAtom, () => []);
+
+        // Acquire lock with the updated layer IDs
+        try {
+          await space.locks.release(roomId);
+        } catch (error) {
+          console.error("Failed to release lock:", error);
+          // Optionally revert the state change if lock release fails
+        }
       },
-    [roomId, socketEmit],
+    [roomId, space],
   );
 };
 
