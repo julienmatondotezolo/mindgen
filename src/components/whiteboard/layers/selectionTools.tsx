@@ -40,7 +40,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
   const activeLayerID = allActiveLayers[0];
 
-  const currentLayer = getLayerById({ layerId: activeLayerID ? activeLayerID[0] : "0", layers });
+  const currentLayer = getLayerById({ layerId: activeLayerID, layers });
 
   const boardId = useRecoilValue(boardIdState);
   const canvasState = useRecoilValue(canvasStateAtom);
@@ -72,33 +72,32 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
           layerType = LayerType.Rectangle;
       }
 
-      for (const layerId of activeLayerID) {
+      for (const layerId of allActiveLayers) {
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: { type: layerType },
         });
       }
       setShowShapePicker(false);
     },
-    [activeLayerID, currentUserId, updateLayer],
+    [allActiveLayers, updateLayer],
   );
 
   const handleColorChange = useCallback(
     (fill: Color) => {
       setLastUsedColor(fill);
 
-      for (const layerId of activeLayerID) {
+      for (const layerId of allActiveLayers) {
         if (showBorderColorPicker) {
           updateLayer({
             id: layerId,
-            userId: currentUserId,
+
             updatedElementLayer: { borderColor: fill },
           });
         } else {
           updateLayer({
             id: layerId,
-            userId: currentUserId,
+
             updatedElementLayer: { fill: fill },
           });
         }
@@ -106,7 +105,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
       setShowColorPicker(false);
       setShowBorderColorPicker(false);
     },
-    [activeLayerID, currentUserId, setLastUsedColor, showBorderColorPicker, updateLayer],
+    [allActiveLayers, setLastUsedColor, showBorderColorPicker, updateLayer],
   );
 
   const handleBorderColorChange = useCallback(() => {
@@ -120,7 +119,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
   }, [showBorderColorPicker]);
 
   const handleToggleBorderType = useCallback(() => {
-    for (const layerId of activeLayerID) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -128,15 +127,14 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: { borderType: newBorderType },
         });
       }
     }
-  }, [activeLayerID, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleToggleBorderWidth = useCallback(() => {
-    for (const layerId of activeLayerID) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -144,15 +142,14 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: { borderWidth: newBorderWidth },
         });
       }
     }
-  }, [activeLayerID, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleToggleTextTransform = useCallback(() => {
-    for (const layerId of activeLayerID) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -160,7 +157,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: {
             valueStyle: {
               ...layer.valueStyle,
@@ -170,10 +166,10 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerID, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleToggleFontWeight = useCallback(() => {
-    for (const layerId of activeLayerID) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -181,7 +177,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: {
             valueStyle: {
               ...layer.valueStyle,
@@ -191,7 +186,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerID, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleRemoveLayer = useCallback(() => {
     if (isDeletable) {

@@ -1356,7 +1356,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           if (layer.x !== canvasState.initialLayerBounds?.x || layer.y !== canvasState.initialLayerBounds?.y) {
             updateLayer({
               id: layer.id,
-              userId: currentUserId,
               updatedElementLayer: { x: layer.x, y: layer.y },
             });
           }
@@ -1373,7 +1372,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         for (const layer of selectedLayers) {
           updateLayer({
             id: layer.id,
-            userId: currentUserId,
             updatedElementLayer: { x: layer.x, y: layer.y, width: layer.width, height: layer.height },
           });
         }
@@ -1717,7 +1715,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         const selectedLayers = layers.filter((layer) => allActiveLayers?.includes(layer.id));
         const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
-        removeLayer({ layerIdsToDelete, userId: currentUserId });
+        removeLayer({ layerIdsToDelete });
         handleUnSelectLayer();
 
         for (const layer of selectedLayers) {

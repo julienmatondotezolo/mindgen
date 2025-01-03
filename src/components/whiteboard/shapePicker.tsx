@@ -2,7 +2,6 @@
 "use client";
 
 import { Circle, Diamond, LucideIcon, Square, X } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { CanvasMode, LayerType } from "@/_types/canvas";
@@ -17,17 +16,14 @@ interface ShapePickerProps {
 }
 
 export const ShapePicker = ({ onChange, onClose }: ShapePickerProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const layers = useRecoilValue(layerAtomState);
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
+  const activeLayerID = allActiveLayers[0];
 
-  const currentLayer = getLayerById({ layerId: activeLayerIDs ? activeLayerIDs[0] : 0, layers });
+  const currentLayer = getLayerById({ layerId: activeLayerID, layers });
+
+  if (!currentLayer) return <></>;
 
   return (
     <div className="p-2">

@@ -92,31 +92,37 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useUpdateElement = ({ roomId }: { roomId: string }) => {
-  /** 💡 Use rewind to get the last message from the channel. 💡 */
   const layerChannelName = `[?rewind=1]${roomId}-layers`;
-
   const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, updatedElementLayer }: { id: string; userId: string; updatedElementLayer: any }) => {
-        set(layerAtomState, (currentLayers) =>
-          produce(currentLayers, (draft) => {
-            const index = draft.findIndex((layer) => layer.id === id);
+      ({ id, updatedElementLayer }: { id: string; updatedElementLayer: any }) => {
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          // Create a new array with the updated layer
+          const updatedLayers = currentLayers.map((layer) => {
+            if (layer.id === id) {
+              // If we find a matching id, merge the current layer with the updates
+              const updatedLayer = {
+                ...layer,
+                ...updatedElementLayer,
+              };
 
-            if (index !== -1) {
-              draft[index] = mergeDeep(draft[index], updatedElementLayer);
-            }
-            const updatedLayer = draft[index];
+              // Publish to channel
+              try {
+                channel.publish("update", { layer: updatedLayer });
+              } catch (error) {
+                console.error("can't remove to channel:", error);
+                return layer; // Return original state if publish fails
+              }
 
-            // socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
-            try {
-              channel.publish("update", { layer: updatedLayer });
-            } catch (error) {
-              console.error("can't publish to channel:", error);
+              return updatedLayer;
             }
-          }),
-        );
+            return layer;
+          });
+
+          return updatedLayers;
+        });
       },
     [channel],
   );
@@ -141,9 +147,9 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
                 if (index !== -1) {
                   draft.splice(index, 1);
                 }
-              }
+        }
               socketEmit("remove-layer", { roomId, userId, layerIdsToDelete });
-            },
+      },
             (patches, inversePatches) => {
               addToHistory(patches, inversePatches, "layer");
             },
