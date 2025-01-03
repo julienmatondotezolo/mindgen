@@ -193,10 +193,10 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
       alert("You don't have the rights to delete");
       return;
     }
-    const selectedLayers = layers.filter((layer: Layer) => activeLayerID.includes(layer.id));
+    const selectedLayers = layers.filter((layer: Layer) => allActiveLayers.includes(layer.id));
     const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
-    removeLayer({ layerIdsToDelete, userId: currentUserId });
+    removeLayer({ layerIdsToDelete });
     unSelectLayer();
 
     for (const layer of selectedLayers) {
@@ -208,7 +208,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerID, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
+  }, [allActiveLayers, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
 
   if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
     return null;

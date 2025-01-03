@@ -63,31 +63,25 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useAddElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
-  const setActiveLayers = useSetRecoilState(activeLayersAtom);
+  const layerChannelName = `[?rewind=1]${roomId}-layers`;
+  const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ layer, userId }: { layer: Layer; userId: string }) => {
-        set(layerAtomState, (currentLayers) =>
-          produce(
-            currentLayers,
-            (draft) => {
-              // Assuming currentLayers is an array, we push the new layer to it
-              draft.push(layer);
-              socketEmit("add-layer", { roomId, userId, layer });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "layer");
-            },
-          ),
-        );
+      async ({ layer }: { layer: Layer; userId: string }) => {
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          const updatedLayers = [...currentLayers, layer];
 
-        setActiveLayers([layer.id]);
+          return updatedLayers;
+        });
+
+        try {
+          await channel.publish("add", { newLayer: layer });
+        } catch (error) {
+          console.error("can't add to channel:", error);
+        }
       },
-    [addToHistory, roomId, setActiveLayers, socketEmit],
+    [channel],
   );
 };
 
@@ -110,9 +104,9 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
 
               // Publish to channel
               try {
-                channel.publish("update", { layer: updatedLayer });
+                channel.publish("update", { updatedLayer });
               } catch (error) {
-                console.error("can't remove to channel:", error);
+                console.error("can't update to channel:", error);
                 return layer; // Return original state if publish fails
               }
 
@@ -129,34 +123,26 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useRemoveElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
+  const layerChannelName = `[?rewind=1]${roomId}-layers`;
+  const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ layerIdsToDelete, userId }: { layerIdsToDelete: string[]; userId: string }) => {
-        set(layerAtomState, (currentLayers) =>
-          produce(
-            currentLayers,
-            (draft) => {
-              // Iterate over layerIdsToDelete and remove the corresponding layers from the draft
-              for (const layerId of layerIdsToDelete) {
-                const index = draft.findIndex((layer) => layer.id === layerId);
+      async ({ layerIdsToDelete }: { layerIdsToDelete: string[] }) => {
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          // Filter out the layers with IDs that should be deleted
+          const updatedLayers = currentLayers.filter((layer) => !layerIdsToDelete.includes(layer.id));
 
-                if (index !== -1) {
-                  draft.splice(index, 1);
-                }
+          return updatedLayers;
+        });
+
+        try {
+          await channel.publish("remove", { layerIdsToDelete });
+        } catch (error) {
+          console.error("can't publish to channel:", error);
         }
-              socketEmit("remove-layer", { roomId, userId, layerIdsToDelete });
       },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "layer");
-            },
-          ),
-        );
-      },
-    [addToHistory, roomId, socketEmit],
+    [channel],
   );
 };
 

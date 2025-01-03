@@ -19,13 +19,24 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   await channel.subscribe((message) => {
     if (message.connectionId === self.connectionId) return;
 
-      const updatedLayer: Layer = message.data.layer;
+    if (message.name === "add") {
+      const newLayer: Layer = message.data.newLayer;
+
+      setLayers((prevLayers: Layer[]) => [...prevLayers, newLayer]);
+    }
 
     if (message.name === "update") {
+      const updatedLayer: Layer = message.data.updatedLayer;
+
       setLayers((prevLayers: Layer[]) =>
         prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)),
       );
-      return;
+    }
+
+    if (message.name === "remove") {
+      const layerIdsToDelete: string[] = message.data.layerIdsToDelete;
+
+      setLayers((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
     }
 
     return;
