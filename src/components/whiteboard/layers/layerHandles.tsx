@@ -1,22 +1,12 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 import { Plus } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import { useRecoilValue } from "recoil";
 
-import { CanvasMode, HandlePosition, Point } from "@/_types";
+import { CanvasMode, HandlePosition } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import {
-  activeLayersAtom,
-  canvasStateAtom,
-  hoveredLayerIdAtomState,
-  isEdgeNearLayerAtom,
-  nearestLayerAtom,
-} from "@/state";
-
-import { HandleButton } from "../HandleButton";
+import { activeLayersAtom, canvasStateAtom, isEdgeNearLayerAtom, nearestLayerAtom } from "@/state";
 
 interface LayerHandlesProps {
   onMouseEnter: (e: React.MouseEvent, layerId: string, position: HandlePosition) => void;
@@ -30,18 +20,11 @@ const HANDLE_DISTANCE = 30;
 const ICON_SIZE = 40;
 
 export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, onPointerUp }: LayerHandlesProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   const { theme } = useTheme();
 
-  const allActiveLayers = useRecoilValue(activeLayersAtom);
-
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer) => userActiveLayer.userId === currentUserId)
-    .map((item) => item.layerIds)[0];
-
-  const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
+  const soleLayerId = allActiveLayers?.length === 1 ? allActiveLayers[0] : null;
 
   const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
   const nearestLayer = useRecoilValue(nearestLayerAtom);
@@ -53,7 +36,7 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   const isShowingHandles = soleLayerId || isEdgeNearLayer;
 
-  if (!isShowingHandles || (activeLayerIDs && activeLayerIDs.length > 1)) return null;
+  if (!isShowingHandles || (allActiveLayers && allActiveLayers.length > 1)) return null;
 
   const handleLayerId = soleLayerId || (nearestLayer ? nearestLayer.id : null);
 

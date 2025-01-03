@@ -1,9 +1,7 @@
-import { useLocks, useMembers } from "@ably/spaces/react";
-import { useState } from "react";
 import { useRecoilValue } from "recoil";
 
 import { Layer, XYWH } from "@/_types";
-import { isEdgeNearLayerAtom, layerAtomState, nearestLayerAtom } from "@/state";
+import { activeLayersAtom, isEdgeNearLayerAtom, layerAtomState, nearestLayerAtom } from "@/state";
 
 const boundingBox = (layers: Layer[]): XYWH | null => {
   const first = layers[0];
@@ -45,32 +43,13 @@ const boundingBox = (layers: Layer[]): XYWH | null => {
 
 const useSelectionBounds = () => {
   const layers = useRecoilValue(layerAtomState);
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
   const nearestLayer = useRecoilValue(nearestLayerAtom);
 
-  const [lockedIds, setLockedIds] = useState<string[]>([]);
-  const { self } = useMembers();
-
-  useLocks((lockUpdate) => {
-    const lockHolder = lockUpdate.member;
-    const locked = lockUpdate.status === "locked";
-    const lockedByYou = locked && lockHolder.connectionId === self?.connectionId;
-
-    if (lockedByYou) {
-      const { layerIds } = lockUpdate.attributes as {
-        layerIds: string[];
-      };
-
-      setLockedIds(layerIds);
-      return;
-    }
-
-    setLockedIds([]);
-  });
-
   // Check if layers is an array before filtering
-  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => lockedIds.includes(layer.id)) : [];
+  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => allActiveLayers.includes(layer.id)) : [];
 
   if (selectedLayers.length > 0) return boundingBox(selectedLayers);
 

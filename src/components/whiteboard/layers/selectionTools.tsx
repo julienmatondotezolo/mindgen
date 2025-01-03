@@ -38,11 +38,9 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
   const layers = useRecoilValue(layerAtomState);
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
+  const activeLayerID = allActiveLayers[0];
 
-  const currentLayer = getLayerById({ layerId: activeLayerIDs ? activeLayerIDs[0] : 0, layers });
+  const currentLayer = getLayerById({ layerId: activeLayerID ? activeLayerID[0] : "0", layers });
 
   const boardId = useRecoilValue(boardIdState);
   const canvasState = useRecoilValue(canvasStateAtom);
@@ -74,7 +72,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
           layerType = LayerType.Rectangle;
       }
 
-      for (const layerId of activeLayerIDs) {
+      for (const layerId of activeLayerID) {
         updateLayer({
           id: layerId,
           userId: currentUserId,
@@ -83,14 +81,14 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
       }
       setShowShapePicker(false);
     },
-    [activeLayerIDs, currentUserId, updateLayer],
+    [activeLayerID, currentUserId, updateLayer],
   );
 
   const handleColorChange = useCallback(
     (fill: Color) => {
       setLastUsedColor(fill);
 
-      for (const layerId of activeLayerIDs) {
+      for (const layerId of activeLayerID) {
         if (showBorderColorPicker) {
           updateLayer({
             id: layerId,
@@ -108,7 +106,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
       setShowColorPicker(false);
       setShowBorderColorPicker(false);
     },
-    [activeLayerIDs, currentUserId, setLastUsedColor, showBorderColorPicker, updateLayer],
+    [activeLayerID, currentUserId, setLastUsedColor, showBorderColorPicker, updateLayer],
   );
 
   const handleBorderColorChange = useCallback(() => {
@@ -122,7 +120,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
   }, [showBorderColorPicker]);
 
   const handleToggleBorderType = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of activeLayerID) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -135,10 +133,10 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [activeLayerID, currentUserId, layers, updateLayer]);
 
   const handleToggleBorderWidth = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of activeLayerID) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -151,10 +149,10 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [activeLayerID, currentUserId, layers, updateLayer]);
 
   const handleToggleTextTransform = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of activeLayerID) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -172,10 +170,10 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [activeLayerID, currentUserId, layers, updateLayer]);
 
   const handleToggleFontWeight = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of activeLayerID) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -193,18 +191,18 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [activeLayerID, currentUserId, layers, updateLayer]);
 
   const handleRemoveLayer = useCallback(() => {
     if (isDeletable) {
       alert("You don't have the rights to delete");
       return;
     }
-    const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
+    const selectedLayers = layers.filter((layer: Layer) => activeLayerID.includes(layer.id));
     const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
     removeLayer({ layerIdsToDelete, userId: currentUserId });
-    unSelectLayer({ userId: currentUserId });
+    unSelectLayer();
 
     for (const layer of selectedLayers) {
       if (layer) {
@@ -215,7 +213,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
         });
       }
     }
-  }, [activeLayerIDs, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
+  }, [activeLayerID, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
 
   if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
     return null;

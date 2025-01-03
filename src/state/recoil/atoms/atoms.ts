@@ -109,7 +109,7 @@ export const layerAtomState = atom<Layer[]>({
   effects: [socketLayerEffect],
 });
 
-export const activeLayersAtom = atom({
+export const activeLayersAtom = atom<string[]>({
   key: "activeLayersAtom",
   default: [], // Start with no active layers
 });

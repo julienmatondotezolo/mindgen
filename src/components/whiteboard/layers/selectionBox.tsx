@@ -1,32 +1,22 @@
 /* eslint-disable no-unused-vars */
 
-import { useLocks, useMembers } from "@ably/spaces/react";
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import { useRecoilValue } from "recoil";
 
 import { Side, XYWH } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import { cameraStateAtom } from "@/state";
+import { activeLayersAtom, cameraStateAtom } from "@/state";
 
 interface SelectionBoxProps {
   onResizeHandlePointerDown: (corner: Side, initialBounds: XYWH) => void;
 }
 
 export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxProps) => {
-  const [isLocked, setIsLocked] = useState(false);
   const camera = useRecoilValue(cameraStateAtom);
 
-  const { self } = useMembers();
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
 
-  useLocks((lockUpdate) => {
-    const lockHolder = lockUpdate.member;
-    const locked = lockUpdate.status === "locked";
-    const lockedByYou = locked && lockHolder.connectionId === self?.connectionId;
-
-    setIsLocked(lockedByYou);
-  });
-
-  const isShowingHandles = isLocked;
+  const isShowingHandles = allActiveLayers?.length > 0 ? allActiveLayers[0] : null;
 
   const bounds = useSelectionBounds();
 

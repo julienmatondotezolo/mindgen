@@ -20,6 +20,11 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, () => layerIds);
 
+        // checking whether a lock identifier is currently locked
+        const isLocked = space.locks.get(roomId) !== undefined;
+
+        if (isLocked) return;
+
         // Acquire lock with the updated layer IDs
         try {
           await space.locks.acquire(roomId, {
