@@ -2,6 +2,7 @@ export * from "./useCachedQuery";
 export * from "./useDidUpdateEffect";
 export * from "./useDisableScrollBounce";
 export * from "./useHistory";
+export * from "./useLiveValue";
 export * from "./useMindMapChangeListener";
 export * from "./usePageBottom";
 export * from "./useScrollPosition";

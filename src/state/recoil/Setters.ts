@@ -1,7 +1,10 @@
+import { Message } from "ably";
+import { useChannel } from "ably/react";
 import { produce } from "immer";
 import { useRecoilCallback, useSetRecoilState } from "recoil";
 
 import { Edge, Layer } from "@/_types";
+import { ablyClient } from "@/app/providers";
 import { useSocket } from "@/hooks";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
@@ -107,9 +110,14 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useUpdateElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
+  // const { socketEmit } = useSocket();
 
-  const addToHistory = useAddToHistoryPrivate();
+  // const addToHistory = useAddToHistoryPrivate();
+
+  /** 💡 Use rewind to get the last message from the channel. 💡 */
+  const layerChannelName = `[?rewind=1]${roomId}-layers`;
+
+  const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
     ({ set }) =>
@@ -125,15 +133,20 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
               }
               const updatedLayer = draft[index];
 
-              socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
+              // socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
+              try {
+                channel.publish("update", { layer: updatedLayer });
+              } catch (error) {
+                console.error("can't publish to channel:", error);
+              }
             },
             (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "layer");
+              // addToHistory(patches, inversePatches, "layer");
             },
           ),
         );
       },
-    [addToHistory, roomId, socketEmit],
+    [channel],
   );
 };
 
