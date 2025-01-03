@@ -26,6 +26,7 @@ import {
   Side,
   XYWH,
 } from "@/_types";
+import { ablyClient } from "@/app/providers";
 import { useLiveValue, useSelectionBounds, useSocket } from "@/hooks";
 import {
   activeEdgeIdAtom,
@@ -179,7 +180,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     });
   }, []); // Run when layers or refs change
 
-  // ================  ENTERING SPACE ================== //
+  // ================  ENTERING SPACE & CHANNEL ================== //
 
   useEffect(() => {
     space?.enter({ username: currentUserName, userId: currentUserId, userColor: randomUserColor() });
@@ -1600,6 +1601,12 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  LEAVING SPACE WHILE LEAVING BOARD  ================== //
 
   const handleSelfCursorLeave = async () => {
+    const layerChannelName = `[?rewind=1]${boardId}`;
+
+    const channel = ablyClient.channels.get(layerChannelName);
+
+    channel.unsubscribe();
+
     handleUnSelectLayer();
 
     await space?.cursors.set({

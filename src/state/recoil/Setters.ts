@@ -64,7 +64,7 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useAddElement = ({ roomId }: { roomId: string }) => {
-  const layerChannelName = `[?rewind=1]${roomId}-layers`;
+  const layerChannelName = `[?rewind=1]${roomId}`;
   const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
@@ -77,11 +77,7 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          // Get presence data to check for other users
-          const presence = await channel.presence.get();
-
-          // Only publish if there are other users (more than 1 person in the channel)
-          if (presence.length > 1) await channel.publish("add", { newLayer: layer });
+          await channel.publish("add", { newLayer: layer });
         } catch (error) {
           console.error("can't add to channel:", error);
         }
@@ -92,7 +88,7 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 
 export const useUpdateElement = ({ roomId }: { roomId: string }) => {
   const layers = useRecoilValue(layerAtomState);
-  const layerChannelName = `[?rewind=1]${roomId}-layers`;
+  const layerChannelName = `[?rewind=1]${roomId}`;
   const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
@@ -125,15 +121,8 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
             ...updatedElementLayer,
           };
 
-          // Get presence data to check for other users
-          const presence = await channel.presence.get();
-
-          // Only publish if there are other users (more than 1 person in the channel)
-          if (presence.length > 1 && updatedLayer) {
-            await channel.publish("update", { layer: updatedLayer });
-          }
+          await channel.publish("update", { updatedLayer });
         } catch (error) {
-          console.error("can't update to channel:", error);
           // Return original state if publish fails
         }
       },
@@ -142,7 +131,7 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useRemoveElement = ({ roomId }: { roomId: string }) => {
-  const layerChannelName = `[?rewind=1]${roomId}-layers`;
+  const layerChannelName = `[?rewind=1]${roomId}`;
   const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
@@ -156,11 +145,7 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          // Get presence data to check for other users
-          const presence = await channel.presence.get();
-
-          // Only publish if there are other users (more than 1 person in the channel)
-          if (presence.length > 1) await channel.publish("remove", { layerIdsToDelete });
+          await channel.publish("remove", { layerIdsToDelete });
         } catch (error) {
           console.error("can't publish to channel:", error);
         }

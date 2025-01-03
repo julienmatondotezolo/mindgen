@@ -9,14 +9,16 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   const setLayers = useSetRecoilState(layerAtomState);
   const { self } = useMembers();
 
-  /** 💡 Use rewind to get the last message from the channel 💡 */
-  const layerChannelName = `[?rewind=1]${boardId}-layers`;
+  if (!self) return;
 
-  const layerChannel = ablyClient.channels.get(layerChannelName);
+  /** 💡 Use rewind to get the last message from the channel 💡 */
+  const layerChannelName = `[?rewind=1]${boardId}`;
+
+  const channel = ablyClient.channels.get(layerChannelName);
 
   if (!self) return;
 
-  await layerChannel.subscribe((message) => {
+  await channel.subscribe((message) => {
     if (message.connectionId === self.connectionId) return;
 
     if (message.name === "add") {
