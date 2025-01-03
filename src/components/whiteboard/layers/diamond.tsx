@@ -79,7 +79,6 @@ const Diamond = ({ id, layer, onPointerDown, selectionColor }: DiamondProps) => 
 
     updateLayer({
       id,
-      userId: currentUserId,
       updatedElementLayer: { value: newValue, width: newWidth, height: newHeight },
     });
   };

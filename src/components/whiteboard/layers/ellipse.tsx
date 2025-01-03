@@ -1,10 +1,9 @@
 /* eslint-disable no-unused-vars */
-import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import React from "react";
 import { useRecoilValue } from "recoil";
 
-import { Color, EllipseLayer } from "@/_types/canvas";
+import { EllipseLayer } from "@/_types/canvas";
 import { boardIdState, useUpdateElement } from "@/state";
 import { colorToCss, fillRGBA, getContrastingTextColor } from "@/utils";
 
@@ -27,9 +26,6 @@ const calculateFontSize = (width: number, height: number) => {
 };
 
 const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const { theme } = useTheme();
 
   const { x, y, width, height, fill, value, valueStyle, borderColor, borderWidth, borderType } = layer;
@@ -38,7 +34,7 @@ const Ellipse = ({ id, layer, onPointerDown, selectionColor }: EllipseProps) => 
   const updateLayer = useUpdateElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
-    updateLayer({ id, userId: currentUserId, updatedElementLayer: { value: newValue } });
+    updateLayer({ id, updatedElementLayer: { value: newValue } });
   };
 
   const newBorderColor = borderColor

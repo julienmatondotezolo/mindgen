@@ -1,11 +1,10 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 
-import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
+import React from "react";
 import { useRecoilValue } from "recoil";
 
-import { Color, RectangleLayer } from "@/_types";
+import { RectangleLayer } from "@/_types";
 import { boardIdState, cameraStateAtom, useUpdateElement } from "@/state";
 import { colorToCss, fillRGBA, getContrastingTextColor } from "@/utils";
 
@@ -62,9 +61,6 @@ const calculateFontSize = (width: number, height: number, scale: number, text: s
 };
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const { theme } = useTheme();
 
   const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType, borderColor } = layer;
@@ -75,11 +71,11 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
   const updateLayer = useUpdateElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
+    console.log("newValue:", newValue);
     const { width: newWidth, height: newHeight } = calculateDimensions(newValue, width, height, camera.scale);
 
     updateLayer({
       id,
-      userId: currentUserId,
       updatedElementLayer: { value: newValue, width: newWidth, height: newHeight },
     });
   };
