@@ -3,9 +3,9 @@
 import React, { memo } from "react";
 import { useRecoilValue } from "recoil";
 
-import { Side, XYWH } from "@/_types";
+import { CanvasMode, Side, XYWH } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import { activeLayersAtom, cameraStateAtom } from "@/state";
+import { activeLayersAtom, cameraStateAtom, canvasStateAtom } from "@/state";
 
 interface SelectionBoxProps {
   onResizeHandlePointerDown: (corner: Side, initialBounds: XYWH) => void;
@@ -15,8 +15,11 @@ export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxPro
   const camera = useRecoilValue(cameraStateAtom);
 
   const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const canvasState = useRecoilValue(canvasStateAtom);
 
-  const isShowingHandles = allActiveLayers?.length > 0 ? allActiveLayers[0] : null;
+  const soleActiveLayerId = allActiveLayers?.length > 0;
+
+  const isShowingHandles = soleActiveLayerId && canvasState.mode !== CanvasMode.Typing;
 
   const bounds = useSelectionBounds();
 

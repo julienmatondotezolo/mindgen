@@ -1,11 +1,9 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/no-autofocus */
 /* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 
 import React, { useRef, useState } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types";
 import { canvasStateAtom } from "@/state";
@@ -19,20 +17,11 @@ interface CustomEditableProps {
 const CustomContentEditable = ({ value, onChange, style }: CustomEditableProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const editableRef = useRef<HTMLDivElement>(null);
-  const setCanvasState = useSetRecoilState(canvasStateAtom);
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
   const handleClick = () => {
-    if (isEditing) {
-      setCanvasState({
-        mode: CanvasMode.Typing,
-      });
-    }
-  };
+    if (canvasState.mode !== CanvasMode.Typing) return;
 
-  const handleDoubleClick = () => {
-    setCanvasState({
-      mode: CanvasMode.Typing,
-    });
     setIsEditing(true);
   };
 
@@ -44,9 +33,6 @@ const CustomContentEditable = ({ value, onChange, style }: CustomEditableProps) 
   };
 
   const handleInput = () => {
-    setCanvasState({
-      mode: CanvasMode.Typing,
-    });
     if (editableRef.current) {
       onChange(editableRef.current.innerText);
     }
@@ -56,7 +42,6 @@ const CustomContentEditable = ({ value, onChange, style }: CustomEditableProps) 
     <div
       ref={editableRef}
       onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
       onBlur={handleBlur}
       onChange={handleInput}
       contentEditable={isEditing}

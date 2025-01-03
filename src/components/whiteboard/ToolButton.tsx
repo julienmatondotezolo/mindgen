@@ -1,10 +1,10 @@
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import { CanvasMode } from "@/_types";
 import { Button } from "@/components/ui/button";
-import { canvasStateAtom } from "@/state";
+import { activeLayersAtom, canvasStateAtom } from "@/state";
 
 interface ToolButtonProps {
   icon?: LucideIcon;
@@ -16,6 +16,7 @@ interface ToolButtonProps {
 
 export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }: ToolButtonProps) => {
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+  const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   return (
     <li className="m-1 cursor-pointer">
@@ -27,6 +28,14 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
           });
         }}
         onMouseLeave={() => {
+          // If layer already selected go back to LayerSelected mode
+          if (allActiveLayers.length > 0) {
+            setCanvasState({
+              mode: CanvasMode.LayerSelected,
+            });
+            return;
+          }
+
           if (
             canvasState.mode === CanvasMode.Grab ||
             canvasState.mode === CanvasMode.Inserting ||

@@ -168,6 +168,9 @@ export type CanvasState =
       layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Diamond | LayerType.Path;
     }
   | {
+      mode: CanvasMode.LayerSelected;
+    }
+  | {
       mode: CanvasMode.Translating;
       current: Point;
       initialLayerBounds: Layer;
@@ -197,6 +200,7 @@ export enum CanvasMode {
   Grab,
   Pressing,
   SelectionNet,
+  LayerSelected,
   Inserting,
   Translating,
   Resizing,

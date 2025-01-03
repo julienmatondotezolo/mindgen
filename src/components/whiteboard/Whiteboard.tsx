@@ -26,7 +26,7 @@ import {
   Side,
   XYWH,
 } from "@/_types";
-import { useLiveValue, useSocket } from "@/hooks";
+import { useLiveValue, useSelectionBounds, useSocket } from "@/hooks";
 import {
   activeEdgeIdAtom,
   activeLayersAtom,
@@ -201,6 +201,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const allOtherUsers = connectedUsers.filter((item) => item.id !== currentUserId);
 
   const [allActiveLayers, setAllActiveLayers] = useRecoilState(activeLayersAtom);
+  const bounds = useSelectionBounds();
 
   const selectLayer = useSelectElement({ roomId: boardId });
   const unSelectLayer = useUnSelectElement({ roomId: boardId });
@@ -455,21 +456,35 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleLayerPointerDown = useCallback(
     async (e: React.PointerEvent, layerId: string, origin: Point) => {
+      e.stopPropagation();
       if (
         canvasState.mode === CanvasMode.Grab ||
         canvasState.mode === CanvasMode.Pencil ||
         canvasState.mode === CanvasMode.Inserting ||
-        canvasState.mode === CanvasMode.Typing ||
         canvasState.mode === CanvasMode.Tooling
       ) {
+        return;
+      }
+
+      // On click if typing mode on selected layer change to type mode
+      if (canvasState.mode === CanvasMode.LayerSelected && allActiveLayers.includes(layerId)) {
+        setCanvasState({
+          mode: CanvasMode.Typing,
+        });
+        return;
+      }
+
+      // On click if typing mode on selected layer do nothing
+      if (canvasState.mode === CanvasMode.Typing && allActiveLayers.includes(layerId)) {
+        setCanvasState({
+          mode: CanvasMode.Typing,
+        });
         return;
       }
 
       const isAlreadySelected = allActiveLayers.includes(layerId);
 
       if (isAlreadySelected) return;
-
-      e.stopPropagation();
 
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
@@ -496,13 +511,20 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         current: point,
         initialLayerBounds: getLayerById({ layerId, layers }),
       });
+
+      return;
     },
     [canvasState.mode, allActiveLayers, camera, selectLayer, setCanvasState, layers, setAllActiveLayers],
   );
 
   const onHandleMouseEnter = useCallback(
     (event: React.MouseEvent, layerId: string, position: HandlePosition) => {
-      if (canvasState.mode === CanvasMode.EdgeDrawing || canvasState.mode === CanvasMode.SelectionNet) return;
+      if (
+        canvasState.mode === CanvasMode.EdgeDrawing ||
+        canvasState.mode === CanvasMode.SelectionNet ||
+        canvasState.mode === CanvasMode.Typing
+      )
+        return;
 
       const currentLayer = layers.find((layer) => layer.id === layerId);
       const LAYER_SPACING = 150; // Adjust this value to control the space between layers
@@ -551,9 +573,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     if (
       canvasState.mode === CanvasMode.EdgeDrawing ||
       canvasState.mode === CanvasMode.SelectionNet ||
+      canvasState.mode === CanvasMode.Typing ||
       drawingEdge.ongoing
     )
       return;
+
+    // If layer already selected go back to LayerSelected method
+    if (allActiveLayers.length > 0) {
+      setCanvasState({
+        mode: CanvasMode.LayerSelected,
+      });
+      return;
+    }
 
     setShadowState({
       showShadow: false,
@@ -567,7 +598,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     setCanvasState({
       mode: CanvasMode.None,
     });
-  }, [canvasState, drawingEdge, setCanvasState]);
+  }, [allActiveLayers.length, canvasState.mode, drawingEdge.ongoing, setCanvasState]);
 
   const onHandleMouseDown = useCallback(
     (e: React.PointerEvent, layerId: string, position: HandlePosition) => {
@@ -1362,8 +1393,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
 
         setCanvasState({
-          mode: CanvasMode.None,
-          current: point,
+          mode: CanvasMode.LayerSelected,
         });
       } else if (canvasState.mode === CanvasMode.Resizing) {
         // Update all selected layers
@@ -1507,6 +1537,26 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         setCanvasState({
           mode: CanvasMode.None,
         });
+      } else if (canvasState.mode === CanvasMode.Typing) {
+        if (!bounds) return;
+
+        const isInsideBounds =
+          point.x >= bounds.x &&
+          point.x <= bounds.x + bounds.width &&
+          point.y >= bounds.y &&
+          point.y <= bounds.y + bounds.height;
+
+        if (!isInsideBounds) {
+          // if click is outside bound change type
+          unSelectLayer();
+          setCanvasState({
+            mode: CanvasMode.None,
+            current: point,
+          });
+          return;
+        }
+
+        return;
       } else {
         setCanvasState({
           mode: CanvasMode.None,
@@ -1515,15 +1565,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
     },
     [
-      allActiveLayers,
       camera,
       canvasState,
+      unSelectLayer,
       handleUnSelectLayer,
       unSelectEdge,
       currentUserId,
       setCanvasState,
       layers,
       edges,
+      allActiveLayers,
       updateEdge,
       updateLayer,
       drawingEdge,
@@ -1531,6 +1582,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       addLayer,
       selectLayer,
       insertLayer,
+      bounds,
     ],
   );
 

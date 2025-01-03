@@ -71,7 +71,6 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
   const updateLayer = useUpdateElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
-    console.log("newValue:", newValue);
     const { width: newWidth, height: newHeight } = calculateDimensions(newValue, width, height, camera.scale);
 
     updateLayer({

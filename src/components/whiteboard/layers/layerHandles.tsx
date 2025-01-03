@@ -36,7 +36,8 @@ export const LayerHandles = memo(({ onMouseEnter, onMouseLeave, onPointerDown, o
 
   const isShowingHandles = soleLayerId || isEdgeNearLayer;
 
-  if (!isShowingHandles || (allActiveLayers && allActiveLayers.length > 1)) return null;
+  if (!isShowingHandles || (allActiveLayers && allActiveLayers.length > 1) || canvasState.mode === CanvasMode.Typing)
+    return null;
 
   const handleLayerId = soleLayerId || (nearestLayer ? nearestLayer.id : null);
 

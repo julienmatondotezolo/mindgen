@@ -210,7 +210,12 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
     }
   }, [allActiveLayers, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
 
-  if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
+  if (
+    !selectionBounds ||
+    canvasState.mode === CanvasMode.Translating ||
+    canvasState.mode === CanvasMode.EdgeEditing ||
+    canvasState.mode === CanvasMode.Typing
+  )
     return null;
 
   if (selectionBounds) {
