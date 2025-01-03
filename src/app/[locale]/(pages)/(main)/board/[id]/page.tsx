@@ -1,6 +1,7 @@
 "use client";
 
 import { SpaceProvider, SpacesProvider } from "@ably/spaces/react";
+import { ChannelProvider } from "ably/react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -186,7 +187,9 @@ export default function Board({ params }: { params: { id: string } }) {
               ) : (
                 <SpacesProvider client={spaces}>
                   <SpaceProvider name={spaceName}>
-                    <Whiteboard userMindmapDetails={userMindmapDetails} />
+                    <ChannelProvider channelName={userMindmapDetails.id}>
+                      <Whiteboard userMindmapDetails={userMindmapDetails} />
+                    </ChannelProvider>
                   </SpaceProvider>
                 </SpacesProvider>
               )}

@@ -1,7 +1,7 @@
 // Importing Ably
 import Spaces from "@ably/spaces";
 import * as Ably from "ably";
-import { AblyProvider, ChannelProvider } from "ably/react";
+import { AblyProvider } from "ably/react";
 import { enablePatches } from "immer";
 import { nanoid } from "nanoid";
 import { SessionProvider } from "next-auth/react";
@@ -58,9 +58,7 @@ export default function Providers({ children, locale }: Props): JSX.Element {
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
               <AblyProvider client={ablyClient}>
-                <ChannelProvider channelName={"mindgen-socket"}>
-                  <ReactFlowProvider>{children}</ReactFlowProvider>
-                </ChannelProvider>
+                <ReactFlowProvider>{children}</ReactFlowProvider>
               </AblyProvider>
             </NextIntlClientProvider>
           </ThemeProvider>

@@ -1,25 +1,18 @@
 import { useMembers } from "@ably/spaces/react";
+import { Message } from "ably";
+import { useChannel } from "ably/react";
 import { useSetRecoilState } from "recoil";
 
 import { Layer } from "@/_types";
-import { ablyClient } from "@/app/providers";
 import { layerAtomState } from "@/state";
 
-export const useLiveValue = async ({ boardId }: { boardId: string }) => {
+export const useLiveValue = ({ boardId }: { boardId: string }) => {
   const setLayers = useSetRecoilState(layerAtomState);
   const { self } = useMembers();
+  const layerChannelName = `${boardId}`;
 
-  if (!self) return;
-
-  /** 💡 Use rewind to get the last message from the channel 💡 */
-  const layerChannelName = `[?rewind=1]${boardId}`;
-
-  const channel = ablyClient.channels.get(layerChannelName);
-
-  if (!self) return;
-
-  await channel.subscribe((message) => {
-    if (message.connectionId === self.connectionId) return;
+  useChannel(layerChannelName, (message: Message) => {
+    if (message.connectionId === self?.connectionId) return;
 
     if (message.name === "add") {
       const newLayer: Layer = message.data.newLayer;
@@ -40,13 +33,5 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
 
       setLayers((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
     }
-
-    return;
   });
 };
-
-//   useChannel(layerChannelName, (message: Message) => {
-//     if (message.connectionId === self?.connectionId) return;
-
-//     console.log("message.data:", message.data);
-//   });

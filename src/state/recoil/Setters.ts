@@ -88,7 +88,7 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
 
 export const useUpdateElement = ({ roomId }: { roomId: string }) => {
   const layers = useRecoilValue(layerAtomState);
-  const layerChannelName = `[?rewind=1]${roomId}`;
+  const layerChannelName = `${roomId}`;
   const channel = ablyClient.channels.get(layerChannelName);
 
   return useRecoilCallback(
