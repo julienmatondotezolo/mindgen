@@ -13,10 +13,9 @@ interface EdgePreviewProps {
   edge: Edge;
   onEdgePointerDown: (e: React.PointerEvent, edgId: string) => void;
   ARROW_SIZE: number;
-  selectionColor: string;
 }
 
-export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARROW_SIZE }: EdgePreviewProps) => {
+export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePreviewProps) => {
   const edgeId = edge.id;
   
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
@@ -24,10 +23,16 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
   
   const [activeEdgeId, setActiveEdgeId] = useState<string[]>([]);
 
+  const [selectionColor, setSelectionColor] = useState<string>("");
+
   const { self } = useMembers();
 
   useLocks((lockUpdate) => {
     const lockHolder = lockUpdate.member;
+    const { userColor } = lockHolder.profileData as {
+      userColor: string;
+    };
+
     const locked = lockUpdate.status === "locked";
     const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
 
@@ -36,7 +41,10 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
         edgeIds: string[];
       };
 
-      if (edgeIds.includes(edgeId)) setActiveEdgeId([edgeId]);
+      if (edgeIds.includes(edgeId)) {
+        setSelectionColor(userColor);
+        setActiveEdgeId([edgeId]);
+      }
       return;
     }
 

@@ -1,5 +1,4 @@
 import { useSpace } from "@ably/spaces/react";
-import { produce } from "immer";
 import { useRecoilCallback, useRecoilValue } from "recoil";
 
 import { Edge, Layer } from "@/_types";
@@ -7,7 +6,6 @@ import { ablyClient } from "@/app/providers";
 import { getLayerById } from "@/utils";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
-import { useAddToHistoryPrivate } from "./History";
 
 export const useSelectElement = ({ roomId }: { roomId: string }) => {
   const { space } = useSpace();
@@ -232,80 +230,90 @@ export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
 };
 
 export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
-  const addToHistory = useAddToHistoryPrivate();
+  const edges = useRecoilValue(edgesAtomState);
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, userId, updatedElementEdge }: { id: string; userId: string; updatedElementEdge: any }) => {
-        set(edgesAtomState, (currentEdges) =>
-          produce(
-            currentEdges,
-            (draft) => {
-              const index = draft.findIndex((edge) => edge.id === id);
+      async ({ id, updatedElementEdge }: { id: string; updatedElementEdge: any }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          // Create a new array with the updated edge
+          const updatedEdges = currentEdges.map((edge) => {
+            if (edge.id === id) {
+              // If we find a matching id, merge the current edge with the updates
+              const mergedEdge = {
+                ...edge,
+                ...updatedElementEdge,
+              };
 
-              if (index !== -1) {
-                draft[index] = mergeDeep(draft[index], updatedElementEdge);
-              }
-              const updatedEdge = draft[index];
+              return mergedEdge;
+            }
+            return edge;
+          });
 
-              // socketEmit("update-edge", { roomId, userId, edge: updatedEdge });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "edge");
-            },
-          ),
-        );
+          return updatedEdges;
+        });
+
+        // Publish to channel
+        try {
+          const edge = edges.filter((edge: Edge) => edge.id === id);
+
+          const updatedEdge = {
+            ...edge,
+            ...updatedElementEdge,
+          };
+
+          await channel.publish("updateEdge", { updatedEdge });
+        } catch (error) {
+          // Return original state if publish fails
+        }
       },
-    [addToHistory, roomId],
+    [channel, edges],
   );
 };
 
 export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
-  const addToHistory = useAddToHistoryPrivate();
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, userId }: { id: string; userId: string }) => {
-        set(edgesAtomState, (currentEdges) =>
-          produce(
-            currentEdges,
-            (draft) => {
-              // Filter out the layer with the given ID
-              const index = draft.findIndex((edge) => edge.id === id);
+      async ({ edgeIdsToDelete }: { edgeIdsToDelete: string[] }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          // Filter out the edges with IDs that should be deleted
+          const updatedEdges = currentEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id));
 
-              if (index !== -1) {
-                // Remove the edge from the array in th atom state
-                draft.splice(index, 1);
-              }
-              // socketEmit("remove-edge", { roomId, userId, edgeIdsToDelete: [id] });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "edge");
-            },
-          ),
-        );
+          return updatedEdges;
+        });
+
+        try {
+          await channel.publish("removeEdge", { edgeIdsToDelete });
+        } catch (error) {
+          console.error("can't publish to channel:", error);
+        }
       },
-    [addToHistory, roomId],
+    [channel],
   );
 };
 
-// Helper function for deep merging objects
-function mergeDeep(target: any, source: any) {
-  const output = Object.assign({}, target);
+// // Helper function for deep merging objects
+// function mergeDeep(target: any, source: any) {
+//   const output = Object.assign({}, target);
 
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach((key) => {
-      if (isObject(source[key])) {
-        if (!(key in target)) Object.assign(output, { [key]: source[key] });
-        else output[key] = mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(output, { [key]: source[key] });
-      }
-    });
-  }
-  return output;
-}
+//   if (isObject(target) && isObject(source)) {
+//     Object.keys(source).forEach((key) => {
+//       if (isObject(source[key])) {
+//         if (!(key in target)) Object.assign(output, { [key]: source[key] });
+//         else output[key] = mergeDeep(target[key], source[key]);
+//       } else {
+//         Object.assign(output, { [key]: source[key] });
+//       }
+//     });
+//   }
+//   return output;
+// }
 
-function isObject(item: any) {
-  return item && typeof item === "object" && !Array.isArray(item);
-}
+// function isObject(item: any) {
+//   return item && typeof item === "object" && !Array.isArray(item);
+// }

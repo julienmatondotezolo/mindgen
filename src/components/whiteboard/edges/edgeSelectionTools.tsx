@@ -39,12 +39,10 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
   const removeEdge = useRemoveEdge({ roomId: boardId });
   const updateEdge = useUpdateEdge({ roomId: boardId });
 
-  const activeEdgeId = allActiveEdges
-    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
-    .map((item: any) => item.edgeIds)[0];
+  const activeEdgeId = allActiveEdges[0];
 
   const selectedEdge = edges.find((edge) => {
-    if (activeEdgeId) return activeEdgeId.includes(edge.id);
+    if (activeEdgeId) return allActiveEdges.includes(edge.id);
   });
 
   const handleColorChange = useCallback(

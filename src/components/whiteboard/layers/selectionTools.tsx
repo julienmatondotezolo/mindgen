@@ -1,7 +1,6 @@
 "use client";
 
 import { Bold, CaseUpper, Ellipsis, PaintBucket, Shapes, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue } from "recoil";
 
@@ -32,9 +31,6 @@ interface SelectionToolsProps {
 }
 
 export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: SelectionToolsProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const layers = useRecoilValue(layerAtomState);
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
@@ -199,16 +195,20 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
     removeLayer({ layerIdsToDelete });
     unSelectLayer();
 
+    const edgeIdsToDelete: any[] = [];
+
     for (const layer of selectedLayers) {
       if (layer) {
         edges.forEach((edge) => {
           if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
-            removeEdge({ id: edge.id, userId: currentUserId });
+            edgeIdsToDelete.push(edge.id);
           }
         });
       }
     }
-  }, [allActiveLayers, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
+
+    removeEdge({ edgeIdsToDelete });
+  }, [allActiveLayers, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
 
   if (
     !selectionBounds ||

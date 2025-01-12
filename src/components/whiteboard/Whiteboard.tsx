@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -33,7 +33,6 @@ import {
   activeLayersAtom,
   cameraStateAtom,
   canvasStateAtom,
-  connectedUsersState,
   edgesAtomState,
   hoveredEdgeIdAtom,
   isEdgeNearLayerAtom,
@@ -54,7 +53,6 @@ import {
   calculateNewLayerPositions,
   calculateNonOverlappingLayerPosition,
   checkPermission,
-  connectionIdToColor,
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   getHandlePosition,
@@ -197,10 +195,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   // ================  CONSTANT LAYERS  ================== //
 
-  const connectedUsers = useRecoilValue(connectedUsersState);
-
-  const allOtherUsers = connectedUsers.filter((item) => item.id !== currentUserId);
-
   const [allActiveLayers, setAllActiveLayers] = useRecoilState(activeLayersAtom);
   const bounds = useSelectionBounds();
 
@@ -213,37 +207,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   // ================  CONSTANT EDGES  ================== //
 
   const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
-  const activeEdgeId = allActiveEdges
-    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
-    .map((item: any) => item.edgeIds)[0];
-
-  const allOtherUserEdgeSelection = allActiveEdges.filter((activeEdges: any) => activeEdges.userId !== currentUserId);
-
-  // Create a Map to store selections for quick lookup
-  const selectionEdgesMap = new Map();
-
-  // Populate the selectionMap
-  allOtherUserEdgeSelection.forEach((selection: any) => {
-    selectionEdgesMap.set(selection.userId, selection.edgeIds);
-  });
-
-  // Merge users with their selections
-  const otherUserEdgeSelections: any = allOtherUsers.map((user) => ({
-    ...user,
-    edgeIds: selectionEdgesMap.get(user.id) || [],
-  }));
-
-  const edgeIdsToColorSelection = useMemo(() => {
-    const edgeIdsToColorSelection: Record<string, string> = {};
-
-    for (const userSelection of otherUserEdgeSelections) {
-      for (const edgeId of userSelection.edgeIds) {
-        edgeIdsToColorSelection[edgeId] = connectionIdToColor(userSelection.socketIndex);
-      }
-    }
-
-    return edgeIdsToColorSelection;
-  }, [otherUserEdgeSelections]);
+  const activeEdgeId = allActiveEdges[0];
 
   const selectEdge = useSelectEdgeElement({ roomId: boardId });
   const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
@@ -936,11 +900,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "START" | "MIDDLE" | "END", point: Point) => {
-      if (activeEdgeId[0])
+      if (activeEdgeId)
         setCanvasState({
           mode: CanvasMode.EdgeEditing,
           editingEdge: {
-            id: activeEdgeId[0],
+            id: activeEdgeId,
             handlePosition: position,
             startPoint: point,
           },
@@ -1031,13 +995,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       e.stopPropagation();
       if (canvasState.mode === CanvasMode.Grab) return;
 
-      // const isAlreadySelected = allOtherUserEdgeSelection.some((otherUser: any) => {
-      //   if (otherUser.edgeIds) {
-      //     return otherUser.edgeIds.includes(edgeId);
-      //   }
-      // });
+      const isAlreadySelected = allActiveEdges.includes(edgeId);
 
-      // if (isAlreadySelected) return;
+      if (isAlreadySelected) return;
 
       selectEdge({ edgeIds: [edgeId] });
       setHoveredEdgeId(null);
@@ -1049,7 +1009,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       return;
     },
-    [canvasState, selectEdge, setCanvasState, setHoveredEdgeId],
+    [allActiveEdges, canvasState, selectEdge, setCanvasState, setHoveredEdgeId],
   );
 
   // ================  DRAWING EDGES  ================== //
@@ -1249,7 +1209,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         return;
       } else if (canvasState.mode === CanvasMode.EdgeSelected) {
         setCanvasState({
-          mode: CanvasMode.EdgeSelected,
+          mode: CanvasMode.None,
         });
         return;
       } else if (canvasState.mode === CanvasMode.Typing) {
@@ -1927,7 +1887,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 edge={edge}
                 onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
                 ARROW_SIZE={ARROW_SIZE}
-                selectionColor={edgeIdsToColorSelection[edge.id]}
               />
             ))}
             {/* {layers.map((layer, index) => ( */}
