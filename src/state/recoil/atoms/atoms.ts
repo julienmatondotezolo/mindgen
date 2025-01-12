@@ -15,7 +15,6 @@ import {
   User,
 } from "@/_types";
 import { Organization } from "@/_types/Organization";
-import { socket } from "@/socket";
 
 // ================   CANVAS STATE   ================== //
 
@@ -93,83 +92,16 @@ export const hoveredLayerIdAtomState = atom<string>({
   default: "", // valeur par défaut (alias valeur initials)
 });
 
-// ================   EDGE EFFECTS   ================== //
-
-const socketEdgeEffect = ({ setSelf }: any) => {
-  // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddEdge = (addedEdge: Edge) => {
-    setSelf((prevEdges: Edge[]) => [...prevEdges, addedEdge]);
-  };
-
-  const handleUpdateEdge = (updatedEdge: Edge) => {
-    setSelf((prevEdges: Edge[]) => prevEdges.map((edge) => (edge.id === updatedEdge.id ? updatedEdge : edge)));
-  };
-
-  const handleRemoveEdge = (edgeIdsToDelete: string[]) => {
-    setSelf((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
-  };
-
-  // Attach the event listener when the effect runs
-  socket.on("remote-add-edge", handleAddEdge);
-  socket.on("remote-update-edge", handleUpdateEdge);
-  socket.on("remote-remove-edge", handleRemoveEdge);
-
-  // Return a cleanup function to detach the event listener when the effect is no longer needed
-  return () => {
-    socket.off("remote-add-edge", handleAddEdge);
-    socket.off("remote-update-edge", handleUpdateEdge);
-    socket.off("remote-remove-edge", handleRemoveEdge);
-  };
-};
-
-const socketActiveEdgeEffect = ({ setSelf }: any) => {
-  // Define the event handler function outside the effect to avoid redefining it on every call
-  const handleAddActiveEdge = (socketSelectedData: any) => {
-    setSelf((prevSelectedData: any) => {
-      if (Object.keys(prevSelectedData).length === 0) {
-        return socketSelectedData;
-      }
-
-      const result = prevSelectedData.map((item: any) => ({ ...item }));
-
-      // Then, update layerIds for matching users
-      socketSelectedData.forEach((selecteData: any) => {
-        const existingItem = result.find((existing: any) => existing.userId === selecteData.userId);
-
-        if (existingItem) {
-          const existingEdgeIds = selecteData.edgeIds;
-
-          existingItem.edgeIds = [...new Set(existingEdgeIds)];
-        } else {
-          result.push(selecteData);
-        }
-      });
-
-      return result;
-    });
-  };
-
-  // Attach the event listener when the effect runs
-  socket.on("remote-select-edge", handleAddActiveEdge);
-
-  // Return a cleanup function to detach the event listener when the effect is no longer needed
-  return () => {
-    socket.off("remote-select-edge", handleAddActiveEdge);
-  };
-};
-
 // ================   EDGES STATES   ================== //
 
 export const edgesAtomState = atom<Edge[]>({
   key: "edgesAtomState",
   default: [],
-  effects: [socketEdgeEffect],
 });
 
-export const activeEdgeIdAtom = atom({
+export const activeEdgeIdAtom = atom<string[]>({
   key: "activeEdgeIdAtom",
-  default: [{}],
-  effects: [socketActiveEdgeEffect],
+  default: [],
 });
 
 export const hoveredEdgeIdAtom = atom<string | null>({

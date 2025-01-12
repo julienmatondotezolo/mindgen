@@ -171,6 +171,9 @@ export type CanvasState =
       mode: CanvasMode.LayerSelected;
     }
   | {
+      mode: CanvasMode.EdgeSelected;
+    }
+  | {
       mode: CanvasMode.Translating;
       current: Point;
       initialLayerBounds: Layer;
@@ -201,6 +204,7 @@ export enum CanvasMode {
   Pressing,
   SelectionNet,
   LayerSelected,
+  EdgeSelected,
   Inserting,
   Translating,
   Resizing,

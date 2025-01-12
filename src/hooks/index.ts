@@ -7,6 +7,5 @@ export * from "./useMindMapChangeListener";
 export * from "./usePageBottom";
 export * from "./useScrollPosition";
 export * from "./useSelectionBounds";
-export * from "./useSockets";
 export * from "./useStreamGPT";
 export * from "./useSyncMutation";

@@ -84,7 +84,7 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
         id: selectedEdge.id,
         userId: currentUserId,
       });
-      unSelectEdge({ userId: currentUserId });
+      unSelectEdge();
       setCanvasState({
         mode: CanvasMode.None,
       });

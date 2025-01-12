@@ -1,12 +1,12 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-vars */
 
-import { useSession } from "next-auth/react";
-import React, { memo } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useLocks, useMembers } from "@ably/spaces/react";
+import React, { memo, useState } from "react";
+import { useRecoilState } from "recoil";
 
-import { CanvasMode, Edge, EdgeShape, EdgeType, HandlePosition } from "@/_types";
-import { activeEdgeIdAtom, canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
+import { CanvasMode, Edge, EdgeShape, EdgeType } from "@/_types";
+import { canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
 import { colorToCss, edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
 
 interface EdgePreviewProps {
@@ -17,20 +17,36 @@ interface EdgePreviewProps {
 }
 
 export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARROW_SIZE }: EdgePreviewProps) => {
-  const session: any = useSession();
-  const currentUserId = session.data?.session?.user?.id;
+  const edgeId = edge.id;
   
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
-  const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
-  const activeEdgeId = allActiveEdges
-    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
-    .map((item: any) => item.edgeIds)[0];
+  
+  const [activeEdgeId, setActiveEdgeId] = useState<string[]>([]);
+
+  const { self } = useMembers();
+
+  useLocks((lockUpdate) => {
+    const lockHolder = lockUpdate.member;
+    const locked = lockUpdate.status === "locked";
+    const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
+
+    if (lockedByOther) {
+      const { edgeIds } = lockUpdate.attributes as {
+        edgeIds: string[];
+      };
+
+      if (edgeIds.includes(edgeId)) setActiveEdgeId([edgeId]);
+      return;
+    }
+
+    setActiveEdgeId([]);
+  });
 
 
   if (!edge) return null;
 
-  const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId?.includes(edge.id);
+  const isActive = edge.id === hoveredEdgeId || activeEdgeId.includes(edge.id);
 
   let pathString = edgeBezierPathString({ edge });
 
@@ -102,6 +118,7 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
             canvasState.mode === CanvasMode.Grab ||
             canvasState.mode === CanvasMode.SelectionNet ||
             canvasState.mode === CanvasMode.EdgeEditing ||
+            canvasState.mode === CanvasMode.EdgeSelected ||
             canvasState.mode === CanvasMode.EdgeDrawing ||
             canvasState.mode === CanvasMode.Translating ||
             canvasState.mode === CanvasMode.Resizing ||

@@ -18,7 +18,6 @@ import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
 import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
-import { useSocket } from "@/hooks";
 import { Link } from "@/navigation";
 import {
   boardIdState,
@@ -59,7 +58,6 @@ export default function Board({ params }: { params: { id: string } }) {
   const [enabled, setEnabled] = useState(true);
 
   const spaceName = params.id;
-  const { socketJoinRoom } = useSocket();
 
   useEffect(() => {
     const user: User = {
@@ -74,13 +72,11 @@ export default function Board({ params }: { params: { id: string } }) {
       let username = usernameFromStorage ?? generateUsername();
 
       sessionStorage.setItem("collaUsername", username);
-
-      socketJoinRoom(params.id, user.id, currentCollaUsername);
     }
 
     setEnabled(false);
     setCurrentUser(user);
-  }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser, socketJoinRoom]);
+  }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser]);
 
   const fetchUserMindmapById = async () => {
     const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
@@ -96,10 +92,6 @@ export default function Board({ params }: { params: { id: string } }) {
     enabled,
     staleTime: Infinity,
     onSuccess: (data: MindMapDetailsProps) => {
-      const userId = session.data?.session?.user?.id;
-
-      socketJoinRoom(params.id, userId, currentCollaUsername);
-
       setLayers(data.layers);
       setEdges(data.edges);
       setBoardId(data.id);
