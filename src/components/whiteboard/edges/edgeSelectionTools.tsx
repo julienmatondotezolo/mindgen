@@ -51,13 +51,12 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
       if (selectedEdge) {
         updateEdge({
           id: selectedEdge.id,
-          userId: currentUserId,
           updatedElementEdge: { color },
         });
         setShowColorPicker(false);
       }
     },
-    [currentUserId, selectedEdge, setLastUsedColor, updateEdge],
+    [selectedEdge, setLastUsedColor, updateEdge],
   );
 
   const handleEdgeShape = useCallback(() => {
@@ -66,11 +65,10 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
       updateEdge({
         id: selectedEdge.id,
-        userId: currentUserId,
         updatedElementEdge: { shape: newShape },
       });
     }
-  }, [currentUserId, selectedEdge, updateEdge]);
+  }, [selectedEdge, updateEdge]);
 
   const handleRemoveEdge = useCallback(() => {
     if (isDeletable) {
@@ -95,11 +93,10 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
       updateEdge({
         id: selectedEdge.id,
-        userId: currentUserId,
         updatedElementEdge: { type: newType },
       });
     }
-  }, [currentUserId, selectedEdge, updateEdge]);
+  }, [selectedEdge, updateEdge]);
 
   const handleToggleThickness = useCallback(() => {
     if (selectedEdge) {
@@ -107,11 +104,10 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
       updateEdge({
         id: selectedEdge.id,
-        userId: currentUserId,
         updatedElementEdge: { thickness: newThickness },
       });
     }
-  }, [currentUserId, selectedEdge, updateEdge]);
+  }, [selectedEdge, updateEdge]);
 
   const handleToggleArrow = useCallback(
     (arrow: string) => {

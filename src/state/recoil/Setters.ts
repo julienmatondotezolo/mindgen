@@ -196,7 +196,10 @@ export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
-          await space.locks.release(roomId);
+          // await space.locks.release(roomId);
+          await space.locks.acquire(roomId, {
+            attributes: { edgeIds: [] },
+          });
         } catch (error) {
           console.error("Failed to release lock:", error);
           // Optionally revert the state change if lock release fails
@@ -259,12 +262,12 @@ export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
         try {
           const edge = edges.filter((edge: Edge) => edge.id === id);
 
-          const updatedEdge = {
-            ...edge,
-            ...updatedElementEdge,
-          };
+          const updatedEdge = mergeDeep({
+            target: edge,
+            source: edge,
+          });
 
-          await channel.publish("updateEdge", { updatedEdge });
+          await channel.publish("updatedEdge", { updatedEdge });
         } catch (error) {
           // Return original state if publish fails
         }
@@ -297,23 +300,23 @@ export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
   );
 };
 
-// // Helper function for deep merging objects
-// function mergeDeep(target: any, source: any) {
-//   const output = Object.assign({}, target);
+// Helper function for deep merging objects
+function mergeDeep({ target, source }: { target: any; source: any }) {
+  const output = Object.assign({}, target);
 
-//   if (isObject(target) && isObject(source)) {
-//     Object.keys(source).forEach((key) => {
-//       if (isObject(source[key])) {
-//         if (!(key in target)) Object.assign(output, { [key]: source[key] });
-//         else output[key] = mergeDeep(target[key], source[key]);
-//       } else {
-//         Object.assign(output, { [key]: source[key] });
-//       }
-//     });
-//   }
-//   return output;
-// }
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach((key) => {
+      if (isObject(source[key])) {
+        if (!(key in target)) Object.assign(output, { [key]: source[key] });
+        else output[key] = mergeDeep(target[key], source[key]);
+      } else {
+        Object.assign(output, { [key]: source[key] });
+      }
+    });
+  }
+  return output[0];
+}
 
-// function isObject(item: any) {
-//   return item && typeof item === "object" && !Array.isArray(item);
-// }
+function isObject(item: any) {
+  return item && typeof item === "object" && !Array.isArray(item);
+}

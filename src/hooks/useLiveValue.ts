@@ -41,7 +41,7 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
       setEdges((prevEdges: Edge[]) => [...prevEdges, newEdge]);
     }
 
-    if (message.name === "updateEdge") {
+    if (message.name === "updatedEdge") {
       const updatedEdge: Edge = message.data.updatedEdge;
 
       setEdges((prevEdges: Edge[]) => prevEdges.map((edge) => (edge.id === updatedEdge.id ? updatedEdge : edge)));

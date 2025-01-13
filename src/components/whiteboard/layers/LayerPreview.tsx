@@ -27,6 +27,10 @@ export const LayerPreview = memo(({ layer, onLayerPointerDown }: LayerPreviewPro
     const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
 
     if (lockedByOther) {
+      if (!lockUpdate.attributes || !lockUpdate.attributes.layerIds) return;
+
+      console.log("LAYER lockedByOther:", lockedByOther);
+
       const { layerIds } = lockUpdate.attributes as {
         layerIds: string[];
       };

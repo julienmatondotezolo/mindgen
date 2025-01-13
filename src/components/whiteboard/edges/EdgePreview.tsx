@@ -37,6 +37,10 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
     const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
 
     if (lockedByOther) {
+      if(!lockUpdate.attributes || !lockUpdate.attributes.edgeIds) return; 
+
+      console.log('EDGES lockedByOther:', lockedByOther);
+
       const { edgeIds } = lockUpdate.attributes as {
         edgeIds: string[];
       };
@@ -47,8 +51,6 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
       }
       return;
     }
-
-    setActiveEdgeId([]);
   });
 
 
