@@ -14,18 +14,26 @@ interface LayerPreviewProps {
 export const LayerPreview = memo(({ layer, onLayerPointerDown }: LayerPreviewProps) => {
   const layerId = layer.id;
 
-  const [activeLayersIds, setAllActiveLayersIds] = useState<string[]>([]);
+  const [, setAllActiveLayersIds] = useState<string[]>([]);
   const [otherUserColor, setOtherUserColor] = useState<string>("");
 
   const { self } = useMembers();
 
   useLocks((lockUpdate) => {
     const lockHolder = lockUpdate.member;
+
     const { userColor } = lockHolder.profileData as {
       userColor: string;
     };
     const locked = lockUpdate.status === "locked";
     const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
+
+    // unlock
+    if (!locked) {
+      setAllActiveLayersIds([]);
+      setOtherUserColor("");
+      return;
+    }
 
     if (lockedByOther) {
       if (!lockUpdate.attributes || !lockUpdate.attributes.layerIds) return;
@@ -37,11 +45,8 @@ export const LayerPreview = memo(({ layer, onLayerPointerDown }: LayerPreviewPro
       if (layerIds.includes(layerId)) {
         setAllActiveLayersIds(layerIds);
         setOtherUserColor(userColor);
-      } else {
-        setAllActiveLayersIds([]);
-        setOtherUserColor("");
+        return;
       }
-      return;
     }
   });
 

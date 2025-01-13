@@ -433,27 +433,27 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       // Check if locked by other user
-      const othersLocks: Lock[] | undefined = await space?.locks.getOthers();
+      // const othersLocks: Lock[] | undefined = await space?.locks.getOthers();
 
-      if (othersLocks && othersLocks?.length > 0) {
-        othersLocks.forEach((lock) => {
-          const { layerIds } = lock.attributes as {
-            layerIds: string[];
-          };
+      // if (othersLocks && othersLocks?.length > 0) {
+      //   othersLocks.forEach((lock) => {
+      //     const { layerIds } = lock.attributes as {
+      //       layerIds: string[];
+      //     };
 
-          if (layerIds.includes(layerId)) {
-            const profileData = lock.member.profileData as {
-              username: string;
-              userId: string;
-              userColor: string;
-            };
+      //     if (layerIds.includes(layerId)) {
+      //       const profileData = lock.member.profileData as {
+      //         username: string;
+      //         userId: string;
+      //         userColor: string;
+      //       };
 
-            alert(`locked by: ${profileData.username}`);
+      //       alert(`locked by: ${profileData.username}`);
 
-            return;
-          }
-        });
-      }
+      //       return;
+      //     }
+      //   });
+      // }
 
       // On click if typing mode on selected layer change to type mode
       if (canvasState.mode === CanvasMode.LayerSelected && allActiveLayers.includes(layerId)) {

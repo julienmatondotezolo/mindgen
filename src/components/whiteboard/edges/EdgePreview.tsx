@@ -23,33 +23,36 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
 
   const [selectionColor, setSelectionColor] = useState<string>("");
 
-  const { self } = useMembers();
+  // const { self } = useMembers();
 
-  useLocks((lockUpdate) => {
-    const lockHolder = lockUpdate.member;
-    const { userColor } = lockHolder.profileData as {
-      userColor: string;
-    };
+  // useLocks((lockUpdate) => {
+  //   const lockHolder = lockUpdate.member;
+  //   const { userColor } = lockHolder.profileData as {
+  //     userColor: string;
+  //   };
 
-    const locked = lockUpdate.status === "locked";
-    const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
+  //   const locked = lockUpdate.status === "locked";
+  //   const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
 
-    if (lockedByOther) {
-      if(!lockUpdate.attributes || !lockUpdate.attributes.edgeIds) return; 
+  //   if (lockedByOther) {
+  //     if(!lockUpdate.attributes || !lockUpdate.attributes.edgeIds) return; 
 
-      const { edgeIds } = lockUpdate.attributes as {
-        edgeIds: string[];
-      };
+  //     const { edgeIds } = lockUpdate.attributes as {
+  //       edgeIds: string[];
+  //     };
 
-      if (edgeIds) {
-        setSelectionColor(userColor);
-      }
-      return;
-    }
+  //     console.log('edgeIds:', edgeIds)
 
-    setActiveEdgeId("");
-    setSelectionColor("");
-  });
+  //     if (edgeIds.includes(edge.id)) {
+  //       setActiveEdgeId(edgeIds[0]);
+  //       setSelectionColor(userColor);
+  //     } else {
+  //       setActiveEdgeId("");
+  //       setSelectionColor("");
+  //     }
+  //     return;
+  //   }
+  // });
 
 
   if (!edge) return null;
