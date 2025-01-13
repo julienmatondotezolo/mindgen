@@ -16,12 +16,10 @@ interface EdgePreviewProps {
 }
 
 export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePreviewProps) => {
-  const edgeId = edge.id;
-  
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
   
-  const [activeEdgeId, setActiveEdgeId] = useState<string[]>([]);
+  const [activeEdgeId, setActiveEdgeId] = useState<string>("");
 
   const [selectionColor, setSelectionColor] = useState<string>("");
 
@@ -39,18 +37,18 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
     if (lockedByOther) {
       if(!lockUpdate.attributes || !lockUpdate.attributes.edgeIds) return; 
 
-      console.log('EDGES lockedByOther:', lockedByOther);
-
       const { edgeIds } = lockUpdate.attributes as {
         edgeIds: string[];
       };
 
-      if (edgeIds.includes(edgeId)) {
+      if (edgeIds) {
         setSelectionColor(userColor);
-        setActiveEdgeId([edgeId]);
       }
       return;
     }
+
+    setActiveEdgeId("");
+    setSelectionColor("");
   });
 
 

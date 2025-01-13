@@ -50,7 +50,10 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
-          await space.locks.release(roomId);
+          // await space.locks.release(roomId);
+          await space.locks.acquire(roomId, {
+            attributes: { layerIds: [] },
+          });
         } catch (error) {
           console.error("Failed to release lock:", error);
           // Optionally revert the state change if lock release fails
@@ -196,10 +199,7 @@ export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
-          // await space.locks.release(roomId);
-          await space.locks.acquire(roomId, {
-            attributes: { edgeIds: [] },
-          });
+          await space.locks.release(roomId);
         } catch (error) {
           console.error("Failed to release lock:", error);
           // Optionally revert the state change if lock release fails

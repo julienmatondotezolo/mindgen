@@ -14,6 +14,7 @@ interface LayerPreviewProps {
 export const LayerPreview = memo(({ layer, onLayerPointerDown }: LayerPreviewProps) => {
   const layerId = layer.id;
 
+  const [activeLayersIds, setAllActiveLayersIds] = useState<string[]>([]);
   const [otherUserColor, setOtherUserColor] = useState<string>("");
 
   const { self } = useMembers();
@@ -29,17 +30,19 @@ export const LayerPreview = memo(({ layer, onLayerPointerDown }: LayerPreviewPro
     if (lockedByOther) {
       if (!lockUpdate.attributes || !lockUpdate.attributes.layerIds) return;
 
-      console.log("LAYER lockedByOther:", lockedByOther);
-
       const { layerIds } = lockUpdate.attributes as {
         layerIds: string[];
       };
 
-      if (layerIds.includes(layerId)) setOtherUserColor(userColor);
+      if (layerIds.includes(layerId)) {
+        setAllActiveLayersIds(layerIds);
+        setOtherUserColor(userColor);
+      } else {
+        setAllActiveLayersIds([]);
+        setOtherUserColor("");
+      }
       return;
     }
-
-    setOtherUserColor("");
   });
 
   if (!layer) return null;
