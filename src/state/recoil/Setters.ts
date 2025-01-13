@@ -174,9 +174,9 @@ export const useSelectEdgeElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
-          // await space.locks.acquire(roomId, {
-          //   attributes: { edgeIds },
-          // });
+          await space.locks.acquire(`${roomId}-edge`, {
+            attributes: { edgeIds },
+          });
         } catch (error) {
           console.error("Failed to acquire lock:", error);
           // Optionally revert the state change if lock acquisition fails
@@ -199,7 +199,7 @@ export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
-          // await space.locks.release(roomId);
+          await space.locks.release(`${roomId}-edge`);
           // await space.locks.acquire(roomId, {
           //   attributes: { edgeIds: [] },
           // });

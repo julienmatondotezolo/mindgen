@@ -28,7 +28,7 @@ export const LayerPreview = memo(({ layer, onLayerPointerDown }: LayerPreviewPro
     const locked = lockUpdate.status === "locked";
     const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
 
-    // unlock
+    // if unlock remove all active layers
     if (!locked) {
       setAllActiveLayersIds([]);
       setOtherUserColor("");
