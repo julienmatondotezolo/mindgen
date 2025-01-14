@@ -811,7 +811,7 @@ export function calculateNonOverlappingLayerPosition({
   return { newLayerPosition: adjustedPosition, newEdgePosition };
 }
 
-// Helper function to get handle position
+// Helper function to get handle position in X and Y
 export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition | undefined): Point => {
   const HANDLE_DISTANCE = 30;
 
@@ -826,6 +826,22 @@ export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition |
       return { x: bounds.x - HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
     default:
       return { x: bounds.x, y: bounds.y };
+  }
+};
+
+// Define a utility function to get the opposite handle position
+export const getOppositeHandlePosition = (position: HandlePosition): HandlePosition => {
+  switch (position) {
+    case HandlePosition.Left:
+      return HandlePosition.Right;
+    case HandlePosition.Right:
+      return HandlePosition.Left;
+    case HandlePosition.Top:
+      return HandlePosition.Bottom;
+    case HandlePosition.Bottom:
+      return HandlePosition.Top;
+    default:
+      throw new Error("Invalid handle position");
   }
 };
 

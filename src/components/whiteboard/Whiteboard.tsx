@@ -58,6 +58,7 @@ import {
   findNearestLayerHandle,
   getHandlePosition,
   getLayerById,
+  getOppositeHandlePosition,
   getOrientationFromPosition,
   pointerEventToCanvasPoint,
   randomUserColor,
@@ -638,14 +639,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         HANDLE_DISTANCE,
       });
 
-      // // Find a non-overlapping position for the new layer
-      // const adjustedPosition = findNonOverlappingPosition({
-      //   newPosition: newLayerPosition,
-      //   layers,
-      //   currentLayer,
-      //   LAYER_SPACING,
-      // });
-
       const newLayerId = nanoid();
 
       const newLayer: any = {
@@ -668,6 +661,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           updatedElementEdge: {
             toLayerId: newLayer.id,
             end: newEdgePosition,
+            handleEnd: getOppositeHandlePosition(position),
             handleStart: position,
             orientation: getOrientationFromPosition(position),
           },
@@ -1014,6 +1008,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeClick = useCallback(
     async (e: React.PointerEvent, edgeId: string) => {
+      const currentEdge = edges.filter((edge: Edge) => edge.id === edgeId);
+
+      console.log("currentEdge:", currentEdge);
       e.stopPropagation();
       if (canvasState.mode === CanvasMode.Grab) return;
 

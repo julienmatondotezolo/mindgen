@@ -61,14 +61,15 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
 
   const isActive = edge.id === hoveredEdgeId || activeEdgeId.includes(edge.id);
 
-  let pathString = edgeBezierPathString({ edge });
+  // let pathString = edgeBezierPathString({ edge });
+  let pathString = `M ${edge.start.x},${edge.start.y} L ${edge.end.x},${edge.end.y}`;
 
   // Check for bezier our smooth step edge type
   if (edge.shape === EdgeShape.SmoothStep) {
     pathString = edgeSmoothStepPathString({ edge });
-  } else {
-    pathString = edgeBezierPathString({ edge });
   }
+
+  pathString = edgeBezierPathString({ edge });
 
   return (
     <g>
