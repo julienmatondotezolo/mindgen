@@ -21,7 +21,9 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
         // checking whether a lock identifier is currently locked
         const isLocked = space.locks.get(roomId) !== undefined;
 
-        if (isLocked) return;
+        if (isLocked) {
+          await space.locks.release(roomId);
+        }
 
         // Acquire lock with the updated layer IDs
         try {
@@ -168,9 +170,11 @@ export const useSelectEdgeElement = ({ roomId }: { roomId: string }) => {
         set(activeEdgeIdAtom, () => edgeIds);
 
         // checking whether a lock identifier is currently locked
-        // const isLocked = space.locks.get(roomId) !== undefined;
+        const isLocked = space.locks.get(roomId) !== undefined;
 
-        // if (isLocked) return;
+        if (isLocked) {
+          await space.locks.release(`${roomId}-edge`);
+        }
 
         // Acquire lock with the updated layer IDs
         try {

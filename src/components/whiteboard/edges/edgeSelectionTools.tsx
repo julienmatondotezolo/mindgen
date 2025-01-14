@@ -1,5 +1,4 @@
 import { ArrowRight, Ellipsis, PaintBucket, Route, Spline, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -25,9 +24,6 @@ interface EdgeSelectionToolsProps {
 }
 
 export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: EdgeSelectionToolsProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const edges = useRecoilValue(edgesAtomState);
   const allActiveEdges = useRecoilValue(activeEdgeIdAtom);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
@@ -77,15 +73,14 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
     }
     if (selectedEdge) {
       removeEdge({
-        id: selectedEdge.id,
-        userId: currentUserId,
+        edgeIdsToDelete: [selectedEdge.id],
       });
       unSelectEdge();
       setCanvasState({
         mode: CanvasMode.None,
       });
     }
-  }, [isDeletable, selectedEdge, removeEdge, currentUserId, unSelectEdge, setCanvasState]);
+  }, [isDeletable, selectedEdge, removeEdge, unSelectEdge, setCanvasState]);
 
   const handleToggleEdgeType = useCallback(() => {
     if (selectedEdge) {
@@ -116,7 +111,6 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
         updateEdge({
           id: selectedEdge.id,
-          userId: currentUserId,
           updatedElementEdge: { arrowEnd: newArrowEnd },
         });
       } else if (arrow == "right" && selectedEdge) {
@@ -124,12 +118,11 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
         updateEdge({
           id: selectedEdge.id,
-          userId: currentUserId,
           updatedElementEdge: { arrowStart: newArrowStart },
         });
       }
     },
-    [currentUserId, selectedEdge, updateEdge],
+    [selectedEdge, updateEdge],
   );
 
   if (!selectedEdge) return null;
