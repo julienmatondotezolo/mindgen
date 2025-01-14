@@ -23,11 +23,23 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
       <Button
         disabled={disabled}
         onMouseEnter={() => {
+          if (canvasState.mode === CanvasMode.SelectionNet || canvasState.mode === CanvasMode.Inserting) return;
           setCanvasState({
             mode: CanvasMode.Tooling,
           });
         }}
         onMouseLeave={() => {
+          if (
+            canvasState.mode === CanvasMode.Grab ||
+            canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Edge ||
+            canvasState.mode === CanvasMode.SelectionNet
+          )
+            return;
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+
           // If layer already selected go back to LayerSelected mode
           if (allActiveLayers.length > 0) {
             setCanvasState({
@@ -35,16 +47,6 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
             });
             return;
           }
-
-          if (
-            canvasState.mode === CanvasMode.Grab ||
-            canvasState.mode === CanvasMode.Inserting ||
-            canvasState.mode === CanvasMode.Edge
-          )
-            return;
-          setCanvasState({
-            mode: CanvasMode.None,
-          });
         }}
         onPointerDown={(e) => {
           e.stopPropagation();

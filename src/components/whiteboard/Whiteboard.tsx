@@ -441,7 +441,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             layerIds: string[];
           };
 
-          if (layerIds.includes(layerId)) {
+          if (layerIds?.includes(layerId)) {
             const profileData = lock.member.profileData as {
               username: string;
               userId: string;
@@ -1026,7 +1026,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             edgeIds: string[];
           };
 
-          if (edgeIds.includes(edgeId)) {
+          if (edgeIds?.includes(edgeId)) {
             const profileData = lock.member.profileData as {
               username: string;
               userId: string;
@@ -1760,6 +1760,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         setDrawingEdge({ ongoing: false });
       }
 
+      // On ENTER when insert mode go back to default mode
+      if (event.code === "Enter" && canvasState.mode === CanvasMode.Inserting) {
+        // Reset drawingEdge state when pointer is released
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      }
+
+      // On backspace delete layer
       if (event.code === "Backspace" && allActiveLayers?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
         if (!checkPermission(PERMISSIONS, "DELETE")) {
           alert("You don't have the rights to delete");
@@ -1779,12 +1788,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
 
-      if (
-        event.code === "Backspace" &&
-        activeEdgeId?.length >= 0 &&
-        activeEdgeId[0] &&
-        canvasState.mode === CanvasMode.EdgeActive
-      ) {
+      // On backspace delete edge
+      if (event.code === "Backspace" && allActiveEdges?.length > 0 && canvasState.mode === CanvasMode.EdgeSelected) {
         if (!checkPermission(PERMISSIONS, "DELETE")) {
           alert("You don't have the rights to delete");
           return;
@@ -1827,8 +1832,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     removeEdge,
     currentUserId,
     unSelectEdge,
-    activeEdgeId,
+    allActiveEdges,
     PERMISSIONS,
+    activeEdgeId,
   ]);
 
   // Hande Mouse move
