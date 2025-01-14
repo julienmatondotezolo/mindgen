@@ -1198,6 +1198,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             color: { r: 180, g: 191, b: 204 }, // Placeholder, replace with actual color logic
             thickness: 2,
             start: startPoint ?? point,
+            handleEnd: getOppositeHandlePosition(handlePosition),
             handleStart: handlePosition,
             end: point,
             orientation: "auto",
