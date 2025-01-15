@@ -14,8 +14,8 @@ export default function AuthenticationPage() {
   const authText = useTranslations("Auth");
   const waitingListText = useTranslations("waitingList");
   const navigationText = useTranslations("Navigation");
-  const [username, setUsername] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const [, setUsername] = useState<string>("");
+  const [, setEmail] = useState<string>("");
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, source: string) => {
     switch (source) {

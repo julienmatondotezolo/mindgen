@@ -5,7 +5,7 @@ import React, { useRef } from "react";
 import { useSetRecoilState } from "recoil";
 
 import starsIcon from "@/assets/icons/stars.svg";
-import productImage from "@/assets/section/hero.gif";
+import productImage from "@/assets/section/generatedMindmap.gif";
 import { Button } from "@/components/ui";
 import TypingAnimation from "@/components/ui/typing-animation";
 import { globalCursorState } from "@/state";

@@ -5,12 +5,12 @@
 import { Navigation } from "@/components/dashboard";
 import { BackDropGradient } from "@/components/ui";
 import {
-  // CollaborationSection,
+  CollaborationSection,
   Footer,
-  // GenerateDocuments,
+  GenerateDocuments,
   Hero,
-  // ImportFeaturesSection,
-  // MindgenGettingStarted,
+  ImportFeaturesSection,
+  MindgenGettingStarted,
   Pricing,
   SignUpSection,
 } from "@/sections/";
@@ -26,10 +26,10 @@ export default function Index() {
       <BackDropGradient />
       <Navigation />
       <Hero />
-      {/* <GenerateDocuments />
+      <GenerateDocuments />
       <ImportFeaturesSection />
       <CollaborationSection />
-      <MindgenGettingStarted /> */}
+      <MindgenGettingStarted />
       <Pricing />
       <SignUpSection />
       <Footer />
