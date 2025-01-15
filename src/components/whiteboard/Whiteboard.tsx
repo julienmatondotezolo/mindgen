@@ -941,8 +941,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         return; // Exit the function if edge is not found
       }
 
-      let updatedEdge: Edge;
-
       const snapThreshold = 20;
       const layerThreshold = 80;
 
@@ -950,6 +948,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const filteredLayers = layers.filter((layer) => layer.id !== drawingEdge.fromLayerId);
 
       const nearestHandle = findNearestLayerHandle(point, filteredLayers, snapThreshold);
+
       const nearestLayer = findNearestLayerHandle(point, filteredLayers, layerThreshold);
 
       setIsEdgeNearLayer(!nearestHandle);
@@ -957,6 +956,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // Set drawingEdge state to indicate an edge drawing operation is ongoing
       setDrawingEdge({ ongoing: true, lastEdgeId: id, fromLayerId: edge.fromLayerId });
+
+      let updatedEdge: Edge;
 
       switch (handlePosition) {
         case "START":
@@ -997,7 +998,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           break;
       }
 
-      setEdges(edges.map((e) => (e.id === id ? updatedEdge : e)));
+      setEdges((prevEdges) => prevEdges.map((e) => (e.id === id ? updatedEdge : e)));
       setCanvasState({
         ...canvasState,
         editingEdge: { ...canvasState.editingEdge, startPoint: point },
@@ -1008,9 +1009,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const handleEdgeClick = useCallback(
     async (e: React.PointerEvent, edgeId: string) => {
-      const currentEdge = edges.filter((edge: Edge) => edge.id === edgeId);
-
-      console.log("currentEdge:", currentEdge);
       e.stopPropagation();
       if (canvasState.mode === CanvasMode.Grab) return;
 
@@ -1957,14 +1955,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 fill={shadowState.layer!.fill}
               />
             )}
-            <EdgeSelectionBox onHandlePointerDown={handleEdgeHandlePointerDown} />
-            <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
             <LayerHandles
               onMouseEnter={onHandleMouseEnter}
               onMouseLeave={onHandleMouseLeave}
               onPointerDown={onHandleMouseDown}
               onPointerUp={onHandleMouseUp}
             />
+            <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
             {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
               <rect
                 className="fill-blue-500/5 stroke-blue-500 stroke-1"
@@ -1984,6 +1981,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
               setLastUsedColor={setLastUsedColor}
             />
+            <EdgeSelectionBox onHandlePointerDown={handleEdgeHandlePointerDown} />
             <CursorPresence />
           </g>
         </svg>
