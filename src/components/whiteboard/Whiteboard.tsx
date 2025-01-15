@@ -472,11 +472,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         return;
       }
 
+      const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
+
+      // If multiple layers selected enter translate mode
+      if (allActiveLayers.length > 0) {
+        setCanvasState({
+          mode: CanvasMode.Translating,
+          current: point,
+          initialLayerBounds: getLayerById({ layerId, layers }),
+        });
+        return;
+      }
+
       const isAlreadySelected = allActiveLayers.includes(layerId);
 
       if (isAlreadySelected) return;
-
-      const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
       // If Shift is held, add the layerId to the activeLayerIds array without removing other
       if (e.shiftKey) {
@@ -1962,15 +1972,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               onPointerUp={onHandleMouseUp}
             />
             <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
-            {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
-              <rect
-                className="fill-blue-500/5 stroke-blue-500 stroke-1"
-                x={Math.min(canvasState.origin.x, canvasState.current.x)}
-                y={Math.min(canvasState.origin.y, canvasState.current.y)}
-                width={Math.abs(canvasState.origin.x - canvasState.current.x)}
-                height={Math.abs(canvasState.origin.y - canvasState.current.y)}
-              />
-            )}
             <SelectionTools
               camera={camera}
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
@@ -1983,6 +1984,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             />
             <EdgeSelectionBox onHandlePointerDown={handleEdgeHandlePointerDown} />
             <CursorPresence />
+            {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
+              <rect
+                className="fill-blue-500/5 stroke-blue-500 stroke-1"
+                x={Math.min(canvasState.origin.x, canvasState.current.x)}
+                y={Math.min(canvasState.origin.y, canvasState.current.y)}
+                width={Math.abs(canvasState.origin.x - canvasState.current.x)}
+                height={Math.abs(canvasState.origin.y - canvasState.current.y)}
+              />
+            )}
           </g>
         </svg>
       </figure>
