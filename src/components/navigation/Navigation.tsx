@@ -30,10 +30,19 @@ function Navigation() {
         </section>
 
         <div className="block space-x-10">
-          <Link href={`/dashboard`}>
+          {/* Go to dashboard */}
+          {/* <Link href={`/dashboard`}>
             {session?.session == undefined && (
               <Button className="gap-2" variant={"outline"}>
                 {navigationText("tryNow")}
+                <MoveRight size={20} />
+              </Button>
+            )}
+          </Link> */}
+          <Link href={`/waitlist`}>
+            {session?.session == undefined && (
+              <Button className="gap-2">
+                {navigationText("joinWaitList")}
                 <MoveRight size={20} />
               </Button>
             )}

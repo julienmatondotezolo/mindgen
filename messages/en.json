@@ -77,7 +77,8 @@
     "searchInput": "Search mindmap",
     "upgradeButton": "Upgrade",
     "loginButton": "Login",
-    "tryNow": "Try now"
+    "tryNow": "Try now",
+    "joinWaitList": "Join the waitlist"
   },
   "Dashboard": {
     "welcome": "Welcome to Mindgen,",
@@ -155,6 +156,9 @@
     "uploadDocumentDescription": "Easily import PDFs, documents, or images to add rich content to your mindgen. Uploading files lets you integrate detailed information from multiple sources.",
     "connectExternalDataTitle": "Connect to External Data Source",
     "connectExternalDataDescription": "Link to external websites, databases, or GitHub repositories to fetch live data or integrate information from your preferred sources for real-time processing."
+  },
+  "waitingList": {
+    "joinWaitListText": "Join the waitlist to acces"
   },
   "Error": {
     "pageNotFound": "Page Not Found",

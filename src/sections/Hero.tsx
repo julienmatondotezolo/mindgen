@@ -22,6 +22,8 @@ function Hero() {
   const session: any = useSession();
 
   const text = useTranslations("Index");
+  const navigationText = useTranslations("Navigation");
+  const welcomeText = useTranslations("Welcome");
   const locale = useLocale();
   const landingText = useTranslations("landing");
   const safeSession = session ? (session as unknown as CustomSession) : null;
@@ -145,9 +147,9 @@ function Hero() {
             </p>
 
             <div className="mt-[30px] flex flex-col items-start md:items-center">
-              <div className="space-x-4 z-50">
+              <div className="space-x-4 z-10">
                 {safeSession?.data?.session ? (
-                  <Link href={`/dashboard`}>
+                  <Link href={`/waitlist`}>
                     <Button className="w-auto gap-2 !cursor-none">
                       <span>
                         {uppercaseFirstLetter(text("open"))} {locale == "fr" && "l'"}app
@@ -157,13 +159,15 @@ function Hero() {
                   </Link>
                 ) : (
                   <>
-                    <Link href={`/dashboard`}>
-                      <Button className="w-auto !cursor-none">Start for free</Button>
+                    <Link href={`/waitlist`}>
+                      <Button className="w-auto !cursor-none">{welcomeText("heroButton")}</Button>
                     </Link>
-                    <Button className="gap-2 !cursor-none" variant={"outline"}>
-                      <span>Learn more</span>
-                      <MoveRight size={20} />
-                    </Button>
+                    <Link href={`/waitlist`}>
+                      <Button className="gap-2 !cursor-none" variant={"outline"}>
+                        {navigationText("joinWaitList")}
+                        <MoveRight size={20} />
+                      </Button>
+                    </Link>
                   </>
                 )}
               </div>

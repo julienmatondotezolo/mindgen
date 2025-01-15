@@ -77,7 +77,8 @@
     "searchInput": "Zoek een mindmap",
     "upgradeButton": "Upgraden",
     "loginButton": "Inloggen",
-    "tryNow": "Probeer nu"
+    "tryNow": "Probeer nu",
+    "joinWaitList": "Inschrijving op wachtlijst"
   },
   "Dashboard": {
     "welcome": "Welkom bij Mindgen,",
@@ -155,6 +156,9 @@
     "uploadDocumentDescription": "Importeer eenvoudig PDF's, documenten of afbeeldingen om rijke inhoud toe te voegen aan uw mindgen. Door bestanden te uploaden kunt u gedetailleerde informatie uit verschillende bronnen integreren.",
     "connectExternalDataTitle": "Verbinding maken met externe gegevensbron",
     "connectExternalDataDescription": "Maak verbinding met externe websites, databases of GitHub-repositories om live gegevens op te halen of informatie te integreren vanuit uw favoriete bronnen voor realtime verwerking."
+  },
+  "waitingList": {
+    "joinWaitListText": "Schrijf je in op de wachtlijst voor toegang op"
   },
   "Error": {
     "linkExpired": "Link vervallen",

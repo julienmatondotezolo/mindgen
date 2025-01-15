@@ -2,12 +2,12 @@
 import Spaces from "@ably/spaces";
 import * as Ably from "ably";
 import { AblyProvider } from "ably/react";
-import { enablePatches } from "immer";
 import { nanoid } from "nanoid";
+import { useRouter } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
-import React, { JSX, ReactNode } from "react";
+import React, { JSX, ReactNode, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactFlowProvider } from "reactflow";
 import { RecoilRoot } from "recoil";
@@ -41,15 +41,37 @@ function selectMessages(locale: string) {
   }
 }
 
-enablePatches();
-
 // Initialize Spaces
 export const spaces = new Spaces(ablyClient);
 
+// Add supported locales constant
+export const SUPPORTED_LOCALES = ["en", "fr", "nl"] as const;
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+// Function to detect browser language and return supported locale
+function detectBrowserLanguage(): SupportedLocale {
+  if (typeof window !== "undefined") {
+    const browserLang = navigator.language.split("-")[0];
+
+    return SUPPORTED_LOCALES.includes(browserLang as SupportedLocale) ? (browserLang as SupportedLocale) : "en";
+  }
+  return "en";
+}
+
 export default function Providers({ children, locale }: Props): JSX.Element {
-  // const messages = useMessages();
+  const router = useRouter();
   const timeZone = "Europe/Brussels";
   const messages = selectMessages(locale);
+
+  // Effect to handle browser language detection and redirect
+  useEffect(() => {
+    const detectedLocale = detectBrowserLanguage();
+
+    if (locale !== detectedLocale && !localStorage.getItem("preferredLocale")) {
+      localStorage.setItem("preferredLocale", detectedLocale);
+      router.push(`/${detectedLocale}`);
+    }
+  }, [locale, router]);
 
   return (
     <SessionProvider>
