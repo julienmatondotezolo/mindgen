@@ -72,19 +72,21 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
           </li>
         )}
         {checkPermission(PERMISSIONS, "EXPORT") && (
-          <li className="m-1">
-            <Button variant={"outline"} onClick={handleShareClick}>
-              <Image
-                className="mr-2 dark:invert"
-                src={shareIcon}
-                width="0"
-                height="0"
-                style={{ width: "100%", height: "auto" }}
-                alt="Share icon"
-              />
-              {text("share")}
-            </Button>
-          </li>
+          <>
+            <li className="m-1">
+              <Button variant={"outline"} onClick={handleShareClick}>
+                <Image
+                  className="mr-2 dark:invert"
+                  src={shareIcon}
+                  width="0"
+                  height="0"
+                  style={{ width: "100%", height: "auto" }}
+                  alt="Share icon"
+                />
+                {text("share")}
+              </Button>
+            </li>
+          </>
         )}
         <li className="m-1">
           <Button

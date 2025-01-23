@@ -34,3 +34,4 @@ export * from "./toast";
 export * from "./typing-animation";
 export * from "./upgradePlanDialog";
 export * from "./use-toast";
+export * from "./generateDocumentDialog";

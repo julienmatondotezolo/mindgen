@@ -90,7 +90,7 @@ export async function fetchGeneratedSummaryText(
   }); 
 }
 
-export async function fetchCreatedPDF({ session, pdfReqObject }: { session: CustomSession | null, pdfReqObject: any }): Promise<any> {
+/* export async function fetchCreatedPDF({ session, pdfReqObject }: { session: CustomSession | null, pdfReqObject: any }): Promise<any> {
   if(session)
     try {
       const responseCreatePDF: Response = await fetch(baseUrl + `/ai/pdf`, {
@@ -111,7 +111,7 @@ export async function fetchCreatedPDF({ session, pdfReqObject }: { session: Cust
     } catch (error) {
       console.error("Impossible to create PDF:", error);
     }
-}
+} */
 
 /* ================================================= */  
 /* ==================   PROFILE   ================== */
@@ -967,3 +967,57 @@ export async function removeMemberById({ session, mindmapId, membersToDelete }: 
       console.error("Impossible to remove collaborator:", error);
     }
 }
+
+/* ===================================================== */  
+/* ==================   DOCUMENTS   ================== */
+/* ===================================================== */  
+
+export async function generateDocument({ 
+  session, 
+  task,
+  mermaid,
+  style,
+  length,
+  format,
+  audience
+}: { 
+  session: CustomSession | null, 
+  task: string,
+  mermaid: string,
+  style: string,
+  length: string, 
+  format: string,
+  audience: string
+}): Promise<Blob> {
+  if(session)
+    try {
+      const responseGenerateDocument: Response = await fetch(baseUrl + `/ai/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify({
+          task,
+          mermaid,
+          style,
+          length,
+          format,
+          audience
+        }),
+      });
+
+      if (responseGenerateDocument.ok) {
+        const blob = await responseGenerateDocument.blob();
+        return new Blob([blob], { type: 'application/pdf' });
+      } else {
+        throw responseGenerateDocument;
+      }
+    } catch (error) {
+      console.error("Impossible to generate document:", error);
+      throw error;
+    }
+  throw new Error("No session provided");
+}
+

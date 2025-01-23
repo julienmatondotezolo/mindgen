@@ -1,22 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import { Sparkles } from "lucide-react";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
-import { useMutation } from "react-query";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { fetchCreatedPDF, fetchGeneratedSummaryText, reGenerateMindmap } from "@/_services";
+import { fetchGeneratedSummaryText, reGenerateMindmap } from "@/_services";
 import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
-import starsIcon from "@/assets/icons/stars.svg";
-import { Button, Textarea } from "@/components/";
+import { Button, Textarea, GenerateDocumentDialog } from "@/components/";
 import { useDidUpdateEffect } from "@/hooks";
 import {
   canvasStateAtom,
   edgesAtomState,
+  generateDocumentState,
   layerAtomState,
   promptResultState,
   promptValueState,
@@ -55,14 +52,19 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const createdPDF = useMutation(fetchCreatedPDF, {
+  const [generateDocumentModal, setGenerateDocumentModal] = useRecoilState(generateDocumentState);
+  const handleGenerateDocumentClick = () => {
+    setGenerateDocumentModal(!generateDocumentModal);
+  };
+
+/*   const createdPDF = useMutation(fetchCreatedPDF, {
     onSuccess: () => {
       setText("");
     },
     onError: () => {
       setText("");
     },
-  });
+  }); */
 
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
@@ -134,7 +136,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     }
   };
 
-  const createPDF = (prompt: any) => {
+ /* const createPDF = (prompt: any) => {
     setText(prompt);
     const mindMapArray = convertToMermaid(layers, edges);
 
@@ -144,11 +146,11 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       description,
     };
 
-    createdPDF.mutate({
+    /* createdPDF.mutate({
       session: session,
       pdfReqObject: createPDFReqObject,
     });
-  };
+  }; */
 
   const handleGenerateMindmap = async (e: any) => {
     e.preventDefault();
@@ -250,7 +252,8 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const handleQuickPrompt = (e: any, name: string, prompt: string) => {
     e.preventDefault();
     if (name === "Create PDF") {
-      createPDF(prompt);
+    /*   createPDF(prompt); */
+      handleGenerateDocumentClick();
       return;
     }
 
@@ -403,13 +406,13 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
             required
           />
           <Button className="absolute bottom-2 right-2 z-50" size="icon" disabled={isLoading} type="submit">
-            <Image
+{/*             <Image
               className={isLoading || createdPDF.isLoading ? "animate-spin" : ""}
               src={starsIcon}
               height={size}
               width={size}
               alt="Stars icon"
-            />
+            /> */}
           </Button>
           <aside className="absolute bottom-[56px] flex flex-wrap justify-between w-full left-0">
             {quickPrompts.map((item, index) => (
@@ -426,13 +429,13 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
               <p className="dark:text-white">{uppercaseFirstLetter(indexText("generate"))}</p>
             </Button> */}
           </aside>
-          {createdPDF.isLoading ||
+         {/*  {createdPDF.isLoading ||
             (isGenerating && (
               <div className="absolute top-[-196px] left-1/2 -translate-x-1/2 bg-white shadow-lg backdrop-filter backdrop-blur-lg border dark:border dark:bg-slate-900 dark:bg-opacity-95 dark:border-slate-800 p-4 rounded-lg text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
                 <p>{isGenerating ? "Mindmap is " + indexText("generating") + "..." : "We are creating your pdf..."}</p>
               </div>
-            ))}
+            ))} */}
         </form>
       </>
     );

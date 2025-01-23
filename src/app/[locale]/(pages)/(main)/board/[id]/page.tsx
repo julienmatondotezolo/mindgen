@@ -17,13 +17,14 @@ import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
-import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
+import { Button, CollaborateDialog, GenerateDocumentDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import { Link } from "@/navigation";
 import {
   boardIdState,
   collaborateModalState,
   currentUserState,
   edgesAtomState,
+  generateDocumentState,/*  */
   importModalState,
   layerAtomState,
   promptResultState,
@@ -41,6 +42,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
   const [importModal, setImportModal] = useRecoilState(importModalState);
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
+  const [generateDocumentModal, setGenerateDocumentModal] = useRecoilState(generateDocumentState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
   const setBoardId = useSetRecoilState(boardIdState);
@@ -193,6 +195,7 @@ export default function Board({ params }: { params: { id: string } }) {
             )}
           </div>
         </main>
+        <GenerateDocumentDialog open={generateDocumentModal} setIsOpen={setGenerateDocumentModal} />
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
         <ShareDialog open={shareModal} setIsOpen={setShareModal} />
         <CollaborateDialog

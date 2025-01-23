@@ -253,6 +253,11 @@ export const viewPortScaleState = atom({
   default: {},
 });
 
+export const generateDocumentState = atom({
+  key: "generateDocumentState",
+  default: false,
+});
+
 // ================   PROFIL STATES   ================== //
 
 export const profilMaxMindmapState = atom<number>({
