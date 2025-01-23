@@ -9,7 +9,7 @@ import {
   Footer,
   GenerateDocuments,
   Hero,
-  ImportFeaturesSection,
+  // ImportFeaturesSection,
   MindgenGettingStarted,
   Pricing,
   SignUpSection,
@@ -26,10 +26,10 @@ export default function Index() {
       <BackDropGradient />
       <Navigation />
       <Hero />
-      <GenerateDocuments />
-      <ImportFeaturesSection />
-      <CollaborationSection />
       <MindgenGettingStarted />
+      <CollaborationSection />
+      <GenerateDocuments />
+      {/* <ImportFeaturesSection /> */}
       <Pricing />
       <SignUpSection />
       <Footer />
