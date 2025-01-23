@@ -3,12 +3,12 @@
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { fetchGeneratedSummaryText, reGenerateMindmap } from "@/_services";
 import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";
-import { Button, Textarea, GenerateDocumentDialog } from "@/components/";
+import { Button, Textarea } from "@/components/";
 import { useDidUpdateEffect } from "@/hooks";
 import {
   canvasStateAtom,
@@ -22,6 +22,7 @@ import {
 } from "@/state";
 import { convertToMermaid, findCollaboratorId, scrollToBottom, uppercaseFirstLetter } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
+import {  SparklesIcon, MinimizeIcon, SendIcon, XIcon, Loader2, Send, Sparkles, X } from "lucide-react";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
   const session: any = useSession();
@@ -52,6 +53,10 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [showPrompts, setShowPrompts] = useState(false);
+  
+
   const [generateDocumentModal, setGenerateDocumentModal] = useRecoilState(generateDocumentState);
   const handleGenerateDocumentClick = () => {
     setGenerateDocumentModal(!generateDocumentModal);
@@ -65,6 +70,8 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       setText("");
     },
   }); */
+
+  
 
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
@@ -386,57 +393,129 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
   if (safeSession)
     return (
       <>
-        <form
-          onSubmit={(event: any) => sendPrompt({ event })}
-          className="relative flex flex-row items-start max-h-36 p-2 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
-        >
-          <Textarea
-            className="resize-none overflow-y-hidden w-[90%] border-0 dark:text-white"
-            placeholder={chatText("promptInput")}
-            value={text}
-            onKeyDown={handleSendPrompt}
-            onClick={() =>
-              setCanvasState({
-                mode: CanvasMode.Typing,
-              })
-            }
-            onChange={(event) => handleTextareaChange(event)}
-            disabled={isLoading}
-            style={{ height: textareaHeight }}
-            required
-          />
-          <Button className="absolute bottom-2 right-2 z-50" size="icon" disabled={isLoading} type="submit">
-{/*             <Image
-              className={isLoading || createdPDF.isLoading ? "animate-spin" : ""}
-              src={starsIcon}
-              height={size}
-              width={size}
-              alt="Stars icon"
-            /> */}
-          </Button>
-          <aside className="absolute bottom-[56px] flex flex-wrap justify-between w-full left-0">
-            {quickPrompts.map((item, index) => (
-              <button
-                key={index}
-                onClick={(e) => handleQuickPrompt(e, item.name, item.prompt)}
-                className="border bg-white dark:bg-slate-900 dark:bg-opacity-80 dark:border-slate-800 px-4 py-2 w-fit rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap mb-2"
-              >
-                {item.name}
-              </button>
-            ))}
-            {/* <Button onClick={handleGenerateMindmap} className="px-4 py-2" disabled={isGenerating}>
-              <Sparkles className={isGenerating ? "animate-spin" : ""} height={size - 5} />
-              <p className="dark:text-white">{uppercaseFirstLetter(indexText("generate"))}</p>
-            </Button> */}
-          </aside>
-         {/*  {createdPDF.isLoading ||
-            (isGenerating && (
-              <div className="absolute top-[-196px] left-1/2 -translate-x-1/2 bg-white shadow-lg backdrop-filter backdrop-blur-lg border dark:border dark:bg-slate-900 dark:bg-opacity-95 dark:border-slate-800 p-4 rounded-lg text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
-                <p>{isGenerating ? "Mindmap is " + indexText("generating") + "..." : "We are creating your pdf..."}</p>
+        {!isOpen ? (
+          <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="rounded-full px-6 py-3 bg-primary-color hover:opacity-90 text-white shadow-lg transition-all duration-300 flex items-center gap-2 group"
+            >
+              <Sparkles className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+              <span className="font-medium tracking-wide">Ask AI</span>
+            </Button>
+          </div>
+        ) : (
+          <div 
+            className="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-4xl"
+            style={{
+              animation: "slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeIn 0.4s ease forwards"
+            }}
+          >
+            <div className="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 backdrop-blur-lg">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Sparkles className="h-6 w-6 text-primary-color animate-pulse" />
+                    <div className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-green-400 rounded-full" />
+                  </div>
+                  <span className="text-lg font-medium tracking-tight">Mindgen AI</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setShowPrompts(!showPrompts)}
+                    className="rounded-full px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 text-slate-600 dark:text-slate-400"
+                    variant="ghost"
+                    type="button"
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      {showPrompts ? 'Hide suggestions' : 'Show suggestions'}
+                    </span>
+                  </Button>
+                  <Button
+                    onClick={() => setIsOpen(false)}
+                    className="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    size="icon"
+                    variant="ghost"
+                  >
+                    <X className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                  </Button>
+                </div>
               </div>
-            ))} */}
-        </form>
+
+              {/* Quick Prompts Drawer */}
+              <div 
+                className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
+                style={{
+                  maxHeight: showPrompts ? '400px' : '0'
+                }}
+              >
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+                  <div className="overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: 'min(300px, 60vh)' }}>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 min-h-fit">
+                      {quickPrompts.map((item, index) => (
+                        <button
+                          key={index}
+                          onClick={(e) => handleQuickPrompt(e, item.name, item.prompt)}
+                          className="p-3 rounded-lg text-sm bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors font-medium text-left group"
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <Sparkles className="h-4 w-4 text-primary-color" />
+                            <span className="text-slate-900 dark:text-white">{item.name}</span>
+                          </div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                            {item.prompt.slice(0, 60)}...
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat Input Form */}
+              <form
+                onSubmit={(event: any) => {
+                  sendPrompt({ event });
+                  setTextareaHeight("auto"); // Reset height after sending
+                  setText(""); // Clear text
+                }}
+                className="relative flex flex-col p-4"
+              >
+                <div className="relative">
+                  <Textarea
+                    className="resize-none w-full pr-14 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-color dark:text-white transition-all duration-200 text-base shadow-sm"
+                    placeholder={chatText("promptInput")}
+                    value={text}
+                    onKeyDown={handleSendPrompt}
+                    onClick={() =>
+                      setCanvasState({
+                        mode: CanvasMode.Typing,
+                      })
+                    }
+                    onChange={(event) => handleTextareaChange(event)}
+                    disabled={isLoading}
+                    style={{ 
+                      height: textareaHeight,
+                      minHeight: "120px",
+                      maxHeight: "400px",
+                      overflow: "auto"
+                    }}
+                    required
+                  />
+                  <Button 
+                    className="absolute bottom-3 right-3 transition-transform duration-200 hover:scale-110 active:scale-95 bg-primary-color hover:bg-primary-color/90 shadow-lg" 
+                    size="icon"
+                    disabled={isLoading} 
+                    type="submit"
+                  >
+                    <Send className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''} text-white`} />
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </>
     );
 }

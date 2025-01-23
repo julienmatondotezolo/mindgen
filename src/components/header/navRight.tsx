@@ -1,16 +1,13 @@
-import { Plus } from "lucide-react";
-import Image from "next/image";
+import { Plus, Share2, Import, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
 import { useRecoilState } from "recoil";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { fetchProfile } from "@/_services";
 import { CustomSession, Member, MindMapDetailsProps, ProfileProps } from "@/_types";
-import collaborateIcon from "@/assets/icons/collaborate.svg";
-import importIcon from "@/assets/icons/import.svg";
-import shareIcon from "@/assets/icons/share.svg";
 import { Button } from "@/components/";
 import { collaborateModalState, importModalState, shareModalState, upgradePlanModalState } from "@/state";
 import { checkPermission } from "@/utils";
@@ -29,103 +26,142 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
 
   const safeSession = session ? (session as unknown as CustomSession) : null;
-
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
-
-  const handleImportClick = () => {
-    setImportModal(!importModal);
-  };
-
-  const handleShareClick = () => {
-    setShareModal(!shareModal);
-  };
-
-  const handleCollaborateClick = () => {
-    setCollaborateModal(!collaborateModal);
-  };
-
-  const handleUpgratePlanClick = () => {
-    setUpgradePlanModal(!upgradePlanModal);
-  };
-
   const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    },
+    hover: { 
+      scale: 1.02,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    }
+  };
+
+  const memberVariants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: (i: number) => ({
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        delay: i * 0.05
+      }
+    })
+  };
+
   return (
-    <div className="w-auto px-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800">
-      <ul className="flex flex-row items-center justify-between">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="w-auto px-3 py-2 bg-white/90 rounded-2xl shadow-lg backdrop-blur-xl dark:bg-slate-800/90 dark:border dark:border-slate-700/50"
+    >
+      <ul className="flex flex-row items-center gap-3">
         {checkPermission(PERMISSIONS, "IMPORT") && (
-          <li className="m-1">
+          <motion.li variants={buttonVariants} whileHover="hover">
             <Button
-              variant={"outline"}
-              onClick={userProfile?.plan == "FREE" ? handleUpgratePlanClick : handleImportClick}
+              variant="ghost"
+              onClick={userProfile?.plan == "FREE" ? () => setUpgradePlanModal(true) : () => setImportModal(true)}
+              className="relative group px-5 py-2 hover:bg-primary-color/10 transition-all duration-300"
             >
-              <Image
-                className="mr-2 dark:invert"
-                src={importIcon}
-                width="0"
-                height="0"
-                style={{ width: "100%", height: "auto" }}
-                alt="Import icon"
-              />
-              {text("import")}
+              <Import className="w-4 h-4 mr-2 transition-all duration-300 group-hover:scale-110" />
+              <span className="font-medium">{text("import")}</span>
             </Button>
-          </li>
+          </motion.li>
         )}
+        
         {checkPermission(PERMISSIONS, "EXPORT") && (
-          <>
-            <li className="m-1">
-              <Button variant={"outline"} onClick={handleShareClick}>
-                <Image
-                  className="mr-2 dark:invert"
-                  src={shareIcon}
-                  width="0"
-                  height="0"
-                  style={{ width: "100%", height: "auto" }}
-                  alt="Share icon"
-                />
-                {text("share")}
-              </Button>
-            </li>
-          </>
+          <motion.li variants={buttonVariants} whileHover="hover">
+            <Button
+              variant="ghost"
+              onClick={() => setShareModal(true)}
+              className="relative group px-5 py-2 hover:bg-primary-color/10 transition-all duration-300"
+            >
+              <Share2 className="w-4 h-4 mr-2 transition-all duration-300 group-hover:scale-110" />
+              <span className="font-medium">{text("share")}</span>
+            </Button>
+          </motion.li>
         )}
-        <li className="m-1">
+
+        <motion.li variants={buttonVariants} whileHover="hover">
           <Button
-            variant={members!.length > 1 ? "outline" : "default"}
-            onClick={checkPermission(PERMISSIONS, "MANAGE_ROLES") ? handleCollaborateClick : handleUpgratePlanClick}
+            variant={members!.length > 1 ? "ghost" : "default"}
+            onClick={checkPermission(PERMISSIONS, "MANAGE_ROLES") ? () => setCollaborateModal(true) : () => setUpgradePlanModal(true)}
+            className="relative group px-5 py-2 transition-all duration-300"
           >
-            {members?.length > 1 ? (
-              members?.slice(0, MAX_MEMBERS_SHOWED).map((collaborator: Member, index: number) => (
-                <figure
-                  key={index}
-                  className={`flex h-6 w-6 rounded-full -ml-2 text-white border ${
-                    collaborator.mindmapRole == "CREATOR" ? "bg-primary-color" : "bg-[#1fb865]"
-                  }`}
+            <div className="flex items-center">
+              {members?.length > 1 ? (
+                <div className="flex -space-x-4 mr-3">
+                  <AnimatePresence>
+                    {members?.slice(0, MAX_MEMBERS_SHOWED).map((collaborator: Member, index: number) => (
+                      <motion.div
+                        key={index}
+                        custom={index}
+                        variants={memberVariants}
+                        initial="hidden"
+                        animate="visible"
+                        whileHover={{ y: -2 }}
+                        className={`flex h-8 w-8 rounded-full border-2 border-white dark:border-slate-800 shadow-md ${
+                          collaborator.mindmapRole == "CREATOR" ? "bg-primary-color" : "bg-[#1fb865]"
+                        }`}
+                      >
+                        <span className="m-auto text-sm font-semibold text-white">
+                          {collaborator.username.substring(0, 1).toUpperCase()}
+                        </span>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Users className="w-4 h-4 mr-2 transition-all duration-300 group-hover:scale-110" />
+              )}
+
+              {members?.slice(1, members.length).length >= MAX_MEMBERS_SHOWED && (
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  whileHover={{ y: -2 }}
+                  className="flex h-8 w-8 rounded-full border-2 border-white dark:border-slate-800 bg-white dark:bg-slate-700 shadow-md"
                 >
-                  <p className="m-auto text-xs">{collaborator.username.substring(0, 1).toUpperCase()}</p>
-                </figure>
-              ))
-            ) : (
-              <Image
-                className="mr-2"
-                src={collaborateIcon}
-                width="0"
-                height="0"
-                style={{ width: "100%", height: "auto" }}
-                alt="Collaborate icon"
-              />
-            )}
+                  <span className="m-auto text-sm font-medium">{`+${members.length - MAX_MEMBERS_SHOWED}`}</span>
+                </motion.div>
+              )}
 
-            {members?.slice(1, members.length).length >= MAX_MEMBERS_SHOWED && (
-              <figure className="flex h-6 w-6 rounded-full -ml-2 border bg-white dark:bg-slate-800">
-                <p className="m-auto text-[10px]">{`+${members.length - MAX_MEMBERS_SHOWED}`}</p>
-              </figure>
-            )}
-
-            {members?.length > 1 ? <Plus className="p-1 ml-2 border-2 rounded-full" /> : <p>{text("collaborate")}</p>}
+              {members?.length > 1 ? (
+                <Plus className="w-4 h-4 ml-3 transition-all duration-300 group-hover:rotate-180" />
+              ) : (
+                <span className="font-medium">{text("collaborate")}</span>
+              )}
+            </div>
           </Button>
-        </li>
+        </motion.li>
       </ul>
-    </div>
+    </motion.div>
   );
 }
 

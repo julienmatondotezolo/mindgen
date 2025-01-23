@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import React from "react";
 import { useQuery } from "react-query";
 import { useSetRecoilState } from "recoil";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { fetchProfile } from "@/_services";
 import { CustomSession, ProfileProps } from "@/_types";
@@ -18,14 +19,7 @@ import { ProfileMenu } from "./ProfileMenu";
 function NavProfile() {
   const session = useSession();
   const router = useRouter();
-
   const setMaxMindmap = useSetRecoilState(profilMaxMindmapState);
-  // const text = useTranslations("Index");
-  // const dateText = useTranslations("Dashboard");
-  // const [isAccepting, setIsAccepting] = useState(false);
-
-  // const queryClient = useQueryClient();
-
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
@@ -39,120 +33,96 @@ function NavProfile() {
     },
   });
 
-  // const fetchUserInvitations = () => fetchInvitations({ session: safeSession });
-  // const { data: userInvitations } = useQuery("userInvitations", fetchUserInvitations, {
-  //   refetchOnMount: true,
-  //   enabled: session.data ? true : false,
-  // });
-
-  // const invitationLength = userInvitations && userInvitations.length;
-
-  // const { mutateAsync } = useMutation(acceptInvitation);
-  // const handleAccept = async (invitationId: string) => {
-  //   try {
-  //     setIsAccepting(true);
-  //     await mutateAsync(invitationId, {
-  //       onSuccess: async () => {
-  //         // Invalidate the query to cause a re-fetch
-  //         await queryClient.invalidateQueries("userInvitations");
-  //         await queryClient.invalidateQueries("userMindmap");
-  //         setIsAccepting(false);
-  //       },
-  //     });
-  //   } catch (error) {
-  //     if (error instanceof Error) {
-  //       console.error(`An error has occurred: ${error.message}`);
-  //     }
-  //   }
-  // };
-
-  const listStyle =
-    "flex w-8 h-8 text-center bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-700 hover:dark:bg-slate-500";
-  const size = 14;
+  const listStyle = "flex w-10 h-10 text-center bg-gray-50 hover:bg-primary-opaque rounded-xl dark:bg-slate-700 hover:dark:bg-slate-500 transition-all duration-300";
 
   if (isLoading)
     return (
-      <section className="flex flex-col items-end space-y-2 float-right">
+      <motion.section 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col items-end space-y-2 float-right"
+      >
         <Skeleton className="h-3 w-12 bg-grey-blue" />
         <Skeleton className="h-2 w-28 bg-grey-blue" />
-      </section>
+      </motion.section>
     );
 
   if (userProfile)
     return (
-      <div className="flex float-right">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex float-right items-center"
+      >
         <section className="flex flex-wrap space-x-4">
-          {/* <figure className={`relative ${listStyle} cursor-pointer`}>
-            {invitationLength > 0 && (
-              <div className="absolute flex -top-1 -right-2 w-5 h-5 rounded-full bg-red-600 text-xs">
-                <p className="m-auto text-white">{invitationLength < 9 ? invitationLength : "+9"}</p>
-              </div>
-            )}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Bell className="w-4 dark:text-[#d3d0cd] text-[#2d2f33] m-auto" />
-              </PopoverTrigger>
-              <PopoverContent className="absolute top-10 left-0 z-20 w-auto rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
-                <div className="w-96">
-                  <p className="font-bold text-xl mb-4">{uppercaseFirstLetter(text("invitations"))}</p>
-                  <article className="space-y-4">
-                    {invitationLength > 0 ? (
-                      userInvitations?.map((invitation: any) => (
-                        <section
-                          className="flex justify-between space-x-4 w-full py-4 border-b dark:border-slate-700"
-                          key={invitation.id}
-                        >
-                          <figure className="flex h-10 w-10 bg-primary-color rounded-full">
-                            <p className="m-auto text-xs">{invitation.inviterUsername.substring(0, 1).toUpperCase()}</p>
-                          </figure>
-                          <article className="flex flex-col justify-center text-xs w-52">
-                            <p className="font-bold text-base">Invited to {invitation.mindmapName}</p>
-                            <p className="bold">{invitation.inviterUsername} wants you to join his mindmap</p>
-                            <p className="text-xs opacity-50 mt-1">{formatDate(invitation.createdAt, dateText)}</p>
-                          </article>
-                          <Button className="h-fit" onClick={() => handleAccept(invitation.id)} disabled={isAccepting}>
-                            {isAccepting ? "Accepting..." : "Accept "}
-                          </Button>
-                        </section>
-                      ))
-                    ) : (
-                      <div className="inline-flex items-center">
-                        <Mail className="mr-2 opacity-50" />
-                        <p className="text-sm opacity-50">No invitations</p>
-                      </div>
-                    )}
-                  </article>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </figure> */}
-          {/* <figure className={`${listStyle} cursor-pointer`}> */}
           <Popover>
             <PopoverTrigger asChild>
-              <figure className={`${listStyle} cursor-pointer`}>
+              <motion.figure 
+                className={`${listStyle} cursor-pointer relative overflow-hidden`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-primary-color/10 dark:bg-slate-600/30"
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileHover={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                />
                 <Image
-                  className="m-auto dark:invert dark:group-hover"
+                  className="m-auto dark:invert dark:group-hover z-10 transition-transform duration-300"
                   src={profileIcon}
-                  width={size}
+                  width={18}
+                  height={18}
                   alt="Profile icon"
                 />
-              </figure>
+              </motion.figure>
             </PopoverTrigger>
-            <PopoverContent className="absolute top-10 left-0 z-20 w-64 rounded-xl transition-all duration-500 transform -translate-x-full bg-white shadow-lg dark:border-slate-800 dark:bg-slate-800 dark:text-white dark:bg-opacity-80 backdrop-filter backdrop-blur-lg">
-              <ProfileMenu />
-              {/* Place content for the popover here. */}
-            </PopoverContent>
+            <AnimatePresence>
+              <PopoverContent className="absolute top-12 left-0 z-20 w-72 rounded-xl bg-white/95 shadow-lg dark:border-slate-800 dark:bg-slate-800/95 dark:text-white backdrop-filter backdrop-blur-lg">
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ProfileMenu />
+                </motion.div>
+              </PopoverContent>
+            </AnimatePresence>
           </Popover>
-          {/* </figure> */}
         </section>
 
-        <div className="w-[1px] h-8 self-center mx-4 bg-slate-200 dark:bg-[#5a5d6d]"></div>
+        <motion.div 
+          className="w-[1px] h-8 self-center mx-6 bg-slate-200 dark:bg-[#5a5d6d]"
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+        />
 
-        <article className="text-meft">
-          <p className="text-primary-color text-sm font-bold">{uppercaseFirstLetter(userProfile.username)}</p>
-          <p className="text-xs dark:text-white">{userProfile.email}</p>
-        </article>
-      </div>
+        <motion.article 
+          className="text-left"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
+        >
+          <motion.p 
+            className="text-primary-color text-sm font-bold tracking-wide"
+            whileHover={{ x: 3 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
+            {uppercaseFirstLetter(userProfile.username)}
+          </motion.p>
+          <motion.p 
+            className="text-xs text-slate-600 dark:text-slate-300 mt-0.5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.8 }}
+            transition={{ delay: 0.2 }}
+          >
+            {userProfile.email}
+          </motion.p>
+        </motion.article>
+      </motion.div>
     );
 }
 
