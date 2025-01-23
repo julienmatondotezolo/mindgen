@@ -1,5 +1,7 @@
 "use client";
 
+import { SpaceProvider, SpacesProvider } from "@ably/spaces/react";
+import { ChannelProvider } from "ably/react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -10,18 +12,19 @@ import { generateUsername } from "unique-username-generator";
 
 import { getMindmapById } from "@/_services";
 import { CustomSession, MindMapDetailsProps, MindMapMessages, User } from "@/_types";
+import { spaces } from "@/app/providers";
 import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
-import { Button, CollaborateDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
-import { useSocket } from "@/hooks";
+import { Button, CollaborateDialog, GenerateDocumentDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
 import { Link } from "@/navigation";
 import {
   boardIdState,
   collaborateModalState,
   currentUserState,
   edgesAtomState,
+  generateDocumentState,/*  */
   importModalState,
   layerAtomState,
   promptResultState,
@@ -39,6 +42,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const [promptResult, setPromptResult] = useRecoilState(promptResultState);
   const [importModal, setImportModal] = useRecoilState(importModalState);
   const [shareModal, setShareModal] = useRecoilState(shareModalState);
+  const [generateDocumentModal, setGenerateDocumentModal] = useRecoilState(generateDocumentState);
   const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
   const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
   const setBoardId = useSetRecoilState(boardIdState);
@@ -55,7 +59,7 @@ export default function Board({ params }: { params: { id: string } }) {
   const safeSession = session ? (session as unknown as CustomSession) : null;
   const [enabled, setEnabled] = useState(true);
 
-  const { socketJoinRoom } = useSocket();
+  const spaceName = params.id;
 
   useEffect(() => {
     const user: User = {
@@ -70,13 +74,11 @@ export default function Board({ params }: { params: { id: string } }) {
       let username = usernameFromStorage ?? generateUsername();
 
       sessionStorage.setItem("collaUsername", username);
-
-      socketJoinRoom(params.id, user.id, currentCollaUsername);
     }
 
     setEnabled(false);
     setCurrentUser(user);
-  }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser, socketJoinRoom]);
+  }, [currentCollaUsername, params.id, session, setCurrentCollaUsername, setCurrentUser]);
 
   const fetchUserMindmapById = async () => {
     const mindmapData = await getMindmapById({ session: safeSession, mindmapId: params.id });
@@ -92,10 +94,6 @@ export default function Board({ params }: { params: { id: string } }) {
     enabled,
     staleTime: Infinity,
     onSuccess: (data: MindMapDetailsProps) => {
-      const userId = session.data?.session?.user?.id;
-
-      socketJoinRoom(params.id, userId, currentCollaUsername);
-
       setLayers(data.layers);
       setEdges(data.edges);
       setBoardId(data.id);
@@ -181,7 +179,13 @@ export default function Board({ params }: { params: { id: string } }) {
                   />
                 </div>
               ) : (
-                <Whiteboard userMindmapDetails={userMindmapDetails} />
+                <SpacesProvider client={spaces}>
+                  <SpaceProvider name={spaceName}>
+                    <ChannelProvider channelName={userMindmapDetails.id}>
+                      <Whiteboard userMindmapDetails={userMindmapDetails} />
+                    </ChannelProvider>
+                  </SpaceProvider>
+                </SpacesProvider>
               )}
             </div>
             {qa.length > 0 && (
@@ -191,6 +195,7 @@ export default function Board({ params }: { params: { id: string } }) {
             )}
           </div>
         </main>
+        <GenerateDocumentDialog open={generateDocumentModal} setIsOpen={setGenerateDocumentModal} />
         <ImportDialog open={importModal} setIsOpen={setImportModal} />
         <ShareDialog open={shareModal} setIsOpen={setShareModal} />
         <CollaborateDialog

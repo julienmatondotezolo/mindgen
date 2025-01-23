@@ -1,337 +1,314 @@
-import { produce } from "immer";
-import { useRecoilCallback, useSetRecoilState } from "recoil";
+import { useSpace } from "@ably/spaces/react";
+import { useRecoilCallback, useRecoilValue } from "recoil";
 
 import { Edge, Layer } from "@/_types";
-import { useSocket } from "@/hooks";
+import { ablyClient } from "@/app/providers";
+import { getLayerById } from "@/utils";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
-import { useAddToHistoryPrivate } from "./History";
 
 export const useSelectElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
+  const { space } = useSpace();
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ layerIds, userId }: { layerIds: string[]; userId: string }) => {
-        const userActiveLayers = {
-          userId,
-          layerIds,
-        };
+      async ({ layerIds }: { layerIds: string[] }) => {
+        if (!space) return;
 
         // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, (currentActiveLayers: any) => {
-          // If there are some currentActiveLayers add the selected Layer to it
-          if (
-            !currentActiveLayers?.length ||
-            !currentActiveLayers[0] ||
-            Object.keys(currentActiveLayers[0]).length === 0
-          ) {
-            socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
-            const mergLayers = [...currentActiveLayers, userActiveLayers];
+        set(activeLayersAtom, () => layerIds);
 
-            return mergLayers.filter((obj) => Object.keys(obj).length > 0);
-          }
+        // checking whether a lock identifier is currently locked
+        const isLocked = space.locks.get(roomId) !== undefined;
 
-          const result = currentActiveLayers.map((item: any) => ({ ...item }));
+        if (isLocked) {
+          await space.locks.release(roomId);
+        }
 
-          currentActiveLayers.forEach(() => {
-            const existingItem = result.find((existing: any) => existing.userId === userActiveLayers.userId);
-
-            if (existingItem) {
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
-              existingItem.layerIds = userActiveLayers.layerIds;
-            } else {
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [userActiveLayers] });
-              result.push(userActiveLayers);
-            }
+        // Acquire lock with the updated layer IDs
+        try {
+          await space.locks.acquire(roomId, {
+            attributes: { layerIds },
           });
-
-          return result;
-        });
+        } catch (error) {
+          console.error("Failed to acquire lock:", error);
+          // Optionally revert the state change if lock acquisition fails
+        }
       },
-    [roomId, socketEmit],
+    [roomId, space],
   );
 };
 
 export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
+  const { space } = useSpace();
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ userId }: { userId: string }) => {
-        // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, (currentActiveLayers) => {
-          const updatedActiveLayers = currentActiveLayers.map((item: any) => {
-            if (item.userId === userId) {
-              // Emit to socket when userId matches
-              socketEmit("select-layer", { roomId, userId, selectedLayer: [{ userId, layerIds: [] }] });
-              return { ...item, layerIds: [] };
-            }
-            return item;
-          });
+      async () => {
+        if (!space) return;
 
-          return updatedActiveLayers;
-        });
+        // Update the activeLayersAtom with the provided layer IDs
+        set(activeLayersAtom, () => []);
+
+        // Acquire lock with the updated layer IDs
+        try {
+          await space.locks.release(roomId);
+          // await space.locks.acquire(roomId, {
+          //   attributes: { layerIds: [] },
+          // });
+        } catch (error) {
+          console.error("Failed to release lock:", error);
+          // Optionally revert the state change if lock release fails
+        }
       },
-    [roomId, socketEmit],
+    [roomId, space],
   );
 };
 
 export const useAddElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
-  const setActiveLayers = useSetRecoilState(activeLayersAtom);
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ layer, userId }: { layer: Layer; userId: string }) => {
-        set(layerAtomState, (currentLayers) =>
-          produce(
-            currentLayers,
-            (draft) => {
-              // Assuming currentLayers is an array, we push the new layer to it
-              draft.push(layer);
-              socketEmit("add-layer", { roomId, userId, layer });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "layer");
-            },
-          ),
-        );
+      async ({ layer }: { layer: Layer }) => {
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          const addedLayers = [...currentLayers, layer];
 
-        setActiveLayers([layer.id]);
+          return addedLayers;
+        });
+
+        try {
+          await channel.publish("add", { newLayer: layer });
+        } catch (error) {
+          console.error("can't add to channel:", error);
+        }
       },
-    [addToHistory, roomId, setActiveLayers, socketEmit],
+    [channel],
   );
 };
 
 export const useUpdateElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
+  const layers = useRecoilValue(layerAtomState);
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, userId, updatedElementLayer }: { id: string; userId: string; updatedElementLayer: any }) => {
-        set(layerAtomState, (currentLayers) =>
-          produce(
-            currentLayers,
-            (draft) => {
-              const index = draft.findIndex((layer) => layer.id === id);
+      async ({ id, updatedElementLayer }: { id: string; updatedElementLayer: any }) => {
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          // Create a new array with the updated layer
+          const updatedLayers = currentLayers.map((layer) => {
+            if (layer.id === id) {
+              // If we find a matching id, merge the current layer with the updates
+              const mergedLayer = {
+                ...layer,
+                ...updatedElementLayer,
+              };
 
-              if (index !== -1) {
-                draft[index] = mergeDeep(draft[index], updatedElementLayer);
-              }
-              const updatedLayer = draft[index];
+              return mergedLayer;
+            }
+            return layer;
+          });
 
-              socketEmit("update-layer", { roomId, userId, layer: updatedLayer });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "layer");
-            },
-          ),
-        );
+          return updatedLayers;
+        });
+
+        // Publish to channel
+        try {
+          const layer = getLayerById({ layerId: id, layers });
+
+          const updatedLayer = {
+            ...layer,
+            ...updatedElementLayer,
+          };
+
+          await channel.publish("update", { updatedLayer });
+        } catch (error) {
+          // Return original state if publish fails
+        }
       },
-    [addToHistory, roomId, socketEmit],
+    [channel, layers],
   );
 };
 
 export const useRemoveElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ layerIdsToDelete, userId }: { layerIdsToDelete: string[]; userId: string }) => {
-        set(layerAtomState, (currentLayers) =>
-          produce(
-            currentLayers,
-            (draft) => {
-              // Iterate over layerIdsToDelete and remove the corresponding layers from the draft
-              for (const layerId of layerIdsToDelete) {
-                const index = draft.findIndex((layer) => layer.id === layerId);
+      async ({ layerIdsToDelete }: { layerIdsToDelete: string[] }) => {
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          // Filter out the layers with IDs that should be deleted
+          const updatedLayers = currentLayers.filter((layer) => !layerIdsToDelete.includes(layer.id));
 
-                if (index !== -1) {
-                  draft.splice(index, 1);
-                }
-              }
-              socketEmit("remove-layer", { roomId, userId, layerIdsToDelete });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "layer");
-            },
-          ),
-        );
+          return updatedLayers;
+        });
+
+        try {
+          await channel.publish("remove", { layerIdsToDelete });
+        } catch (error) {
+          console.error("can't publish to channel:", error);
+        }
       },
-    [addToHistory, roomId, socketEmit],
+    [channel],
   );
 };
 
 /* ----------------- EDGES ----------------- */
 
 export const useSelectEdgeElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
+  const { space } = useSpace();
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ edgeIds, userId }: { edgeIds: string[]; userId: string }) => {
-        const userActiveEdges = {
-          userId,
-          edgeIds,
-        };
+      async ({ edgeIds }: { edgeIds: string[] }) => {
+        if (!space) return;
 
-        // Update the activeLayersAtom with the provided layer IDs
-        set(activeEdgeIdAtom, (currentActiveEdges: any) => {
-          // If there are some currentActiveEdges add the selected Layer to it
-          if (Object.keys(currentActiveEdges[0]).length === 0) {
-            socketEmit("select-edge", { roomId, userId, selectedEdge: [userActiveEdges] });
-            const mergEdges = [...currentActiveEdges, userActiveEdges];
+        // Update the activeEdgeIdAtom with the provided layer IDs
+        set(activeEdgeIdAtom, () => edgeIds);
 
-            return mergEdges.filter((obj) => Object.keys(obj).length > 0);
-          }
+        // checking whether a lock identifier is currently locked
+        const isLocked = space.locks.get(roomId) !== undefined;
 
-          const result = currentActiveEdges.map((item: any) => ({ ...item }));
+        if (isLocked) {
+          await space.locks.release(`${roomId}-edge`);
+        }
 
-          currentActiveEdges.forEach(() => {
-            const existingItem = result.find((existing: any) => existing.userId === userActiveEdges.userId);
-
-            if (existingItem) {
-              socketEmit("select-edge", { roomId, userId, selectedEdge: [userActiveEdges] });
-              existingItem.edgeIds = userActiveEdges.edgeIds;
-            } else {
-              socketEmit("select-edge", { roomId, userId, selectedEdge: [userActiveEdges] });
-              result.push(userActiveEdges);
-            }
+        // Acquire lock with the updated layer IDs
+        try {
+          await space.locks.acquire(`${roomId}-edge`, {
+            attributes: { edgeIds },
           });
-
-          return result;
-        });
+        } catch (error) {
+          console.error("Failed to acquire lock:", error);
+          // Optionally revert the state change if lock acquisition fails
+        }
       },
-    [roomId, socketEmit],
+    [roomId, space],
   );
 };
 
 export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
+  const { space } = useSpace();
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ userId }: { userId: string }) => {
+      async () => {
+        if (!space) return;
+
         // Update the activeLayersAtom with the provided layer IDs
-        set(activeEdgeIdAtom, (currentActiveEdges) => {
-          const updatedActiveEdges = currentActiveEdges.map((item: any) => {
-            if (item.userId === userId) {
-              // Emit to socket when userId matches
-              socketEmit("select-edge", { roomId, userId, selectedEdge: [{ userId, edgeIds: [] }] });
-              return { ...item, edgeIds: [] };
-            }
+        set(activeEdgeIdAtom, () => []);
 
-            // return { userId, edgeIds: [] };
-            return item;
-          });
-
-          return updatedActiveEdges;
-        });
+        // Acquire lock with the updated layer IDs
+        try {
+          await space.locks.release(`${roomId}-edge`);
+          // await space.locks.acquire(roomId, {
+          //   attributes: { edgeIds: [] },
+          // });
+        } catch (error) {
+          console.error("Failed to release lock:", error);
+          // Optionally revert the state change if lock release fails
+        }
       },
-    [roomId, socketEmit],
+    [roomId, space],
   );
 };
 
 export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
-  const setActiveEdges = useSetRecoilState(activeEdgeIdAtom);
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ edge, userId }: { edge: Edge; userId: string }) => {
-        set(edgesAtomState, (currentEdges) =>
-          produce(
-            currentEdges,
-            (draft) => {
-              // Assuming currentEdges is an array, we push the new layer to it
-              draft.push(edge);
-              socketEmit("add-edge", { roomId, userId, edge });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "edge");
-            },
-          ),
-        );
+      async ({ edge }: { edge: Edge }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          const addedEdge = [...currentEdges, edge];
 
-        setActiveEdges([edge.id]);
+          return addedEdge;
+        });
+
+        try {
+          await channel.publish("addEdge", { newEdge: edge });
+        } catch (error) {
+          console.error("can't add to channel:", error);
+        }
       },
-    [addToHistory, roomId, setActiveEdges, socketEmit],
+    [channel],
   );
 };
 
 export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
+  const edges = useRecoilValue(edgesAtomState);
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, userId, updatedElementEdge }: { id: string; userId: string; updatedElementEdge: any }) => {
-        set(edgesAtomState, (currentEdges) =>
-          produce(
-            currentEdges,
-            (draft) => {
-              const index = draft.findIndex((edge) => edge.id === id);
+      async ({ id, updatedElementEdge }: { id: string; updatedElementEdge: any }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          // Create a new array with the updated edge
+          const updatedEdges = currentEdges.map((edge) => {
+            if (edge.id === id) {
+              // If we find a matching id, merge the current edge with the updates
+              const mergedEdge = {
+                ...edge,
+                ...updatedElementEdge,
+              };
 
-              if (index !== -1) {
-                draft[index] = mergeDeep(draft[index], updatedElementEdge);
-              }
-              const updatedEdge = draft[index];
+              return mergedEdge;
+            }
+            return edge;
+          });
 
-              socketEmit("update-edge", { roomId, userId, edge: updatedEdge });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "edge");
-            },
-          ),
-        );
+          return updatedEdges;
+        });
+
+        // Publish to channel
+        try {
+          const edge = edges.filter((edge: Edge) => edge.id === id);
+
+          const updatedEdge = mergeDeep({
+            target: edge,
+            source: edge,
+          });
+
+          await channel.publish("updatedEdge", { updatedEdge });
+        } catch (error) {
+          // Return original state if publish fails
+        }
       },
-    [addToHistory, roomId, socketEmit],
+    [channel, edges],
   );
 };
 
 export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
-  const { socketEmit } = useSocket();
-
-  const addToHistory = useAddToHistoryPrivate();
+  const channelName = `${roomId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
-      ({ id, userId }: { id: string; userId: string }) => {
-        set(edgesAtomState, (currentEdges) =>
-          produce(
-            currentEdges,
-            (draft) => {
-              // Filter out the layer with the given ID
-              const index = draft.findIndex((edge) => edge.id === id);
+      async ({ edgeIdsToDelete }: { edgeIdsToDelete: string[] }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          // Filter out the edges with IDs that should be deleted
+          const updatedEdges = currentEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id));
 
-              if (index !== -1) {
-                // Remove the edge from the array in th atom state
-                draft.splice(index, 1);
-              }
-              socketEmit("remove-edge", { roomId, userId, edgeIdsToDelete: [id] });
-            },
-            (patches, inversePatches) => {
-              addToHistory(patches, inversePatches, "edge");
-            },
-          ),
-        );
+          return updatedEdges;
+        });
+
+        try {
+          await channel.publish("removeEdge", { edgeIdsToDelete });
+        } catch (error) {
+          console.error("can't publish to channel:", error);
+        }
       },
-    [addToHistory, roomId, socketEmit],
+    [channel],
   );
 };
 
 // Helper function for deep merging objects
-function mergeDeep(target: any, source: any) {
+function mergeDeep({ target, source }: { target: any; source: any }) {
   const output = Object.assign({}, target);
 
   if (isObject(target) && isObject(source)) {
@@ -344,7 +321,7 @@ function mergeDeep(target: any, source: any) {
       }
     });
   }
-  return output;
+  return output[0];
 }
 
 function isObject(item: any) {

@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import { useRecoilValue } from "recoil";
 
 import { Layer, XYWH } from "@/_types";
@@ -43,21 +42,14 @@ const boundingBox = (layers: Layer[]): XYWH | null => {
 };
 
 const useSelectionBounds = () => {
-  const session: any = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const layers = useRecoilValue(layerAtomState);
-
   const allActiveLayers = useRecoilValue(activeLayersAtom);
+
   const isEdgeNearLayer = useRecoilValue(isEdgeNearLayerAtom);
   const nearestLayer = useRecoilValue(nearestLayerAtom);
 
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
-
   // Check if layers is an array before filtering
-  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => activeLayerIDs?.includes(layer.id)) : [];
+  const selectedLayers = Array.isArray(layers) ? layers.filter((layer) => allActiveLayers.includes(layer.id)) : [];
 
   if (selectedLayers.length > 0) return boundingBox(selectedLayers);
 

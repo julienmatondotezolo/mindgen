@@ -10,7 +10,7 @@ export function convertToMermaid(layers: Layer[], edges: Edge[]) {
   // Generate the Mermaid flowchart syntax
   let mermaidChart = "flowchart TD\n";
 
-  mermaidChart += "    ";
+  mermaidChart += "";
 
   // Add nodes
   layers.forEach((layer) => {

@@ -1,11 +1,10 @@
 "use client";
 
-import { Bold, CaseUpper, Ellipsis, PaintBucket, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { Bold, CaseUpper, Ellipsis, PaintBucket, Shapes, Trash2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue } from "recoil";
 
-import { Camera, CanvasMode, Color, Layer } from "@/_types";
+import { Camera, CanvasMode, Color, Layer, LayerType } from "@/_types";
 import { useSelectionBounds } from "@/hooks/useSelectionBounds";
 import {
   activeLayersAtom,
@@ -18,8 +17,10 @@ import {
   useUnSelectElement,
   useUpdateElement,
 } from "@/state";
+import { getLayerById } from "@/utils";
 
 import { ColorPicker } from "../colorPicker";
+import { ShapePicker } from "../shapePicker";
 import { ToolButton } from "../ToolButton";
 
 interface SelectionToolsProps {
@@ -30,15 +31,12 @@ interface SelectionToolsProps {
 }
 
 export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: SelectionToolsProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const layers = useRecoilValue(layerAtomState);
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
+  const activeLayerID = allActiveLayers[0];
+
+  const currentLayer = getLayerById({ layerId: activeLayerID, layers });
 
   const boardId = useRecoilValue(boardIdState);
   const canvasState = useRecoilValue(canvasStateAtom);
@@ -52,28 +50,50 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
   const selectionBounds = useSelectionBounds();
 
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showShapePicker, setShowShapePicker] = useState(false);
   const [showBorderColorPicker, setShowBorderColorPicker] = useState(false);
 
-  const [isDashed, setIsDashed] = useState(false);
-  const [isThickBorder, setIsThickBorder] = useState(false);
-  const [isUppercase, setIsUppercase] = useState(false);
-  const [isBold, setIsBold] = useState(false);
+  const handleShapeChange = useCallback(
+    (shape: LayerType) => {
+      let layerType;
+
+      switch (shape) {
+        case LayerType.Ellipse:
+          layerType = LayerType.Ellipse;
+          break;
+        case LayerType.Diamond:
+          layerType = LayerType.Diamond;
+          break;
+        default:
+          layerType = LayerType.Rectangle;
+      }
+
+      for (const layerId of allActiveLayers) {
+        updateLayer({
+          id: layerId,
+          updatedElementLayer: { type: layerType },
+        });
+      }
+      setShowShapePicker(false);
+    },
+    [allActiveLayers, updateLayer],
+  );
 
   const handleColorChange = useCallback(
     (fill: Color) => {
       setLastUsedColor(fill);
 
-      for (const layerId of activeLayerIDs) {
+      for (const layerId of allActiveLayers) {
         if (showBorderColorPicker) {
           updateLayer({
             id: layerId,
-            userId: currentUserId,
+
             updatedElementLayer: { borderColor: fill },
           });
         } else {
           updateLayer({
             id: layerId,
-            userId: currentUserId,
+
             updatedElementLayer: { fill: fill },
           });
         }
@@ -81,7 +101,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
       setShowColorPicker(false);
       setShowBorderColorPicker(false);
     },
-    [activeLayerIDs, currentUserId, setLastUsedColor, showBorderColorPicker, updateLayer],
+    [allActiveLayers, setLastUsedColor, showBorderColorPicker, updateLayer],
   );
 
   const handleBorderColorChange = useCallback(() => {
@@ -95,7 +115,7 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
   }, [showBorderColorPicker]);
 
   const handleToggleBorderType = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -103,17 +123,14 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: { borderType: newBorderType },
         });
-
-        setIsDashed(newBorderType === "DASHED");
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleToggleBorderWidth = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -121,16 +138,14 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: { borderWidth: newBorderWidth },
         });
-        setIsThickBorder(newBorderWidth === 4);
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleToggleTextTransform = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -138,7 +153,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: {
             valueStyle: {
               ...layer.valueStyle,
@@ -146,13 +160,12 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             },
           },
         });
-        setIsUppercase(newTextTransform === "uppercase");
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleToggleFontWeight = useCallback(() => {
-    for (const layerId of activeLayerIDs) {
+    for (const layerId of allActiveLayers) {
       const layer = layers.find((l) => l.id === layerId);
 
       if (layer) {
@@ -160,7 +173,6 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
 
         updateLayer({
           id: layerId,
-          userId: currentUserId,
           updatedElementLayer: {
             valueStyle: {
               ...layer.valueStyle,
@@ -168,34 +180,42 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             },
           },
         });
-        setIsBold(newFontWeight === "900");
       }
     }
-  }, [activeLayerIDs, currentUserId, layers, updateLayer]);
+  }, [allActiveLayers, layers, updateLayer]);
 
   const handleRemoveLayer = useCallback(() => {
     if (isDeletable) {
       alert("You don't have the rights to delete");
       return;
     }
-    const selectedLayers = layers.filter((layer: Layer) => activeLayerIDs.includes(layer.id));
+    const selectedLayers = layers.filter((layer: Layer) => allActiveLayers.includes(layer.id));
     const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
-    removeLayer({ layerIdsToDelete, userId: currentUserId });
-    unSelectLayer({ userId: currentUserId });
+    removeLayer({ layerIdsToDelete });
+    unSelectLayer();
+
+    const edgeIdsToDelete: any[] = [];
 
     for (const layer of selectedLayers) {
       if (layer) {
         edges.forEach((edge) => {
           if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
-            removeEdge({ id: edge.id, userId: currentUserId });
+            edgeIdsToDelete.push(edge.id);
           }
         });
       }
     }
-  }, [activeLayerIDs, currentUserId, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
 
-  if (!selectionBounds || canvasState.mode === CanvasMode.Translating || canvasState.mode === CanvasMode.EdgeEditing)
+    removeEdge({ edgeIdsToDelete });
+  }, [allActiveLayers, edges, isDeletable, layers, removeEdge, removeLayer, unSelectLayer]);
+
+  if (
+    !selectionBounds ||
+    canvasState.mode === CanvasMode.Translating ||
+    canvasState.mode === CanvasMode.EdgeEditing ||
+    canvasState.mode === CanvasMode.Typing
+  )
     return null;
 
   if (selectionBounds) {
@@ -236,6 +256,18 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
             transformOrigin: "bottom center",
           }}
         >
+          {showShapePicker && (
+            <div
+              className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-800 dark:bg-opacity-95 dark:border-slate-800"
+              style={{
+                bottom: 70,
+                left: 0,
+                transform: `translate(0px, 0px)`,
+              }}
+            >
+              <ShapePicker onChange={handleShapeChange} onClose={() => setShowShapePicker(false)} />
+            </div>
+          )}
           {showColorPicker && (
             <div
               className="absolute bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800"
@@ -250,8 +282,22 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
           )}
           <ul className="flex flex-row space-x-2 items-center justify-between">
             <ToolButton
+              icon={Shapes}
+              onClick={() => {
+                setShowColorPicker(false);
+                setShowBorderColorPicker(false);
+                setShowShapePicker(!showShapePicker);
+              }}
+              isActive={showShapePicker}
+            />
+            <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
+            <ToolButton
               icon={PaintBucket}
-              onClick={() => setShowColorPicker(!showColorPicker)}
+              onClick={() => {
+                setShowBorderColorPicker(false);
+                setShowShapePicker(false);
+                setShowColorPicker(!showColorPicker);
+              }}
               isActive={showColorPicker && showBorderColorPicker == false}
             />
             <ToolButton onClick={handleBorderColorChange} isActive={showBorderColorPicker ? true : false}>
@@ -262,15 +308,29 @@ export const SelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: S
               ></div>
             </ToolButton>
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-            <ToolButton icon={Ellipsis} onClick={handleToggleBorderType} isActive={isDashed} />
-            <ToolButton onClick={handleToggleBorderWidth} isActive={isThickBorder ? true : false}>
+            <ToolButton
+              icon={Ellipsis}
+              onClick={handleToggleBorderType}
+              isActive={currentLayer?.borderType === "DASHED"}
+            />
+            <ToolButton onClick={handleToggleBorderWidth} isActive={currentLayer?.borderWidth === 4 ? true : false}>
               <div
-                className={`w-[20px] h-[5px] dark:bg-slate-200 ${isThickBorder ? "bg-slate-200" : "bg-slate-950"}`}
+                className={`w-[20px] h-[5px] dark:bg-slate-200 ${
+                  currentLayer?.borderWidth ? "bg-slate-200" : "bg-slate-950"
+                }`}
               ></div>
             </ToolButton>
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
-            <ToolButton icon={CaseUpper} onClick={handleToggleTextTransform} isActive={isUppercase} />
-            <ToolButton icon={Bold} onClick={handleToggleFontWeight} isActive={isBold} />
+            <ToolButton
+              icon={CaseUpper}
+              onClick={handleToggleTextTransform}
+              isActive={currentLayer?.valueStyle?.textTransform === "uppercase"}
+            />
+            <ToolButton
+              icon={Bold}
+              onClick={handleToggleFontWeight}
+              isActive={currentLayer?.valueStyle?.fontWeight === "900"}
+            />
             <div className="w-[1px] h-6 self-center bg-slate-200 dark:bg-slate-700"></div>
             {/* <Button variant="board" size="icon" onClick={handleRemoveLayer}>
               <Trash2 />

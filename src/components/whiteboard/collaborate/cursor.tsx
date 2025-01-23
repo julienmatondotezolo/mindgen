@@ -1,52 +1,25 @@
 "use client";
 
+import { CursorPosition } from "@ably/spaces";
 import { MousePointer2 } from "lucide-react";
-import { memo, useEffect, useState } from "react";
-import { useRecoilValue } from "recoil";
-
-import { useSocket } from "@/hooks";
-import { cameraStateAtom } from "@/state";
-import { connectionIdToColor } from "@/utils";
-
-interface ConnectedUser {
-  id: string; // Assuming IDs are strings, adjust if necessary
-  username: string;
-}
+import { memo } from "react";
 
 interface CursorProps {
-  user: ConnectedUser;
-  connectionId: number;
+  username: string;
+  userColor: string;
+  position: CursorPosition;
 }
 
-export const Cursor = memo(({ user, connectionId }: CursorProps) => {
-  const { socketListen } = useSocket();
-  const camera = useRecoilValue(cameraStateAtom);
+export const Cursor = memo(({ username, userColor, position }: CursorProps) => {
+  if (!username) return null;
 
-  const info = user.username;
-
-  const [cursor, setCursor] = useState(null);
-
-  useEffect(() => {
-    socketListen("remote-cursor-move", (data) => {
-      let { userId, cursor } = data;
-
-      if (userId === user.id) {
-        setCursor(cursor);
-      }
-    });
-  }, [cursor, socketListen, user.id]);
-
-  const name = info || "Viewer";
-
-  if (!cursor) return null;
-
-  const { x, y } = cursor;
+  const { x, y } = position;
 
   const initialHeight = 50;
-  const initialWidth = name.length * 10 + 24;
+  const initialWidth = username.length * 10 + 24;
 
-  const height = Math.max(initialHeight, initialHeight / camera.scale);
-  const width = Math.max(initialWidth, initialWidth / camera.scale);
+  const height = Math.max(initialHeight, initialHeight / 2);
+  const width = Math.max(initialWidth, initialWidth / 2);
 
   return (
     <foreignObject
@@ -60,17 +33,17 @@ export const Cursor = memo(({ user, connectionId }: CursorProps) => {
       <MousePointer2
         className="h-5 w-5"
         style={{
-          fill: connectionIdToColor(connectionId),
-          color: connectionIdToColor(connectionId),
+          fill: userColor,
+          color: userColor,
         }}
       />
       <div
         className="absolute left-5 px-1.5 py-0.5 rounded-md text-xs text-white font-semibold"
         style={{
-          backgroundColor: connectionIdToColor(connectionId),
+          backgroundColor: userColor,
         }}
       >
-        {name}
+        {username}
       </div>
     </foreignObject>
   );

@@ -10,6 +10,7 @@ import SocialYoutube from "@/assets/socials/social-youtube.svg";
 
 function Footer() {
   const size = 30;
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-black py-10 text-center text-sm text-[#BCBCBC]">
@@ -48,7 +49,7 @@ function Footer() {
             alt="Stars icon"
           />
         </div>
-        <p className="mt-6">&copy; 2024 Mindgen, Inc. All rights reserved.</p>
+        <p className="mt-6">&copy; {currentYear} Mindgen, Inc. All rights reserved.</p>
       </div>
     </footer>
   );

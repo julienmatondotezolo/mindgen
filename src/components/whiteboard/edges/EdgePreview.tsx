@@ -1,38 +1,75 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-vars */
 
-import { useSession } from "next-auth/react";
-import React, { memo } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useLocks, useMembers } from "@ably/spaces/react";
+import React, { memo, useState } from "react";
+import { useRecoilState } from "recoil";
 
-import { CanvasMode, Edge, EdgeType, HandlePosition } from "@/_types";
-import { activeEdgeIdAtom, canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
-import { colorToCss, edgeBezierPathString } from "@/utils";
+import { CanvasMode, Edge, EdgeShape, EdgeType } from "@/_types";
+import { canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
+import { colorToCss, edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
 
 interface EdgePreviewProps {
   edge: Edge;
   onEdgePointerDown: (e: React.PointerEvent, edgId: string) => void;
   ARROW_SIZE: number;
-  selectionColor: string;
 }
 
-export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARROW_SIZE }: EdgePreviewProps) => {
-  const session: any = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-  
+export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePreviewProps) => {
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
-  const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
-  const activeEdgeId = allActiveEdges
-    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
-    .map((item: any) => item.edgeIds)[0];
+  
+  const [activeEdgeId, setActiveEdgeId] = useState<string>("");
 
+  const [selectionColor, setSelectionColor] = useState<string>("");
+
+  const { self } = useMembers();
+
+  useLocks((lockUpdate) => {
+    const lockHolder = lockUpdate.member;
+
+    const { userColor } = lockHolder.profileData as {
+      userColor: string;
+    };
+
+    const locked = lockUpdate.status === "locked";
+    const lockedByOther = locked && lockHolder.connectionId !== self?.connectionId;
+
+    // if unlock remove all active edges
+    if (!locked) {
+      setActiveEdgeId("");
+      setSelectionColor("");
+      return;
+    }
+
+    if (lockedByOther) {
+      if(!lockUpdate.attributes || !lockUpdate.attributes.edgeIds) return; 
+
+      const { edgeIds } = lockUpdate.attributes as {
+        edgeIds: string[];
+      };
+
+      if (edgeIds.includes(edge.id)) {
+        setActiveEdgeId(edgeIds[0]);
+        setSelectionColor(userColor);
+        return;
+      }
+    }
+  });
 
   if (!edge) return null;
 
-  const isActive = edge.id === hoveredEdgeId || edge.id === activeEdgeId?.includes(edge.id);
+  const isActive = edge.id === hoveredEdgeId || activeEdgeId.includes(edge.id);
 
-  const pathString = edgeBezierPathString({ edge });
+  // let pathString = edgeBezierPathString({ edge });
+  let pathString = `M ${edge.start.x},${edge.start.y} L ${edge.end.x},${edge.end.y}`;
+
+  // Check for bezier our smooth step edge type
+  if (edge.shape === EdgeShape.SmoothStep) {
+    pathString = edgeSmoothStepPathString({ edge });
+  }
+
+  pathString = edgeBezierPathString({ edge });
 
   return (
     <g>
@@ -82,7 +119,9 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
             canvasState.mode === CanvasMode.EdgeEditing ||
             canvasState.mode === CanvasMode.EdgeDrawing ||
             canvasState.mode === CanvasMode.Translating ||
+            canvasState.mode === CanvasMode.Resizing ||
             canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Importing ||
             activeEdgeId?.includes(edge.id)
           )
             return;
@@ -93,9 +132,12 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, selectionColor, ARRO
             canvasState.mode === CanvasMode.Grab ||
             canvasState.mode === CanvasMode.SelectionNet ||
             canvasState.mode === CanvasMode.EdgeEditing ||
+            canvasState.mode === CanvasMode.EdgeSelected ||
             canvasState.mode === CanvasMode.EdgeDrawing ||
             canvasState.mode === CanvasMode.Translating ||
+            canvasState.mode === CanvasMode.Resizing ||
             canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Importing ||
             activeEdgeId?.includes(edge.id)
           )
             return;

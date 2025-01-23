@@ -11,6 +11,7 @@
     "server": "node server"
   },
   "dependencies": {
+    "@ably/spaces": "^0.4.0",
     "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
@@ -23,6 +24,7 @@
     "@radix-ui/react-toast": "^1.1.5",
     "@reactflow/node-resizer": "^2.2.6",
     "@vercel/analytics": "^1.4.1",
+    "ably": "^2.6.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "d3-selection": "^3.0.0",

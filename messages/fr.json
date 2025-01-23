@@ -77,7 +77,8 @@
     "searchInput": "Rechercher un mindmap",
     "upgradeButton": "Mettre à niveau",
     "loginButton": "Se connecter",
-    "tryNow": "Essayer maintenant"
+    "tryNow": "Essayer maintenant",
+    "joinWaitList": "Rejoignez la liste d'attente"
   },
   "Dashboard": {
     "welcome": "Bienvenue sur Mindgen,",
@@ -155,6 +156,9 @@
     "uploadDocumentDescription": "Importez facilement des PDF, des documents ou des images pour ajouter du contenu enrichi à votre mindgen. Le téléchargement de fichiers vous permet d'intégrer des informations détaillées provenant de plusieurs sources.",
     "connectExternalDataTitle": "Connexion à une source de données externe",
     "connectExternalDataDescription": "Connectez-vous à des sites web externes, des bases de données ou des dépôts GitHub pour récupérer des données en direct ou intégrer des informations depuis vos sources préférées pour un traitement en temps réel."
+  },
+  "waitingList": {
+    "joinWaitListText": "Inscrivez-vous sur la liste d'attente pour accéder"
   },
   "Error": {
     "pageNotFound": "Page Non Trouvée",

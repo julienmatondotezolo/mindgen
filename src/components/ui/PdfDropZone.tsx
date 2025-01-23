@@ -1,9 +1,20 @@
 import Image from "next/image";
-import React, { useCallback, useState } from "react";
-import { useReactFlow } from "reactflow";
-import { useSetRecoilState } from "recoil";
+import { useSession } from "next-auth/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { importModalState } from "@/state";
+import { CanvasMode, Edge, Layer } from "@/_types";
+import { usePathname } from "@/navigation";
+import {
+  canvasStateAtom,
+  edgesAtomState,
+  importModalState,
+  layerAtomState,
+  useAddEdgeElement,
+  useAddElement,
+  useRemoveEdge,
+  useRemoveElement,
+} from "@/state";
 import { importMindmap } from "@/utils";
 
 import { Button } from "./button";
@@ -11,10 +22,35 @@ import { Button } from "./button";
 interface PdfDropZoneProps {}
 
 const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
+  const pathname = usePathname();
+  const [boardId, setBoardId] = useState<string>("");
+
+  const session: any = useSession();
+  const currentUserId = session.data?.session?.user?.id;
+
+  useEffect(() => {
+    if (pathname.includes("board")) {
+      const extractedBoardId = pathname.split("board/")[1];
+
+      setBoardId(extractedBoardId);
+    }
+  }, [pathname]);
+
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [file, setFile] = useState<File | null>();
-  const { setEdges, setNodes } = useReactFlow();
+
   const setIsOpen = useSetRecoilState(importModalState);
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
+
+  const layers = useRecoilValue(layerAtomState);
+  const edges = useRecoilValue(edgesAtomState);
+
+  const currentLayerIds = layers.map((layer) => layer.id);
+
+  const addLayer = useAddElement({ roomId: boardId });
+  const addEdge = useAddEdgeElement({ roomId: boardId });
+  const removeLayer = useRemoveElement({ roomId: boardId });
+  const removeEdge = useRemoveEdge({ roomId: boardId });
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -58,20 +94,49 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
     }
   }, []);
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async ({
+    e,
+    currentLayers,
+    currentEdges,
+  }: {
+    e: React.FormEvent<HTMLFormElement>;
+    currentLayers: Layer[];
+    currentEdges: Edge[];
+  }) => {
     e.preventDefault();
     if (!file) return;
 
     try {
-      setEdges([]);
-      setNodes([]);
+      setCanvasState({ mode: CanvasMode.Importing });
+      removeLayer({ layerIdsToDelete: currentLayerIds, userId: currentUserId });
+
+      for (const layer of currentLayers) {
+        if (layer) {
+          currentEdges.forEach((edge) => {
+            if (edge.fromLayerId === layer.id || edge.toLayerId === layer.id) {
+              removeEdge({
+                id: edge.id,
+                userId: currentUserId,
+              });
+            }
+          });
+        }
+      }
+
       const result = await importMindmap(file);
 
       // Assuming the server action returns the nodes, name, and edges
-      const { nodes, edges } = result;
+      const { importedLayers, importedEdges } = result;
 
-      setEdges(edges);
-      setNodes(nodes);
+      if (importedLayers && importedEdges) {
+        importedLayers.forEach((newLayer: Layer) => {
+          addLayer({ layer: newLayer, userId: currentUserId });
+        });
+
+        importedEdges.forEach((newEdge: Edge) => {
+          addEdge({ edge: newEdge, userId: currentUserId });
+        });
+      }
 
       setIsOpen(false);
       setFile(undefined);
@@ -82,7 +147,7 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
   };
 
   return (
-    <form onSubmit={onSubmit} className="w-full">
+    <form onSubmit={(e) => onSubmit({ e, currentLayers: layers, currentEdges: edges })} className="w-full">
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -99,7 +164,7 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
           height={5}
           priority
         />
-        <p>Drag and drop your Mindmap file here</p>
+        <p>Drag and drop your Board file here</p>
         <p className="text-sm opacity-50">Supports: .json</p>
         <input
           type="file"

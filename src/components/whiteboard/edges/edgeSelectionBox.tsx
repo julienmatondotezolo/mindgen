@@ -2,26 +2,35 @@
 import React from "react";
 import { useRecoilValue } from "recoil";
 
-import { CanvasMode, Edge, Point } from "@/_types";
-import { cameraStateAtom, canvasStateAtom } from "@/state";
-import { edgeBezierPathString } from "@/utils";
+import { CanvasMode, Edge, EdgeShape, Point } from "@/_types";
+import { activeEdgeIdAtom, cameraStateAtom, canvasStateAtom, edgesAtomState } from "@/state";
+import { edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
 
 interface EdgeSelectionBoxProps {
-  edge: Edge;
   onHandlePointerDown: (position: "START" | "MIDDLE" | "END", point: Point) => void;
 }
 
-export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHandlePointerDown }) => {
-  const canvasState = useRecoilValue(canvasStateAtom);
+export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ onHandlePointerDown }) => {
   const camera = useRecoilValue(cameraStateAtom);
 
+  const allActiveEdges = useRecoilValue(edgesAtomState);
+  const allActiveEdgeIds = useRecoilValue(activeEdgeIdAtom);
+  const edgeId = allActiveEdgeIds ? allActiveEdgeIds[0] : null;
+  const canvasState = useRecoilValue(canvasStateAtom);
+
   if (
-    !edge ||
-    (canvasState.mode !== CanvasMode.EdgeActive &&
+    (canvasState.mode !== CanvasMode.EdgeSelected &&
+      canvasState.mode !== CanvasMode.EdgeActive &&
       canvasState.mode !== CanvasMode.EdgeEditing &&
-      canvasState.mode !== CanvasMode.None)
+      canvasState.mode !== CanvasMode.None &&
+      canvasState.mode !== CanvasMode.Tooling) ||
+    !edgeId
   )
     return;
+
+  const edge: Edge | undefined = allActiveEdges.find((edge: Edge) => edge.id === edgeId);
+
+  if (!edge) return;
 
   const circleSize = Math.max(5, 5 / camera.scale);
 
@@ -34,7 +43,14 @@ export const EdgeSelectionBox: React.FC<EdgeSelectionBoxProps> = ({ edge, onHand
   //   y: (edge.start.y + edge.end.y) / 2,
   // };
 
-  const pathString = edgeBezierPathString({ edge });
+  let pathString = edgeBezierPathString({ edge });
+
+  // Check for bezier our smooth step edge type
+  if (edge.shape === EdgeShape.SmoothStep) {
+    pathString = edgeSmoothStepPathString({ edge });
+  } else {
+    pathString = edgeBezierPathString({ edge });
+  }
 
   return (
     <g>

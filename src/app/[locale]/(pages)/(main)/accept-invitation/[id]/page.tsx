@@ -47,12 +47,12 @@ export default function AcceptInvitationPage({ params }: { params: { id: string 
               className="md:text-7xl text-5xl font-bold text-primary-color md:text-left"
             />
             <h1 className="md:text-7xl text-5xl bg-gradient-to-b from-black to-[#001e80] dark:from-white dark:to-[#C8CFFFFF] bg-clip-text font-bold tracking-tighter text-transparent md:text-left !leading-normal">
-              mindmap
+              organization
             </h1>
           </div>
 
           <p className="hidden md:block mt-6 text-xl text-left md:text-center tracking-tight text-[#010d3e] dark:text-primary-foreground default">
-            Click accept to join this mindmap our cancel to go back to the homepage
+            Click accept to join this organization our cancel to go back to the homepage.
           </p>
         </article>
         <section className="flex md:justify-center w-full space-x-4">

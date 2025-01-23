@@ -25,6 +25,12 @@ export enum EdgeType {
   Dashed,
 }
 
+export enum EdgeShape {
+  SmoothStep = "SMOOTHSTEP",
+  Curved = "CURVED",
+  Line = "LINE",
+}
+
 export type Edge = {
   id: string;
   arrowStart?: boolean;
@@ -42,10 +48,11 @@ export type Edge = {
   thickness: number;
   orientation: EdgeOrientation;
   type: EdgeType;
+  shape: EdgeShape;
 };
 
 export enum LayerType {
-  Note = "NOTE",
+  Diamond = "DIAMOND",
   Rectangle = "RECTANGLE",
   Ellipse = "ELLIPSE",
   Path = "PATH",
@@ -61,7 +68,7 @@ export type ValueStyle = {
   textTransform: string;
 };
 
-export type Layer = RectangleLayer | EllipseLayer | PathLayer | NoteLayer;
+export type Layer = RectangleLayer | EllipseLayer | PathLayer | DiamondLayer;
 
 export type LayerWithGeometry = {
   id: string;
@@ -90,8 +97,8 @@ export type PathLayer = LayerWithGeometry & {
   points: number[][];
 };
 
-export type NoteLayer = LayerWithGeometry & {
-  type: LayerType.Note;
+export type DiamondLayer = LayerWithGeometry & {
+  type: LayerType.Diamond;
 };
 
 // export type TextLayer = {
@@ -158,7 +165,13 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Inserting;
-      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path;
+      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Diamond | LayerType.Path;
+    }
+  | {
+      mode: CanvasMode.LayerSelected;
+    }
+  | {
+      mode: CanvasMode.EdgeSelected;
     }
   | {
       mode: CanvasMode.Translating;
@@ -178,13 +191,20 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Tooling;
+    }
+  | {
+      mode: CanvasMode.Exporting; // New mode for exporting
+    }
+  | {
+      mode: CanvasMode.Importing; // New mode for exporting
     };
-
 export enum CanvasMode {
   None,
   Grab,
   Pressing,
   SelectionNet,
+  LayerSelected,
+  EdgeSelected,
   Inserting,
   Translating,
   Resizing,
@@ -195,4 +215,6 @@ export enum CanvasMode {
   EdgeEditing,
   Typing,
   Tooling,
+  Exporting,
+  Importing,
 }

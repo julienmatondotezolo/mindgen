@@ -1,3 +1,5 @@
+import { ApiError } from "next/dist/server/api-utils";
+
 const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 //Use when Next-Auth version fixed (there is an error where it returns status 200 even if the credentials are wrong)
@@ -70,20 +72,27 @@ export async function validateToken(token: string) {
 }
 
 export async function resetPassword({ token, newPassword }: { token: string; newPassword: string }) {
-  try {
-    const res: Response = await fetch(`${baseUrl}/password/reset`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "1",
-      },
-      body: JSON.stringify({ token, newPassword }),
-    });
+  const res: Response = await fetch(`${baseUrl}/password/reset`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify({ token, newPassword }),
+  });
 
-    return res.ok;
-  } catch (error) {
-    console.error(error);
+  if (!res.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Profile fetch",
+      statusCode: res.status,
+      message: await res.text(),
+    };
+
+    throw errorData;
   }
+
+  return res.ok;
 }
 
 export async function requestPasswordReset({ passwordResetBody }: { passwordResetBody: any }) {

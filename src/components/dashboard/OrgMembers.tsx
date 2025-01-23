@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { useSetRecoilState } from "recoil";
 
 import { createInvitations } from "@/_services";
 import { CustomSession, Member, Organization } from "@/_types";
@@ -23,6 +24,12 @@ import {
   TableRow,
   Textarea,
 } from "@/components/ui/";
+import {
+  memberLeaveOrgaModalState,
+  memberToDeleteState,
+  memberToLeaveOrgaState,
+  removeMemberModalState,
+} from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 interface OrgProps {
@@ -42,13 +49,21 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
 
   const members = userOrgaData?.members;
 
-  const currentUserid = safeSession?.data.session.user.id;
+  const currentUser = safeSession?.data.session.user;
 
-  const currentMember: Member | undefined = userOrgaData?.members.filter((member) => member.userId == currentUserid)[0];
+  const currentMember: Member | undefined = userOrgaData?.members.filter(
+    (member) => member.userId == currentUser.id,
+  )[0];
 
   const [openInvite, setOpenInvite] = useState(false);
   const [textAreaValue, setTextAreaValue] = useState("");
   const [memberState, setMemberState] = useState("ADMIN");
+  const [invMembersError, setInvMembersError] = useState([]);
+
+  const memberToDelete = useSetRecoilState(memberToDeleteState);
+  const memberToLeaveOrg = useSetRecoilState(memberToLeaveOrgaState);
+  const setIsRemoveMemberState = useSetRecoilState(removeMemberModalState);
+  const setIsMemberToLeaveOrgaState = useSetRecoilState(memberLeaveOrgaModalState);
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(e.target.value);
@@ -65,7 +80,13 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   }
 
   const createInvMutation = useMutation(createInvitations, {
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setInvMembersError([]);
+      if (data.unsuccessfulInvites.length > 0) {
+        setInvMembersError(data.unsuccessfulInvites);
+        return;
+      }
+
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
       setOpenInvite(false);
@@ -95,6 +116,21 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
     } else {
       alert("Please enter valid email(s).");
     }
+  };
+
+  const handleLeave = async ({ userOrgaData, member }: { userOrgaData: any; member: Member }) => {
+    const memberLeaveData = {
+      orgName: userOrgaData.name,
+      member,
+    };
+
+    memberToLeaveOrg(memberLeaveData);
+    setIsMemberToLeaveOrgaState(true);
+  };
+
+  const handleRemove = async ({ member }: { member: Member }) => {
+    memberToDelete(member);
+    setIsRemoveMemberState(true);
   };
 
   const containerVariants = {
@@ -159,6 +195,17 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                                 placeholder="example@email.com, example2@email.com"
                                 required
                               />
+                              {invMembersError.length > 0 && (
+                                <div className="py-2 text-xs text-red-500">
+                                  <article className="flex">
+                                    <p className="mr-1">Impossible to invite:</p>
+                                    <section className="flex space-x-1 font-bold">
+                                      {invMembersError?.map((memberError, i) => <p key={i}>{memberError}</p>)}
+                                    </section>
+                                  </article>
+                                  <p>Possible reasons: No account with this email</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -199,7 +246,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                     </Card>
                   </motion.div>
                 ) : (
-                  currentMember?.organizationRole == "OWNER" && (
+                  currentMember?.organizationRole !== "MEMBER" && (
                     <Button onClick={() => setOpenInvite(true)} className="mt-8 group">
                       <UserPlus className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" />
                       {textMember("inviteMembers")}
@@ -246,9 +293,24 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                           <TableCell>{member.email}</TableCell>
                           <TableCell>{member.organizationRole}</TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm" className="hover:text-red-500 transition-colors">
-                              Delete member
-                            </Button>
+                            {member.organizationRole !== "OWNER" &&
+                              (currentUser.email === member.email ? (
+                                <Button
+                                  onClick={() => handleLeave({ userOrgaData, member })}
+                                  className="px-4 py-2 flex items-center space-x-2 bg-red-500"
+                                >
+                                  {uppercaseFirstLetter(text("leave"))}
+                                </Button>
+                              ) : (
+                                currentMember?.organizationRole == "OWNER" && (
+                                  <Button
+                                    onClick={() => handleRemove({ member })}
+                                    className="px-4 py-2 flex items-center space-x-2 bg-red-500"
+                                  >
+                                    {uppercaseFirstLetter(text("remove"))}
+                                  </Button>
+                                )
+                              ))}
                           </TableCell>
                         </TableRow>
                       ))}

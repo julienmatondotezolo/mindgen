@@ -44,7 +44,7 @@ const UpgradePlanDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
         <X className="cursor-pointer" onClick={handleClose} />
       </article>
       <div className="w-full mt-4">
-        <p>Oops.... Looks like you&#39;ve run out of free credits!</p>
+        <p>Oops.... Looks like with you&#39;re current plan. This option is unavailable!</p>
         <p className="p-16-regular py-3">
           No worries, though - you can keep enjoying our services by grabbing another plan.
         </p>

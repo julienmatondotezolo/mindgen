@@ -1,32 +1,25 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 
-import { useSession } from "next-auth/react";
 import React, { memo } from "react";
 import { useRecoilValue } from "recoil";
 
-import { Side, XYWH } from "@/_types";
+import { CanvasMode, Side, XYWH } from "@/_types";
 import { useSelectionBounds } from "@/hooks";
-import { activeLayersAtom, cameraStateAtom } from "@/state";
+import { activeLayersAtom, cameraStateAtom, canvasStateAtom } from "@/state";
 
 interface SelectionBoxProps {
   onResizeHandlePointerDown: (corner: Side, initialBounds: XYWH) => void;
 }
 
 export const SelectionBox = memo(({ onResizeHandlePointerDown }: SelectionBoxProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const camera = useRecoilValue(cameraStateAtom);
+
   const allActiveLayers = useRecoilValue(activeLayersAtom);
+  const canvasState = useRecoilValue(canvasStateAtom);
 
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
+  const soleActiveLayerId = allActiveLayers?.length > 0;
 
-  const soleLayerId = activeLayerIDs?.length === 1 ? activeLayerIDs[0] : null;
-
-  const isShowingHandles = soleLayerId;
+  const isShowingHandles = soleActiveLayerId && canvasState.mode !== CanvasMode.Typing;
 
   const bounds = useSelectionBounds();
 

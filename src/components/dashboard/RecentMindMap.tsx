@@ -1,10 +1,11 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { AlignJustify, LayoutGrid, Sparkles } from "lucide-react";
+import { AlignJustify, LayoutGrid, Sparkles, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import React from "react";
+import React, { useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Filter } from "@/_types";
 import { Link } from "@/navigation";
@@ -21,6 +22,7 @@ function RecentMindMap() {
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
   const leftBoards = maxMindmap - boardLength;
+  const [hoveredFilter, setHoveredFilter] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const showFavorites = searchParams.get("usermindmaps") === "true";
@@ -38,70 +40,121 @@ function RecentMindMap() {
 
   const size = 15;
 
-  const btnBackground =
-    "cursor-pointer p-2 rounded-md bg-gray-100 dark:bg-slate-900 hover:bg-primary-opaque hover:dark:bg-slate-600";
-  const btnBackgroundHover = "cursor-pointer p-2 rounded-md hover:bg-primary-opaque hover:dark:bg-slate-600";
+  const filterVariants = {
+    initial: { scale: 1 },
+    hover: { scale: 1.05, transition: { duration: 0.2 } }
+  };
+
+  const buttonVariants = {
+    initial: { scale: 1 },
+    hover: { 
+      scale: 1.03,
+      boxShadow: "0 4px 15px rgba(77, 106, 255, 0.2)",
+      transition: { duration: 0.2 }
+    },
+    tap: { scale: 0.98 }
+  };
 
   return (
-    <div className="pb-16">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="pb-16"
+    >
       <div className="w-full flex justify-between items-center mb-8">
         <section className="grid grid-cols-2 gap-8">
-          <div className="flex space-x-2">
+          <div className="flex space-x-3">
             <Link href="/dashboard">
-              <article className={!showFavorites ? btnBackground : btnBackgroundHover}>
-                <p className="text-xs">Recently viewed</p>
-              </article>
+              <motion.article
+                variants={filterVariants}
+                initial="initial"
+                whileHover="hover"
+                className={`${!showFavorites 
+                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
+                  : ''} rounded-xl px-4 py-2 transition-all duration-300`}
+              >
+                <p className="text-sm font-medium">Recently viewed</p>
+              </motion.article>
             </Link>
             <Link href={{ pathname: "/dashboard", query: { usermindmaps: "true" } }}>
-              <article className={showFavorites ? btnBackground : btnBackgroundHover}>
-                <p className="text-xs">My mindmaps</p>
-              </article>
+              <motion.article
+                variants={filterVariants}
+                initial="initial"
+                whileHover="hover"
+                className={`${showFavorites 
+                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
+                  : ''} rounded-xl px-4 py-2 transition-all duration-300`}
+              >
+                <p className="text-sm font-medium">My mindmaps</p>
+              </motion.article>
             </Link>
           </div>
-          <div className="flex space-x-2">
-            <section
+          <div className="flex space-x-3">
+            <motion.section
+              variants={filterVariants}
+              initial="initial"
+              whileHover="hover"
+              onHoverStart={() => setHoveredFilter('grid')}
+              onHoverEnd={() => setHoveredFilter(null)}
               onClick={() => setGlobalFilter(Filter.Grid)}
-              className={globalFilter === Filter.Grid ? btnBackground : btnBackgroundHover}
+              className={`rounded-xl p-2 transition-all duration-300 ${
+                globalFilter === Filter.Grid 
+                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
+                  : ''
+              }`}
             >
-              <LayoutGrid size={15} />
-            </section>
-            <section
+              <LayoutGrid size={18} className={hoveredFilter === 'grid' ? 'text-primary-color' : ''} />
+            </motion.section>
+            <motion.section
+              variants={filterVariants}
+              initial="initial"
+              whileHover="hover"
+              onHoverStart={() => setHoveredFilter('list')}
+              onHoverEnd={() => setHoveredFilter(null)}
               onClick={() => setGlobalFilter(Filter.List)}
-              className={globalFilter === Filter.List ? btnBackground : btnBackgroundHover}
+              className={`rounded-xl p-2 transition-all duration-300 ${
+                globalFilter === Filter.List 
+                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
+                  : ''
+              }`}
             >
-              <AlignJustify size={15} />
-            </section>
+              <AlignJustify size={18} className={hoveredFilter === 'list' ? 'text-primary-color' : ''} />
+            </motion.section>
           </div>
         </section>
 
         <section className="flex items-center space-x-4">
-          {/* <Input className="w-96" type="text" placeholder={navigationText("searchInput")} /> */}
-          <Button onClick={handleNewBoard}>
-            <Sparkles height={size} />
-            {uppercaseFirstLetter(text("new"))} board
-          </Button>
+          <motion.div
+            variants={buttonVariants}
+            initial="initial"
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Button 
+              onClick={handleNewBoard}
+              className="bg-primary-color hover:opacity-90 transition-all duration-300"
+            >
+              <Plus className="mr-2" height={size} />
+              <span className="font-medium">
+                {uppercaseFirstLetter(text("new"))} board
+              </span>
+            </Button>
+          </motion.div>
         </section>
       </div>
-      <article
-        className={`grid grid-cols-1 ${
-          globalFilter === Filter.List ? "grid-cols-1" : "md:grid-cols-4 lg:grid-cols-3"
-        } gap-8 w-full`}
-      >
-        {/* <div className="cursor-pointer">
-          <figure className="flex w-full h-24 border-2 border-primary-color mb-2 rounded-xl opacity-70 hover:opacity-100">
-            <article className="m-auto text-primary-color text-center">
-              <span className="text-4xl">+</span>
-              <p className="font-medium text-xs">{uppercaseFirstLetter(text("new"))} mind map</p>
-            </article>
-          </figure>
-          <article>
-            <p className="text-sm font-medium dark:text-white">{uppercaseFirstLetter(text("new"))} mind map</p>
-          </article>
-        </div> */}
-
-        <MindMapBoards />
-      </article>
-    </div>
+      <AnimatePresence mode="wait">
+        <motion.article 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="w-full"
+        >
+          <MindMapBoards />
+        </motion.article>
+      </AnimatePresence>
+    </motion.div>
   );
 }
 

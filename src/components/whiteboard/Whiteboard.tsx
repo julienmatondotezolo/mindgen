@@ -1,12 +1,14 @@
+import { Lock } from "@ably/spaces";
+import { useSpace } from "@ably/spaces/react";
 import { select } from "d3-selection";
-import { zoom, zoomIdentity } from "d3-zoom";
+import { zoom, zoomIdentity, zoomTransform } from "d3-zoom";
 import html2canvas from "html2canvas";
 import { nanoid } from "nanoid";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -15,6 +17,7 @@ import {
   CanvasMode,
   Color,
   Edge,
+  EdgeShape,
   EdgeType,
   HandlePosition,
   Layer,
@@ -24,13 +27,13 @@ import {
   Side,
   XYWH,
 } from "@/_types";
-import { useSocket } from "@/hooks";
+import { ablyClient } from "@/app/providers";
+import { useLiveValue, useSelectionBounds } from "@/hooks";
 import {
   activeEdgeIdAtom,
   activeLayersAtom,
   cameraStateAtom,
   canvasStateAtom,
-  connectedUsersState,
   edgesAtomState,
   hoveredEdgeIdAtom,
   isEdgeNearLayerAtom,
@@ -49,14 +52,16 @@ import {
 } from "@/state";
 import {
   calculateNewLayerPositions,
+  calculateNonOverlappingLayerPosition,
   checkPermission,
-  connectionIdToColor,
   findIntersectingLayersWithRectangle,
   findNearestLayerHandle,
   getHandlePosition,
   getLayerById,
+  getOppositeHandlePosition,
   getOrientationFromPosition,
   pointerEventToCanvasPoint,
+  randomUserColor,
   resizeBounds,
 } from "@/utils";
 
@@ -88,6 +93,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const [camera, setCamera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+
   const [isCapturing, setIsCapturing] = useState(false);
 
   const [, setLastUsedColor] = useState<Color>({
@@ -99,12 +105,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const MAX_LAYERS = 100;
   const PERMISSIONS = userMindmapDetails.connectedMemberPermissions;
 
-  const ids: string[] = useMemo(() => [], []);
-
   // ================  SOCKETS  ================== //
 
-  const { socketEmit } = useSocket();
+  const { space } = useSpace();
+
+  useLiveValue({ boardId });
   const session: any = useSession();
+  const currentUserName = session.data?.session?.user?.username;
   const currentUserId = session.data?.session?.user?.id;
 
   // ================  SHADOW EDGE & LAYER STATE  ================== //
@@ -173,13 +180,64 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     });
   }, []); // Run when layers or refs change
 
-  // ================  GENERATE MINDMAPS  ================== //
+  // ================  ENTERING SPACE & CHANNEL ================== //
+
+  useEffect(() => {
+    space?.enter({ username: currentUserName, userId: currentUserId, userColor: randomUserColor() });
+  }, [currentUserId, currentUserName, space]);
+
+  // ================  UPDATE FOR LAYER & EDGE CHANGES ================== //
+
+  useEffect(() => {
+    if (canvasState.mode == CanvasMode.Importing) {
+      fitView();
+      return;
+    }
+  }, [layers, edges, fitView, canvasState.mode]);
+
+  // ================  CONSTANT LAYERS  ================== //
+
+  const [allActiveLayers, setAllActiveLayers] = useRecoilState(activeLayersAtom);
+  const bounds = useSelectionBounds();
+
+  const selectLayer = useSelectElement({ roomId: boardId });
+  const unSelectLayer = useUnSelectElement({ roomId: boardId });
+  const addLayer = useAddElement({ roomId: boardId });
+  const updateLayer = useUpdateElement({ roomId: boardId });
+  const removeLayer = useRemoveElement({ roomId: boardId });
+
+  // ================  CONSTANT EDGES  ================== //
+
+  const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
+  const activeEdgeId = allActiveEdges[0];
+
+  const selectEdge = useSelectEdgeElement({ roomId: boardId });
+  const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
+  const addEdge = useAddEdgeElement({ roomId: boardId });
+  const updateEdge = useUpdateEdge({ roomId: boardId });
+  const removeEdge = useRemoveEdge({ roomId: boardId });
+
+  const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
+  // const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+
+  const setIsEdgeNearLayer = useSetRecoilState(isEdgeNearLayerAtom);
+  const setNearestLayer = useSetRecoilState(nearestLayerAtom);
+
+  const [drawingEdge, setDrawingEdge] = useState<{
+    ongoing: boolean;
+    lastEdgeId?: string;
+    fromHandlePosition?: HandlePosition;
+    fromLayerId?: string;
+    endPoint?: Point;
+  }>({
+    ongoing: false,
+  });
+
+  const ARROW_SIZE = 5;
 
   // ================  USE QUERY & SAVE MINDMAPS  ================== //
 
   const queryClient = useQueryClient();
-
-  // const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
 
   const updateBoardMutation = useMutation(updateBoardLayersById, {
     onSuccess: () => {
@@ -187,6 +245,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       queryClient.invalidateQueries("mindmaps");
     },
   });
+
+  // ================  INTERCEPT AND SAVE  ================== //
 
   const takeScreenshot = useCallback(async () => {
     setIsCapturing(true);
@@ -217,12 +277,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       pictureUrl: await takeScreenshot(),
     };
 
+    unSelectLayer();
+
     updateBoardMutation.mutate({
       session: session,
       mindmapId: userMindmapDetails.id,
       mindmapObject: newMindmapObject,
     });
-  }, [PERMISSIONS, edges, layers, session, takeScreenshot, updateBoardMutation, userMindmapDetails.id]);
+  }, [PERMISSIONS, edges, layers, session, takeScreenshot, unSelectLayer, updateBoardMutation, userMindmapDetails.id]);
 
   // Handle window/tab close and navigation away
   useEffect(() => {
@@ -231,22 +293,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     const handleVisibilityChange = async () => {
       if (document.visibilityState === "hidden" && !isCapturing) {
         isCapturing = true;
-        // await takeScreenshot();
         await saveMindmap();
         isCapturing = false;
       }
     };
 
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      if (canvasState.mode == CanvasMode.Exporting) return;
+
       // Modern browsers require the event to be canceled and a message to be shown
       e.preventDefault();
 
       if (!isCapturing) {
         isCapturing = true;
-        // await takeScreenshot();
         await saveMindmap();
         isCapturing = false;
-        // saveMindmap();
       }
 
       // Show a standard confirmation dialog
@@ -263,10 +324,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", handleBeforeUnload, { capture: true });
     };
-  }, [saveMindmap]);
+  }, [canvasState.mode, saveMindmap]);
 
   // Handle navigation state changes
   useEffect(() => {
+    // if (canvasState.mode == CanvasMode.Exporting) return;
     // Create a proxy for router.push
     const originalPush = router.push;
 
@@ -279,17 +341,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       // Restore original push method
       router.push = originalPush;
     };
-  }, [pathname, router, saveMindmap, searchParams]);
+  }, [canvasState.mode, pathname, router, saveMindmap, searchParams]);
 
   // Intercept Link component clicks
   const handleLinkClick = useCallback(
     async (e: MouseEvent) => {
+      if (canvasState.mode == CanvasMode.Exporting) return;
+
       const target = e.target as HTMLElement;
       const link = target.closest("a");
 
       if (link?.getAttribute("href") && !link.getAttribute("href")?.startsWith("#")) {
         e.preventDefault();
-
         await saveMindmap();
 
         // Use router.push for internal navigation
@@ -303,7 +366,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
     },
-    [saveMindmap, router],
+    [canvasState.mode, saveMindmap, router],
   );
 
   useEffect(() => {
@@ -315,113 +378,10 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     };
   }, [handleLinkClick]);
 
-  // ================  CONSTANT LAYERS  ================== //
-
-  const allActiveLayers: any = useRecoilValue(activeLayersAtom);
-  const activeLayerIDs = allActiveLayers
-    .filter((userActiveLayer: any) => userActiveLayer.userId === currentUserId)
-    .map((item: any) => item.layerIds)[0];
-
-  const connectedUsers = useRecoilValue(connectedUsersState);
-
-  const allOtherUsers = connectedUsers.filter((item) => item.id !== currentUserId);
-  const allOtherUserSelection = allActiveLayers.filter((activeLyers: any) => activeLyers.userId !== currentUserId);
-
-  // Create a Map to store selections for quick lookup
-  const selectionMap = new Map();
-
-  // Populate the selectionMap
-  allOtherUserSelection.forEach((selection: any) => {
-    selectionMap.set(selection.userId, selection.layerIds);
-  });
-
-  // Merge users with their selections
-  const otherUserSelections: any = allOtherUsers.map((user) => ({
-    ...user,
-    layerIds: selectionMap.get(user.id) || [],
-  }));
-
-  const layerIdsToColorSelection = useMemo(() => {
-    const layerIdsToColorSelection: Record<string, string> = {};
-
-    for (const userSelection of otherUserSelections) {
-      for (const layerId of userSelection.layerIds) {
-        layerIdsToColorSelection[layerId] = connectionIdToColor(userSelection.socketIndex);
-      }
-    }
-
-    return layerIdsToColorSelection;
-  }, [otherUserSelections]);
-
-  const selectLayer = useSelectElement({ roomId: boardId });
-  const unSelectLayer = useUnSelectElement({ roomId: boardId });
-  const addLayer = useAddElement({ roomId: boardId });
-  const updateLayer = useUpdateElement({ roomId: boardId });
-  const removeLayer = useRemoveElement({ roomId: boardId });
-
-  // ================  CONSTANT EDGES  ================== //
-
-  const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
-  const activeEdgeId = allActiveEdges
-    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
-    .map((item: any) => item.edgeIds)[0];
-
-  const allOtherUserEdgeSelection = allActiveEdges.filter((activeEdges: any) => activeEdges.userId !== currentUserId);
-
-  // Create a Map to store selections for quick lookup
-  const selectionEdgesMap = new Map();
-
-  // Populate the selectionMap
-  allOtherUserEdgeSelection.forEach((selection: any) => {
-    selectionEdgesMap.set(selection.userId, selection.edgeIds);
-  });
-
-  // Merge users with their selections
-  const otherUserEdgeSelections: any = allOtherUsers.map((user) => ({
-    ...user,
-    edgeIds: selectionEdgesMap.get(user.id) || [],
-  }));
-
-  const edgeIdsToColorSelection = useMemo(() => {
-    const edgeIdsToColorSelection: Record<string, string> = {};
-
-    for (const userSelection of otherUserEdgeSelections) {
-      for (const edgeId of userSelection.edgeIds) {
-        edgeIdsToColorSelection[edgeId] = connectionIdToColor(userSelection.socketIndex);
-      }
-    }
-
-    return edgeIdsToColorSelection;
-  }, [otherUserEdgeSelections]);
-
-  const selectEdge = useSelectEdgeElement({ roomId: boardId });
-  const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
-  const addEdge = useAddEdgeElement({ roomId: boardId });
-  const updateEdge = useUpdateEdge({ roomId: boardId });
-  const removeEdge = useRemoveEdge({ roomId: boardId });
-
-  const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
-  // const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
-
-  const setIsEdgeNearLayer = useSetRecoilState(isEdgeNearLayerAtom);
-  const setNearestLayer = useSetRecoilState(nearestLayerAtom);
-
-  const [drawingEdge, setDrawingEdge] = useState<{
-    ongoing: boolean;
-    lastEdgeId?: string;
-    fromHandlePosition?: HandlePosition;
-    fromLayerId?: string;
-    endPoint?: Point;
-  }>({
-    ongoing: false,
-  });
-
-  const ARROW_SIZE = 5;
-
   // ================  LAYERS  ================== //
 
   const insertLayer = useCallback(
-    (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Note | LayerType.Path, position: Point) => {
+    (layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Diamond | LayerType.Path, position: Point) => {
       if (layers?.length >= MAX_LAYERS) {
         return;
       }
@@ -443,7 +403,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       fitView();
 
-      selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+      selectLayer({ layerIds: [newLayer.id] });
 
       setShadowState({
         showShadow: false,
@@ -462,69 +422,120 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   );
 
   const handleLayerPointerDown = useCallback(
-    (e: React.PointerEvent, layerId: string, origin: Point) => {
+    async (e: React.PointerEvent, layerId: string, origin: Point) => {
+      e.stopPropagation();
       if (
         canvasState.mode === CanvasMode.Grab ||
         canvasState.mode === CanvasMode.Pencil ||
         canvasState.mode === CanvasMode.Inserting ||
-        canvasState.mode === CanvasMode.Typing ||
         canvasState.mode === CanvasMode.Tooling
       ) {
         return;
       }
 
-      const isAlreadySelected = allOtherUserSelection.some((otherUser: any) => {
-        if (otherUser.layerIds) {
-          return otherUser.layerIds.includes(layerId);
-        }
-      });
+      // Check if locked by other user
+      const othersLocks: Lock[] | undefined = await space?.locks.getOthers();
 
-      if (isAlreadySelected) return;
+      if (othersLocks && othersLocks?.length > 0) {
+        othersLocks.forEach((lock) => {
+          const { layerIds } = lock.attributes as {
+            layerIds: string[];
+          };
 
-      e.stopPropagation();
+          if (layerIds?.includes(layerId)) {
+            const profileData = lock.member.profileData as {
+              username: string;
+              userId: string;
+              userColor: string;
+            };
+
+            alert(`locked by: ${profileData.username}`);
+
+            return;
+          }
+        });
+      }
+
+      // On click if typing mode on selected layer change to type mode
+      if (canvasState.mode === CanvasMode.LayerSelected && allActiveLayers.includes(layerId)) {
+        setCanvasState({
+          mode: CanvasMode.Typing,
+        });
+        return;
+      }
+
+      // On click if typing mode on selected layer do nothing
+      if (canvasState.mode === CanvasMode.Typing && allActiveLayers.includes(layerId)) {
+        setCanvasState({
+          mode: CanvasMode.Typing,
+        });
+        return;
+      }
 
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
+      // If multiple layers selected enter translate mode
+      if (allActiveLayers.length > 0) {
+        setCanvasState({
+          mode: CanvasMode.Translating,
+          current: point,
+          initialLayerBounds: getLayerById({ layerId, layers }),
+        });
+        return;
+      }
+
+      const isAlreadySelected = allActiveLayers.includes(layerId);
+
+      if (isAlreadySelected) return;
+
+      // If Shift is held, add the layerId to the activeLayerIds array without removing other
       if (e.shiftKey) {
-        // If Shift is held, add the layerId to the activeLayerIds array without removing others
-
-        ids.push(layerId);
-
-        selectLayer({ userId: currentUserId, layerIds: ids });
+        setAllActiveLayers((prev) => {
+          if (prev.includes(layerId)) return prev;
+          return [...prev, layerId];
+        });
 
         setCanvasState({
           mode: CanvasMode.SelectionNet,
           origin,
         });
-      } else if (!activeLayerIDs?.includes(layerId)) {
-        // setActiveLayerIDs([layerId]);
-        selectLayer({ userId: currentUserId, layerIds: [layerId] });
-        unSelectEdge({ userId: currentUserId });
+
+        selectLayer({ layerIds: allActiveLayers });
+        return;
       }
+
+      selectLayer({ layerIds: [layerId] });
+      unSelectEdge();
 
       setCanvasState({
         mode: CanvasMode.Translating,
         current: point,
         initialLayerBounds: getLayerById({ layerId, layers }),
       });
+
+      return;
     },
     [
       canvasState.mode,
-      allOtherUserSelection,
+      space,
+      allActiveLayers,
       camera,
-      activeLayerIDs,
+      selectLayer,
+      unSelectEdge,
       setCanvasState,
       layers,
-      ids,
-      selectLayer,
-      currentUserId,
-      unSelectEdge,
+      setAllActiveLayers,
     ],
   );
 
   const onHandleMouseEnter = useCallback(
     (event: React.MouseEvent, layerId: string, position: HandlePosition) => {
-      if (canvasState.mode === CanvasMode.EdgeDrawing || canvasState.mode === CanvasMode.SelectionNet) return;
+      if (
+        canvasState.mode === CanvasMode.EdgeDrawing ||
+        canvasState.mode === CanvasMode.SelectionNet ||
+        canvasState.mode === CanvasMode.Typing
+      )
+        return;
 
       const currentLayer = layers.find((layer) => layer.id === layerId);
       const LAYER_SPACING = 150; // Adjust this value to control the space between layers
@@ -537,12 +548,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const startPoint = getHandlePosition(currentLayer, position);
 
-      const { newLayerPosition, newEdgePosition } = calculateNewLayerPositions(
+      const { newLayerPosition, newEdgePosition } = calculateNonOverlappingLayerPosition({
         currentLayer,
         position,
+        layers,
         LAYER_SPACING,
         HANDLE_DISTANCE,
-      );
+      });
 
       // Find a non-overlapping position for the new layer
       // const adjustedPosition = findNonOverlappingPosition({
@@ -572,9 +584,18 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     if (
       canvasState.mode === CanvasMode.EdgeDrawing ||
       canvasState.mode === CanvasMode.SelectionNet ||
+      canvasState.mode === CanvasMode.Typing ||
       drawingEdge.ongoing
     )
       return;
+
+    // If layer already selected go back to LayerSelected method
+    if (allActiveLayers.length > 0) {
+      setCanvasState({
+        mode: CanvasMode.LayerSelected,
+      });
+      return;
+    }
 
     setShadowState({
       showShadow: false,
@@ -588,7 +609,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     setCanvasState({
       mode: CanvasMode.None,
     });
-  }, [canvasState, drawingEdge, setCanvasState]);
+  }, [allActiveLayers.length, canvasState.mode, drawingEdge.ongoing, setCanvasState]);
 
   const onHandleMouseDown = useCallback(
     (e: React.PointerEvent, layerId: string, position: HandlePosition) => {
@@ -597,14 +618,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         updateEdge({
           id: drawingEdge.lastEdgeId,
-          userId: currentUserId,
           updatedElementEdge: { fromLayerId: layerId },
         });
 
         setDrawingEdge((prev) => ({ ...prev, fromLayerId: layerId, fromHandlePosition: position }));
       }
     },
-    [currentUserId, drawingEdge, updateEdge],
+    [drawingEdge, updateEdge],
   );
 
   const onHandleMouseUp = useCallback(
@@ -621,20 +641,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       // Calculate the new position based on the clicked handle's position
-      const { newLayerPosition, newEdgePosition } = calculateNewLayerPositions(
+      const { newLayerPosition, newEdgePosition } = calculateNonOverlappingLayerPosition({
         currentLayer,
         position,
+        layers,
         LAYER_SPACING,
         HANDLE_DISTANCE,
-      );
-
-      // // Find a non-overlapping position for the new layer
-      // const adjustedPosition = findNonOverlappingPosition({
-      //   newPosition: newLayerPosition,
-      //   layers,
-      //   currentLayer,
-      //   LAYER_SPACING,
-      // });
+      });
 
       const newLayerId = nanoid();
 
@@ -649,16 +662,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         value: whiteboardText("addLayerPlaceHolder"),
       };
 
-      addLayer({ layer: newLayer, userId: currentUserId });
-      selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+      addLayer({ layer: newLayer });
+      selectLayer({ layerIds: [newLayer.id] });
 
       if (drawingEdge.ongoing && drawingEdge.lastEdgeId) {
         updateEdge({
           id: drawingEdge.lastEdgeId,
-          userId: currentUserId,
           updatedElementEdge: {
             toLayerId: newLayer.id,
             end: newEdgePosition,
+            handleEnd: getOppositeHandlePosition(position),
             handleStart: position,
             orientation: getOrientationFromPosition(position),
           },
@@ -671,17 +684,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         mode: CanvasMode.None,
       });
     },
-    [
-      addLayer,
-      canvasState,
-      currentUserId,
-      drawingEdge,
-      layers,
-      selectLayer,
-      setCanvasState,
-      updateEdge,
-      whiteboardText,
-    ],
+    [addLayer, canvasState, drawingEdge, layers, selectLayer, setCanvasState, updateEdge, whiteboardText],
   );
 
   const translateSelectedLayer = useCallback(
@@ -695,7 +698,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       setLayers((prevLayers) =>
         prevLayers.map((layer) => {
-          if (activeLayerIDs?.includes(layer.id)) {
+          if (allActiveLayers.includes(layer.id)) {
             return {
               ...layer,
               x: layer.x + offset.x,
@@ -708,8 +711,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // Update all edges
       const updatedEdges = edges.map((edge) => {
-        const isSource = activeLayerIDs?.includes(edge.fromLayerId);
-        const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+        const isSource = allActiveLayers?.includes(edge.fromLayerId);
+        const isTarget = allActiveLayers?.includes(edge.toLayerId);
 
         if (!isSource && !isTarget) {
           return edge;
@@ -737,7 +740,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         current: point,
       });
     },
-    [canvasState, setLayers, edges, setEdges, setCanvasState, layers, activeLayerIDs],
+    [canvasState, setLayers, edges, setEdges, setCanvasState, layers, allActiveLayers],
   );
 
   const resizeSelectedLayer = useCallback(
@@ -755,7 +758,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       setLayers((prevLayers) =>
         prevLayers.map((layer) => {
-          if (!activeLayerIDs?.includes(layer.id)) {
+          if (!allActiveLayers?.includes(layer.id)) {
             return layer;
           }
 
@@ -803,8 +806,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // Update connected edges
       const updatedEdges = edges.map((edge) => {
-        const isSource = activeLayerIDs?.includes(edge.fromLayerId);
-        const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+        const isSource = allActiveLayers?.includes(edge.fromLayerId);
+        const isTarget = allActiveLayers?.includes(edge.toLayerId);
 
         if (!isSource && !isTarget) {
           return edge;
@@ -831,7 +834,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       // Update the edges state with the updated edges
       setEdges(updatedEdges);
     },
-    [activeLayerIDs, canvasState, edges, setLayers, setEdges],
+    [canvasState, setLayers, edges, setEdges, allActiveLayers],
   );
 
   const handleResizeHandlePointerDown = useCallback(
@@ -857,9 +860,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const ids = findIntersectingLayersWithRectangle(layers, origin, current);
 
-      selectLayer({ userId: currentUserId, layerIds: ids });
+      setAllActiveLayers(ids);
     },
-    [currentUserId, layers, selectLayer, setCanvasState],
+    [layers, setAllActiveLayers, setCanvasState],
   );
 
   const startMultiSelection = useCallback(
@@ -876,8 +879,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   );
 
   const handleUnSelectLayer = useCallback(() => {
-    unSelectLayer({ userId: currentUserId });
-  }, [currentUserId, unSelectLayer]);
+    unSelectLayer();
+  }, [unSelectLayer]);
 
   const sortLayersBySelection = useCallback(
     (layersToSort: Layer[]) => {
@@ -892,13 +895,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           return 0;
         }
 
-        const aSelected = activeLayerIDs?.includes(a.id) ? 1 : 0;
-        const bSelected = activeLayerIDs?.includes(b.id) ? 1 : 0;
+        const aSelected = allActiveLayers?.includes(a.id) ? 1 : 0;
+        const bSelected = allActiveLayers?.includes(b.id) ? 1 : 0;
 
         return aSelected - bSelected; // Changed to sort selected layers first
       });
     },
-    [activeLayerIDs],
+    [allActiveLayers],
   );
 
   // ================  EDGES  ================== //
@@ -913,22 +916,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       edges.forEach((edge) => {
         if (edge.fromLayerId === layerId || edge.toLayerId === layerId) {
           removeEdge({
-            id: edge.id,
-            userId: currentUserId,
+            edgeIdsToDelete: [edge.id],
           });
         }
       });
     },
-    [PERMISSIONS, currentUserId, edges, removeEdge],
+    [PERMISSIONS, edges, removeEdge],
   );
 
   const handleEdgeHandlePointerDown = useCallback(
     (position: "START" | "MIDDLE" | "END", point: Point) => {
-      if (activeEdgeId[0])
+      if (activeEdgeId)
         setCanvasState({
           mode: CanvasMode.EdgeEditing,
           editingEdge: {
-            id: activeEdgeId[0],
+            id: activeEdgeId,
             handlePosition: position,
             startPoint: point,
           },
@@ -949,8 +951,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         return; // Exit the function if edge is not found
       }
 
-      let updatedEdge: Edge;
-
       const snapThreshold = 20;
       const layerThreshold = 80;
 
@@ -958,6 +958,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const filteredLayers = layers.filter((layer) => layer.id !== drawingEdge.fromLayerId);
 
       const nearestHandle = findNearestLayerHandle(point, filteredLayers, snapThreshold);
+
       const nearestLayer = findNearestLayerHandle(point, filteredLayers, layerThreshold);
 
       setIsEdgeNearLayer(!nearestHandle);
@@ -965,6 +966,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // Set drawingEdge state to indicate an edge drawing operation is ongoing
       setDrawingEdge({ ongoing: true, lastEdgeId: id, fromLayerId: edge.fromLayerId });
+
+      let updatedEdge: Edge;
 
       switch (handlePosition) {
         case "START":
@@ -1005,7 +1008,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           break;
       }
 
-      setEdges(edges.map((e) => (e.id === id ? updatedEdge : e)));
+      setEdges((prevEdges) => prevEdges.map((e) => (e.id === id ? updatedEdge : e)));
       setCanvasState({
         ...canvasState,
         editingEdge: { ...canvasState.editingEdge, startPoint: point },
@@ -1015,35 +1018,49 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   );
 
   const handleEdgeClick = useCallback(
-    (e: React.PointerEvent, edgeId: string) => {
+    async (e: React.PointerEvent, edgeId: string) => {
+      e.stopPropagation();
       if (canvasState.mode === CanvasMode.Grab) return;
 
-      const isAlreadySelected = allOtherUserEdgeSelection.some((otherUser: any) => {
-        if (otherUser.edgeIds) {
-          return otherUser.edgeIds.includes(edgeId);
-        }
-      });
+      // Check if locked by other user
+      const othersLocks: Lock[] | undefined = await space?.locks.getOthers();
+
+      if (othersLocks && othersLocks?.length > 0) {
+        othersLocks.forEach((lock) => {
+          const { edgeIds } = lock.attributes as {
+            edgeIds: string[];
+          };
+
+          if (edgeIds?.includes(edgeId)) {
+            const profileData = lock.member.profileData as {
+              username: string;
+              userId: string;
+              userColor: string;
+            };
+
+            alert(`locked by: ${profileData.username}`);
+
+            return;
+          }
+        });
+      }
+
+      const isAlreadySelected = allActiveEdges.includes(edgeId);
 
       if (isAlreadySelected) return;
 
-      e.stopPropagation();
-
-      selectEdge({ userId: currentUserId, edgeIds: [edgeId] });
+      selectEdge({ edgeIds: [edgeId] });
+      unSelectLayer();
       setHoveredEdgeId(null);
-      handleUnSelectLayer();
+      // handleUnSelectLayer();
+
       setCanvasState({
-        mode: CanvasMode.EdgeActive,
+        mode: CanvasMode.EdgeSelected,
       });
+
+      return;
     },
-    [
-      canvasState,
-      allOtherUserEdgeSelection,
-      currentUserId,
-      handleUnSelectLayer,
-      selectEdge,
-      setCanvasState,
-      setHoveredEdgeId,
-    ],
+    [allActiveEdges, canvasState.mode, selectEdge, setCanvasState, setHoveredEdgeId, space?.locks, unSelectLayer],
   );
 
   // ================  DRAWING EDGES  ================== //
@@ -1068,7 +1085,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         if (!lastUpdatedEdge) return;
 
-        selectEdge({ userId: currentUserId, edgeIds: [lastUpdatedEdge.id] });
+        selectEdge({ edgeIds: [lastUpdatedEdge.id] });
 
         let updatedEdge: Edge;
 
@@ -1142,7 +1159,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       handleUnSelectLayer,
       edges,
       selectEdge,
-      currentUserId,
       layers,
       setIsEdgeNearLayer,
       setNearestLayer,
@@ -1163,7 +1179,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         // If we're already in resizing mode, do nothing
         return;
       } else if (canvasState.mode === CanvasMode.Edge) {
-        const selectedLayer = layers.find((layer) => activeLayerIDs?.includes(layer.id));
+        const selectedLayer = layers.find((layer) => allActiveLayers?.includes(layer.id));
 
         if (selectedLayer) {
           // Determine which handle was clicked based on the pointer position
@@ -1190,6 +1206,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             color: { r: 180, g: 191, b: 204 }, // Placeholder, replace with actual color logic
             thickness: 2,
             start: startPoint ?? point,
+            handleEnd: getOppositeHandlePosition(handlePosition),
             handleStart: handlePosition,
             end: point,
             orientation: "auto",
@@ -1199,15 +1216,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               b: 255,
             },
             type: EdgeType.Solid,
+            shape: EdgeShape.Curved,
           };
 
           // Update edges state with the new edge
-          addEdge({ edge: newEdge, userId: currentUserId });
+          addEdge({ edge: newEdge });
 
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: selectedLayer.id });
 
-          unSelectEdge({ userId: currentUserId });
+          unSelectEdge();
         } else {
           // Create a new edge object
           const newEdge: Edge = {
@@ -1225,10 +1243,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               b: 255,
             },
             type: EdgeType.Solid,
+            shape: EdgeShape.Curved,
           };
 
           // Update edges state with the new edge
-          addEdge({ edge: newEdge, userId: currentUserId });
+          addEdge({ edge: newEdge });
 
           // Set drawingEdge state to indicate an edge drawing operation is ongoing
           setDrawingEdge({ ongoing: true, lastEdgeId: newEdge.id, fromLayerId: undefined });
@@ -1236,8 +1255,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         return;
       } else if (canvasState.mode === CanvasMode.EdgeActive) {
-        unSelectEdge({ userId: currentUserId });
+        // unSelectEdge();
         setHoveredEdgeId(null);
+
+        return;
+      } else if (canvasState.mode === CanvasMode.EdgeSelected) {
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+        return;
       } else if (canvasState.mode === CanvasMode.Typing) {
         return;
       } else if (canvasState.mode === CanvasMode.Tooling) {
@@ -1254,10 +1280,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       camera,
       canvasState.mode,
       layers,
-      activeLayerIDs,
+      allActiveLayers,
       shadowState.startPosition,
       addEdge,
-      currentUserId,
       unSelectEdge,
       setHoveredEdgeId,
       setCanvasState,
@@ -1304,29 +1329,26 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         updateEdgePosition(current);
       }
 
-      if (userMindmapDetails.members.length > 1)
-        socketEmit("cursor-move", {
-          roomId: boardId,
-          userId: currentUserId,
-          cursor: current,
+      if (userMindmapDetails.members.length > 1 && space) {
+        space.cursors.set({
+          position: { ...current },
+          data: { state: "move" },
         });
-      // setMyPresence({ cursor: current });
+      }
     },
     [
-      layers,
-      whiteboardText,
       camera,
       canvasState,
       userMindmapDetails.members.length,
-      socketEmit,
-      boardId,
-      currentUserId,
       startMultiSelection,
       updateSelectionNet,
       translateSelectedLayer,
       resizeSelectedLayer,
+      layers.length,
+      whiteboardText,
       drawEdgeline,
       updateEdgePosition,
+      space,
     ],
   );
 
@@ -1336,14 +1358,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
         handleUnSelectLayer();
-        unSelectEdge({ userId: currentUserId });
+        unSelectEdge();
         setCanvasState({
           mode: CanvasMode.None,
           current: point,
         });
       } else if (canvasState.mode === CanvasMode.Translating) {
         // Update all selected layers
-        const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+        const selectedLayers = layers.filter((layer) => allActiveLayers?.includes(layer.id));
 
         const offset = {
           x: point.x - canvasState.current.x,
@@ -1352,8 +1374,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         // Update all edges
         edges.map((edge) => {
-          const isSource = activeLayerIDs?.includes(edge.fromLayerId);
-          const isTarget = activeLayerIDs?.includes(edge.toLayerId);
+          const isSource = allActiveLayers?.includes(edge.fromLayerId);
+          const isTarget = allActiveLayers?.includes(edge.toLayerId);
 
           if (!isSource && !isTarget) {
             return edge;
@@ -1367,7 +1389,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
           updateEdge({
             id: edge.id,
-            userId: currentUserId,
             updatedElementEdge: { start: updatedStart, end: updatedEnd },
           });
         });
@@ -1377,24 +1398,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           if (layer.x !== canvasState.initialLayerBounds?.x || layer.y !== canvasState.initialLayerBounds?.y) {
             updateLayer({
               id: layer.id,
-              userId: currentUserId,
               updatedElementLayer: { x: layer.x, y: layer.y },
             });
           }
         }
 
         setCanvasState({
-          mode: CanvasMode.None,
-          current: point,
+          mode: CanvasMode.LayerSelected,
         });
       } else if (canvasState.mode === CanvasMode.Resizing) {
         // Update all selected layers
-        const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+        const selectedLayers = layers.filter((layer) => allActiveLayers?.includes(layer.id));
 
         for (const layer of selectedLayers) {
           updateLayer({
             id: layer.id,
-            userId: currentUserId,
             updatedElementLayer: { x: layer.x, y: layer.y, width: layer.width, height: layer.height },
           });
         }
@@ -1411,9 +1429,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           mode: CanvasMode.Edge,
         });
       } else if (canvasState.mode === CanvasMode.EdgeActive) {
-        setCanvasState({
-          mode: CanvasMode.EdgeActive,
-        });
+        // setCanvasState({
+        //   mode: CanvasMode.EdgeActive,
+        // });
         setDrawingEdge({
           ongoing: false,
           lastEdgeId: undefined,
@@ -1461,14 +1479,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               value: whiteboardText("addLayerPlaceHolder"),
             };
 
-            addLayer({ layer: newLayer, userId: currentUserId });
+            addLayer({ layer: newLayer });
 
-            selectLayer({ userId: currentUserId, layerIds: [newLayer.id] });
+            selectLayer({ layerIds: [newLayer.id] });
 
             if (drawingEdge.ongoing && drawingEdge.lastEdgeId && drawingEdge.fromLayerId) {
               updateEdge({
                 id: drawingEdge.lastEdgeId,
-                userId: currentUserId,
                 updatedElementEdge: {
                   toLayerId: newLayer.id,
                   end: newEdgePosition,
@@ -1482,7 +1499,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             updateEdge({
               id,
-              userId: currentUserId,
               updatedElementEdge: updatedProperties,
             });
           }
@@ -1494,7 +1510,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           fromLayerId: undefined,
           fromHandlePosition: undefined,
         });
-        unSelectEdge({ userId: currentUserId });
+        unSelectEdge();
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1508,7 +1524,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
           updateEdge({
             id,
-            userId: currentUserId,
             updatedElementEdge: updatedProperties,
           });
         }
@@ -1519,12 +1534,43 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           fromLayerId: undefined,
           fromHandlePosition: undefined,
         });
-        unSelectEdge({ userId: currentUserId });
+        unSelectEdge();
         setCanvasState({
           mode: CanvasMode.None,
         });
+      } else if (canvasState.mode === CanvasMode.EdgeSelected) {
+        setCanvasState({
+          mode: CanvasMode.EdgeSelected,
+        });
+
+        return;
       } else if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
+      } else if (canvasState.mode === CanvasMode.SelectionNet) {
+        selectLayer({ layerIds: allActiveLayers });
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      } else if (canvasState.mode === CanvasMode.Typing) {
+        if (!bounds) return;
+
+        const isInsideBounds =
+          point.x >= bounds.x &&
+          point.x <= bounds.x + bounds.width &&
+          point.y >= bounds.y &&
+          point.y <= bounds.y + bounds.height;
+
+        if (!isInsideBounds) {
+          // if click is outside bound change type
+          unSelectLayer();
+          setCanvasState({
+            mode: CanvasMode.None,
+            current: point,
+          });
+          return;
+        }
+
+        return;
       } else {
         setCanvasState({
           mode: CanvasMode.None,
@@ -1535,13 +1581,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     [
       camera,
       canvasState,
+      unSelectLayer,
       handleUnSelectLayer,
       unSelectEdge,
-      currentUserId,
       setCanvasState,
       layers,
       edges,
-      activeLayerIDs,
+      allActiveLayers,
       updateEdge,
       updateLayer,
       drawingEdge,
@@ -1549,20 +1595,28 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       addLayer,
       selectLayer,
       insertLayer,
+      bounds,
     ],
   );
 
-  const handlePointerLeave = useCallback(() => {
-    // but cursor to null when leaving canvas
-    if (userMindmapDetails.members.length > 1)
-      socketEmit("cursor-move", {
-        roomId: boardId,
-        userId: currentUserId,
-        cursor: null,
-      });
-    // setMyPresence({ cursor: null });
-  }, [boardId, currentUserId, socketEmit, userMindmapDetails]);
+  // ================  LEAVING SPACE WHILE LEAVING BOARD  ================== //
 
+  const handleSelfCursorLeave = async () => {
+    const layerChannelName = `[?rewind=1]${boardId}`;
+
+    const channel = ablyClient.channels.get(layerChannelName);
+
+    channel.unsubscribe();
+
+    handleUnSelectLayer();
+
+    await space?.cursors.set({
+      position: { x: 0, y: 0 },
+      data: { state: "leave" },
+    });
+
+    await space?.leave();
+  };
   // ================  CAMERA FUNCTIONS  ================== //
 
   const handleMouseMove = useCallback(() => {
@@ -1600,17 +1654,35 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     const svg = select(svgRef.current);
     const g = select(gRef.current);
+    let zoomFactor = { min: 0.1, max: 4 };
 
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.1, 4])
+      .scaleExtent([zoomFactor.min, zoomFactor.max])
       .filter((event: any) => {
+        const isTrackpad = event.wheelDeltaY
+          ? Math.abs(event.wheelDeltaY) === Math.abs(event.deltaY * 3)
+          : Math.abs(event.deltaY) < 50;
+
         // For wheel events, prevent default behavior when Ctrl is pressed
         if (event.type === "wheel") {
           if (event.ctrlKey) {
             event.preventDefault(); // Prevent the default browser zoom
             return true; // Still allow our zoom to work
           }
-          return true;
+          if (isTrackpad) {
+            // Only allow translation (pan), not zoom, for trackpad
+            event.preventDefault();
+            // Get current transform
+            const currentTransform = zoomTransform(svg.node()!);
+            // Create new transform with updated translation
+            const transform = zoomIdentity
+              .translate(currentTransform.x - event.deltaX, currentTransform.y - event.deltaY)
+              .scale(currentTransform.k);
+            // Apply the transform to the svg
+
+            svg.call(zoomBehavior.transform, transform);
+            return false; // Prevent the default zoom behavior
+          }
         }
 
         return canvasState.mode === CanvasMode.Grab && (event.type === "mousedown" || event.type === "mousemove");
@@ -1624,9 +1696,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     zoomBehaviorRef.current = zoomBehavior;
     svg.call(zoomBehavior);
-
-    // Set initial transform
-    // svg.call(zoomBehavior.transform, zoomIdentity);
 
     return () => {
       svg.on(".zoom", null);
@@ -1697,16 +1766,25 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         setDrawingEdge({ ongoing: false });
       }
 
-      if (event.code === "Backspace" && activeLayerIDs?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
+      // On ENTER when insert mode go back to default mode
+      if (event.code === "Enter" && canvasState.mode === CanvasMode.Inserting) {
+        // Reset drawingEdge state when pointer is released
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+      }
+
+      // On backspace delete layer
+      if (event.code === "Backspace" && allActiveLayers?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
         if (!checkPermission(PERMISSIONS, "DELETE")) {
           alert("You don't have the rights to delete");
           return;
         }
 
-        const selectedLayers = layers.filter((layer) => activeLayerIDs?.includes(layer.id));
+        const selectedLayers = layers.filter((layer) => allActiveLayers?.includes(layer.id));
         const layerIdsToDelete = selectedLayers.map((layer) => layer.id);
 
-        removeLayer({ layerIdsToDelete, userId: currentUserId });
+        removeLayer({ layerIdsToDelete });
         handleUnSelectLayer();
 
         for (const layer of selectedLayers) {
@@ -1716,22 +1794,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         }
       }
 
-      if (
-        event.code === "Backspace" &&
-        activeEdgeId?.length >= 0 &&
-        activeEdgeId[0] &&
-        canvasState.mode === CanvasMode.EdgeActive
-      ) {
+      // On backspace delete edge
+      if (event.code === "Backspace" && allActiveEdges?.length > 0 && canvasState.mode === CanvasMode.EdgeSelected) {
         if (!checkPermission(PERMISSIONS, "DELETE")) {
           alert("You don't have the rights to delete");
           return;
         }
 
         removeEdge({
-          id: activeEdgeId[0],
-          userId: currentUserId,
+          edgeIdsToDelete: [activeEdgeId],
         });
-        unSelectEdge({ userId: currentUserId });
+        unSelectEdge();
         setCanvasState({
           mode: CanvasMode.None,
         });
@@ -1755,7 +1828,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, [
-    activeLayerIDs,
+    allActiveLayers,
     canvasState,
     layers,
     removeLayer,
@@ -1765,8 +1838,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     removeEdge,
     currentUserId,
     unSelectEdge,
-    activeEdgeId,
+    allActiveEdges,
     PERMISSIONS,
+    activeEdgeId,
   ]);
 
   // Hande Mouse move
@@ -1783,7 +1857,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   }, [handleMouseMove]);
 
   return (
-    <main className="h-full w-full relative">
+    <main className="h-full w-full relative" onMouseLeave={handleSelfCursorLeave}>
       {checkPermission(PERMISSIONS, "UPDATE") && <Toolbar />}
       {isCapturing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1800,6 +1874,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             <strong>Mode:</strong> {CanvasMode[canvasState.mode]}
             {JSON.stringify(canvasState, null, 2)}
           </p>
+          <article className="text-sm mb-1">
+            <strong>Camera position:</strong>
+            <p>x: {camera.x}</p>
+            <p>y: {camera.y}</p>
+          </article>
           <p className="text-sm mb-1">
             <strong>Camera scale:</strong> {camera.scale}
           </p>
@@ -1815,8 +1894,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
             {allActiveEdges.map((activeEdge: any, index: any) => (
               <section key={index}>
-                <p>{activeEdge.userId === currentUserId ? "current user" : activeEdge.userId}</p>
-                <pre>{JSON.stringify(activeEdge.edgeIds, null, 2)}</pre>
+                <p>{activeEdge}</p>
               </section>
             ))}
             {/*             
@@ -1828,14 +1906,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           <div className="text-sm mb-1">
             <strong>Active Layers:</strong>
 
-            {allActiveLayers.map((activeLayer: any, index: any) => (
+            <pre>{JSON.stringify(allActiveLayers, null, 2)}</pre>
+
+            {/* {allActiveLayers.map((activeLayer: any, index: any) => (
               <section key={index}>
                 <p>{activeLayer.userId === currentUserId ? "current user" : activeLayer.userId}</p>
                 <pre>{JSON.stringify(activeLayer.layerIds, null, 2)}</pre>
               </section>
-            ))}
-            {/*             
-            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(allActiveLayers[0].layerIds, null, 2)}</pre> */}
+            ))} */}
           </div>
         </div>
       )}
@@ -1853,7 +1931,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerLeave}
         >
           <g ref={gRef}>
             {edges.map((edge, index) => (
@@ -1862,7 +1939,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 edge={edge}
                 onEdgePointerDown={(e, edgeId) => handleEdgeClick(e, edgeId)}
                 ARROW_SIZE={ARROW_SIZE}
-                selectionColor={edgeIdsToColorSelection[edge.id]}
               />
             ))}
             {/* {layers.map((layer, index) => ( */}
@@ -1871,7 +1947,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 key={index}
                 layer={layer}
                 onLayerPointerDown={(e, layerId, origin) => handleLayerPointerDown(e, layerId, origin!)}
-                selectionColor={layerIdsToColorSelection[layer.id]}
               />
             ))}
             {shadowState.showShadow && shadowState.edgePosition && (
@@ -1890,33 +1965,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
                 fill={shadowState.layer!.fill}
               />
             )}
-            {/* {activeEdgeId && (
-            <EdgeSelectionBox
-              edge={edges.find((edge) => edge.id === activeEdgeId[0])!}
-              onHandlePointerDown={handleEdgeHandlePointerDown}
-            />
-          )} */}
-            <EdgeSelectionBox
-              edge={edges.find((edge) => activeEdgeId?.includes(edge.id))!}
-              onHandlePointerDown={handleEdgeHandlePointerDown}
-            />
-            <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
             <LayerHandles
               onMouseEnter={onHandleMouseEnter}
               onMouseLeave={onHandleMouseLeave}
               onPointerDown={onHandleMouseDown}
               onPointerUp={onHandleMouseUp}
             />
-            {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
-              <rect
-                className="fill-blue-500/5 stroke-blue-500 stroke-1"
-                x={Math.min(canvasState.origin.x, canvasState.current.x)}
-                y={Math.min(canvasState.origin.y, canvasState.current.y)}
-                width={Math.abs(canvasState.origin.x - canvasState.current.x)}
-                height={Math.abs(canvasState.origin.y - canvasState.current.y)}
-              />
-            )}
-            <CursorPresence />
+            <SelectionBox onResizeHandlePointerDown={handleResizeHandlePointerDown} />
             <SelectionTools
               camera={camera}
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
@@ -1927,23 +1982,61 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
               setLastUsedColor={setLastUsedColor}
             />
+            <EdgeSelectionBox onHandlePointerDown={handleEdgeHandlePointerDown} />
+            <CursorPresence />
+            {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
+              <rect
+                className="fill-blue-500/5 stroke-blue-500 stroke-1"
+                x={Math.min(canvasState.origin.x, canvasState.current.x)}
+                y={Math.min(canvasState.origin.y, canvasState.current.y)}
+                width={Math.abs(canvasState.origin.x - canvasState.current.x)}
+                height={Math.abs(canvasState.origin.y - canvasState.current.y)}
+              />
+            )}
           </g>
         </svg>
       </figure>
       {layers?.length > 0 && (
-        <div className="fixed bottom-6 left-6 z-10 space-x-2">
-          <figure className="flex items-center space-x-2 float-left">
-            <Button variant="outline" onClick={zoomOut}>
-              -
+        <div className="fixed bottom-6 left-6 z-10 group">
+          <div className="relative flex items-center gap-3 p-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl">
+            
+            <div className="flex items-center gap-2 pr-3 border-r border-slate-200 dark:border-slate-800">
+              <Button 
+                variant="ghost"
+                onClick={zoomOut}
+                className="h-9 w-9 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 active:scale-95"
+              >
+                <span className="text-lg font-medium text-slate-700 dark:text-slate-200">−</span>
+              </Button>
+              
+              <div className="relative min-w-[64px]">
+                <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800 rounded-lg scale-y-[0.85] origin-center transition-transform duration-200 group-hover:scale-y-100" />
+                <div className="relative px-2 py-1.5 text-center text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {Math.round(camera.scale * 100)}%
+                </div>
+              </div>
+
+              <Button
+                variant="ghost"
+                onClick={zoomIn} 
+                className="h-9 w-9 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 active:scale-95"
+              >
+                <span className="text-lg font-medium text-slate-700 dark:text-slate-200">+</span>
+              </Button>
+            </div>
+
+            {/* Fit View Button */}
+            <Button
+              variant="ghost"
+              onClick={fitView}
+              className="h-9 px-4 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 active:scale-95"
+            >
+              Fit to Screen
             </Button>
-            <p className="text-sm">{Math.round(camera.scale * 100)}%</p>
-            <Button variant="outline" onClick={zoomIn}>
-              +
-            </Button>
-          </figure>
-          <Button variant="outline" onClick={fitView}>
-            Fit
-          </Button>
+
+            <div className="absolute -z-10 inset-0 bg-white/40 dark:bg-slate-900/40 rounded-2xl blur-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+            <div className="absolute -z-20 -inset-0.5 bg-gradient-to-br from-primary-color/20 to-secondary-color/20 dark:from-primary-color/10 dark:to-secondary-color/10 rounded-[1rem] blur-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+          </div>
         </div>
       )}
     </main>

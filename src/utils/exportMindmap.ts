@@ -1,37 +1,56 @@
+/* eslint-disable no-unused-vars */
 import { toLower } from "lodash";
 
 import { Edge, Layer } from "@/_types";
 
-export async function exportMindmap(edges: Edge[], layer: Layer[]) {
+export async function exportMindmap(edges: Edge[], layers: Layer[]) {
   try {
-    // azerty
-    const mindmapObject: any = {};
-    const filename = toLower(layer[0].value);
+    // Remove the dbId property from each layer & edges
+    const sanitizedEdges = edges.map((edge) => {
+      const { dbId, ...rest } = edge as Edge & { dbId?: string };
 
-    mindmapObject.edges = edges;
-    mindmapObject.layers = layer;
+      return rest;
+    });
 
-    // Convert the mindmapObject to a JSON string
+    const sanitizedLayers = layers.map((layer) => {
+      const { dbId, ...rest } = layer as Layer & { dbId?: string };
+
+      return rest;
+    });
+
+    const mindmapObject: any = {
+      edges: sanitizedEdges,
+      layers: sanitizedLayers, // Use the sanitized layers
+    };
+
+    const filename = toLower(sanitizedLayers[0].value || "mindmap");
+
     const jsonString = JSON.stringify(mindmapObject, null, 2);
-    // Create a Blob object from the JSON string
     const blob = new Blob([jsonString], { type: "application/json" });
-    // Create a URL for the Blob
+
+    // Use the fetch API to trigger the download
     const url = URL.createObjectURL(blob);
-    // Create a temporary anchor element
-    const link = document.createElement("a");
-    // Set the href and download attributes of the anchor element
 
-    link.href = url;
-    link.download = `${filename}_mindmap.json`;
-    // Append the anchor element to the body
-    document.body.appendChild(link);
+    fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
 
-    // Simulate a click on the anchor element
-    link.click();
-    // Remove the anchor element from the body
-    document.body.removeChild(link);
+        a.style.display = "none";
+        a.href = url;
+        a.download = `${filename}_mindmap.json`;
+
+        // Append to the document to make it work in Firefox
+        document.body.appendChild(a);
+        a.click();
+
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch((err) => console.error("Error downloading file:", err));
   } catch (error) {
-    // Handle any errors that occur while reading the PDF
     console.error("Error downloading file:", error);
     return { message: "Error processing file" };
   }

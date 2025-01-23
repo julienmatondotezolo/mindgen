@@ -1,9 +1,8 @@
-import { ArrowRight, Ellipsis, Minus, PaintBucket, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { ArrowRight, Ellipsis, PaintBucket, Route, Spline, Trash2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
-import { Camera, CanvasMode, Color, EdgeType } from "@/_types";
+import { Camera, CanvasMode, Color, EdgeShape, EdgeType } from "@/_types";
 import {
   activeEdgeIdAtom,
   boardIdState,
@@ -25,9 +24,6 @@ interface EdgeSelectionToolsProps {
 }
 
 export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor }: EdgeSelectionToolsProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const edges = useRecoilValue(edgesAtomState);
   const allActiveEdges = useRecoilValue(activeEdgeIdAtom);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
@@ -39,12 +35,10 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
   const removeEdge = useRemoveEdge({ roomId: boardId });
   const updateEdge = useUpdateEdge({ roomId: boardId });
 
-  const activeEdgeId = allActiveEdges
-    .filter((userActiveEdge: any) => userActiveEdge.userId === currentUserId)
-    .map((item: any) => item.edgeIds)[0];
+  const activeEdgeId = allActiveEdges[0];
 
   const selectedEdge = edges.find((edge) => {
-    if (activeEdgeId) return activeEdgeId.includes(edge.id);
+    if (activeEdgeId) return allActiveEdges.includes(edge.id);
   });
 
   const handleColorChange = useCallback(
@@ -53,14 +47,24 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
       if (selectedEdge) {
         updateEdge({
           id: selectedEdge.id,
-          userId: currentUserId,
           updatedElementEdge: { color },
         });
         setShowColorPicker(false);
       }
     },
-    [currentUserId, selectedEdge, setLastUsedColor, updateEdge],
+    [selectedEdge, setLastUsedColor, updateEdge],
   );
+
+  const handleEdgeShape = useCallback(() => {
+    if (selectedEdge) {
+      const newShape = selectedEdge.shape === EdgeShape.Curved ? EdgeShape.SmoothStep : EdgeShape.Curved;
+
+      updateEdge({
+        id: selectedEdge.id,
+        updatedElementEdge: { shape: newShape },
+      });
+    }
+  }, [selectedEdge, updateEdge]);
 
   const handleRemoveEdge = useCallback(() => {
     if (isDeletable) {
@@ -69,28 +73,14 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
     }
     if (selectedEdge) {
       removeEdge({
-        id: selectedEdge.id,
-        userId: currentUserId,
+        edgeIdsToDelete: [selectedEdge.id],
       });
-      unSelectEdge({ userId: currentUserId });
+      unSelectEdge();
       setCanvasState({
         mode: CanvasMode.None,
       });
     }
-  }, [isDeletable, selectedEdge, removeEdge, currentUserId, unSelectEdge, setCanvasState]);
-
-  const handleChangeStrokeWidth = useCallback(
-    (number: number) => {
-      if (selectedEdge) {
-        updateEdge({
-          id: selectedEdge.id,
-          userId: currentUserId,
-          updatedElementEdge: { thickness: number },
-        });
-      }
-    },
-    [currentUserId, selectedEdge, updateEdge],
-  );
+  }, [isDeletable, selectedEdge, removeEdge, unSelectEdge, setCanvasState]);
 
   const handleToggleEdgeType = useCallback(() => {
     if (selectedEdge) {
@@ -98,11 +88,10 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
       updateEdge({
         id: selectedEdge.id,
-        userId: currentUserId,
         updatedElementEdge: { type: newType },
       });
     }
-  }, [currentUserId, selectedEdge, updateEdge]);
+  }, [selectedEdge, updateEdge]);
 
   const handleToggleThickness = useCallback(() => {
     if (selectedEdge) {
@@ -110,11 +99,10 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
       updateEdge({
         id: selectedEdge.id,
-        userId: currentUserId,
         updatedElementEdge: { thickness: newThickness },
       });
     }
-  }, [currentUserId, selectedEdge, updateEdge]);
+  }, [selectedEdge, updateEdge]);
 
   const handleToggleArrow = useCallback(
     (arrow: string) => {
@@ -123,7 +111,6 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
         updateEdge({
           id: selectedEdge.id,
-          userId: currentUserId,
           updatedElementEdge: { arrowEnd: newArrowEnd },
         });
       } else if (arrow == "right" && selectedEdge) {
@@ -131,12 +118,11 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
         updateEdge({
           id: selectedEdge.id,
-          userId: currentUserId,
           updatedElementEdge: { arrowStart: newArrowStart },
         });
       }
     },
-    [currentUserId, selectedEdge, updateEdge],
+    [selectedEdge, updateEdge],
   );
 
   if (!selectedEdge) return null;
@@ -183,7 +169,6 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
             isActive={showColorPicker}
           />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
-          <ToolButton icon={Minus} onClick={() => handleChangeStrokeWidth(2)} isActive={selectedEdge.thickness === 2} />
           <ToolButton icon={Ellipsis} onClick={handleToggleEdgeType} isActive={selectedEdge.type === EdgeType.Dashed} />
           <ToolButton onClick={handleToggleThickness} isActive={selectedEdge.thickness === 4 ? true : false}>
             <div
@@ -194,6 +179,7 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
           </ToolButton>
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           {/* <ToolButton icon={ArrowLeft} onClick={() => handleToggleArrow("left")} isActive={selectedEdge.arrowEnd} /> */}
+          <ToolButton icon={selectedEdge.shape === EdgeShape.Curved ? Spline : Route} onClick={handleEdgeShape} />
           <ToolButton icon={ArrowRight} onClick={() => handleToggleArrow("left")} isActive={selectedEdge.arrowEnd} />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <ToolButton icon={Trash2} onClick={handleRemoveEdge} />

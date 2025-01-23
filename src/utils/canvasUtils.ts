@@ -62,6 +62,8 @@ export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Lay
 
 export const connectionIdToColor = (connectionId: number) => COLORS[connectionId % COLORS.length];
 
+export const randomUserColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
+
 export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera, svgElement: SVGSVGElement | null) => {
   if (!svgElement) return { x: 0, y: 0 };
 
@@ -76,8 +78,8 @@ export const pointerEventToCanvasPoint = (e: React.PointerEvent, camera: Camera,
 export function colorToCss(color: Color) {
   if (!color) return "#33373b";
 
-  return `#${color.r.toString(16).padStart(2, "0")}${color.g.toString(16).padStart(2, "0")}${color.b
-    .toString(16)
+  return `#${color?.r?.toString(16).padStart(2, "0")}${color?.g?.toString(16).padStart(2, "0")}${color?.b
+    ?.toString(16)
     .padStart(2, "0")}`;
 }
 
@@ -164,7 +166,7 @@ export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b
     height: Math.abs(a.y - b.y),
   };
 
-  const ids = [];
+  const ids = new Set<string>();
 
   for (const layer of layers) {
     if (layer == null) {
@@ -174,11 +176,11 @@ export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b
     const { x, y, height, width } = layer;
 
     if (rect.x + rect.width > x && rect.x < x + width && rect.y + rect.height > y && rect.y < y + height) {
-      ids.push(layer.id);
+      ids.add(layer.id); // Set automatically handles duplicates
     }
   }
 
-  return ids;
+  return Array.from(ids);
 }
 
 export function findNearestLayerHandle(point: Point, layers: Layer[], threshold: number) {
@@ -688,7 +690,128 @@ export function calculateNewLayerPositions(
   return { newLayerPosition, newEdgePosition };
 }
 
-// Helper function to get handle position
+export function calculateNonOverlappingLayerPosition({
+  currentLayer,
+  position,
+  layers,
+  LAYER_SPACING,
+  HANDLE_DISTANCE,
+  endPoint,
+}: {
+  currentLayer: Layer;
+  position: HandlePosition;
+  layers: Layer[];
+  LAYER_SPACING: number;
+  HANDLE_DISTANCE: number;
+  endPoint?: Point;
+}): { newLayerPosition: Point; newEdgePosition: Point } {
+  const OVERLAP_THRESHOLD = 1; // Minimum distance between layers
+  let newLayerPosition: Point;
+  let newEdgePosition: Point;
+
+  if (endPoint) {
+    switch (position) {
+      case HandlePosition.Left:
+        newLayerPosition = { x: endPoint.x - currentLayer.width, y: endPoint.y - currentLayer.height / 2 };
+        newEdgePosition = { x: endPoint.x + HANDLE_DISTANCE, y: endPoint.y };
+        break;
+      case HandlePosition.Right:
+        newLayerPosition = { x: endPoint.x, y: endPoint.y - currentLayer.height / 2 };
+        newEdgePosition = { x: endPoint.x - HANDLE_DISTANCE, y: endPoint.y };
+        break;
+      case HandlePosition.Top:
+        newLayerPosition = { x: endPoint.x - currentLayer.width / 2, y: endPoint.y - currentLayer.height };
+        newEdgePosition = { x: endPoint.x, y: endPoint.y + HANDLE_DISTANCE };
+        break;
+      case HandlePosition.Bottom:
+        newLayerPosition = { x: endPoint.x - currentLayer.width / 2, y: endPoint.y };
+        newEdgePosition = { x: endPoint.x, y: endPoint.y - HANDLE_DISTANCE };
+        break;
+      default:
+        throw new Error("[calculateNonOverlappingLayerPosition] Invalid position");
+    }
+  } else {
+    switch (position) {
+      case HandlePosition.Left:
+        newLayerPosition = { x: currentLayer.x - currentLayer.width - LAYER_SPACING, y: currentLayer.y };
+        newEdgePosition = {
+          x: currentLayer.x - currentLayer.width / 2 - HANDLE_DISTANCE,
+          y: currentLayer.y + currentLayer.height / 2,
+        };
+        break;
+      case HandlePosition.Top:
+        newLayerPosition = { x: currentLayer.x, y: currentLayer.y - currentLayer.height - LAYER_SPACING };
+        newEdgePosition = {
+          x: currentLayer.x + currentLayer.width / 2,
+          y: newLayerPosition.y + currentLayer.height + HANDLE_DISTANCE,
+        };
+        break;
+      case HandlePosition.Right:
+        newLayerPosition = { x: currentLayer.x + currentLayer.width + LAYER_SPACING, y: currentLayer.y };
+        newEdgePosition = {
+          x: currentLayer.x + currentLayer.width * 1.5 + HANDLE_DISTANCE,
+          y: currentLayer.y + currentLayer.height / 2,
+        };
+        break;
+      case HandlePosition.Bottom:
+        newLayerPosition = { x: currentLayer.x, y: currentLayer.y + currentLayer.height + LAYER_SPACING };
+        newEdgePosition = {
+          x: currentLayer.x + currentLayer.width / 2,
+          y: newLayerPosition.y - HANDLE_DISTANCE,
+        };
+        break;
+      default:
+        throw new Error("Invalid position");
+    }
+  }
+
+  // Adjust position to avoid overlap
+  let adjustedPosition = { ...newLayerPosition };
+  let overlapping = true;
+
+  while (overlapping) {
+    overlapping = false;
+    for (const layer of layers) {
+      if (layer.id === currentLayer.id) continue;
+
+      const xOverlap = Math.abs(adjustedPosition.x - layer.x) < currentLayer.width + OVERLAP_THRESHOLD;
+      const yOverlap = Math.abs(adjustedPosition.y - layer.y) < currentLayer.height + OVERLAP_THRESHOLD;
+
+      if (xOverlap && yOverlap) {
+        overlapping = true;
+        adjustedPosition.x += LAYER_SPACING;
+        adjustedPosition.y += LAYER_SPACING;
+        break;
+      }
+    }
+  }
+
+  // Update newEdgePosition to connect to the adjustedPosition
+  switch (position) {
+    case HandlePosition.Left:
+      newEdgePosition = {
+        x: adjustedPosition.x + currentLayer.width + HANDLE_DISTANCE,
+        y: adjustedPosition.y + currentLayer.height / 2,
+      };
+      break;
+    case HandlePosition.Right:
+      newEdgePosition = { x: adjustedPosition.x - HANDLE_DISTANCE, y: adjustedPosition.y + currentLayer.height / 2 };
+      break;
+    case HandlePosition.Top:
+      newEdgePosition = {
+        x: adjustedPosition.x + currentLayer.width / 2,
+        y: adjustedPosition.y + currentLayer.height + HANDLE_DISTANCE,
+      };
+      break;
+    case HandlePosition.Bottom:
+      newEdgePosition = { x: adjustedPosition.x + currentLayer.width / 2, y: adjustedPosition.y - HANDLE_DISTANCE };
+      break;
+  }
+
+  return { newLayerPosition: adjustedPosition, newEdgePosition };
+}
+
+// Helper function to get handle position in X and Y
 export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition | undefined): Point => {
   const HANDLE_DISTANCE = 30;
 
@@ -703,6 +826,22 @@ export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition |
       return { x: bounds.x - HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
     default:
       return { x: bounds.x, y: bounds.y };
+  }
+};
+
+// Define a utility function to get the opposite handle position
+export const getOppositeHandlePosition = (position: HandlePosition): HandlePosition => {
+  switch (position) {
+    case HandlePosition.Left:
+      return HandlePosition.Right;
+    case HandlePosition.Right:
+      return HandlePosition.Left;
+    case HandlePosition.Top:
+      return HandlePosition.Bottom;
+    case HandlePosition.Bottom:
+      return HandlePosition.Top;
+    default:
+      throw new Error("Invalid handle position");
   }
 };
 

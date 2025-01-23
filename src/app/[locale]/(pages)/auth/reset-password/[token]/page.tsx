@@ -31,8 +31,8 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
 
   useEffect((): void => {
     if (token) {
-      validateToken(token).then((ok: boolean): void => {
-        setTokenIsValid(ok);
+      validateToken(token).then((ok: boolean | undefined): void => {
+        setTokenIsValid(!!ok);
         setIsLoading(false);
       });
     }
@@ -43,11 +43,14 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
       setNewPassword("");
       setConfirmNewPassword("");
 
-      if (data.status == 200) {
+      if (data) {
         setPasswordResetSuccess(true);
         router.push("/dashboard");
         return;
       }
+    },
+    onError: () => {
+      router.refresh();
     },
   });
 
@@ -86,11 +89,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
   async function onSubmit(event: React.SyntheticEvent): Promise<void> {
     event.preventDefault();
     if (fieldsValidated()) {
-      try {
-        await resetPasswordMutation.mutateAsync({ token, newPassword: confirmNewPassword });
-      } catch (error) {
-        console.error("Reset password error:", error);
-      }
+      await resetPasswordMutation.mutateAsync({ token, newPassword: confirmNewPassword });
     }
   }
 

@@ -1,3 +1,5 @@
+import { ApiError } from "next/dist/server/api-utils";
+
 import { CustomSession } from "@/_types";
 
 /* eslint-disable prettier/prettier */
@@ -88,7 +90,7 @@ export async function fetchGeneratedSummaryText(
   }); 
 }
 
-export async function fetchCreatedPDF({ session, pdfReqObject }: { session: CustomSession | null, pdfReqObject: any }): Promise<any> {
+/* export async function fetchCreatedPDF({ session, pdfReqObject }: { session: CustomSession | null, pdfReqObject: any }): Promise<any> {
   if(session)
     try {
       const responseCreatePDF: Response = await fetch(baseUrl + `/ai/pdf`, {
@@ -109,32 +111,69 @@ export async function fetchCreatedPDF({ session, pdfReqObject }: { session: Cust
     } catch (error) {
       console.error("Impossible to create PDF:", error);
     }
-}
+} */
 
 /* ================================================= */  
 /* ==================   PROFILE   ================== */
 /* ================================================= */ 
 
-export async function fetchProfile({ session }: {session: CustomSession | null}): Promise<any> {
-  if(session)
-    try {
-      const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-      });
+export async function fetchProfile({ session }: { session: CustomSession | null }): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
 
-      if (responseProfile.ok) {
-        return responseProfile.json();
-      } else {
-        throw responseProfile;
-      }
-    } catch (error) {
-      console.error("Impossible to fetch profiles:", error);
-    }
+
+  const responseProfile: Response = await fetch(baseUrl + `/user/profile`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseProfile.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Profile fetch",
+      statusCode: responseProfile.status,
+      message: await responseProfile.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseProfile.json();
+}
+
+export async function changePassword({ session, passwordBody }: { session: CustomSession | null, passwordBody: any }): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+
+  const responsePasswordChange: Response = await fetch(baseUrl + `/password/change`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(passwordBody),
+  });
+
+  if (!responsePasswordChange.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Password change",
+      statusCode: responsePasswordChange.status,
+      message: await responsePasswordChange.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responsePasswordChange.json();
 }
 
 /* ======================================================== */
@@ -337,6 +376,68 @@ export async function acceptOrgInvitation({ session, invitationId }: { session: 
   }
 }
 
+/* ======================================================= */  
+/* ==============   ORGANIZATIONS MEMBERS  =============== */
+/* ======================================================= */
+
+export async function removeMemberFromOrg({ session, memberId }: {session: CustomSession | null, memberId: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+
+  const responseRemoveMember: Response = await fetch(baseUrl + `/organization/member/${memberId}/remove`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseRemoveMember.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Remove member from organization",
+      statusCode: responseRemoveMember.status,
+      message: await responseRemoveMember.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseRemoveMember.json();
+}
+
+export async function memberLeaveOrg({ session, memberId }: {session: CustomSession | null, memberId: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+
+  const responseLeaveOrganization: Response = await fetch(baseUrl + `/organization/member/${memberId}/leave`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseLeaveOrganization.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Member leave organization",
+      statusCode: responseLeaveOrganization.status,
+      message: await responseLeaveOrganization.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseLeaveOrganization.json();
+}
+
 /* ================================================== */  
 /* ==================   MINDMAPS   ================== */
 /* ================================================== */ 
@@ -530,6 +631,39 @@ export async function getMindmapById({ session, mindmapId }: {session: CustomSes
     } catch (error: any) {
       throw new Error(`Fetch error: ${error.message}`);
     }
+}
+
+export async function searchBoardQuery({ session, query }: {session: CustomSession | null, query: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+  const responseSearchBoard: Response = await fetch(baseUrl + `/mindmap/search?query=${query}`, {
+    next: {
+      revalidate: 0,
+    },
+    method: "GET",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseSearchBoard.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Search Board Query",
+      statusCode: responseSearchBoard.status,
+      message: await responseSearchBoard.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseSearchBoard.json();
+
 }
 
 export async function updateBoardLayersById({
@@ -780,56 +914,36 @@ export async function inviteAllMembers(membersObject: any): Promise<any> {
 }
 
 export async function updateMembers({ session, mindmapId, membersToUpdate }: {session: CustomSession | null, mindmapId: string, membersToUpdate: any}): Promise<any> {
-  if (session)
-    try {
-      const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/member-roles`, {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-        body: JSON.stringify(membersToUpdate),
-      });
-
-      if (responseUpdatedCollaborator.ok) {
-        return responseUpdatedCollaborator.json();
-      } else {
-        throw responseUpdatedCollaborator;
-      }
-    } catch (error) {
-      console.error("Impossible to invite collaborator(s):", error);
-    }
-}
-
-export async function transferOwnership(collaboratorId: any): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responsetransferOwnership: Response = await fetch(
-      baseUrl + `/mindmap/collaborator/ownership/${collaboratorId}`,
-      {
-        method: "PUT",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-      },
-    );
-
-    if (responsetransferOwnership.ok) {
-      return responsetransferOwnership;
-    } else {
-      throw responsetransferOwnership;
-    }
-  } catch (error) {
-    console.error("Impossible to transfer ownership:", error);
+  if (!session) {
+    throw new Error('No session provided');
   }
+
+  const responseUpdatedCollaborator: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/member-roles`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(membersToUpdate),
+  });
+
+  if (!responseUpdatedCollaborator.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Search Board Query",
+      statusCode: responseUpdatedCollaborator.status,
+      message: await responseUpdatedCollaborator.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseUpdatedCollaborator.json();
+
 }
+
 
 export async function removeMemberById({ session, mindmapId, membersToDelete }: {session: CustomSession | null, mindmapId: string, membersToDelete: any}): Promise<any> {
   if(session)
@@ -853,3 +967,57 @@ export async function removeMemberById({ session, mindmapId, membersToDelete }: 
       console.error("Impossible to remove collaborator:", error);
     }
 }
+
+/* ===================================================== */  
+/* ==================   DOCUMENTS   ================== */
+/* ===================================================== */  
+
+export async function generateDocument({ 
+  session, 
+  task,
+  mermaid,
+  style,
+  length,
+  format,
+  audience
+}: { 
+  session: CustomSession | null, 
+  task: string,
+  mermaid: string,
+  style: string,
+  length: string, 
+  format: string,
+  audience: string
+}): Promise<Blob> {
+  if(session)
+    try {
+      const responseGenerateDocument: Response = await fetch(baseUrl + `/ai/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+        body: JSON.stringify({
+          task,
+          mermaid,
+          style,
+          length,
+          format,
+          audience
+        }),
+      });
+
+      if (responseGenerateDocument.ok) {
+        const blob = await responseGenerateDocument.blob();
+        return new Blob([blob], { type: 'application/pdf' });
+      } else {
+        throw responseGenerateDocument;
+      }
+    } catch (error) {
+      console.error("Impossible to generate document:", error);
+      throw error;
+    }
+  throw new Error("No session provided");
+}
+

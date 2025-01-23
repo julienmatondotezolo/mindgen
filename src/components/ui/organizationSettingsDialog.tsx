@@ -11,13 +11,14 @@ import { Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
 import { OrgMembers, OrgSettings } from "@/components/dashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
-import { organizationSettingsState, selectedOrganizationState } from "@/state";
+import { memberToDeleteState, organizationSettingsState, selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
   const textOrga = useTranslations("Organization");
   const modalRef = useRef<HTMLDivElement>(null);
+  const memberToDelete = useRecoilValue(memberToDeleteState);
 
   const triggerStyle = `w-full p-2 px-4 rounded-xl bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 hover:bg-gray-200 dark:hover:bg-gray-600`;
 
@@ -26,6 +27,8 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
   };
 
   useEffect(() => {
+    if (memberToDelete) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (!modalRef.current?.contains(event.target as Node)) {
         setIsOpen(false);
@@ -36,7 +39,7 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [memberToDelete]);
 
   const isOrgaSettings = useRecoilValue(organizationSettingsState);
 
