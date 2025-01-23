@@ -10,7 +10,7 @@ import {
   // GenerateDocuments,
   Hero,
   // ImportFeaturesSection,
-  // MindgenGettingStarted,
+  MindgenGettingStarted,
   Pricing,
   SignUpSection,
 } from "@/sections/";
@@ -26,10 +26,10 @@ export default function Index() {
       <BackDropGradient />
       <Navigation />
       <Hero />
-      {/* <GenerateDocuments />
-      <ImportFeaturesSection />
+      <MindgenGettingStarted />
       <CollaborationSection />
-      <MindgenGettingStarted /> */}
+      <GenerateDocuments />
+      {/* <ImportFeaturesSection /> */}
       <Pricing />
       <SignUpSection />
       <Footer />
