@@ -5,9 +5,9 @@
 import { Navigation } from "@/components/dashboard";
 import { BackDropGradient } from "@/components/ui";
 import {
-  // CollaborationSection,
+  CollaborationSection,
   Footer,
-  // GenerateDocuments,
+  GenerateDocuments,
   Hero,
   // ImportFeaturesSection,
   MindgenGettingStarted,
