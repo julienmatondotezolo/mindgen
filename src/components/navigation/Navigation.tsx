@@ -1,9 +1,9 @@
 "use client";
+import { AnimatePresence, motion } from "framer-motion";
 import { MoveRight, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui";
 
@@ -19,6 +19,7 @@ function Navigation() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -29,20 +30,20 @@ function Navigation() {
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
       className={`flex justify-center fixed z-50 top-0 w-full py-3 transition-all duration-300 ${
-        scrolled 
-          ? "bg-white/80 dark:bg-slate-800/90 backdrop-blur-lg shadow-lg dark:shadow-slate-900/20" 
+        scrolled
+          ? "bg-white/80 dark:bg-slate-800/90 backdrop-blur-lg shadow-lg dark:shadow-slate-900/20"
           : "bg-white/50 dark:bg-slate-800/50 backdrop-blur-md"
       }`}
     >
       <div className="flex justify-between items-center max-w-7xl w-[96%]">
-        <motion.section 
+        <motion.section
           className="flex items-center relative"
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <Link href={`/dashboard`}>
             <figure className="relative mr-8 group">
-              <motion.div 
+              <motion.div
                 className="absolute -top-2 -right-5 bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: [0.8, 1.1, 1] }}
@@ -52,7 +53,7 @@ function Navigation() {
               </motion.div>
               <p className="font-bold text-lg dark:text-white tracking-tight">
                 MIND
-                <motion.span 
+                <motion.span
                   className="text-primary-color inline-block"
                   initial={{ opacity: 0.8 }}
                   whileHover={{ opacity: 1 }}
@@ -76,10 +77,8 @@ function Navigation() {
                   whileHover={{ scale: 1.03 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                  <Button 
-                    className="relative overflow-hidden group px-6 py-2 h-11"
-                  >
-                    <motion.span 
+                  <Button className="relative overflow-hidden group px-6 py-2 h-11">
+                    <motion.span
                       className="relative z-10 flex items-center gap-2"
                       whileHover={{ x: 3 }}
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}

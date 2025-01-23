@@ -17,14 +17,22 @@ import arrowIcon from "@/assets/icons/arrow.svg";
 import { BackDropGradient, Spinner, Whiteboard } from "@/components";
 import { Answers, PromptTextInput } from "@/components/gpt";
 import { NavLeft, NavRight } from "@/components/header";
-import { Button, CollaborateDialog, GenerateDocumentDialog, ImportDialog, ShareDialog, Skeleton, UpgradePlanDialog } from "@/components/ui";
+import {
+  Button,
+  CollaborateDialog,
+  GenerateDocumentDialog,
+  ImportDialog,
+  ShareDialog,
+  Skeleton,
+  UpgradePlanDialog,
+} from "@/components/ui";
 import { Link } from "@/navigation";
 import {
   boardIdState,
   collaborateModalState,
   currentUserState,
   edgesAtomState,
-  generateDocumentState,/*  */
+  generateDocumentState /*  */,
   importModalState,
   layerAtomState,
   promptResultState,

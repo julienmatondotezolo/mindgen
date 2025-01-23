@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { AlignJustify, LayoutGrid, Sparkles, Plus } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlignJustify, LayoutGrid, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { motion, AnimatePresence } from "framer-motion";
 
 import { Filter } from "@/_types";
 import { Link } from "@/navigation";
@@ -42,21 +42,21 @@ function RecentMindMap() {
 
   const filterVariants = {
     initial: { scale: 1 },
-    hover: { scale: 1.05, transition: { duration: 0.2 } }
+    hover: { scale: 1.05, transition: { duration: 0.2 } },
   };
 
   const buttonVariants = {
     initial: { scale: 1 },
-    hover: { 
+    hover: {
       scale: 1.03,
       boxShadow: "0 4px 15px rgba(77, 106, 255, 0.2)",
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2 },
     },
-    tap: { scale: 0.98 }
+    tap: { scale: 0.98 },
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -70,9 +70,11 @@ function RecentMindMap() {
                 variants={filterVariants}
                 initial="initial"
                 whileHover="hover"
-                className={`${!showFavorites 
-                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
-                  : ''} rounded-xl px-4 py-2 transition-all duration-300`}
+                className={`${
+                  !showFavorites
+                    ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
+                    : ""
+                } rounded-xl px-4 py-2 transition-all duration-300`}
               >
                 <p className="text-sm font-medium">Recently viewed</p>
               </motion.article>
@@ -82,9 +84,11 @@ function RecentMindMap() {
                 variants={filterVariants}
                 initial="initial"
                 whileHover="hover"
-                className={`${showFavorites 
-                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
-                  : ''} rounded-xl px-4 py-2 transition-all duration-300`}
+                className={`${
+                  showFavorites
+                    ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
+                    : ""
+                } rounded-xl px-4 py-2 transition-all duration-300`}
               >
                 <p className="text-sm font-medium">My mindmaps</p>
               </motion.article>
@@ -95,56 +99,46 @@ function RecentMindMap() {
               variants={filterVariants}
               initial="initial"
               whileHover="hover"
-              onHoverStart={() => setHoveredFilter('grid')}
+              onHoverStart={() => setHoveredFilter("grid")}
               onHoverEnd={() => setHoveredFilter(null)}
               onClick={() => setGlobalFilter(Filter.Grid)}
               className={`rounded-xl p-2 transition-all duration-300 ${
-                globalFilter === Filter.Grid 
-                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
-                  : ''
+                globalFilter === Filter.Grid
+                  ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
+                  : ""
               }`}
             >
-              <LayoutGrid size={18} className={hoveredFilter === 'grid' ? 'text-primary-color' : ''} />
+              <LayoutGrid size={18} className={hoveredFilter === "grid" ? "text-primary-color" : ""} />
             </motion.section>
             <motion.section
               variants={filterVariants}
               initial="initial"
               whileHover="hover"
-              onHoverStart={() => setHoveredFilter('list')}
+              onHoverStart={() => setHoveredFilter("list")}
               onHoverEnd={() => setHoveredFilter(null)}
               onClick={() => setGlobalFilter(Filter.List)}
               className={`rounded-xl p-2 transition-all duration-300 ${
-                globalFilter === Filter.List 
-                  ? 'bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20' 
-                  : ''
+                globalFilter === Filter.List
+                  ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
+                  : ""
               }`}
             >
-              <AlignJustify size={18} className={hoveredFilter === 'list' ? 'text-primary-color' : ''} />
+              <AlignJustify size={18} className={hoveredFilter === "list" ? "text-primary-color" : ""} />
             </motion.section>
           </div>
         </section>
 
         <section className="flex items-center space-x-4">
-          <motion.div
-            variants={buttonVariants}
-            initial="initial"
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <Button 
-              onClick={handleNewBoard}
-              className="bg-primary-color hover:opacity-90 transition-all duration-300"
-            >
+          <motion.div variants={buttonVariants} initial="initial" whileHover="hover" whileTap="tap">
+            <Button onClick={handleNewBoard} className="bg-primary-color hover:opacity-90 transition-all duration-300">
               <Plus className="mr-2" height={size} />
-              <span className="font-medium">
-                {uppercaseFirstLetter(text("new"))} board
-              </span>
+              <span className="font-medium">{uppercaseFirstLetter(text("new"))} board</span>
             </Button>
           </motion.div>
         </section>
       </div>
       <AnimatePresence mode="wait">
-        <motion.article 
+        <motion.article
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

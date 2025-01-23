@@ -79,8 +79,8 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const shakeAnimation = {
     shake: {
       x: [0, -10, 10, -10, 10, 0],
-      transition: { duration: 0.5 }
-    }
+      transition: { duration: 0.5 },
+    },
   };
 
   const progressValue = (confirmText.length / boardToDelete?.name.length) * 100;
@@ -102,13 +102,13 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
               className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden"
               variants={modalVariants}
             >
-              <motion.div 
+              <motion.div
                 className="absolute top-0 left-0 h-1 bg-red-500"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressValue}%` }}
                 transition={{ duration: 0.3 }}
               />
-              
+
               <div className="p-6 space-y-6">
                 <div className="flex justify-between items-center">
                   <motion.div
@@ -118,9 +118,9 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     transition={{ delay: 0.2 }}
                   >
                     <motion.div
-                      animate={{ 
+                      animate={{
                         rotate: isConfirmed ? [0, 360] : 0,
-                        scale: isConfirmed ? [1, 1.2, 1] : 1
+                        scale: isConfirmed ? [1, 1.2, 1] : 1,
                       }}
                       transition={{ duration: 0.5 }}
                     >
@@ -140,15 +140,12 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   </motion.button>
                 </div>
 
-                <motion.div
-                  animate={isShaking ? "shake" : ""}
-                  variants={shakeAnimation}
-                  className="space-y-4"
-                >
+                <motion.div animate={isShaking ? "shake" : ""} variants={shakeAnimation} className="space-y-4">
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {text("This action cannot be undone. Please type")} <span className="font-semibold text-red-500">{boardToDelete.name}</span> {text("to confirm")}:
+                    {text("This action cannot be undone. Please type")}{" "}
+                    <span className="font-semibold text-red-500">{boardToDelete.name}</span> {text("to confirm")}:
                   </p>
-                  
+
                   <input
                     ref={inputRef}
                     type="text"
@@ -174,7 +171,9 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   >
                     <Button
                       onClick={handleRemove}
-                      className={`px-4 py-2 flex items-center space-x-2 ${isConfirmed ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-400'} transition-colors duration-300`}
+                      className={`px-4 py-2 flex items-center space-x-2 ${
+                        isConfirmed ? "bg-red-500 hover:bg-red-600" : "bg-gray-400"
+                      } transition-colors duration-300`}
                       disabled={!isConfirmed || fetchDeleteMindmapById.isLoading}
                     >
                       <Trash2 className="w-4 h-4" />

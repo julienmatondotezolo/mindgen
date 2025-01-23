@@ -1,10 +1,10 @@
-import { Plus, Share2, Import, Users } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Import, Plus, Share2, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
-import { useRecoilState } from "recoil";
-import { motion, AnimatePresence } from "framer-motion";
+import { useSetRecoilState } from "recoil";
 
 import { fetchProfile } from "@/_services";
 import { CustomSession, Member, MindMapDetailsProps, ProfileProps } from "@/_types";
@@ -20,10 +20,10 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
   const members = userMindmapDetails ? userMindmapDetails?.members : [];
   const MAX_MEMBERS_SHOWED = 3;
 
-  const [importModal, setImportModal] = useRecoilState(importModalState);
-  const [shareModal, setShareModal] = useRecoilState(shareModalState);
-  const [collaborateModal, setCollaborateModal] = useRecoilState(collaborateModalState);
-  const [upgradePlanModal, setUpgradePlanModal] = useRecoilState(upgradePlanModalState);
+  const setImportModal = useSetRecoilState(importModalState);
+  const setShareModal = useSetRecoilState(shareModalState);
+  const setCollaborateModal = useSetRecoilState(collaborateModalState);
+  const setUpgradePlanModal = useSetRecoilState(upgradePlanModalState);
 
   const safeSession = session ? (session as unknown as CustomSession) : null;
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
@@ -36,29 +36,29 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
       y: 0,
       transition: {
         duration: 0.5,
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const buttonVariants = {
     hidden: { opacity: 0, x: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       x: 0,
       transition: {
         type: "spring",
-        stiffness: 100
-      }
+        stiffness: 100,
+      },
     },
-    hover: { 
+    hover: {
       scale: 1.02,
       transition: {
         type: "spring",
         stiffness: 400,
-        damping: 10
-      }
-    }
+        damping: 10,
+      },
+    },
   };
 
   const memberVariants = {
@@ -69,13 +69,13 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
       transition: {
         type: "spring",
         stiffness: 200,
-        delay: i * 0.05
-      }
-    })
+        delay: i * 0.05,
+      },
+    }),
   };
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -94,7 +94,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
             </Button>
           </motion.li>
         )}
-        
+
         {checkPermission(PERMISSIONS, "EXPORT") && (
           <motion.li variants={buttonVariants} whileHover="hover">
             <Button
@@ -111,7 +111,11 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
         <motion.li variants={buttonVariants} whileHover="hover">
           <Button
             variant={members!.length > 1 ? "ghost" : "default"}
-            onClick={checkPermission(PERMISSIONS, "MANAGE_ROLES") ? () => setCollaborateModal(true) : () => setUpgradePlanModal(true)}
+            onClick={
+              checkPermission(PERMISSIONS, "MANAGE_ROLES")
+                ? () => setCollaborateModal(true)
+                : () => setUpgradePlanModal(true)
+            }
             className="relative group px-5 py-2 transition-all duration-300"
           >
             <div className="flex items-center">
@@ -142,7 +146,7 @@ function NavRight({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPr
               )}
 
               {members?.slice(1, members.length).length >= MAX_MEMBERS_SHOWED && (
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   whileHover={{ y: -2 }}

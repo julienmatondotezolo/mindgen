@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
+import { Loader2, MinimizeIcon, Send, SendIcon, Sparkles, SparklesIcon, X, XIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
@@ -22,7 +23,6 @@ import {
 } from "@/state";
 import { convertToMermaid, findCollaboratorId, scrollToBottom, uppercaseFirstLetter } from "@/utils";
 import { handleStreamGPTData } from "@/utils/handleStreamGPTData";
-import {  SparklesIcon, MinimizeIcon, SendIcon, XIcon, Loader2, Send, Sparkles, X } from "lucide-react";
 
 function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps }) {
   const session: any = useSession();
@@ -55,14 +55,13 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
 
   const [isOpen, setIsOpen] = useState(false);
   const [showPrompts, setShowPrompts] = useState(false);
-  
 
   const [generateDocumentModal, setGenerateDocumentModal] = useRecoilState(generateDocumentState);
   const handleGenerateDocumentClick = () => {
     setGenerateDocumentModal(!generateDocumentModal);
   };
 
-/*   const createdPDF = useMutation(fetchCreatedPDF, {
+  /*   const createdPDF = useMutation(fetchCreatedPDF, {
     onSuccess: () => {
       setText("");
     },
@@ -70,8 +69,6 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
       setText("");
     },
   }); */
-
-  
 
   const updateQa = useCallback(() => {
     setQa((prevQa) => {
@@ -143,7 +140,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
     }
   };
 
- /* const createPDF = (prompt: any) => {
+  /* const createPDF = (prompt: any) => {
     setText(prompt);
     const mindMapArray = convertToMermaid(layers, edges);
 
@@ -259,7 +256,7 @@ function PromptTextInput({ userMindmapDetails }: { userMindmapDetails: MindMapDe
   const handleQuickPrompt = (e: any, name: string, prompt: string) => {
     e.preventDefault();
     if (name === "Create PDF") {
-    /*   createPDF(prompt); */
+      /*   createPDF(prompt); */
       handleGenerateDocumentClick();
       return;
     }
@@ -404,10 +401,10 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
             </Button>
           </div>
         ) : (
-          <div 
+          <div
             className="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-4xl"
             style={{
-              animation: "slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeIn 0.4s ease forwards"
+              animation: "slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeIn 0.4s ease forwards",
             }}
           >
             <div className="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 backdrop-blur-lg">
@@ -428,9 +425,7 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
                     type="button"
                   >
                     <SparklesIcon className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                      {showPrompts ? 'Hide suggestions' : 'Show suggestions'}
-                    </span>
+                    <span className="text-sm font-medium">{showPrompts ? "Hide suggestions" : "Show suggestions"}</span>
                   </Button>
                   <Button
                     onClick={() => setIsOpen(false)}
@@ -444,14 +439,14 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
               </div>
 
               {/* Quick Prompts Drawer */}
-              <div 
+              <div
                 className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
                 style={{
-                  maxHeight: showPrompts ? '400px' : '0'
+                  maxHeight: showPrompts ? "400px" : "0",
                 }}
               >
                 <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-                  <div className="overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: 'min(300px, 60vh)' }}>
+                  <div className="overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: "min(300px, 60vh)" }}>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 min-h-fit">
                       {quickPrompts.map((item, index) => (
                         <button
@@ -495,21 +490,21 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
                     }
                     onChange={(event) => handleTextareaChange(event)}
                     disabled={isLoading}
-                    style={{ 
+                    style={{
                       height: textareaHeight,
                       minHeight: "120px",
                       maxHeight: "400px",
-                      overflow: "auto"
+                      overflow: "auto",
                     }}
                     required
                   />
-                  <Button 
-                    className="absolute bottom-3 right-3 transition-transform duration-200 hover:scale-110 active:scale-95 bg-primary-color hover:bg-primary-color/90 shadow-lg" 
+                  <Button
+                    className="absolute bottom-3 right-3 transition-transform duration-200 hover:scale-110 active:scale-95 bg-primary-color hover:bg-primary-color/90 shadow-lg"
                     size="icon"
-                    disabled={isLoading} 
+                    disabled={isLoading}
                     type="submit"
                   >
-                    <Send className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''} text-white`} />
+                    <Send className={`h-5 w-5 ${isLoading ? "animate-spin" : ""} text-white`} />
                   </Button>
                 </div>
               </form>

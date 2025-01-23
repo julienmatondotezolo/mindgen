@@ -1,7 +1,7 @@
+import { motion } from "framer-motion";
 import { Presentation, Sparkles } from "lucide-react";
 import React from "react";
 import { useRecoilValue } from "recoil";
-import { motion } from "framer-motion";
 
 import { boardsLengthState, profilMaxMindmapState } from "@/state";
 
@@ -21,7 +21,7 @@ function LeftBoards() {
     >
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
-          <motion.article 
+          <motion.article
             className="flex items-center space-x-3"
             initial={{ x: -20 }}
             animate={{ x: 0 }}
@@ -31,15 +31,13 @@ function LeftBoards() {
               <Presentation className="text-primary-color dark:text-white" size={18} />
             </div>
             <div>
-              <p className="font-bold text-sm text-foreground dark:text-white">
-                {leftBoards} boards remaining
-              </p>
+              <p className="font-bold text-sm text-foreground dark:text-white">{leftBoards} boards remaining</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {boardLength} of {maxMindmap} boards used
               </p>
             </div>
           </motion.article>
-          
+
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -47,13 +45,11 @@ function LeftBoards() {
             className="flex items-center space-x-1"
           >
             <Sparkles className="text-primary-color" size={14} />
-            <span className="text-xs font-medium text-primary-color">
-              {Math.round(progressPercentage)}% Used
-            </span>
+            <span className="text-xs font-medium text-primary-color">{Math.round(progressPercentage)}% Used</span>
           </motion.div>
         </div>
 
-        <motion.div 
+        <motion.div
           className="h-2 w-full bg-gray-100 dark:bg-slate-700/50 rounded-full overflow-hidden"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
-import { Save, Settings2, Trash2, Sparkles } from "lucide-react";
+import { Save, Settings2, Sparkles, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
@@ -39,7 +39,7 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
     setInputTitle(e.target.value);
     controls.start({
       scale: [1, 1.02, 1],
-      transition: { duration: 0.3 }
+      transition: { duration: 0.3 },
     });
   };
 
@@ -113,26 +113,21 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
 
   const glowVariants = {
     initial: { opacity: 0 },
-    animate: { 
+    animate: {
       opacity: [0, 0.5, 0],
       scale: [1, 1.2, 1],
       transition: {
         duration: 2,
         repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
+        ease: "easeInOut",
+      },
+    },
   };
 
   return (
-    <motion.div 
-      className="w-full relative"
-      initial="hidden" 
-      animate="visible" 
-      variants={containerVariants}
-    >
-      <motion.div 
-        className="flex items-center space-x-2 pb-4 mb-8 border-b dark:border-slate-800 relative" 
+    <motion.div className="w-full relative" initial="hidden" animate="visible" variants={containerVariants}>
+      <motion.div
+        className="flex items-center space-x-2 pb-4 mb-8 border-b dark:border-slate-800 relative"
         variants={itemVariants}
       >
         <motion.div
@@ -197,7 +192,9 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Trash2 className={`w-4 h-4 ${isHovered ? "animate-shake" : ""} group-hover:rotate-12 transition-transform`} />
+                  <Trash2
+                    className={`w-4 h-4 ${isHovered ? "animate-shake" : ""} group-hover:rotate-12 transition-transform`}
+                  />
                   <span className="font-medium">
                     {deleteOrgaMutation.isLoading
                       ? `${uppercaseFirstLetter(text("loading"))}...`

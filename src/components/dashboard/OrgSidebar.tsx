@@ -1,10 +1,10 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { CirclePlus, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useIsMutating, useQuery, useQueryClient } from "react-query";
 import { useRecoilState } from "recoil";
-import { motion, AnimatePresence } from "framer-motion";
 
 import { fetchOrganization } from "@/_services";
 import { Organization } from "@/_types/Organization";
@@ -66,11 +66,7 @@ export function OrgSidebar() {
 
   if (isLoading) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="hidden lg:flex flex-col space-y-4"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden lg:flex flex-col space-y-4">
         <Skeleton className="w-full h-10 bg-grey-blue/30 rounded-xl animate-pulse" />
         <Skeleton className="w-full h-10 bg-grey-blue/30 rounded-xl animate-pulse" />
       </motion.div>
@@ -78,7 +74,7 @@ export function OrgSidebar() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
@@ -86,12 +82,7 @@ export function OrgSidebar() {
     >
       <AnimatePresence mode="wait">
         {isCreatingOrga ? (
-          <motion.div
-            key="skeleton"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+          <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <Skeleton className="w-full h-10 bg-grey-blue/30 rounded-xl" />
           </motion.div>
         ) : (
@@ -108,9 +99,9 @@ export function OrgSidebar() {
               </SelectTrigger>
               <SelectContent className="cursor-pointer bg-white/80 border-2 shadow-lg backdrop-blur-lg dark:bg-slate-900/80 dark:shadow-slate-900/30 dark:border-slate-800 animate-in fade-in-0 zoom-in-95">
                 {userOrganizations?.map((organization: Organization) => (
-                  <SelectItem 
-                    key={organization.id} 
-                    value={organization.name} 
+                  <SelectItem
+                    key={organization.id}
+                    value={organization.name}
                     className="cursor-pointer py-4 hover:bg-primary-color/5 transition-colors duration-200"
                   >
                     <p>{organization.name}</p>
@@ -122,25 +113,15 @@ export function OrgSidebar() {
         )}
       </AnimatePresence>
 
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full"
-      >
-        <Button 
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
+        <Button
           onClick={handleClick}
           className="w-full bg-primary-color hover:opacity-90 transition-all duration-300 group"
         >
-          <motion.span 
-            className="text-base mr-2"
-            animate={{ rotate: isOpen ? 135 : 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <motion.span className="text-base mr-2" animate={{ rotate: isOpen ? 135 : 0 }} transition={{ duration: 0.3 }}>
             <CirclePlus size={18} />
           </motion.span>
-          <span className="font-medium">
-            {`${uppercaseFirstLetter(text("create"))} ${textOrga("organization")}`}
-          </span>
+          <span className="font-medium">{`${uppercaseFirstLetter(text("create"))} ${textOrga("organization")}`}</span>
         </Button>
       </motion.div>
 
@@ -154,12 +135,12 @@ export function OrgSidebar() {
             whileTap={{ scale: 0.98 }}
             className="w-full"
           >
-            <Button 
-              onClick={handleSettingsClick} 
+            <Button
+              onClick={handleSettingsClick}
               variant="board"
               className="w-full border-2 border-primary-color/10 hover:border-primary-color/30 dark:bg-slate-800/50 backdrop-blur-lg group"
             >
-              <motion.span 
+              <motion.span
                 className="text-base mr-2"
                 animate={{ rotate: isOpenSettings ? 180 : 0 }}
                 transition={{ duration: 0.3 }}

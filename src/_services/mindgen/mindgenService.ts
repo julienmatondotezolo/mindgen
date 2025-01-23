@@ -979,7 +979,7 @@ export async function generateDocument({
   style,
   length,
   format,
-  audience
+  audience,
 }: { 
   session: CustomSession | null, 
   task: string,
@@ -1004,12 +1004,13 @@ export async function generateDocument({
           style,
           length,
           format,
-          audience
+          audience,
         }),
       });
 
       if (responseGenerateDocument.ok) {
         const blob = await responseGenerateDocument.blob();
+
         return new Blob([blob], { type: 'application/pdf' });
       } else {
         throw responseGenerateDocument;

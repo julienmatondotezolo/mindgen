@@ -1,9 +1,8 @@
 /* eslint-disable max-len */
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, Menu, Settings } from "lucide-react";
-import Image from "next/image";
+import { motion } from "framer-motion";
+import { Menu, Settings } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
@@ -73,15 +72,15 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={(open) => handleSheetOpenChange(open)}>
-      <motion.nav 
+      <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex px-2 py-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50"
       >
         <div className="flex items-center gap-3">
           <SheetTrigger asChild>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               className="h-9 w-9 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
             >
@@ -90,7 +89,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
           </SheetTrigger>
 
           <Link href="/dashboard">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="font-bold text-base dark:text-white"
@@ -101,15 +100,11 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         </div>
       </motion.nav>
 
-      <SheetContent 
-        side="left" 
+      <SheetContent
+        side="left"
         className="rounded-r-2xl border-r border-slate-200/50 dark:border-slate-700/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg shadow-2xl p-6"
       >
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="h-full flex flex-col"
-        >
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="h-full flex flex-col">
           <SheetHeader className="mb-6">
             <SheetTitle className="flex items-center gap-2 text-xl">
               <Settings className="h-5 w-5" />
@@ -119,11 +114,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
             <div className="space-y-6 flex-1">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2 block">
                   {text("name")}
                 </label>
@@ -136,11 +127,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                 />
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2 block">
                   {text("description")}
                 </label>
@@ -178,9 +165,9 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
                 transition={{ delay: 0.4 }}
                 className="mt-6"
               >
-                <Button 
-                  className="w-full h-11 rounded-xl text-base font-medium" 
-                  type="submit" 
+                <Button
+                  className="w-full h-11 rounded-xl text-base font-medium"
+                  type="submit"
                   disabled={updateMindmapMutation.isLoading}
                 >
                   {updateMindmapMutation.isLoading ? text("loading") : uppercaseFirstLetter(text("save"))}

@@ -1999,16 +1999,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       {layers?.length > 0 && (
         <div className="fixed bottom-6 left-6 z-10 group">
           <div className="relative flex items-center gap-3 p-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl">
-            
             <div className="flex items-center gap-2 pr-3 border-r border-slate-200 dark:border-slate-800">
-              <Button 
+              <Button
                 variant="ghost"
                 onClick={zoomOut}
                 className="h-9 w-9 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 active:scale-95"
               >
                 <span className="text-lg font-medium text-slate-700 dark:text-slate-200">−</span>
               </Button>
-              
+
               <div className="relative min-w-[64px]">
                 <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800 rounded-lg scale-y-[0.85] origin-center transition-transform duration-200 group-hover:scale-y-100" />
                 <div className="relative px-2 py-1.5 text-center text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -2018,7 +2017,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
               <Button
                 variant="ghost"
-                onClick={zoomIn} 
+                onClick={zoomIn}
                 className="h-9 w-9 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 active:scale-95"
               >
                 <span className="text-lg font-medium text-slate-700 dark:text-slate-200">+</span>

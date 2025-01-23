@@ -165,8 +165,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
     onSuccess: async (data: any) => {
       const response = await data;
 
-
-//TODO: I think here check for undefined as well I already encountered this issue
+      //TODO: I think here check for undefined as well I already encountered this issue
       if (response.id !== "") {
         router.push(`/board/${data.id}`);
         queryClient.invalidateQueries("userMindmap");

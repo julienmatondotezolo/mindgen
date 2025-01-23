@@ -1,20 +1,30 @@
+/* eslint-disable prettier/prettier */
 import { AnimatePresence, motion } from "framer-motion";
-import { FileText, X, Sparkles, Book, Users, Layout, PenTool, BookText, Clock, FileType, Users2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import React, { FC, useEffect, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
-
-import { CustomSession, DialogProps } from "@/_types";
-import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
-import { Button, Switch, Textarea } from "@/components/ui";
-import { convertToMermaid, uppercaseFirstLetter } from "@/utils";
-import { generateDocument } from "@/_services";
-import { useRecoilState } from "recoil";
 import {
-    edgesAtomState,
-    layerAtomState,
-  } from "@/state";
+  Book,
+  BookText,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  FileText,
+  FileType,
+  Layout,
+  PenTool,
+  Sparkles,
+  Users,
+  Users2,
+  X,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import React, { FC, useEffect, useRef, useState } from "react";
+import { useMutation } from "react-query";
+import { useRecoilValue } from "recoil";
+
+import { generateDocument } from "@/_services";
+import { CustomSession, DialogProps } from "@/_types";
+import { Button, Textarea } from "@/components/ui";
+import { edgesAtomState, layerAtomState } from "@/state";
+import { convertToMermaid } from "@/utils";
 
 const StyleOption = ({
   icon: Icon,
@@ -51,7 +61,6 @@ const StyleOption = ({
 );
 
 const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
-  const text = useTranslations("Index");
   const modalRef = useRef<HTMLFormElement>(null);
   const [style, setStyle] = useState<string | null>(null);
   const [length, setLength] = useState<string | null>(null);
@@ -60,30 +69,32 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const [task, setTask] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [layers, setLayers] = useRecoilState(layerAtomState);
-  const [edges, setEdges] = useRecoilState(edgesAtomState);
+  const layers = useRecoilValue(layerAtomState);
+  const edges = useRecoilValue(edgesAtomState);
 
   const session: any = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
   const fetchGenerateDocument = useMutation(generateDocument, {
-    mutationKey: "GENERATE_DOCUMENT", 
+    mutationKey: "GENERATE_DOCUMENT",
     onSuccess: async (blob: Blob) => {
       try {
         const url = window.URL.createObjectURL(blob);
-        
+
         // Open PDF in new tab
-        window.open(url, '_blank');
-        
+        window.open(url, "_blank");
+
         // Also trigger download
-        const link = document.createElement('a');
+        const link = document.createElement("a");
+
         link.href = url;
         const timestamp = new Date().getTime().toString().slice(-6);
+
         link.download = `mindmap_${timestamp}.pdf`;
         link.click();
-        
+
         window.URL.revokeObjectURL(url);
-        
+
         handleClose();
       } catch (error) {
         console.error("Error downloading PDF:", error);
@@ -93,7 +104,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
     onError: (error) => {
       console.error("Error generating document:", error);
       setError("Failed to generate document. Please try again.");
-    }
+    },
   });
 
   const styleOptions = [
@@ -101,13 +112,13 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
     { id: "BUSINESS", icon: Layout, title: "Business", description: "Professional business format" },
     { id: "TECHNICAL", icon: PenTool, title: "Technical", description: "Detailed technical documentation" },
     { id: "CASUAL", icon: Book, title: "Casual", description: "Informal and conversational tone" },
-    { id: "CREATIVE", icon: Sparkles, title: "Creative", description: "Imaginative and engaging style" }
+    { id: "CREATIVE", icon: Sparkles, title: "Creative", description: "Imaginative and engaging style" },
   ];
 
   const lengthOptions = [
     { id: "BRIEF", icon: Clock, title: "Brief", description: "Short and concise format" },
     { id: "STANDARD", icon: Clock, title: "Standard", description: "Regular length document" },
-    { id: "COMPREHENSIVE", icon: Clock, title: "Comprehensive", description: "Detailed and extensive" }
+    { id: "COMPREHENSIVE", icon: Clock, title: "Comprehensive", description: "Detailed and extensive" },
   ];
 
   const formatOptions = [
@@ -115,18 +126,18 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
     { id: "PRESENTATION", icon: Layout, title: "Presentation", description: "Slide-based presentation" },
     { id: "DOCUMENTATION", icon: FileText, title: "Documentation", description: "Technical documentation" },
     { id: "ARTICLE", icon: Book, title: "Article", description: "Article format" },
-    { id: "WHITEPAPER", icon: FileText, title: "Whitepaper", description: "Detailed whitepaper" }
+    { id: "WHITEPAPER", icon: FileText, title: "Whitepaper", description: "Detailed whitepaper" },
   ];
 
   const audienceOptions = [
     { id: "BEGINNER", icon: Users, title: "Beginner", description: "New to the topic" },
     { id: "INTERMEDIATE", icon: Users2, title: "Intermediate", description: "Some knowledge" },
     { id: "EXPERT", icon: Users2, title: "Expert", description: "Advanced understanding" },
-    { id: "MIXED", icon: Users, title: "Mixed", description: "Various expertise levels" }
+    { id: "MIXED", icon: Users, title: "Mixed", description: "Various expertise levels" },
   ];
 
   const validateStep = () => {
-    switch(currentStep) {
+    switch (currentStep) {
       case 0:
         if (!task.trim()) {
           setError("Please provide a task");
@@ -177,7 +188,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </section>
-      )
+      ),
     },
     {
       title: "Style",
@@ -198,7 +209,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </section>
-      )
+      ),
     },
     {
       title: "Length",
@@ -219,7 +230,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </section>
-      )
+      ),
     },
     {
       title: "Format",
@@ -240,7 +251,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </section>
-      )
+      ),
     },
     {
       title: "Audience",
@@ -261,14 +272,14 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </section>
-      )
+      ),
     },
     {
       title: "Summary",
       content: (
         <section className="space-y-6">
           <h3 className="text-xl font-semibold">Review Your Document Settings</h3>
-          <motion.div 
+          <motion.div
             className="grid gap-6 p-6 bg-gray-50 dark:bg-slate-800 rounded-xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -282,37 +293,51 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
               <div className="space-y-2">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Writing Style</p>
                 <div className="flex items-center space-x-2">
-                  {style ? React.createElement(styleOptions.find(opt => opt.id === style)?.icon || 'div', { 
-                    className: "w-4 h-4 text-primary" 
-                  }) : null}
-                  <p className="font-medium">{styleOptions.find(opt => opt.id === style)?.title || "Not selected"}</p>
+                  {style
+                    ? React.createElement(styleOptions.find((opt) => opt.id === style)?.icon || "div", {
+                      className: "w-4 h-4 text-primary",
+                    })
+                    : null}
+                  <p className="font-medium">{styleOptions.find((opt) => opt.id === style)?.title || "Not selected"}</p>
                 </div>
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Document Length</p>
                 <div className="flex items-center space-x-2">
-                  {length ? React.createElement(lengthOptions.find(opt => opt.id === length)?.icon || 'div', { 
-                    className: "w-4 h-4 text-primary" 
-                  }) : null}
-                  <p className="font-medium">{lengthOptions.find(opt => opt.id === length)?.title || "Not selected"}</p>
+                  {length
+                    ? React.createElement(lengthOptions.find((opt) => opt.id === length)?.icon || "div", {
+                      className: "w-4 h-4 text-primary",
+                    })
+                    : null}
+                  <p className="font-medium">
+                    {lengthOptions.find((opt) => opt.id === length)?.title || "Not selected"}
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Format</p>
                 <div className="flex items-center space-x-2">
-                  {format ? React.createElement(formatOptions.find(opt => opt.id === format)?.icon || 'div', { 
-                    className: "w-4 h-4 text-primary" 
-                  }) : null}
-                  <p className="font-medium">{formatOptions.find(opt => opt.id === format)?.title || "Not selected"}</p>
+                  {format
+                    ? React.createElement(formatOptions.find((opt) => opt.id === format)?.icon || "div", {
+                      className: "w-4 h-4 text-primary",
+                    })
+                    : null}
+                  <p className="font-medium">
+                    {formatOptions.find((opt) => opt.id === format)?.title || "Not selected"}
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Target Audience</p>
                 <div className="flex items-center space-x-2">
-                  {audience ? React.createElement(audienceOptions.find(opt => opt.id === audience)?.icon || 'div', { 
-                    className: "w-4 h-4 text-primary" 
-                  }) : null}
-                  <p className="font-medium">{audienceOptions.find(opt => opt.id === audience)?.title || "Not selected"}</p>
+                  {audience
+                    ? React.createElement(audienceOptions.find((opt) => opt.id === audience)?.icon || "div", {
+                      className: "w-4 h-4 text-primary",
+                    })
+                    : null}
+                  <p className="font-medium">
+                    {audienceOptions.find((opt) => opt.id === audience)?.title || "Not selected"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -321,14 +346,15 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
                 <p className="text-red-500 text-sm">Please complete all selections before generating</p>
               ) : (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Ready to generate your {format.toLowerCase()} with a {style.toLowerCase()} style for a {audience.toLowerCase()} audience?
+                  Ready to generate your {format.toLowerCase()} with a {style.toLowerCase()} style for a{" "}
+                  {audience.toLowerCase()} audience?
                 </p>
               )}
             </div>
           </motion.div>
         </section>
-      )
-    }
+      ),
+    },
   ];
 
   const handleClose = () => {
@@ -348,7 +374,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
     }
   };
-  
+
   const prevStep = (e: React.MouseEvent) => {
     e.preventDefault();
     setError(null);
@@ -412,12 +438,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-4">
                   {steps.map((step, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center ${
-                        index !== steps.length - 1 ? "flex-1" : ""
-                      }`}
-                    >
+                    <div key={index} className={`flex items-center ${index !== steps.length - 1 ? "flex-1" : ""}`}>
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           index <= currentStep ? "bg-primary text-white" : "bg-gray-200 dark:bg-slate-700"
@@ -448,17 +469,12 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
               </motion.div>
 
               <div className="flex justify-between mt-8">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 0}
-                >
+                <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 0}>
                   <ChevronLeft className="w-4 h-4 mr-2" />
                   Previous
                 </Button>
                 {currentStep === steps.length - 1 ? (
-                  <Button 
+                  <Button
                     type="submit"
                     disabled={!task || !style || !length || !format || !audience || fetchGenerateDocument.isLoading}
                   >
