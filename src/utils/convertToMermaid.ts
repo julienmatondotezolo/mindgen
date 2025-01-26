@@ -2,21 +2,22 @@ import { Edge, Layer } from "@/_types";
 
 export function convertToMermaid(layers: Layer[], edges: Edge[]) {
   const idMap = new Map<string, string>();
-  let currentCharCode = 65;
-  const maxSingleChar = 90; 
+  let counter = 0;
+
+  const getNextId = () => {
+    let id = '';
+    let n = counter++;
+    do {
+      id = String.fromCharCode(65 + (n % 26)) + id;
+      n = Math.floor(n / 26) - 1;
+    } while (n >= 0);
+    return id;
+  };
 
   let mermaidChart = "flowchart TD\n";
 
   layers.forEach((layer) => {
-    let charId;
-    if (currentCharCode <= maxSingleChar) {
-      charId = String.fromCharCode(currentCharCode++);
-    } else {
-      const firstChar = String.fromCharCode(65 + Math.floor((currentCharCode - 65) / 26));
-      const secondChar = String.fromCharCode(65 + ((currentCharCode - 65) % 26));
-      charId = firstChar + secondChar;
-      currentCharCode++;
-    }
+    const charId = getNextId();
     idMap.set(layer.id, charId);
     mermaidChart += `${charId}[${layer.value}]\n`;
   });
