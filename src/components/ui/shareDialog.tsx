@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, FileDown, Link, Share2, X } from "lucide-react";
+import { Check, Copy, Download, FileDown, Link, Share2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useQuery } from "react-query";
@@ -92,7 +92,7 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => setActiveTab(id)}
-      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+      className={`flex items-center space-x-2 px-4 py-2 my-3 rounded-lg transition-colors ${
         activeTab === id ? "bg-primary text-white" : "hover:bg-gray-100 dark:hover:bg-slate-800"
       }`}
     >
@@ -149,13 +149,19 @@ const ShareDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
                 </p>
               </div>
 
-              <div className="relative">
-                <Input value={url} ref={inputRef} className="pr-24 bg-gray-50 dark:bg-slate-800" readOnly />
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="absolute right-1 top-1">
-                  <Button disabled={isButtonDisabled} onClick={handleCopyLink} className="px-4 py-1">
-                    {isButtonDisabled ? "Copied!" : "Copy"}
-                  </Button>
-                </motion.div>
+              <div className="flex w-full items-center gap-2">
+                <div className="flex-1">
+                  <Input value={url} ref={inputRef} className="w-full bg-gray-50 dark:bg-slate-800" readOnly />
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCopyLink}
+                  className="p-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors"
+                  disabled={isButtonDisabled}
+                >
+                  {isButtonDisabled ? <Check size={20} /> : <Copy size={20} />}
+                </motion.button>
               </div>
             </motion.div>
           ) : (

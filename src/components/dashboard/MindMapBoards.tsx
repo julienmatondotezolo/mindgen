@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Star } from "lucide-react";
+import { Search, Star, Plus, LayoutGrid, List } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -40,7 +40,7 @@ function MindMapBoards() {
   const PLACEHOLDER_IMAGE = "https://fakeimg.pl/600x400/94baf7/0566fe?text=Mindgen";
   const queryClient = useQueryClient();
   const selectedOrga = useRecoilValue<Organization | undefined>(selectedOrganizationState);
-
+  const setGlobalFilter = useSetRecoilState(globalFilterState);
   const searchParams = useSearchParams();
   const showFavorites = searchParams.get("favourites") === "true";
   const showUserMindmaps = searchParams.get("usermindmaps") === "true";
@@ -145,8 +145,12 @@ function MindMapBoards() {
   if (userMindmap && userMindmap.length > 0) {
     return (
       <div className="w-full space-y-8">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="relative w-full">
-          <div className="relative group">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="flex flex-col md:flex-row gap-4 items-center justify-between"
+        >
+          <div className="relative group w-full max-w-lg">
             <Search
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-primary-color"
               size={20}
@@ -171,6 +175,25 @@ function MindMapBoards() {
               }}
             />
           </div>
+
+          <div className="flex gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all"
+              onClick={() => setGlobalFilter(Filter.Grid)}
+            >
+              <LayoutGrid size={20} className={globalFilter === Filter.Grid ? "text-primary-color" : "text-gray-400"} />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all"
+              onClick={() => setGlobalFilter(Filter.List)}
+            >
+              <List size={20} className={globalFilter === Filter.List ? "text-primary-color" : "text-gray-400"} />
+            </motion.button>
+          </div>
         </motion.div>
 
         <motion.div
@@ -186,7 +209,7 @@ function MindMapBoards() {
               key={mindmap.id}
               variants={item}
               layout
-              whileHover={{ y: -8 }}
+              whileHover={{ scale: 1.02, y: -5 }}
               onHoverStart={() => setHoveredId(mindmap.id)}
               onHoverEnd={() => setHoveredId(null)}
               className="group relative"

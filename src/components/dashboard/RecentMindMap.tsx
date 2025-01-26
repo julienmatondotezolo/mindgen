@@ -18,7 +18,6 @@ import { MindMapBoards } from "./MindMapBoards";
 function RecentMindMap() {
   const text = useTranslations("Index");
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
-  const [globalFilter, setGlobalFilter] = useRecoilState(globalFilterState);
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
   const leftBoards = maxMindmap - boardLength;
@@ -94,40 +93,7 @@ function RecentMindMap() {
               </motion.article>
             </Link>
           </div>
-          <div className="flex space-x-3">
-            <motion.section
-              variants={filterVariants}
-              initial="initial"
-              whileHover="hover"
-              onHoverStart={() => setHoveredFilter("grid")}
-              onHoverEnd={() => setHoveredFilter(null)}
-              onClick={() => setGlobalFilter(Filter.Grid)}
-              className={`rounded-xl p-2 transition-all duration-300 ${
-                globalFilter === Filter.Grid
-                  ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
-                  : ""
-              }`}
-            >
-              <LayoutGrid size={18} className={hoveredFilter === "grid" ? "text-primary-color" : ""} />
-            </motion.section>
-            <motion.section
-              variants={filterVariants}
-              initial="initial"
-              whileHover="hover"
-              onHoverStart={() => setHoveredFilter("list")}
-              onHoverEnd={() => setHoveredFilter(null)}
-              onClick={() => setGlobalFilter(Filter.List)}
-              className={`rounded-xl p-2 transition-all duration-300 ${
-                globalFilter === Filter.List
-                  ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
-                  : ""
-              }`}
-            >
-              <AlignJustify size={18} className={hoveredFilter === "list" ? "text-primary-color" : ""} />
-            </motion.section>
-          </div>
         </section>
-
         <section className="flex items-center space-x-4">
           <motion.div variants={buttonVariants} initial="initial" whileHover="hover" whileTap="tap">
             <Button onClick={handleNewBoard} className="bg-primary-color hover:opacity-90 transition-all duration-300">

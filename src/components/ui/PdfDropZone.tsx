@@ -2,6 +2,8 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
+import { motion, AnimatePresence } from "framer-motion";
+import { UploadCloud, File, X } from "lucide-react";
 
 import { CanvasMode, Edge, Layer } from "@/_types";
 import { usePathname } from "@/navigation";
@@ -31,7 +33,6 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
   useEffect(() => {
     if (pathname.includes("board")) {
       const extractedBoardId = pathname.split("board/")[1];
-
       setBoardId(extractedBoardId);
     }
   }, [pathname]);
@@ -74,18 +75,11 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
 
     if (fileList.length) {
       setFile(fileList[0]);
-
-      // Get the file input element
       const fileInput = document.getElementById("json-upload") as HTMLInputElement;
-
-      // Clear the input before appending the new files
       fileInput.value = "";
-
-      // Append the files to the input
       fileList.forEach((file) => {
         const fileItem = new File([file], file.name, { type: file.type });
         const dataTransfer = new DataTransfer();
-
         dataTransfer.items.add(fileItem);
         fileInput.files = dataTransfer.files;
       });
@@ -124,8 +118,6 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
       }
 
       const result = await importMindmap(file);
-
-      // Assuming the server action returns the nodes, name, and edges
       const { importedLayers, importedEdges } = result;
 
       if (importedLayers && importedEdges) {
@@ -141,31 +133,49 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
       setIsOpen(false);
       setFile(undefined);
     } catch (e: any) {
-      // Handle errors here
       console.error(e);
     }
   };
 
   return (
     <form onSubmit={(e) => onSubmit({ e, currentLayers: layers, currentEdges: edges })} className="w-full">
-      <div
+      <motion.div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative  group flex flex-col items-center ${
-          isDraggingOver ? "border-primary-color" : ""
-        } border-dashed border-2 border-grey-blue p-5 text-center min-h-24 mb-4 rounded-lg hover:border-primary-color hover:bg-grey-blue hover:dark:border-primary-color hover:dark:bg-neutral-800/30`}
+        className={`relative group flex flex-col items-center justify-center ${
+          isDraggingOver ? "border-primary-color" : "border-grey-blue"
+        } border-dashed border-2 p-8 text-center min-h-[200px] mb-4 rounded-xl transition-all duration-300 ${
+          isDraggingOver
+            ? "bg-primary-color/10 scale-105"
+            : "bg-white/50 dark:bg-slate-800/30 hover:bg-primary-color/5"
+        }`}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#FFCDF46A] dark:invert mb-4 opacity-50 transition-all duration-200 ease-in-out group-hover:scale-110 group-hover:opacity-100"
-          src="/upload-file-dark.svg"
-          alt="Next.js Logo"
-          width={40}
-          height={5}
-          priority
-        />
-        <p>Drag and drop your Board file here</p>
-        <p className="text-sm opacity-50">Supports: .json</p>
+        <motion.div
+          className="flex flex-col items-center space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <UploadCloud
+            className={`w-10 h-10 ${
+              isDraggingOver ? "text-primary-color" : "text-grey-blue"
+            } transition-colors duration-300`}
+          />
+          <div className="space-y-1">
+            <p className="text-lg font-medium">Drag & Drop your Mindmap</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Supports: .json files</p>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">or</p>
+          <label
+            htmlFor="json-upload"
+            className="px-6 py-2 rounded-full bg-primary-color text-white hover:bg-primary-color/90 transition-colors cursor-pointer"
+          >
+            Browse Files
+          </label>
+        </motion.div>
         <input
           type="file"
           accept=".json"
@@ -174,27 +184,40 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
           onChange={(e) => setFile(e.target.files?.[0])}
           required
         />
-      </div>
-      <article className="w-full">
-        {file ? (
-          <section className="flex items-center justify-between pb-2 border-b mb-4">
-            <p className="font-medium">{file.name}</p>
-            <button
-              className="cursor-pointer text-sm w-9 p-2 bg-gray-100 dark:bg-neutral-800 rounded-full text-center"
-              onClick={() => setFile(null)}
+      </motion.div>
+
+      <AnimatePresence>
+        {file && (
+          <motion.article
+            className="w-full"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <section className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/30 rounded-lg mb-4">
+              <div className="flex items-center space-x-3">
+                <File className="w-5 h-5 text-gray-500" />
+                <p className="font-medium">{file.name}</p>
+              </div>
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                onClick={() => setFile(null)}
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </section>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-primary-color to-blue-600 hover:opacity-90"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              x
-            </button>
-          </section>
-        ) : (
-          ""
+              Upload & Transform
+            </Button>
+          </motion.article>
         )}
-      </article>
-      {file && (
-        <Button type="submit" className="w-full">
-          Upload
-        </Button>
-      )}
+      </AnimatePresence>
     </form>
   );
 };

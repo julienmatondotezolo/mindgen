@@ -116,8 +116,8 @@ export default function Dashboard() {
               <div className="w-full space-y-12">
                 <MindGenTemplates />
                 <section className="flex flex-wrap items-center justify-between space-y-4">
-                  <p className="text-xl font-medium dark:text-white">{recentMindmapText("myRecentBoards")}</p>
                   <LeftBoards />
+                  <p className="text-xl font-medium dark:text-white">{recentMindmapText("myRecentBoards")}</p>
                 </section>
                 <RecentMindMap />
               </div>
