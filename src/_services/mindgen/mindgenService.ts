@@ -48,7 +48,7 @@ export async function fetchGeneratedSummaryText(
         data,
       };
 
-      const responseSummaryText: Response = await fetch(baseUrl + "/ai/stream", {
+      const responseSummaryText: Response = await fetch(baseUrl + "/ai/message/stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
