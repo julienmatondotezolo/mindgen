@@ -1,9 +1,8 @@
-import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
+import { File, UploadCloud, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, File, X } from "lucide-react";
 
 import { CanvasMode, Edge, Layer } from "@/_types";
 import { usePathname } from "@/navigation";
@@ -33,6 +32,7 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
   useEffect(() => {
     if (pathname.includes("board")) {
       const extractedBoardId = pathname.split("board/")[1];
+
       setBoardId(extractedBoardId);
     }
   }, [pathname]);
@@ -76,10 +76,12 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
     if (fileList.length) {
       setFile(fileList[0]);
       const fileInput = document.getElementById("json-upload") as HTMLInputElement;
+
       fileInput.value = "";
       fileList.forEach((file) => {
         const fileItem = new File([file], file.name, { type: file.type });
         const dataTransfer = new DataTransfer();
+
         dataTransfer.items.add(fileItem);
         fileInput.files = dataTransfer.files;
       });
@@ -146,9 +148,7 @@ const PdfDropZone: React.FC<PdfDropZoneProps> = () => {
         className={`relative group flex flex-col items-center justify-center ${
           isDraggingOver ? "border-primary-color" : "border-grey-blue"
         } border-dashed border-2 p-8 text-center min-h-[200px] mb-4 rounded-xl transition-all duration-300 ${
-          isDraggingOver
-            ? "bg-primary-color/10 scale-105"
-            : "bg-white/50 dark:bg-slate-800/30 hover:bg-primary-color/5"
+          isDraggingOver ? "bg-primary-color/10 scale-105" : "bg-white/50 dark:bg-slate-800/30 hover:bg-primary-color/5"
         }`}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

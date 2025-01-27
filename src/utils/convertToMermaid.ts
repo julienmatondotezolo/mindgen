@@ -5,8 +5,9 @@ export function convertToMermaid(layers: Layer[], edges: Edge[]) {
   let counter = 0;
 
   const getNextId = () => {
-    let id = '';
+    let id = "";
     let n = counter++;
+
     do {
       id = String.fromCharCode(65 + (n % 26)) + id;
       n = Math.floor(n / 26) - 1;
@@ -18,6 +19,7 @@ export function convertToMermaid(layers: Layer[], edges: Edge[]) {
 
   layers.forEach((layer) => {
     const charId = getNextId();
+
     idMap.set(layer.id, charId);
     mermaidChart += `${charId}[${layer.value}]\n`;
   });
@@ -26,6 +28,7 @@ export function convertToMermaid(layers: Layer[], edges: Edge[]) {
     if (edge.fromLayerId && edge.toLayerId) {
       const from = idMap.get(edge.fromLayerId);
       const to = idMap.get(edge.toLayerId);
+
       if (from && to) {
         mermaidChart += `${from}-->${to}\n`;
       }

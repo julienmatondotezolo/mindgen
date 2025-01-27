@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Star, Plus, LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Search, Star } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -145,9 +145,9 @@ function MindMapBoards() {
   if (userMindmap && userMindmap.length > 0) {
     return (
       <div className="w-full space-y-8">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }} 
-          animate={{ opacity: 1, y: 0 }} 
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row gap-4 items-center justify-between"
         >
           <div className="relative group w-full max-w-lg">

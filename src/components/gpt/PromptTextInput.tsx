@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
+import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, MinimizeIcon, Send, SendIcon, Sparkles, SparklesIcon, X, XIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { fetchGeneratedSummaryText, reGenerateMindmap } from "@/_services";
 import { CanvasMode, CustomSession, MindMapDetailsProps } from "@/_types";
 import { ChatMessageProps } from "@/_types/ChatMessageProps";

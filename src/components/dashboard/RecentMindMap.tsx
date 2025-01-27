@@ -1,15 +1,14 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { AnimatePresence, motion } from "framer-motion";
-import { AlignJustify, LayoutGrid, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import React, { useState } from "react";
+import React from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { Filter } from "@/_types";
 import { Link } from "@/navigation";
-import { boardsLengthState, globalFilterState, newBoardState, profilMaxMindmapState } from "@/state";
+import { boardsLengthState, newBoardState, profilMaxMindmapState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
 import { Button } from "../ui";
@@ -21,7 +20,6 @@ function RecentMindMap() {
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
   const leftBoards = maxMindmap - boardLength;
-  const [hoveredFilter, setHoveredFilter] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const showFavorites = searchParams.get("usermindmaps") === "true";

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Presentation, Sparkles, Zap } from "lucide-react";
+import { Presentation, Zap } from "lucide-react";
 import React from "react";
 import { useRecoilValue } from "recoil";
 
@@ -47,7 +47,7 @@ function LeftBoards() {
                 </motion.span>
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                You've used {boardLength} boards so far
+                You&apos;ve used {boardLength} boards so far
               </p>
             </div>
           </motion.article>
@@ -59,9 +59,7 @@ function LeftBoards() {
             className="flex items-center space-x-2 bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-slate-700/50 dark:to-slate-600/50 px-3 py-2 rounded-xl"
           >
             <Zap className="text-primary-color animate-pulse" size={16} />
-            <span className="text-sm font-medium text-primary-color">
-              {Math.round(progressPercentage)}% Used
-            </span>
+            <span className="text-sm font-medium text-primary-color">{Math.round(progressPercentage)}% Used</span>
           </motion.div>
         </div>
 
