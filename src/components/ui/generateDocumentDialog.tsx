@@ -23,7 +23,7 @@ import { useRecoilValue } from "recoil";
 import { generateDocument } from "@/_services";
 import { CustomSession, DialogProps } from "@/_types";
 import { Button, Textarea } from "@/components/ui";
-import { edgesAtomState, layerAtomState } from "@/state";
+import { boardIdState, edgesAtomState, layerAtomState } from "@/state";
 import { convertToMermaid } from "@/utils";
 
 const StyleOption = ({
@@ -71,6 +71,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
   const [error, setError] = useState<string | null>(null);
   const layers = useRecoilValue(layerAtomState);
   const edges = useRecoilValue(edgesAtomState);
+  const boardId = useRecoilValue(boardIdState);
 
   const session: any = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
@@ -389,6 +390,7 @@ const GenerateDocumentDialog: FC<DialogProps> = ({ open, setIsOpen }) => {
     }
     await fetchGenerateDocument.mutateAsync({
       session: safeSession,
+      boardId: boardId,
       task: task,
       mermaid: convertToMermaid(layers, edges),
       style: style,

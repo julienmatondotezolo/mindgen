@@ -973,7 +973,8 @@ export async function removeMemberById({ session, mindmapId, membersToDelete }: 
 /* ===================================================== */  
 
 export async function generateDocument({ 
-  session, 
+  session,
+  boardId,
   task,
   mermaid,
   style,
@@ -982,6 +983,7 @@ export async function generateDocument({
   audience,
 }: { 
   session: CustomSession | null, 
+  boardId: string,
   task: string,
   mermaid: string,
   style: string,
@@ -999,6 +1001,7 @@ export async function generateDocument({
           "ngrok-skip-browser-warning": "1",
         },
         body: JSON.stringify({
+          mindmapId:boardId,
           task,
           mermaid,
           style,
