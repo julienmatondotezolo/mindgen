@@ -53,7 +53,7 @@ export async function signUp({ signUpBody }: { signUpBody: any }) {
 
 export async function joinWaitList({ waitlistBody }: { waitlistBody: any }) {
   try {
-    const response = await fetch(`${baseUrl}/auth/waitlist`, {
+    const response = await fetch(`${baseUrl}/waitlist`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
