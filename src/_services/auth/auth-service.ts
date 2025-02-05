@@ -51,6 +51,28 @@ export async function signUp({ signUpBody }: { signUpBody: any }) {
   }
 }
 
+export async function joinWaitList({ waitlistBody }: { waitlistBody: any }) {
+  try {
+    const response = await fetch(`${baseUrl}/auth/waitlist`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "1",
+      },
+      body: JSON.stringify(waitlistBody),
+    });
+
+    if (!response.ok) {
+      console.error(`HTTP error status: ${response.status}`);
+      return response.json();
+    }
+
+    return response; // Directly return the response
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 export async function validateToken(token: string) {
   try {
     const res: Response = await fetch(`${baseUrl}/password/validate-reset-token/${token}`, {

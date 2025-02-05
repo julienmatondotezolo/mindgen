@@ -4,7 +4,9 @@ import { ArrowLeft, MoveRight } from "lucide-react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useTranslations } from "next-intl";
 import React, { ChangeEvent, useState } from "react";
+import { useMutation } from "react-query";
 
+import { joinWaitList } from "@/_services/auth/auth-service";
 import { AgreementText, BackDropGradient, Button, Input, Label } from "@/components";
 import BlurIn from "@/components/ui/blur-in";
 import { useRouter } from "@/navigation";
@@ -14,8 +16,10 @@ export default function AuthenticationPage() {
   const authText = useTranslations("Auth");
   const waitingListText = useTranslations("waitingList");
   const navigationText = useTranslations("Navigation");
-  const [, setUsername] = useState<string>("");
-  const [, setEmail] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+
+  const userJoinWaitList = useMutation(joinWaitList);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, source: string) => {
     switch (source) {
@@ -30,6 +34,14 @@ export default function AuthenticationPage() {
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
+
+    const waitlistBody = {
+      firstName: username,
+      email,
+      preferredLanguage: "ENGLISH",
+    };
+
+    userJoinWaitList.mutateAsync({ waitlistBody });
   }
 
   return (
@@ -80,9 +92,15 @@ export default function AuthenticationPage() {
                     required
                   />
                 </div>
-                <Button className="gap-2" type="submit">
-                  {navigationText("joinWaitList")}
-                  <MoveRight size={20} />
+                <Button className="gap-2" type="submit" disabled={userJoinWaitList.isLoading}>
+                  {userJoinWaitList.isLoading ? (
+                    <p>Loading...</p>
+                  ) : (
+                    <>
+                      {navigationText("joinWaitList")}
+                      <MoveRight size={20} />
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
