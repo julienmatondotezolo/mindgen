@@ -384,7 +384,7 @@ BE AS LONG AS POSSIBLE AND DETAILLED IN YOUR ANSWER TRUNCATE HTML AND DONT PUT W
     {
       name: "Generate User Story",
       prompt:
-        "Create a user story based on the content of this mindmap. Determine the features using the content of the mindmap Use some font weight variations.",
+        "Create a user story based on the content of this mindmap. Define some user requirements and acceptance criteria's.",
     },
   ];
 
