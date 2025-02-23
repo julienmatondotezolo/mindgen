@@ -2,12 +2,15 @@
 /* eslint-disable no-unused-vars */
 
 import { useLocks, useMembers } from "@ably/spaces/react";
+import { useTheme } from "next-themes";
 import React, { memo, useState } from "react";
 import { useRecoilState } from "recoil";
 
 import { CanvasMode, Edge, EdgeShape, EdgeType } from "@/_types";
 import { canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
 import { colorToCss, edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
+
+import { EdgeText } from "./EdgeText";
 
 interface EdgePreviewProps {
   edge: Edge;
@@ -16,6 +19,9 @@ interface EdgePreviewProps {
 }
 
 export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePreviewProps) => {
+  const { theme } = useTheme();
+
+  console.log('theme:', theme);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
   
@@ -178,6 +184,16 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
           />
         </marker>
       )}
+      <EdgeText
+        x={(edge.start.x + edge.end.x) / 2}
+        y={(edge.start.y + edge.end.y) / 2}
+        label={"Text"}
+        labelStyle={{ fill: colorToCss(isActive ? edge.hoverColor : edge.color) }}
+        labelShowBg
+        labelBgStyle={{ fill: theme === "dark" ? "#333333" : "white" }}
+        labelBgPadding={[2, 4]}
+        labelBgBorderRadius={2}
+      />
     </g>
   );
 });
