@@ -4,10 +4,10 @@
 import { useLocks, useMembers } from "@ably/spaces/react";
 import { useTheme } from "next-themes";
 import React, { memo, useState } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import { CanvasMode, Edge, EdgeShape, EdgeType } from "@/_types";
-import { canvasStateAtom, hoveredEdgeIdAtom } from "@/state";
+import { boardIdState, canvasStateAtom, hoveredEdgeIdAtom, useUpdateEdge } from "@/state";
 import { colorToCss, edgeBezierPathString, edgeSmoothStepPathString } from "@/utils";
 
 import { EdgeText } from "./EdgeText";
@@ -21,7 +21,6 @@ interface EdgePreviewProps {
 export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePreviewProps) => {
   const { theme } = useTheme();
 
-  console.log('theme:', theme);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [hoveredEdgeId, setHoveredEdgeId] = useRecoilState(hoveredEdgeIdAtom);
   
@@ -30,6 +29,18 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
   const [selectionColor, setSelectionColor] = useState<string>("");
 
   const { self } = useMembers();
+
+  const boardId = useRecoilValue(boardIdState);
+
+  const updateEdge = useUpdateEdge({ roomId: boardId });
+
+  const handleLabelChange = (newLabel: string) => {
+    // Update your edge data with the new label
+    updateEdge({
+      id: edge.id,
+      updatedElementEdge: { label: newLabel },
+    });
+  };
 
   useLocks((lockUpdate) => {
     const lockHolder = lockUpdate.member;
@@ -67,18 +78,56 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
 
   const isActive = edge.id === hoveredEdgeId || activeEdgeId.includes(edge.id);
 
-  // let pathString = edgeBezierPathString({ edge });
-  let pathString = `M ${edge.start.x},${edge.start.y} L ${edge.end.x},${edge.end.y}`;
+  let pathString = edgeBezierPathString({ edge });
 
   // Check for bezier our smooth step edge type
   if (edge.shape === EdgeShape.SmoothStep) {
     pathString = edgeSmoothStepPathString({ edge });
+  } else {
+    pathString = edgeBezierPathString({ edge });
   }
 
-  pathString = edgeBezierPathString({ edge });
-
   return (
-    <g>
+    <g
+      onMouseEnter={() => {
+        if (
+          canvasState.mode === CanvasMode.Grab ||
+            canvasState.mode === CanvasMode.SelectionNet ||
+            canvasState.mode === CanvasMode.EdgeEditing ||
+            canvasState.mode === CanvasMode.EdgeDrawing ||
+            canvasState.mode === CanvasMode.Translating ||
+            canvasState.mode === CanvasMode.Resizing ||
+            canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Importing ||
+            canvasState.mode === CanvasMode.Typing ||
+            activeEdgeId?.includes(edge.id)
+        )
+          return;
+        setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
+      }}
+      onMouseLeave={() => {
+        if (
+          canvasState.mode === CanvasMode.Grab ||
+            canvasState.mode === CanvasMode.SelectionNet ||
+            canvasState.mode === CanvasMode.EdgeEditing ||
+            canvasState.mode === CanvasMode.EdgeSelected ||
+            canvasState.mode === CanvasMode.EdgeDrawing ||
+            canvasState.mode === CanvasMode.Translating ||
+            canvasState.mode === CanvasMode.Resizing ||
+            canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.Importing ||
+            canvasState.mode === CanvasMode.Typing ||
+            activeEdgeId?.includes(edge.id)
+        )
+          return;
+        setHoveredEdgeId(null), setCanvasState({ mode: CanvasMode.None });
+      }}
+      onPointerDown={(e) => {
+        if (canvasState.mode === CanvasMode.Typing) return;
+        onEdgePointerDown(e, edge.id);
+      }
+      }
+    >
       {selectionColor && <path
         d={pathString}
         stroke={selectionColor}
@@ -118,38 +167,6 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
         stroke="transparent"
         strokeWidth={40}
         fill="transparent"
-        onMouseEnter={() => {
-          if (
-            canvasState.mode === CanvasMode.Grab ||
-            canvasState.mode === CanvasMode.SelectionNet ||
-            canvasState.mode === CanvasMode.EdgeEditing ||
-            canvasState.mode === CanvasMode.EdgeDrawing ||
-            canvasState.mode === CanvasMode.Translating ||
-            canvasState.mode === CanvasMode.Resizing ||
-            canvasState.mode === CanvasMode.Inserting ||
-            canvasState.mode === CanvasMode.Importing ||
-            activeEdgeId?.includes(edge.id)
-          )
-            return;
-          setHoveredEdgeId(edge.id), setCanvasState({ mode: CanvasMode.EdgeActive });
-        }}
-        onMouseLeave={() => {
-          if (
-            canvasState.mode === CanvasMode.Grab ||
-            canvasState.mode === CanvasMode.SelectionNet ||
-            canvasState.mode === CanvasMode.EdgeEditing ||
-            canvasState.mode === CanvasMode.EdgeSelected ||
-            canvasState.mode === CanvasMode.EdgeDrawing ||
-            canvasState.mode === CanvasMode.Translating ||
-            canvasState.mode === CanvasMode.Resizing ||
-            canvasState.mode === CanvasMode.Inserting ||
-            canvasState.mode === CanvasMode.Importing ||
-            activeEdgeId?.includes(edge.id)
-          )
-            return;
-          setHoveredEdgeId(null), setCanvasState({ mode: CanvasMode.None });
-        }}
-        onPointerDown={(e) => onEdgePointerDown(e, edge.id)}
         // style={{ cursor: "pointer" }}
       />
       {edge.arrowEnd && (
@@ -187,12 +204,13 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
       <EdgeText
         x={(edge.start.x + edge.end.x) / 2}
         y={(edge.start.y + edge.end.y) / 2}
-        label={"Text"}
+        label={edge.label || "Text"}
         labelStyle={{ fill: colorToCss(isActive ? edge.hoverColor : edge.color) }}
         labelShowBg
-        labelBgStyle={{ fill: theme === "dark" ? "#333333" : "white" }}
+        labelBgStyle={{ fill: theme === "dark" ? "#030712" : "white" }}
         labelBgPadding={[2, 4]}
         labelBgBorderRadius={2}
+        onLabelChange={handleLabelChange}
       />
     </g>
   );

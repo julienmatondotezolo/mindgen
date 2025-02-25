@@ -131,7 +131,7 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
   const objectSizesHeight = 1950;
 
   const x = selectedEdge.start.x - 1800;
-  const y = selectedEdge.end.y - 1950;
+  const y = selectedEdge.end.y - 2020;
 
   return (
     <foreignObject className="relative" x={x} y={y} width={objectSizesWitdh} height={objectSizesHeight}>

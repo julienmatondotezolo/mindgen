@@ -1977,12 +1977,12 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
               setLastUsedColor={setLastUsedColor}
             />
+            <EdgeSelectionBox onHandlePointerDown={handleEdgeHandlePointerDown} />
             <EdgeSelectionTools
               camera={camera}
               isDeletable={!checkPermission(PERMISSIONS, "DELETE")}
               setLastUsedColor={setLastUsedColor}
             />
-            <EdgeSelectionBox onHandlePointerDown={handleEdgeHandlePointerDown} />
             <CursorPresence />
             {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
               <rect

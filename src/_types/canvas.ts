@@ -48,6 +48,7 @@ export type Edge = {
   thickness: number;
   orientation: EdgeOrientation;
   type: EdgeType;
+  label: string;
   shape: EdgeShape;
 };
 

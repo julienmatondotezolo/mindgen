@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useMutation } from "react-query";
 
@@ -18,6 +19,8 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
   const authText = useTranslations("Auth");
+
+  const { theme } = useTheme();
 
   const router = useRouter();
   const [callbackUrl, setCallbackUrl] = useState<string | null>("");
@@ -114,6 +117,8 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         preferredLanguage: "ENGLISH",
         referralCode: null,
         password: password,
+        newsletterEnabled: true,
+        uiTheme: theme,
       };
 
       try {
