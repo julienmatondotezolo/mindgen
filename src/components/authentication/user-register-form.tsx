@@ -118,7 +118,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         referralCode: null,
         password: password,
         newsletterEnabled: true,
-        uiTheme: theme,
+        uiTheme: theme?.toUpperCase(),
       };
 
       try {
