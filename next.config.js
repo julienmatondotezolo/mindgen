@@ -1,9 +1,15 @@
-const createNextIntlPlugin = require("next-intl/plugin");
+// const createNextIntlPlugin = require("next-intl/plugin");
+import createNextIntlPlugin from "next-intl/plugin";
+import ReactComponentName from "react-scan/react-component-name/webpack";
 
 const withNextIntl = createNextIntlPlugin();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config) => {
+    config.plugins.push(ReactComponentName({}));
+    return config;
+  },
   async redirects() {
     return [
       {
@@ -25,4 +31,5 @@ const nextConfig = {
   },
 };
 
-module.exports = withNextIntl(nextConfig);
+export default withNextIntl(nextConfig);
+// module.exports = withNextIntl(nextConfig);
