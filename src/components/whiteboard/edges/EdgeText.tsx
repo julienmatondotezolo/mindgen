@@ -1,7 +1,10 @@
 import cc from "classcat";
-import { memo, useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
+import { useSetRecoilState } from "recoil";
 
+import { CanvasMode } from "@/_types";
 import { EdgeTextProps } from "@/_types/xyflow";
+import { canvasStateAtom } from "@/state";
 
 function EdgeTextComponent({
   x,
@@ -14,11 +17,16 @@ function EdgeTextComponent({
   labelBgBorderRadius = 2,
   children,
   className,
-  ...rest
+  onLabelChange,
 }: EdgeTextProps) {
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [edgeTextBbox, setEdgeTextBbox] = useState({ x, y, width: 0, height: 0 });
+  const [isEditing, setIsEditing] = useState(false);
+  const [labelText, setLabelText] = useState(label);
+  const [inputWidth, setInputWidth] = useState(Math.max(edgeTextBbox.width + 20, 60));
   const edgeTextClasses = cc(["react-flow__edge-textwrapper", className]);
   const edgeTextRef = useRef<SVGTextElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (edgeTextRef.current) {
@@ -31,10 +39,103 @@ function EdgeTextComponent({
         height: textBbox.height,
       });
     }
+
+    setLabelText(label);
   }, [label]);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
+
+  // Calculate width as user types without using DOM measurement
+  useEffect(() => {
+    if (isEditing) {
+      // Estimate width based on character count (this is an approximation)
+      // Average character width in pixels (adjust based on your font)
+      const averageCharWidth = 8;
+      const estimatedWidth = Math.max((labelText?.length || 0) * averageCharWidth + 20, 60);
+
+      setInputWidth(estimatedWidth);
+    }
+  }, [labelText, isEditing]);
+
+  // Effect to handle clicking outside the input
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isEditing && inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setIsEditing(false);
+        setCanvasState({ mode: CanvasMode.None });
+
+        // Save changes if the label has changed
+        if (onLabelChange && labelText !== label) {
+          onLabelChange(labelText);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEditing, labelText, label, onLabelChange, setCanvasState]);
+
+  const handlePointerDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setCanvasState({ mode: CanvasMode.Typing });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLabelText(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setIsEditing(false);
+      setCanvasState({ mode: CanvasMode.None });
+      if (onLabelChange && labelText !== label) {
+        onLabelChange(labelText);
+      }
+    }
+  };
 
   if (typeof label === "undefined" || !label) {
     return null;
+  }
+
+  if (isEditing) {
+    const safeWidth = isNaN(inputWidth) ? 100 : inputWidth;
+
+    return (
+      <foreignObject width={safeWidth} height={30} x={x - safeWidth / 2} y={y - 15} className={edgeTextClasses}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            background: "transparent",
+          }}
+        >
+          <input
+            ref={inputRef}
+            value={labelText}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            style={{
+              width: "100%",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              padding: "2px 4px",
+              ...labelStyle,
+            }}
+          />
+        </div>
+      </foreignObject>
+    );
   }
 
   return (
@@ -42,7 +143,8 @@ function EdgeTextComponent({
       transform={`translate(${x - edgeTextBbox.width / 2} ${y - edgeTextBbox.height / 2})`}
       className={edgeTextClasses}
       visibility={edgeTextBbox.width ? "visible" : "hidden"}
-      {...rest}
+      onPointerDown={handlePointerDown}
+      style={{ cursor: "pointer" }}
     >
       {labelShowBg && (
         <rect

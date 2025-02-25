@@ -1,16 +1,16 @@
-import { CSSProperties, ReactNode, SVGAttributes } from "react";
+/* eslint-disable no-unused-vars */
+import React from "react";
 
-export type EdgeLabelOptions = {
-  label?: string | ReactNode;
-  labelStyle?: CSSProperties;
+export interface EdgeTextProps {
+  x: number;
+  y: number;
+  label: string;
+  labelStyle?: React.CSSProperties;
   labelShowBg?: boolean;
-  labelBgStyle?: CSSProperties;
+  labelBgStyle?: React.CSSProperties;
   labelBgPadding?: [number, number];
   labelBgBorderRadius?: number;
-};
-
-export type EdgeTextProps = SVGAttributes<SVGElement> &
-  EdgeLabelOptions & {
-    x: number;
-    y: number;
-  };
+  children?: React.ReactNode;
+  className?: string;
+  onLabelChange?: (newLabel: string) => void;
+}
