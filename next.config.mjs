@@ -1,15 +1,10 @@
-// const createNextIntlPlugin = require("next-intl/plugin");
 import createNextIntlPlugin from "next-intl/plugin";
 import ReactComponentName from "react-scan/react-component-name/webpack";
 
 const withNextIntl = createNextIntlPlugin();
 
-/** @type {import('next').NextConfig} */
+/** @type {import("next").NextConfig} */
 const nextConfig = {
-  webpack: (config) => {
-    config.plugins.push(ReactComponentName({}));
-    return config;
-  },
   async redirects() {
     return [
       {
@@ -29,7 +24,12 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // Only needs to be enabled in production.
+  // If you're using Turborepo, you should disable React Component Name in development.
+  webpack: (config) => {
+    config.plugins.push(ReactComponentName({}));
+    return config;
+  },
 };
 
 export default withNextIntl(nextConfig);
-// module.exports = withNextIntl(nextConfig);
