@@ -458,6 +458,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // On click if typing mode on selected layer change to type mode
       if (canvasState.mode === CanvasMode.LayerSelected && allActiveLayers.includes(layerId)) {
+        console.log("Im here 1");
         setCanvasState({
           mode: CanvasMode.Typing,
         });
@@ -466,6 +467,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // On click if typing mode on selected layer do nothing
       if (canvasState.mode === CanvasMode.Typing && allActiveLayers.includes(layerId)) {
+        console.log("Im here 2");
         setCanvasState({
           mode: CanvasMode.Typing,
         });
@@ -474,19 +476,21 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
-      // If multiple layers selected enter translate mode
-      if (allActiveLayers.length > 0) {
-        setCanvasState({
-          mode: CanvasMode.Translating,
-          current: point,
-          initialLayerBounds: getLayerById({ layerId, layers }),
-        });
-        return;
-      }
+      // // If multiple layers selected enter translate mode
+      // if (allActiveLayers.length > 0) {
+      //   console.log("Im here 3");
+      //   setCanvasState({
+      //     mode: CanvasMode.Translating,
+      //     current: point,
+      //     initialLayerBounds: getLayerById({ layerId, layers }),
+      //   });
+      //   return;
+      // }
 
       const isAlreadySelected = allActiveLayers.includes(layerId);
 
       if (isAlreadySelected) return;
+      console.log("Im here 4");
 
       // If Shift is held, add the layerId to the activeLayerIds array without removing other
       if (e.shiftKey) {
@@ -1290,7 +1294,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   );
 
   const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
+    async (e: React.PointerEvent) => {
       e.preventDefault();
 
       const current = pointerEventToCanvasPoint(e, camera, svgRef.current);
@@ -1330,6 +1334,12 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       if (userMindmapDetails.members.length > 1 && space) {
+        if (!space) return;
+
+        const getAllMembers = await space.members.getAll();
+
+        if (getAllMembers.length === 0) return;
+
         space.cursors.set({
           position: { ...current },
           data: { state: "move" },
@@ -1610,6 +1620,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     handleUnSelectLayer();
 
+    if (!space) return;
+
+    const getAllOtherCursors = await space.cursors.getOthers();
+
+    // Return null if cursors object is empty
+    if (Object.keys(getAllOtherCursors).length === 0) return;
+
     await space?.cursors.set({
       position: { x: 0, y: 0 },
       data: { state: "leave" },
@@ -1617,6 +1634,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
     await space?.leave();
   };
+
   // ================  CAMERA FUNCTIONS  ================== //
 
   const handleMouseMove = useCallback(() => {

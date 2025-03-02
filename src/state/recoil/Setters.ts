@@ -13,10 +13,10 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
   return useRecoilCallback(
     ({ set }) =>
       async ({ layerIds }: { layerIds: string[] }) => {
-        if (!space) return;
-
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, () => layerIds);
+
+        if (!space) return;
 
         // checking whether a lock identifier is currently locked
         const isLocked = space.locks.get(roomId) !== undefined;
@@ -27,6 +27,10 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
+          const getAllLocks = await space.locks.getAll();
+
+          if (getAllLocks.length === 0) return;
+
           await space.locks.acquire(roomId, {
             attributes: { layerIds },
           });
@@ -45,13 +49,17 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
   return useRecoilCallback(
     ({ set }) =>
       async () => {
-        if (!space) return;
-
         // Update the activeLayersAtom with the provided layer IDs
         set(activeLayersAtom, () => []);
 
+        if (!space) return;
+
         // Acquire lock with the updated layer IDs
         try {
+          const getAllLocks = await space.locks.getAll();
+
+          if (getAllLocks.length === 0) return;
+
           await space.locks.release(roomId);
           // await space.locks.acquire(roomId, {
           //   attributes: { layerIds: [] },
@@ -164,10 +172,10 @@ export const useSelectEdgeElement = ({ roomId }: { roomId: string }) => {
   return useRecoilCallback(
     ({ set }) =>
       async ({ edgeIds }: { edgeIds: string[] }) => {
-        if (!space) return;
-
         // Update the activeEdgeIdAtom with the provided layer IDs
         set(activeEdgeIdAtom, () => edgeIds);
+
+        if (!space) return;
 
         // checking whether a lock identifier is currently locked
         const isLocked = space.locks.get(roomId) !== undefined;
@@ -178,6 +186,10 @@ export const useSelectEdgeElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
+          const getAllLocks = await space.locks.getAll();
+
+          if (getAllLocks.length === 0) return;
+
           await space.locks.acquire(`${roomId}-edge`, {
             attributes: { edgeIds },
           });
@@ -196,13 +208,17 @@ export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
   return useRecoilCallback(
     ({ set }) =>
       async () => {
-        if (!space) return;
-
         // Update the activeLayersAtom with the provided layer IDs
         set(activeEdgeIdAtom, () => []);
 
+        if (!space) return;
+
         // Acquire lock with the updated layer IDs
         try {
+          const getAllLocks = await space.locks.getAll();
+
+          if (getAllLocks.length === 0) return;
+
           await space.locks.release(`${roomId}-edge`);
           // await space.locks.acquire(roomId, {
           //   attributes: { edgeIds: [] },

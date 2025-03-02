@@ -1,6 +1,7 @@
 export * from "./canvasUtils";
 export * from "./checkPermission";
 export * from "./convertToMermaid";
+export * from "./edgeUtils";
 export * from "./emptyMindMapObject";
 export * from "./exportMindmap";
 export * from "./findUserCollaboratorId";
