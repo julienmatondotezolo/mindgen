@@ -457,7 +457,11 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       // On click if typing mode on selected layer change to type mode
-      if (canvasState.mode === CanvasMode.LayerSelected && allActiveLayers.includes(layerId)) {
+      if (
+        canvasState.mode === CanvasMode.LayerSelected &&
+        allActiveLayers.includes(layerId) &&
+        allActiveLayers.length === 1
+      ) {
         setCanvasState({
           mode: CanvasMode.Typing,
         });
@@ -465,7 +469,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       // On click if typing mode on selected layer do nothing
-      if (canvasState.mode === CanvasMode.Typing && allActiveLayers.includes(layerId)) {
+      if (canvasState.mode === CanvasMode.Typing && allActiveLayers.includes(layerId) && allActiveLayers.length === 1) {
         setCanvasState({
           mode: CanvasMode.Typing,
         });
@@ -474,16 +478,15 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const point = pointerEventToCanvasPoint(e, camera, svgRef.current);
 
-      // // If multiple layers selected enter translate mode
-      // if (allActiveLayers.length > 0) {
-      //   console.log("Im here 3");
-      //   setCanvasState({
-      //     mode: CanvasMode.Translating,
-      //     current: point,
-      //     initialLayerBounds: getLayerById({ layerId, layers }),
-      //   });
-      //   return;
-      // }
+      // If multiple layers selected enter translate mode
+      if (allActiveLayers.length > 1) {
+        setCanvasState({
+          mode: CanvasMode.Translating,
+          current: point,
+          initialLayerBounds: getLayerById({ layerId, layers }),
+        });
+        return;
+      }
 
       const isAlreadySelected = allActiveLayers.includes(layerId);
 
