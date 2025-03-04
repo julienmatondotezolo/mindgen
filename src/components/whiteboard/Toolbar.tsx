@@ -94,7 +94,7 @@ const Toolbar = () => {
             isActive={canvasState.mode === CanvasMode.Typing}
           /> */}
 
-          <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+          {/* <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
 
           <ToolButton
             icon={MoveRight}
@@ -104,7 +104,7 @@ const Toolbar = () => {
               })
             }
             isActive={canvasState.mode === CanvasMode.Edge || (activeEdgeId && activeEdgeId[0] === "")}
-          />
+          /> */}
         </ul>
       </div>
     </div>
