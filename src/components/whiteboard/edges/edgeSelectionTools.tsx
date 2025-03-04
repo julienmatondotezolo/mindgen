@@ -138,28 +138,24 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
 
   if (!selectedEdge) return null;
 
-  const objectSizesWitdh = 4000;
-  const objectSizesHeight = 1950;
+  const objectSizesWitdhWithoutScale = 410;
+  const objectSizesHeightWithoutScale = 75;
 
-  const x = selectedEdge.start.x - 1800;
-  const y = selectedEdge.end.y - 2020;
+  const x = (selectedEdge.start.x + selectedEdge.end.x) / 2 - objectSizesWitdhWithoutScale / 2;
+  const y = (selectedEdge.start.y + selectedEdge.end.y) / 2 + 150;
+
+  const objectSizesWitdh = Math.max(objectSizesWitdhWithoutScale, objectSizesWitdhWithoutScale / camera.scale);
+  const objectSizesHeight = Math.max(objectSizesHeightWithoutScale, objectSizesHeightWithoutScale / camera.scale);
 
   return (
     <foreignObject className="relative" x={x} y={y} width={objectSizesWitdh} height={objectSizesHeight}>
-      {/* <div
-        className="absolute top-0 left-0"
-        style={{
-          background: "white",
-          width: objectSizesWitdh,
-          height: objectSizesHeight,
-        }}
-      ></div> */}
+      {/* <div className="absolute w-full h-full bg-red-400"></div> */}
       <div
-        className="absolute w-auto px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 text-slate-950 dark:text-slate-200"
         style={{
-          transform: `translate(1800px, 1820px) scale(${1 / camera.scale})`,
-          transformOrigin: "bottom center",
+          transform: `scale(${Math.max(1, 1 / camera.scale)})`,
+          transformOrigin: "top left",
         }}
+        className="absolute w-auto ml-2 px-2 py-1 bg-white rounded-xl shadow-lg backdrop-filter backdrop-blur-lg dark:border dark:bg-slate-600 dark:bg-opacity-20 dark:border-slate-800 text-slate-950 dark:text-slate-200"
       >
         {showColorPicker && (
           <div
