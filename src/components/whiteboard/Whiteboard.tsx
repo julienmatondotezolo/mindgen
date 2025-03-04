@@ -491,17 +491,16 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // If Shift is held, add the layerId to the activeLayerIds array without removing other
       if (e.shiftKey) {
-        setAllActiveLayers((prev) => {
-          if (prev.includes(layerId)) return prev;
-          return [...prev, layerId];
-        });
+        if (allActiveLayers.includes(layerId)) return;
+
+        const newActiveLayers = [...allActiveLayers, layerId];
 
         setCanvasState({
           mode: CanvasMode.SelectionNet,
           origin,
         });
 
-        selectLayer({ layerIds: allActiveLayers });
+        selectLayer({ layerIds: newActiveLayers });
         return;
       }
 
@@ -516,17 +515,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       return;
     },
-    [
-      canvasState.mode,
-      space,
-      allActiveLayers,
-      camera,
-      selectLayer,
-      unSelectEdge,
-      setCanvasState,
-      layers,
-      setAllActiveLayers,
-    ],
+    [canvasState.mode, space, allActiveLayers, camera, selectLayer, unSelectEdge, setCanvasState, layers],
   );
 
   const onHandleMouseEnter = useCallback(
@@ -712,8 +701,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // Update all edges
       const updatedEdges = edges.map((edge) => {
-        const isSource = allActiveLayers?.includes(edge.fromLayerId);
-        const isTarget = allActiveLayers?.includes(edge.toLayerId);
+        const isSource = edge.fromLayerId ? allActiveLayers?.includes(edge.fromLayerId) : null;
+        const isTarget = edge.toLayerId ? allActiveLayers?.includes(edge.toLayerId) : null;
 
         if (!isSource && !isTarget) {
           return edge;
@@ -807,8 +796,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // Update connected edges
       const updatedEdges = edges.map((edge) => {
-        const isSource = allActiveLayers?.includes(edge.fromLayerId);
-        const isTarget = allActiveLayers?.includes(edge.toLayerId);
+        const isSource = edge.fromLayerId ? allActiveLayers?.includes(edge.fromLayerId) : null;
+        const isTarget = edge.toLayerId ? allActiveLayers?.includes(edge.toLayerId) : null;
 
         if (!isSource && !isTarget) {
           return edge;
@@ -1307,7 +1296,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       } else if (canvasState.mode === CanvasMode.Resizing) {
         resizeSelectedLayer(current, e.shiftKey);
       } else if (canvasState.mode === CanvasMode.Inserting) {
-        const newLayer: Layer = {
+        const newLayer = {
           id: "shadow" + layers.length,
           type: canvasState.layerType,
           x: 0,
@@ -1324,7 +1313,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
           fromHandlePosition: undefined,
           layerPosition: current,
           edgePosition: null,
-          layer: newLayer,
+          layer: newLayer as Layer,
         });
       } else if (canvasState.mode === CanvasMode.Edge || canvasState.mode == CanvasMode.EdgeDrawing) {
         drawEdgeline(current);
@@ -1383,8 +1372,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         // Update all edges
         edges.map((edge) => {
-          const isSource = allActiveLayers?.includes(edge.fromLayerId);
-          const isTarget = allActiveLayers?.includes(edge.toLayerId);
+          const isSource = edge.fromLayerId ? allActiveLayers?.includes(edge.fromLayerId) : null;
+          const isTarget = edge.toLayerId ? allActiveLayers?.includes(edge.toLayerId) : null;
 
           if (!isSource && !isTarget) {
             return edge;
