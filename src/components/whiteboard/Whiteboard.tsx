@@ -958,7 +958,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       setNearestLayer(nearestLayer ? layers.find((layer) => layer.id === nearestLayer.layerId) || null : null);
 
       // Set drawingEdge state to indicate an edge drawing operation is ongoing
-      setDrawingEdge({ ongoing: true, lastEdgeId: id, fromLayerId: edge.fromLayerId });
+      // setDrawingEdge({ ongoing: true, lastEdgeId: id, fromLayerId: edge.fromLayerId });
 
       let updatedEdge: Edge;
 
@@ -1007,7 +1007,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         editingEdge: { ...canvasState.editingEdge, startPoint: point },
       });
     },
-    [canvasState, edges, layers, setIsEdgeNearLayer, setNearestLayer, setEdges, setCanvasState, drawingEdge],
+    [canvasState, edges, layers, setEdges, setCanvasState, drawingEdge],
   );
 
   const handleEdgeClick = useCallback(
