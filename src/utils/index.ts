@@ -8,6 +8,7 @@ export * from "./findUserCollaboratorId";
 export * from "./formatDate";
 export * from "./handleStreamMindmapData";
 export * from "./importMindmap";
+export * from "./layerUtils";
 export * from "./promiseReader";
 export * from "./refreshPage";
 export * from "./scroll";
