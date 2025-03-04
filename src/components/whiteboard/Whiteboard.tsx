@@ -399,7 +399,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         value: whiteboardText("typeSomething"),
       };
 
-      addLayer({ layer: newLayer, userId: currentUserId });
+      addLayer({ layer: newLayer });
 
       fitView();
 
@@ -418,7 +418,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         mode: CanvasMode.None,
       });
     },
-    [addLayer, fitView, currentUserId, layers.length, selectLayer, setCanvasState, whiteboardText],
+    [addLayer, fitView, layers.length, selectLayer, setCanvasState, whiteboardText],
   );
 
   const handleLayerPointerDown = useCallback(
@@ -458,7 +458,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // On click if typing mode on selected layer change to type mode
       if (canvasState.mode === CanvasMode.LayerSelected && allActiveLayers.includes(layerId)) {
-        console.log("Im here 1");
         setCanvasState({
           mode: CanvasMode.Typing,
         });
@@ -467,7 +466,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       // On click if typing mode on selected layer do nothing
       if (canvasState.mode === CanvasMode.Typing && allActiveLayers.includes(layerId)) {
-        console.log("Im here 2");
         setCanvasState({
           mode: CanvasMode.Typing,
         });
@@ -490,7 +488,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const isAlreadySelected = allActiveLayers.includes(layerId);
 
       if (isAlreadySelected) return;
-      console.log("Im here 4");
 
       // If Shift is held, add the layerId to the activeLayerIds array without removing other
       if (e.shiftKey) {
@@ -1221,6 +1218,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             },
             type: EdgeType.Solid,
             shape: EdgeShape.Curved,
+            label: "",
           };
 
           // Update edges state with the new edge
@@ -1248,6 +1246,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             },
             type: EdgeType.Solid,
             shape: EdgeShape.Curved,
+            label: "",
           };
 
           // Update edges state with the new edge

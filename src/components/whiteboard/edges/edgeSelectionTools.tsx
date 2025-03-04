@@ -1,4 +1,4 @@
-import { ArrowRight, Ellipsis, PaintBucket, Route, Spline, Trash2 } from "lucide-react";
+import { ArrowRight, Ellipsis, PaintBucket, Route, Spline, Trash2, Type } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -54,6 +54,17 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
     },
     [selectedEdge, setLastUsedColor, updateEdge],
   );
+
+  const handleToggleEdgeText = useCallback(() => {
+    if (selectedEdge) {
+      const newLabelText = selectedEdge.label === "" ? "Text" : "";
+
+      updateEdge({
+        id: selectedEdge.id,
+        updatedElementEdge: { label: newLabelText },
+      });
+    }
+  }, [selectedEdge, updateEdge]);
 
   const handleEdgeShape = useCallback(() => {
     if (selectedEdge) {
@@ -168,6 +179,8 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
             onClick={() => setShowColorPicker(!showColorPicker)}
             isActive={showColorPicker}
           />
+          <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
+          <ToolButton icon={Type} onClick={handleToggleEdgeText} isActive={selectedEdge.label !== ""} />
           <div className="w-[1px] h-6 self-center mx-2 bg-slate-200 dark:bg-slate-700"></div>
           <ToolButton icon={Ellipsis} onClick={handleToggleEdgeType} isActive={selectedEdge.type === EdgeType.Dashed} />
           <ToolButton onClick={handleToggleThickness} isActive={selectedEdge.thickness === 4 ? true : false}>

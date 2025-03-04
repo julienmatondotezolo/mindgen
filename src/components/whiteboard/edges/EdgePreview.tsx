@@ -34,7 +34,7 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
 
   const updateEdge = useUpdateEdge({ roomId: boardId });
 
-  const handleLabelChange = (newLabel: string) => {
+  const handleLabelChange = (newLabel: string | undefined) => {
     // Update your edge data with the new label
     updateEdge({
       id: edge.id,
@@ -204,7 +204,7 @@ export const EdgePreview = memo(({ edge, onEdgePointerDown, ARROW_SIZE }: EdgePr
       <EdgeText
         x={(edge.start.x + edge.end.x) / 2}
         y={(edge.start.y + edge.end.y) / 2}
-        label={edge.label || "Text"}
+        label={edge?.label}
         labelStyle={{ fill: colorToCss(isActive ? edge.hoverColor : edge.color) }}
         labelShowBg
         labelBgStyle={{ fill: theme === "dark" ? "#030712" : "white" }}

@@ -1,6 +1,7 @@
 import cc from "classcat";
+import { useTheme } from "next-themes";
 import React, { memo, useEffect, useRef, useState } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types";
 import { EdgeTextProps } from "@/_types/xyflow";
@@ -19,7 +20,7 @@ function EdgeTextComponent({
   className,
   onLabelChange,
 }: EdgeTextProps) {
-  const setCanvasState = useSetRecoilState(canvasStateAtom);
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [edgeTextBbox, setEdgeTextBbox] = useState({ x, y, width: 0, height: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [labelText, setLabelText] = useState(label);
@@ -27,6 +28,7 @@ function EdgeTextComponent({
   const edgeTextClasses = cc(["react-flow__edge-textwrapper", className]);
   const edgeTextRef = useRef<SVGTextElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (edgeTextRef.current) {
@@ -63,6 +65,11 @@ function EdgeTextComponent({
 
   // Effect to handle clicking outside the input
   useEffect(() => {
+    if (canvasState.mode !== CanvasMode.Typing) {
+      setIsEditing(false);
+      return;
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
       if (isEditing && inputRef.current && !inputRef.current.contains(event.target as Node)) {
         setIsEditing(false);
@@ -79,7 +86,7 @@ function EdgeTextComponent({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isEditing, labelText, label, onLabelChange, setCanvasState]);
+  }, [isEditing, labelText, label, onLabelChange, setCanvasState, canvasState.mode]);
 
   const handlePointerDown = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -126,9 +133,11 @@ function EdgeTextComponent({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             style={{
+              color: theme === "dark" ? "white" : "black",
               width: "100%",
               border: "1px solid #ddd",
               borderRadius: "4px",
+              textAlign: "center",
               padding: "2px 4px",
               ...labelStyle,
             }}

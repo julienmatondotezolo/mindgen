@@ -12,5 +12,5 @@ export interface EdgeTextProps {
   labelBgBorderRadius?: number;
   children?: React.ReactNode;
   className?: string;
-  onLabelChange?: (newLabel: string) => void;
+  onLabelChange?: (newLabel: string | undefined) => void;
 }
