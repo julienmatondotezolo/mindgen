@@ -380,6 +380,43 @@ export async function acceptOrgInvitation({ session, invitationId }: { session: 
 /* ==============   ORGANIZATIONS MEMBERS  =============== */
 /* ======================================================= */
 
+export async function updateOrganizationMember({ 
+  session,
+  organizationId,
+  organizationObject,
+}: {
+  session: CustomSession | null,
+  organizationId: string,
+  organizationObject: any,}): Promise<any> {
+
+  if (!session) {
+    throw new Error('No session provided');
+  }
+
+  const updateOrganizationRoles: Response = await fetch(baseUrl + `/organization/${organizationId}/member-roles`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(organizationObject),
+  });
+
+  if (!updateOrganizationRoles.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Update organization",
+      statusCode: updateOrganizationRoles.status,
+      message: await updateOrganizationRoles.text(),
+    };
+
+    throw errorData;
+  }
+
+  return updateOrganizationRoles.ok;
+}
+
 export async function removeMemberFromOrg({ session, memberId }: {session: CustomSession | null, memberId: string}): Promise<any> {
   if (!session) {
     throw new Error('No session provided');
@@ -882,7 +919,7 @@ export async function createInvitations({ session, invitationObject }: { session
 }
 
 /* ========================================================= */  
-/* ==================   MEMBERS & ROLES   ================== */
+/* ==================   MINDMAP MEMBERS & ROLES   ================== */
 /* ========================================================= */  
 
 export async function inviteAllMembers(membersObject: any): Promise<any> {
@@ -943,7 +980,6 @@ export async function updateMembers({ session, mindmapId, membersToUpdate }: {se
   return responseUpdatedCollaborator.json();
 
 }
-
 
 export async function removeMemberById({ session, mindmapId, membersToDelete }: {session: CustomSession | null, mindmapId: string, membersToDelete: any}): Promise<any> {
   if(session)

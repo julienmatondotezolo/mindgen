@@ -124,11 +124,13 @@
     "answer": "Answer"
   },
   "Member": {
+    "creator": "Creator",
     "memberText": "Enable a collaborations session and invite new people to create awesome mind maps together.",
     "noMember": "No member",
     "member": "member",
     "members": "members",
     "addMember": "Add member",
+    "invite": "invite",
     "inviteMembers": "Invite member",
     "inviteMembersText": "Enter or paste one or more email addresses, separated by spaces or commas.",
     "admin": "Admin",

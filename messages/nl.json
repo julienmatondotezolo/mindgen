@@ -124,11 +124,13 @@
     "answer": "Antwoord"
   },
   "Member": {
+    "creator": "Maker",
     "memberText": "Schakel een samenwerkingssessie in en nodig gebruikers uit om samen geweldige mindmaps te maken.",
     "noMember": "Geen medewerker",
     "member": "Medewerker",
     "members": "Medewerkers",
     "addMember": "Medewerker toevoegen",
+    "invite": "uitnodigen",
     "inviteMembers": "Medewerker uitnodigen",
     "inviteMembersText": "Voer een of meer e-mailadressen in of plak ze, gescheiden door spaties of komma's.",
     "admin": "Beheerder",

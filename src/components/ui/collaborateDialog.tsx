@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, Crown, Eye, Loader2, Shield, UserPlus, Users, X } from "lucide-react";
+import { AlertCircle, Crown, Loader2, UserPlus, Users, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
@@ -10,6 +10,7 @@ import { CustomSession, DialogProps, Member, MindMapDetailsProps, MindmapRole } 
 import { Button, Input } from "@/components";
 import { useSyncMutation } from "@/hooks";
 import { checkPermission } from "@/utils";
+import { GetRoleIcon } from "@/utils/getRoleIcon";
 
 interface CollaborateDialogProps extends DialogProps {
   mindmapId: string;
@@ -207,19 +208,6 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return <Shield className="w-4 h-4" />;
-      case "CREATOR":
-        return <Crown className="w-4 h-4" />;
-      case "CONTRIBUTOR":
-        return <UserPlus className="w-4 h-4" />;
-      default:
-        return <Eye className="w-4 h-4" />;
-    }
-  };
-
   return (
     <AnimatePresence>
       {open && (
@@ -345,7 +333,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                           <div>
                             <p className="font-medium">{member.username}</p>
                             <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-                              {getRoleIcon(member.mindmapRole)}
+                              <GetRoleIcon role={member.mindmapRole} />
                               <span>{memberText(member.mindmapRole.toLowerCase())}</span>
                             </div>
                           </div>
@@ -360,7 +348,7 @@ const CollaborateDialog: FC<CollaborateDialogProps> = ({ open, setIsOpen, mindma
                           ) : (
                             <>
                               <div className="flex items-center gap-2 bg-transparent border rounded-lg px-3 py-1.5 dark:bg-slate-800 dark:border-slate-700">
-                                {getRoleIcon(members[index]?.mindmapRole)}
+                                <GetRoleIcon role={member.mindmapRole} />
                                 <select
                                   className="bg-transparent text-sm outline-none"
                                   value={members[index]?.mindmapRole}

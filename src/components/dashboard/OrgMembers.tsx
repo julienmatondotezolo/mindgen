@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Mail, Shield, UserPlus, Users } from "lucide-react";
+import { Crown, Mail, Shield, UserPlus, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useSetRecoilState } from "recoil";
 
-import { createInvitations } from "@/_services";
+import { createInvitations, updateOrganizationMember } from "@/_services";
 import { CustomSession, Member, Organization } from "@/_types";
 import {
   Button,
@@ -31,6 +31,7 @@ import {
   removeMemberModalState,
 } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
+import { GetRoleIcon } from "@/utils/getRoleIcon";
 
 interface OrgProps {
   userOrgaData: Organization | undefined;
@@ -40,6 +41,8 @@ interface OrgProps {
 function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   const session = useSession();
   const safeSession: any = session ? (session as unknown as CustomSession) : null;
+
+  const memberText = useTranslations("Member");
 
   const queryClient = useQueryClient();
 
@@ -59,6 +62,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   const [textAreaValue, setTextAreaValue] = useState("");
   const [memberState, setMemberState] = useState("ADMIN");
   const [invMembersError, setInvMembersError] = useState([]);
+  const [updatedRoles, setUpdatedRoles] = useState<{ [key: string]: string }>({});
 
   const memberToDelete = useSetRecoilState(memberToDeleteState);
   const memberToLeaveOrg = useSetRecoilState(memberToLeaveOrgaState);
@@ -90,6 +94,14 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
       setOpenInvite(false);
+    },
+  });
+
+  const updateMemberMutation = useMutation(updateOrganizationMember, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("userOrgaById");
+      queryClient.invalidateQueries("userOrganizations");
+      setUpdatedRoles({});
     },
   });
 
@@ -132,6 +144,42 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
     memberToDelete(member);
     setIsRemoveMemberState(true);
   };
+
+  const handleRoleUpdate = (memberId: string, newRole: string) => {
+    setUpdatedRoles((prevRoles) => ({
+      ...prevRoles,
+      [memberId]: newRole,
+    }));
+  };
+
+  const handleUpdateRoles = async () => {
+    const memberRoles = Object.entries(updatedRoles).reduce(
+      (acc, [memberId, role]) => {
+        acc[memberId] = role;
+        return acc;
+      },
+      {} as { [key: string]: string },
+    );
+
+    const updatedRole = {
+      memberRoles,
+    };
+
+    try {
+      await updateMemberMutation.mutateAsync({
+        session: safeSession,
+        organizationId: userOrgaData!.id,
+        organizationObject: updatedRole,
+      });
+    } catch (error) {
+      console.error("error:", error);
+    }
+  };
+
+  const hasRoleChanges = () =>
+    members?.some(
+      (member) => updatedRoles[member.memberId] && updatedRoles[member.memberId] !== member.organizationRole,
+    );
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -291,7 +339,28 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                         >
                           <TableCell className="font-medium">{member.username}</TableCell>
                           <TableCell>{member.email}</TableCell>
-                          <TableCell>{member.organizationRole}</TableCell>
+                          <TableCell>
+                            {member.organizationRole === "OWNER" ? (
+                              <div className="flex items-center space-x-2 px-3 py-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg">
+                                <Crown className="w-4 h-4" />
+                                <span className="text-sm">{memberText("owner")}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 bg-transparent border rounded-lg px-3 py-1.5 dark:bg-slate-800 dark:border-slate-700">
+                                <GetRoleIcon role={updatedRoles[member.memberId] || member.organizationRole} />
+                                <select
+                                  className="bg-transparent text-sm outline-none"
+                                  value={updatedRoles[member.memberId] || member.organizationRole}
+                                  onChange={(e) => handleRoleUpdate(member.memberId, e.target.value)}
+                                >
+                                  <option value="OWNER">Owner</option>
+                                  <option value="ADMIN">{memberText("admin")}</option>
+                                  <option value="MEMBER">Member</option>
+                                  <option value="GUEST">Guest</option>
+                                </select>
+                              </div>
+                            )}
+                          </TableCell>
                           <TableCell className="text-right">
                             {member.organizationRole !== "OWNER" &&
                               (currentUser.email === member.email ? (
@@ -316,6 +385,11 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                       ))}
                     </TableBody>
                   </Table>
+                  {hasRoleChanges() && (
+                    <Button onClick={handleUpdateRoles} className="mt-4" disabled={updateMemberMutation.isLoading}>
+                      {updateMemberMutation.isLoading ? text("loading") : " Update Roles"}
+                    </Button>
+                  )}
                 </motion.div>
               </motion.div>
             )}
