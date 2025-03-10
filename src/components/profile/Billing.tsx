@@ -1,13 +1,16 @@
 import { motion } from "framer-motion";
-import { CreditCard } from "lucide-react";
+import { ArrowRight, CreditCard } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
+
+import { Link } from "@/navigation";
 
 import { Button } from "..";
 
 function Billing() {
   const profileText = useTranslations("Profile");
   const navigationText = useTranslations("Navigation");
+  const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -53,17 +56,12 @@ function Billing() {
         </motion.p>
 
         <motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            variant="outline"
-            className="group relative overflow-hidden transition-all duration-300 hover:border-primary-color"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              <span className="group-hover:text-primary-color transition-colors">
-                {navigationText("upgradeButton")}
-              </span>
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </span>
-          </Button>
+          <Link href={baseUrl + "/stripe/portal"}>
+            <Button variant={"outline"}>
+              <p className="dark:text-white">{navigationText("upgradeButton")}</p>
+              <ArrowRight height={16} />
+            </Button>
+          </Link>
         </motion.div>
       </motion.article>
     </motion.div>
