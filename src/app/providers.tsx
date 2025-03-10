@@ -12,6 +12,9 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactFlowProvider } from "reactflow";
 import { RecoilRoot } from "recoil";
 
+import { MessageProvider } from "@/components/ui/message-provider";
+import { Toaster } from "@/components/ui/toaster";
+
 // Manually import messages for each locale
 import enMessages from "../../messages/en.json";
 import frMessages from "../../messages/fr.json";
@@ -80,7 +83,12 @@ export default function Providers({ children, locale }: Props): JSX.Element {
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
               <AblyProvider client={ablyClient}>
-                <ReactFlowProvider>{children}</ReactFlowProvider>
+                <ReactFlowProvider>
+                  <MessageProvider>
+                    {children}
+                    <Toaster />
+                  </MessageProvider>
+                </ReactFlowProvider>
               </AblyProvider>
             </NextIntlClientProvider>
           </ThemeProvider>
