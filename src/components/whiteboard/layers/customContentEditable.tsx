@@ -11,10 +11,11 @@ import { canvasStateAtom } from "@/state";
 interface CustomEditableProps {
   value: string;
   onChange: (value: string) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   style: React.CSSProperties;
 }
 
-const CustomContentEditable = ({ value, onChange, style }: CustomEditableProps) => {
+const CustomContentEditable = ({ value, onChange, onKeyDown, style }: CustomEditableProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const editableRef = useRef<HTMLDivElement>(null);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
@@ -44,6 +45,7 @@ const CustomContentEditable = ({ value, onChange, style }: CustomEditableProps) 
       onClick={handleClick}
       onBlur={handleBlur}
       onChange={handleInput}
+      onKeyDown={onKeyDown}
       contentEditable={isEditing}
       suppressContentEditableWarning
       style={{

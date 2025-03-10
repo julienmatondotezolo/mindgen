@@ -2,10 +2,10 @@
 
 import { useTheme } from "next-themes";
 import React from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-import { RectangleLayer } from "@/_types";
-import { boardIdState, cameraStateAtom, useUpdateElement } from "@/state";
+import { CanvasMode, RectangleLayer } from "@/_types";
+import { boardIdState, cameraStateAtom, canvasStateAtom, useUnSelectElement, useUpdateElement } from "@/state";
 import { colorToCss, fillRGBA, getContrastingTextColor } from "@/utils";
 
 import { CustomContentEditable } from "./customContentEditable";
@@ -65,10 +65,13 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
 
   const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType, borderColor } = layer;
 
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+
   const boardId = useRecoilValue(boardIdState);
   const camera = useRecoilValue(cameraStateAtom);
 
   const updateLayer = useUpdateElement({ roomId: boardId });
+  const unSelectLayer = useUnSelectElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
     const { width: newWidth, height: newHeight } = calculateDimensions(newValue, width, height, camera.scale);
@@ -77,6 +80,13 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
       id,
       updatedElementLayer: { value: newValue, width: newWidth, height: newHeight },
     });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      unSelectLayer();
+      setCanvasState({ mode: CanvasMode.None });
+    }
   };
 
   const newBorderColor = borderColor
@@ -112,6 +122,7 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
         <CustomContentEditable
           value={value || ""}
           onChange={handleContentChange}
+          onKeyDown={handleKeyDown}
           style={{
             width: "99%",
             height: "100%",

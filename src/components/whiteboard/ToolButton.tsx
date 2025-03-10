@@ -23,7 +23,12 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
       <Button
         disabled={disabled}
         onMouseEnter={() => {
-          if (canvasState.mode === CanvasMode.SelectionNet || canvasState.mode === CanvasMode.Inserting) return;
+          if (
+            canvasState.mode === CanvasMode.SelectionNet ||
+            canvasState.mode === CanvasMode.Inserting ||
+            canvasState.mode === CanvasMode.EdgeEditing
+          )
+            return;
           setCanvasState({
             mode: CanvasMode.Tooling,
           });
@@ -33,7 +38,8 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
             canvasState.mode === CanvasMode.Grab ||
             canvasState.mode === CanvasMode.Inserting ||
             canvasState.mode === CanvasMode.Edge ||
-            canvasState.mode === CanvasMode.SelectionNet
+            canvasState.mode === CanvasMode.SelectionNet ||
+            canvasState.mode === CanvasMode.EdgeEditing
           )
             return;
           setCanvasState({
