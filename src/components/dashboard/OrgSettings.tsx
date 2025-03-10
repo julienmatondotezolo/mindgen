@@ -9,7 +9,8 @@ import { useRecoilState, useSetRecoilState } from "recoil";
 import { deleteOrganizationById, updateOrganization } from "@/_services";
 import { CustomSession, Member } from "@/_types";
 import { Organization } from "@/_types/Organization";
-import { Button, Input, Skeleton } from "@/components/ui";
+import { Button, Input, OrgaDeleteConfirmDialog, Skeleton } from "@/components/ui";
+import { useMessage } from "@/components/ui/message-provider";
 import { organizationSettingsState, selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
@@ -24,6 +25,8 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
   const currentUserid = safeSession?.data.session?.user.id;
   const controls = useAnimation();
 
+  const { showMessage } = useMessage();
+
   const currentMember: Member | undefined = userOrgaData?.members.filter((member) => member.userId == currentUserid)[0];
 
   const queryClient = useQueryClient();
@@ -34,6 +37,7 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
 
   const [inputTitle, setInputTitle] = useState("");
   const [isHovered, setIsHovered] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputTitle(e.target.value);
@@ -73,24 +77,29 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
   };
 
   const deleteOrgaMutation = useMutation(deleteOrganizationById, {
-    onSuccess: async () => {
-      await queryClient.invalidateQueries("userOrgaById");
-      await queryClient.invalidateQueries("userOrganizations");
+    onSuccess: () => {
+      setSelectedOrga(undefined);
+      queryClient.invalidateQueries("userOrganizations");
     },
   });
 
   const handleDeleteOrga = async () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteOrga = async () => {
     try {
       deleteOrgaMutation.mutate({
+        session: safeSession,
         organizationId: selectedOrga!.id,
       });
 
       localStorage.removeItem("selected-organization");
       setOrgaSettings(false);
+      setIsDeleteDialogOpen(false);
+      showMessage("success", "SUCCESSFUL_DELETE_ORGANIZATION");
     } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
+      showMessage("error", "ERROR_DELETE_ORGANIZATION");
     }
   };
 
@@ -206,6 +215,15 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {userOrgaData && (
+        <OrgaDeleteConfirmDialog
+          open={isDeleteDialogOpen}
+          setIsOpen={setIsDeleteDialogOpen}
+          organization={userOrgaData}
+          onConfirmDelete={confirmDeleteOrga}
+        />
+      )}
     </motion.div>
   );
 }

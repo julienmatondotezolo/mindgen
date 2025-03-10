@@ -14,6 +14,7 @@
     "new": "new",
     "create": "create",
     "cancel": "cancel",
+    "next": "next",
     "send": "send",
     "language": "language",
     "help": "help",
@@ -35,7 +36,10 @@
     "general": "general",
     "members": "members",
     "generate": "generate",
-    "generating": "generating"
+    "generating": "generating",
+    "youre_about_to_delete": "You are about to delete",
+    "this_action_cannot_be_undone": "This action cannot be undone",
+    "type_to_confirm": "Please enter the organization name to confirm the deletion of:"
   },
   "Auth": {
     "connection": "Connection",
@@ -148,7 +152,9 @@
     "addLayerPlaceHolder": "Add text"
   },
   "Organization": {
-    "organization": "organization"
+    "organization": "organization",
+    "organizationDialogDescription": "Create an organization to start collaborating with your team.",
+    "OrganizationDetails": "Organization details"
   },
   "landing": {
     "title": "Unleash Your Creativity with",
@@ -177,6 +183,10 @@
     "error": "Error"
   },
   "ResponseMesssagesCode": {
+    "SUCCESSFUL_CREATE_ORGANIZATION": "Organization created successfully",
+    "ERROR_CREATE_ORGANIZATION": "Error creating organization",
+    "SUCCESSFUL_DELETE_ORGANIZATION": "Organization deleted successfully",
+    "ERROR_DELETE_ORGANIZATION": "Error deleting organization",
     "SUCCESSFUL_INVITATION": "Successfully invited members",
     "SUCCESSFUL_ROLE_UPDATE": "Successfully updated roles",
     "ERROR_ROLE_UPDATE": "Error updating roles",

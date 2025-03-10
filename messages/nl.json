@@ -14,6 +14,7 @@
     "new": "nieuwe",
     "create": "creëren",
     "cancel": "annuleren",
+    "next": "volgende",
     "send": "sturen",
     "language": "Taal",
     "help": "Hulp",
@@ -35,7 +36,10 @@
     "general": "general",
     "members": "leden",
     "generate": "genereer",
-    "generating": "genereren"
+    "generating": "genereren",
+    "youre_about_to_delete": "Je bent op het punt om te verwijderen",
+    "this_action_cannot_be_undone": "Deze actie kan niet ongedaan worden gemaakt",
+    "type_to_confirm": "Voer de naam van de organisatie in om de verwijdering te bevestigen:"
   },
   "Auth": {
     "connection": "Inloggen",
@@ -148,7 +152,9 @@
     "addLayerPlaceHolder": "Tekst toevoegen"
   },
   "Organization": {
-    "organization": "organisatie"
+    "organization": "organisatie",
+    "organizationDialogDescription": "Maak een organisatie om te beginnen samenwerken met je team.",
+    "OrganizationDetails": "Organisatie details"
   },
   "landing": {
     "title": "Laat uw creativiteit de vrije loop met",
@@ -175,6 +181,10 @@
     "error": "Fout"
   },
   "ResponseMesssagesCode": {
+    "SUCCESSFUL_CREATE_ORGANIZATION": "Organisatie succesvol gemaakt",
+    "ERROR_CREATE_ORGANIZATION": "Fout bij het maken van de organisatie",
+    "SUCCESSFUL_DELETE_ORGANIZATION": "Organisatie succesvol verwijderd",
+    "ERROR_DELETE_ORGANIZATION": "Fout bij het verwijderen van de organisatie",
     "SUCCESSFUL_INVITATION": "Leden uitgenodigd",
     "SUCCESSFUL_ROLE_UPDATE": "Rollen bijgewerkt",
     "ERROR_ROLE_UPDATE": "Fout bij het bijwerken van de rollen",

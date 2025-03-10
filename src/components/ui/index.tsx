@@ -14,6 +14,7 @@ export * from "./label";
 export * from "./languageSwitcher";
 export * from "./mindmapDialog";
 export * from "./newBoardDialog";
+export * from "./OrgaDeleteConfirmDialog";
 export * from "./OrgaMemberLeaveDialog";
 export * from "./organizationDialog";
 export * from "./organizationSettingsDialog";

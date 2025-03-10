@@ -359,28 +359,33 @@ export async function updateOrganization({ organizationId, organizationObject }:
   }
 }
 
-export async function deleteOrganizationById({ organizationId }: { organizationId: string }): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responseDeletedOrganization: Response = await fetch(baseUrl + `/organization/${organizationId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseDeletedOrganization.ok) {
-      return responseDeletedOrganization;
-    } else {
-      throw responseDeletedOrganization;
-    }
-  } catch (error) {
-    console.error("Impossible to delete organization:", error);
+export async function deleteOrganizationById({ session, organizationId }: { session: CustomSession | null, organizationId: string }): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
   }
+
+  const responseDeletedOrganization: Response = await fetch(baseUrl + `/organization/${organizationId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseDeletedOrganization.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Impossible to delete organization",
+      statusCode: responseDeletedOrganization.status,
+      message: await responseDeletedOrganization.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseDeletedOrganization.ok;
+
 }
 
 export async function acceptOrgInvitation({ session, invitationId }: { session: CustomSession | null, invitationId: string }): Promise<any> {
@@ -449,7 +454,6 @@ export async function removeMemberFromOrg({ session, memberId }: {session: Custo
   if (!session) {
     throw new Error('No session provided');
   }
-
 
   const responseRemoveMember: Response = await fetch(baseUrl + `/organization/member/${memberId}/remove`, {
     method: "DELETE",

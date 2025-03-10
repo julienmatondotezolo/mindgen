@@ -14,6 +14,7 @@
     "new": "nouveau",
     "create": "créer",
     "cancel": "annuler",
+    "next": "suivant",
     "send": "envoyer",
     "language": "Langue",
     "help": "Aide",
@@ -35,7 +36,10 @@
     "general": "general",
     "members": "membres",
     "generate": "générer",
-    "generating": "génération"
+    "generating": "génération",
+    "youre_about_to_delete": "Vous êtes sur le point de supprimer",
+    "this_action_cannot_be_undone": "Cette action ne peut pas être annulée",
+    "type_to_confirm": "Veuillez entrer le nom de l'organisation pour confirmer la suppression de:"
   },
   "Auth": {
     "connection": "Connexion",
@@ -148,7 +152,9 @@
     "addLayerPlaceHolder": "Ajouter du texte"
   },
   "Organization": {
-    "organization": "organisation"
+    "organization": "organisation",
+    "organizationDialogDescription": "Créez une organisation pour commencer à collaborer avec votre équipe.",
+    "OrganizationDetails": "Détails de l'organisation"
   },
   "landing": {
     "title": "Libérez votre créativité avec",
@@ -177,6 +183,10 @@
     "error": "Erreur"
   },
   "ResponseMesssagesCode": {
+    "SUCCESSFUL_CREATE_ORGANIZATION": "Organisation créée avec succès",
+    "ERROR_CREATE_ORGANIZATION": "Erreur lors de la création de l'organisation",
+    "SUCCESSFUL_DELETE_ORGANIZATION": "Organisation supprimée avec succès",
+    "ERROR_DELETE_ORGANIZATION": "Erreur lors de la suppression de l'organisation",
     "SUCCESSFUL_INVITATION": "Invitations envoyées avec succès",
     "SUCCESSFUL_ROLE_UPDATE": "Rôles mis à jour avec succès",
     "ERROR_ROLE_UPDATE": "Erreur lors de la mise à jour des rôles",

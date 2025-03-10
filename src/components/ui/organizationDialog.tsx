@@ -11,6 +11,7 @@ import { createOrganization } from "@/_services";
 import { Organization } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
 import { Button, Input } from "@/components/ui";
+import { useMessage } from "@/components/ui/message-provider";
 import { selectedOrganizationState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
@@ -22,6 +23,8 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const [inputTitle, setInputTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
+
+  const { showMessage } = useMessage();
 
   const setSelectedOrganization = useSetRecoilState<Organization | undefined>(selectedOrganizationState);
 
@@ -63,10 +66,9 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         },
       });
       handleClose();
+      showMessage("success", "SUCCESSFUL_CREATE_ORGANIZATION");
     } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
+      showMessage("error", "ERROR_CREATE_ORGANIZATION");
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +143,7 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                       <Input
                         ref={inputRef}
                         type="text"
-                        placeholder={`${uppercaseFirstLetter(textOrga("organization"))} ${text("name").toLowerCase()}`}
+                        placeholder={uppercaseFirstLetter(text("name"))}
                         value={inputTitle}
                         onChange={handleTitleChange}
                         className="w-full transition-all duration-200 focus:ring-2 focus:ring-primary-color"
@@ -152,14 +154,16 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
                       >
-                        Create your organization to start collaborating with your team
+                        {textOrga("organizationDialogDescription")}
                       </motion.p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="p-4 bg-primary-color/10 rounded-lg">
-                        <p className="text-primary-color font-medium">Organization Details</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">{inputTitle}</p>
+                        <p className="text-primary-color font-medium">{textOrga("OrganizationDetails")}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          {text("name")}: <span className="font-bold">{inputTitle}</span>
+                        </p>
                       </div>
                     </div>
                   )}
@@ -179,7 +183,9 @@ const OrganizationDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     <Sparkles className="animate-spin mr-2" />
                   ) : (
                     <>
-                      <span>{step === 1 ? "Next" : uppercaseFirstLetter(text("create"))}</span>
+                      <span>
+                        {step === 1 ? uppercaseFirstLetter(text("next")) : uppercaseFirstLetter(text("create"))}
+                      </span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
