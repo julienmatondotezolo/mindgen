@@ -166,5 +166,16 @@
     "linkExpired": "Link vervallen",
     "linkExpiredDescription": "De link voor wachtwoord opnieuw instellen is niet meer geldig.",
     "backHome": "Terug naar Home"
+  },
+  "ResponseMessage": {
+    "success": "Succes",
+    "error": "Fout"
+  },
+  "ResponseMesssagesCode": {
+    "SUCCESSFUL_INVITATION": "Leden uitgenodigd",
+    "SUCCESSFUL_ROLE_UPDATE": "Rollen bijgewerkt",
+    "SUCCESSFUL_MEMBER_REMOVAL": "Lid verwijderd",
+    "SUCCESSFUL_MEMBER_LEAVE": "Lid verlaten",
+    "ENTER_VALID_EMAILS": "Voer geldig e-mailadres(sen) in."
   }
 }

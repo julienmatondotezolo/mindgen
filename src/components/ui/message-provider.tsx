@@ -2,6 +2,7 @@
 "use client";
 
 import { AlertCircle, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React, { createContext, ReactNode, useContext } from "react";
 
 import { toast } from "@/components/ui/use-toast";
@@ -10,7 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 type MessageStatus = "success" | "error";
 
 interface MessageContextType {
-  showMessage: (status: MessageStatus, title: string, description?: string) => void;
+  showMessage: (status: MessageStatus, description?: string) => void;
 }
 
 // Create the context
@@ -21,10 +22,12 @@ interface MessageProviderProps {
 }
 
 export function MessageProvider({ children }: MessageProviderProps) {
+  const responseMessageText = useTranslations("ResponseMessage");
+  const responseMessagesCode = useTranslations("ResponseMesssagesCode");
   // Function to show a message using the toast system
-  const showMessage = (status: MessageStatus, title: string, description?: string) => {
+  const showMessage = (status: MessageStatus, description?: string) => {
     toast({
-      title: title,
+      title: responseMessageText(status),
       variant: status === "error" ? "destructive" : "default",
       action: (
         <>
@@ -35,7 +38,7 @@ export function MessageProvider({ children }: MessageProviderProps) {
           )}
         </>
       ),
-      description: description,
+      description: responseMessagesCode(description),
     });
   };
 

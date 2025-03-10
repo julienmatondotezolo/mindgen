@@ -168,5 +168,16 @@
     "linkExpired": "Lien expiré",
     "linkExpiredDescription": "Le lien de réinitialisation du mot de passe n'est plus valide.",
     "backHome": "Retour à l'Accueil"
+  },
+  "ResponseMessage": {
+    "success": "Succès",
+    "error": "Erreur"
+  },
+  "ResponseMesssagesCode": {
+    "SUCCESSFUL_INVITATION": "Invitations envoyées avec succès",
+    "SUCCESSFUL_ROLE_UPDATE": "Rôles mis à jour avec succès",
+    "SUCCESSFUL_MEMBER_REMOVAL": "Membre supprimé avec succès",
+    "SUCCESSFUL_MEMBER_LEAVE": "Membre quitte l'organisation avec succès",
+    "ENTER_VALID_EMAILS": "Veuillez entrer des adresses e-mail valides."
   }
 }

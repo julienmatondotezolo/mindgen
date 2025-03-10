@@ -168,5 +168,16 @@
     "linkExpired": "Link expired",
     "linkExpiredDescription": "The password reset link is no longer valid.",
     "backHome": "Back to Home"
+  },
+  "ResponseMessage": {
+    "success": "Success",
+    "error": "Error"
+  },
+  "ResponseMesssagesCode": {
+    "SUCCESSFUL_INVITATION": "Successfully invited members",
+    "SUCCESSFUL_ROLE_UPDATE": "Successfully updated roles",
+    "SUCCESSFUL_MEMBER_REMOVAL": "Successfully removed member",
+    "SUCCESSFUL_MEMBER_LEAVE": "Successfully left organization",
+    "ENTER_VALID_EMAILS": "Please enter valid email(s)."
   }
 }
