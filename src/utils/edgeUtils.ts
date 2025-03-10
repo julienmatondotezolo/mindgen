@@ -1,5 +1,19 @@
 import { Edge, HandlePosition, Point } from "@/_types";
 
+// EDGE TYPES
+export type GetControlWithCurvatureParams = {
+  pos: HandlePosition;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  c: number;
+};
+
+// ============================================================================= //
+// ==================== GET EDGE BEZIER PATH STRING ============================ //
+// ============================================================================= //
+
 const handleDirections = {
   [HandlePosition.Left]: { x: -1, y: 0 },
   [HandlePosition.Right]: { x: 1, y: 0 },
@@ -231,4 +245,62 @@ export function edgeSmoothStepPathString({ edge }: { edge: Edge }): string {
   }, "");
 
   return path;
+}
+
+// ============================================================================= //
+// ==================== GET EDGE BEZIER PATH STRING ============================ //
+// ============================================================================= //
+
+function calculateControlOffset(distance: number, curvature: number): number {
+  if (distance >= 0) {
+    return 0.5 * distance;
+  }
+
+  return curvature * 25 * Math.sqrt(-distance);
+}
+
+export function getControlWithCurvature({ pos, x1, y1, x2, y2, c }: GetControlWithCurvatureParams): [number, number] {
+  switch (pos) {
+    case HandlePosition.Left:
+      return [x1 - calculateControlOffset(x1 - x2, c), y1];
+    case HandlePosition.Right:
+      return [x1 + calculateControlOffset(x2 - x1, c), y1];
+    case HandlePosition.Top:
+      return [x1, y1 - calculateControlOffset(y1 - y2, c)];
+    case HandlePosition.Bottom:
+      return [x1, y1 + calculateControlOffset(y2 - y1, c)];
+  }
+}
+
+export function edgeBezierPathString({ edge }: { edge: Edge }): string {
+  const sourceX = edge.start.x;
+  const sourceY = edge.start.y;
+  const sourcePosition: HandlePosition = edge.handleStart || HandlePosition.Top;
+  const targetPosition: HandlePosition = edge.handleEnd || HandlePosition.Top;
+  const targetX = edge.end.x;
+  const targetY = edge.end.y;
+  const curvature = 0.5;
+
+  const [sourceControlX, sourceControlY] = getControlWithCurvature({
+    pos: sourcePosition,
+    x1: sourceX,
+    y1: sourceY,
+    x2: targetX,
+    y2: targetY,
+    c: curvature,
+  });
+
+  const [targetControlX, targetControlY] = getControlWithCurvature({
+    pos: targetPosition,
+    x1: targetX,
+    y1: targetY,
+    x2: sourceX,
+    y2: sourceY,
+    c: curvature,
+  });
+
+  const pathString = `
+  M${sourceX},${sourceY} C${sourceControlX},${sourceControlY} ${targetControlX},${targetControlY} ${targetX},${targetY}`;
+
+  return pathString;
 }
