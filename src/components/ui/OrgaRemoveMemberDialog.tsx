@@ -15,9 +15,13 @@ import { Button } from "@/components/ui";
 import { memberToDeleteState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
+import { useMessage } from "./message-provider";
+
 const OrgaRemoveMemberDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const session = useSession();
   const safeSession: any = session ? (session as unknown as CustomSession) : null;
+
+  const { showMessage } = useMessage();
 
   const text = useTranslations("Index");
   const textMember = useTranslations("Member");
@@ -55,15 +59,7 @@ const OrgaRemoveMemberDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => 
   const fetchRemoveMemberFromOrg = useMutation(removeMemberFromOrg, {
     mutationKey: "REMOVE_MEMBER_FROM_ORG",
     onSuccess: async () => {
-      try {
-        queryClient.invalidateQueries("userOrgaById");
-        setIsOpen(false);
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(`An error has occurred: ${error.message}`);
-        }
-      }
-
+      queryClient.invalidateQueries("userOrgaById");
       setIsOpen(false);
     },
   });
@@ -78,10 +74,9 @@ const OrgaRemoveMemberDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => 
         session: safeSession,
         memberId,
       });
+      showMessage("success", "SUCCESSFUL_MEMBER_REMOVAL");
     } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
+      showMessage("error", "ERROR_MEMBER_REMOVAL");
     }
   };
 
@@ -155,8 +150,7 @@ const OrgaRemoveMemberDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => 
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.3 }}
                     >
-                      You&rsquo;re about to remove the member <strong>{memberToDelete?.username}</strong> from this
-                      organization.
+                      <strong>{memberToDelete?.username}</strong> {textMember("deleteMemberText")}
                     </motion.p>
                   </div>
                 </motion.div>
@@ -176,7 +170,7 @@ const OrgaRemoveMemberDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => 
                   className="px-4 py-2 flex items-center space-x-2 bg-red-500"
                   disabled={fetchRemoveMemberFromOrg.isLoading}
                 >
-                  <span>{uppercaseFirstLetter(text("remove"))}</span>
+                  <span>{uppercaseFirstLetter(text(fetchRemoveMemberFromOrg.isLoading ? "loading" : "remove"))}</span>
                 </Button>
               </div>
             </div>

@@ -224,25 +224,31 @@ export async function fetchStripeCheckout({ session, checkoutBody }: {session: C
 }
 
 export async function fetchStripePortal({ session }: {session: CustomSession | null}): Promise<any> {
-  if(session)
-    try {
-      const responsePaymentProducts: Response = await fetch(baseUrl + `/stripe/portal`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-      });
+  if (!session) {
+    throw new Error('No session provided');
+  }
 
-      if (responsePaymentProducts.ok) {
-        return responsePaymentProducts.json();
-      } else {
-        throw responsePaymentProducts;
-      }
-    } catch (error) {
-      console.error("Impossible to fetch profiles:", error);
-    }
+  const responseStripePortal: Response = await fetch(baseUrl + `/stripe/portal`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseStripePortal.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Remove member from organization",
+      statusCode: responseStripePortal.status,
+      message: await responseStripePortal.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseStripePortal.ok;
 }
 
 /* ======================================================= */  
@@ -465,7 +471,7 @@ export async function removeMemberFromOrg({ session, memberId }: {session: Custo
     throw errorData;
   }
 
-  return responseRemoveMember.json();
+  return responseRemoveMember.ok;
 }
 
 export async function memberLeaveOrg({ session, memberId }: {session: CustomSession | null, memberId: string}): Promise<any> {

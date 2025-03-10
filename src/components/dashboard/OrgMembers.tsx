@@ -33,6 +33,8 @@ import {
 import { uppercaseFirstLetter } from "@/utils";
 import { GetRoleIcon } from "@/utils/GetRoleIcon";
 
+import { useMessage } from "../ui/message-provider";
+
 interface OrgProps {
   userOrgaData: Organization | undefined;
   isLoading: boolean;
@@ -45,6 +47,8 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
   const memberText = useTranslations("Member");
 
   const queryClient = useQueryClient();
+
+  const { showMessage } = useMessage();
 
   const text = useTranslations("Index");
   const textAuth = useTranslations("Auth");
@@ -94,6 +98,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
       setOpenInvite(false);
+      showMessage("success", "SUCCESSFUL_INVITATION");
     },
   });
 
@@ -102,6 +107,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
       setUpdatedRoles({});
+      showMessage("success", "SUCCESSFUL_ROLE_UPDATE");
     },
   });
 
@@ -126,7 +132,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
       setTextAreaValue("");
       setMemberState("ADMIN");
     } else {
-      alert("Please enter valid email(s).");
+      showMessage("error", "ENTER_VALID_EMAILS");
     }
   };
 
@@ -138,6 +144,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
 
     memberToLeaveOrg(memberLeaveData);
     setIsMemberToLeaveOrgaState(true);
+    showMessage("success", "SUCCESSFUL_MEMBER_LEAVE");
   };
 
   const handleRemove = async ({ member }: { member: Member }) => {
@@ -172,7 +179,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
         organizationObject: updatedRole,
       });
     } catch (error) {
-      console.error("error:", error);
+      showMessage("error", "ERROR_ROLE_UPDATE");
     }
   };
 
@@ -285,7 +292,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                                 transition={{ duration: 1, repeat: createInvMutation.isLoading ? Infinity : 0 }}
                               />
                               <span className="relative z-10">
-                                {createInvMutation.isLoading ? "Loading..." : "Send"}
+                                {createInvMutation.isLoading ? "Loading..." : text("send")}
                               </span>
                             </Button>
                           </div>
@@ -308,7 +315,7 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                   layout
                 >
                   <Table>
-                    <TableCaption>A list of members in the organization</TableCaption>
+                    <TableCaption>{textMember("memberListText")}</TableCaption>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[100px]">
@@ -353,7 +360,6 @@ function OrgMembers({ userOrgaData, isLoading }: OrgProps) {
                                   value={updatedRoles[member.memberId] || member.organizationRole}
                                   onChange={(e) => handleRoleUpdate(member.memberId, e.target.value)}
                                 >
-                                  <option value="OWNER">Owner</option>
                                   <option value="ADMIN">{memberText("admin")}</option>
                                   <option value="MEMBER">Member</option>
                                   <option value="GUEST">Guest</option>

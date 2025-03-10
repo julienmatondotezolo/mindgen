@@ -14,6 +14,7 @@
     "new": "nieuwe",
     "create": "creëren",
     "cancel": "annuleren",
+    "send": "sturen",
     "language": "Taal",
     "help": "Hulp",
     "logout": "Uitloggen",
@@ -137,7 +138,9 @@
     "contributor": "Contributor",
     "owner": "Eigenaar",
     "viewer": "Bezoeker",
-    "guest": "Gast"
+    "guest": "Gast",
+    "deleteMemberText": "wordt verwijderd uit de organisatie.",
+    "memberListText": "Lijst van leden in de organisatie"
   },
   "Whiteboard": {
     "typeSomething": "Schrijf iets...",
@@ -174,8 +177,11 @@
   "ResponseMesssagesCode": {
     "SUCCESSFUL_INVITATION": "Leden uitgenodigd",
     "SUCCESSFUL_ROLE_UPDATE": "Rollen bijgewerkt",
+    "ERROR_ROLE_UPDATE": "Fout bij het bijwerken van de rollen",
     "SUCCESSFUL_MEMBER_REMOVAL": "Lid verwijderd",
+    "ERROR_MEMBER_REMOVAL": "Fout bij het verwijderen van het lid",
     "SUCCESSFUL_MEMBER_LEAVE": "Lid verlaten",
-    "ENTER_VALID_EMAILS": "Voer geldig e-mailadres(sen) in."
+    "ENTER_VALID_EMAILS": "Voer geldig e-mailadres(sen) in.",
+    "ERROR_UPGRADE_ACCOUNT": "Fout bij het upgraden van uw account."
   }
 }

@@ -60,7 +60,7 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
     >
       <p className="font-bold text-xl">{`${uppercaseFirstLetter(text("settings"))} ${textOrga("organization")}`}</p>
       <Tabs defaultValue="general" className="flex flex-wrap justify-between w-full h-[90%]">
-        <TabsList className="flex flex-col w-[20%] h-max space-y-4">
+        <TabsList className="flex flex-col w-[15%] h-max space-y-4">
           <TabsTrigger className={triggerStyle} value="general">
             <p>{uppercaseFirstLetter(text("general"))}</p>
           </TabsTrigger>
@@ -71,10 +71,10 @@ const OrganizationSettingsDialog: FC<MindMapDialogProps> = ({ open, setIsOpen })
             <p>{uppercaseFirstLetter(text("invitation"))}</p>
           </TabsTrigger> */}
         </TabsList>
-        <TabsContent value="general" className="w-[70%]">
+        <TabsContent value="general" className="w-[80%]">
           <OrgSettings userOrgaData={userOrgaData} isLoading={isLoading} />
         </TabsContent>
-        <TabsContent value="members" className="w-[70%]">
+        <TabsContent value="members" className="w-[80%]">
           <OrgMembers userOrgaData={userOrgaData} isLoading={isLoading} />
         </TabsContent>
         {/*         <TabsContent value="invitation" className="w-[70%]">

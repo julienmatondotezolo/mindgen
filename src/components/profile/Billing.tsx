@@ -1,16 +1,37 @@
 import { motion } from "framer-motion";
 import { ArrowRight, CreditCard } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
+import { useMutation } from "react-query";
 
-import { Link } from "@/navigation";
+import { fetchStripePortal } from "@/_services";
+import { CustomSession } from "@/_types";
+import { useMessage } from "@/components/ui/message-provider";
 
 import { Button } from "..";
 
 function Billing() {
   const profileText = useTranslations("Profile");
   const navigationText = useTranslations("Navigation");
-  const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
+  const { showMessage } = useMessage();
+  const session: any = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+
+  const fetchStripePortalMutation = useMutation(fetchStripePortal, {
+    mutationKey: ["fetchStripePortal"],
+    onSuccess: (data) => {
+      window.location.replace(data.url);
+    },
+  });
+
+  const handleFetchStripePortal = () => {
+    try {
+      fetchStripePortalMutation.mutate({ session: safeSession });
+    } catch (error) {
+      showMessage("error", "ERROR_UPGRADE_ACCOUNT");
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -56,12 +77,10 @@ function Billing() {
         </motion.p>
 
         <motion.div variants={itemVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Link href={baseUrl + "/stripe/portal"}>
-            <Button variant={"outline"}>
-              <p className="dark:text-white">{navigationText("upgradeButton")}</p>
-              <ArrowRight height={16} />
-            </Button>
-          </Link>
+          <Button onClick={handleFetchStripePortal} variant={"outline"}>
+            <p className="dark:text-white">{navigationText("upgradeButton")}</p>
+            <ArrowRight height={16} />
+          </Button>
         </motion.div>
       </motion.article>
     </motion.div>

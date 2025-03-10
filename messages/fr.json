@@ -14,6 +14,7 @@
     "new": "nouveau",
     "create": "créer",
     "cancel": "annuler",
+    "send": "envoyer",
     "language": "Langue",
     "help": "Aide",
     "logout": "Déconnexion",
@@ -137,7 +138,9 @@
     "contributor": "Contributor",
     "owner": "Propriétaire",
     "viewer": "Visiteur",
-    "guest": "invité(e)"
+    "guest": "invité(e)",
+    "deleteMemberText": "sera supprimé de l'organisation.",
+    "memberListText": "Liste des membres de l'organisation"
   },
   "Whiteboard": {
     "typeSomething": "Tapez quelque chose...",
@@ -176,8 +179,11 @@
   "ResponseMesssagesCode": {
     "SUCCESSFUL_INVITATION": "Invitations envoyées avec succès",
     "SUCCESSFUL_ROLE_UPDATE": "Rôles mis à jour avec succès",
+    "ERROR_ROLE_UPDATE": "Erreur lors de la mise à jour des rôles",
     "SUCCESSFUL_MEMBER_REMOVAL": "Membre supprimé avec succès",
+    "ERROR_MEMBER_REMOVAL": "Erreur lors de la suppression du membre",
     "SUCCESSFUL_MEMBER_LEAVE": "Membre quitte l'organisation avec succès",
-    "ENTER_VALID_EMAILS": "Veuillez entrer des adresses e-mail valides."
+    "ENTER_VALID_EMAILS": "Veuillez entrer des adresses e-mail valides.",
+    "ERROR_UPGRADE_ACCOUNT": "Impossible de mettre à niveau votre compte"
   }
 }

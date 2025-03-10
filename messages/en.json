@@ -14,6 +14,7 @@
     "new": "new",
     "create": "create",
     "cancel": "cancel",
+    "send": "send",
     "language": "language",
     "help": "help",
     "logout": "logout",
@@ -137,7 +138,9 @@
     "contributor": "Contributor",
     "owner": "Owner",
     "viewer": "Viewer",
-    "guest": "Guest"
+    "guest": "Guest",
+    "deleteMemberText": "will be removed from the organization.",
+    "memberListText": "A list of members in the organization"
   },
   "Whiteboard": {
     "typeSomething": "Type something...",
@@ -176,8 +179,11 @@
   "ResponseMesssagesCode": {
     "SUCCESSFUL_INVITATION": "Successfully invited members",
     "SUCCESSFUL_ROLE_UPDATE": "Successfully updated roles",
+    "ERROR_ROLE_UPDATE": "Error updating roles",
     "SUCCESSFUL_MEMBER_REMOVAL": "Successfully removed member",
+    "ERROR_MEMBER_REMOVAL": "Error removing member",
     "SUCCESSFUL_MEMBER_LEAVE": "Successfully left organization",
-    "ENTER_VALID_EMAILS": "Please enter valid email(s)."
+    "ENTER_VALID_EMAILS": "Please enter valid email(s).",
+    "ERROR_UPGRADE_ACCOUNT": "Impossible to upgrade your account"
   }
 }

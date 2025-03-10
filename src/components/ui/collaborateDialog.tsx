@@ -10,7 +10,7 @@ import { CustomSession, DialogProps, Member, MindMapDetailsProps, MindmapRole } 
 import { Button, Input } from "@/components";
 import { useSyncMutation } from "@/hooks";
 import { checkPermission } from "@/utils";
-import { GetRoleIcon } from "@/utils/getRoleIcon";
+import { GetRoleIcon } from "@/utils/GetRoleIcon";
 
 interface CollaborateDialogProps extends DialogProps {
   mindmapId: string;
