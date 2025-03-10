@@ -223,6 +223,28 @@ export async function fetchStripeCheckout({ session, checkoutBody }: {session: C
     }
 }
 
+export async function fetchStripePortal({ session }: {session: CustomSession | null}): Promise<any> {
+  if(session)
+    try {
+      const responsePaymentProducts: Response = await fetch(baseUrl + `/stripe/portal`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.data.session.user.token}`,
+          "ngrok-skip-browser-warning": "1",
+        },
+      });
+
+      if (responsePaymentProducts.ok) {
+        return responsePaymentProducts.json();
+      } else {
+        throw responsePaymentProducts;
+      }
+    } catch (error) {
+      console.error("Impossible to fetch profiles:", error);
+    }
+}
+
 /* ======================================================= */  
 /* ==================   ORGANIZATIONS   ================== */
 /* ======================================================= */

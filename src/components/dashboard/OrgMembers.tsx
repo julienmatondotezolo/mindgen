@@ -31,7 +31,7 @@ import {
   removeMemberModalState,
 } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
-import { GetRoleIcon } from "@/utils/getRoleIcon";
+import { GetRoleIcon } from "@/utils/GetRoleIcon";
 
 interface OrgProps {
   userOrgaData: Organization | undefined;
