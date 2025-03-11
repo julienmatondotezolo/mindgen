@@ -189,6 +189,7 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Typing;
+      selectedLayerId?: string;
     }
   | {
       mode: CanvasMode.Tooling;

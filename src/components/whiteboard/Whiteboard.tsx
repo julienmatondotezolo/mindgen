@@ -464,6 +464,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       ) {
         setCanvasState({
           mode: CanvasMode.Typing,
+          selectedLayerId: layerId,
         });
         return;
       }
@@ -472,6 +473,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       if (canvasState.mode === CanvasMode.Typing && allActiveLayers.includes(layerId) && allActiveLayers.length === 1) {
         setCanvasState({
           mode: CanvasMode.Typing,
+          selectedLayerId: layerId,
         });
         return;
       }

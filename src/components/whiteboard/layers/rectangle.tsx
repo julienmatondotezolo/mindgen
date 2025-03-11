@@ -1,14 +1,13 @@
 /* eslint-disable no-unused-vars */
-
 import { useTheme } from "next-themes";
 import React from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { CanvasMode, RectangleLayer } from "@/_types";
-import { boardIdState, cameraStateAtom, canvasStateAtom, useUnSelectElement, useUpdateElement } from "@/state";
+import { boardIdState, canvasStateAtom, useUpdateElement } from "@/state";
 import { colorToCss, fillRGBA, getContrastingTextColor } from "@/utils";
 
-import { CustomContentEditable } from "./customContentEditable";
+import LayerText from "./LayerText";
 
 interface RectangleProps {
   id: string;
@@ -17,48 +16,10 @@ interface RectangleProps {
   selectionColor?: string;
 }
 
-const calculateDimensions = (text: string, currentWidth: number, currentHeight: number, scale: number) => {
-  const tempDiv = document.createElement("div");
-  // const padding = 40; // Padding for the content
-  const minWidth = 200; // Minimum width
-  const minHeight = 60; // Minimum height
-
-  tempDiv.style.position = "absolute";
-  tempDiv.style.visibility = "hidden";
-  tempDiv.style.wordBreak = "break-word";
-  // tempDiv.style.padding = `${padding / 2}px`;
-  tempDiv.style.fontSize = `${calculateFontSize(currentWidth, currentHeight, scale, text)}px`;
-  tempDiv.innerText = text;
-  document.body.appendChild(tempDiv);
-
-  // Calculate new dimensions based on content
-  const contentWidth = tempDiv.scrollWidth;
-  const newWidth = Math.max(minWidth, contentWidth);
-
-  // const contentHeight = (tempDiv.scrollWidth * 60) / 100;
-  const newHeight = Math.max(minHeight, (newWidth * 30) / 100);
-
-  document.body.removeChild(tempDiv);
-
-  return {
-    width: Math.max(minWidth, contentWidth),
-    height: newHeight,
-    // height: Math.max(minHeight, contentHeight),
-  };
-};
-
-const calculateFontSize = (width: number, height: number, scale: number, text: string) => {
-  const maxFontSize = 96;
-  const scaleFactor = 0.2;
-  // Add dampening factor to make scaling more subtle
-  // (0.25 means scale has 25% of its original effect)
-  const dampedScale = 1 + (1 - scale) * 0.2;
-
-  const fontSizeBasedOnHeight = height * scaleFactor * dampedScale;
-  const fontSizeBasedOnWidth = width * scaleFactor * dampedScale;
-
-  return Math.min(36, fontSizeBasedOnHeight, fontSizeBasedOnWidth);
-};
+const calculateDimensions = (text: string, currentWidth: number, currentHeight: number) => ({
+  width: currentWidth,
+  height: currentHeight,
+});
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
   const { theme } = useTheme();
@@ -68,13 +29,11 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
   const boardId = useRecoilValue(boardIdState);
-  const camera = useRecoilValue(cameraStateAtom);
 
   const updateLayer = useUpdateElement({ roomId: boardId });
-  const unSelectLayer = useUnSelectElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
-    const { width: newWidth, height: newHeight } = calculateDimensions(newValue, width, height, camera.scale);
+    const { width: newWidth, height: newHeight } = calculateDimensions(newValue, width, height);
 
     updateLayer({
       id,
@@ -82,18 +41,15 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      unSelectLayer();
-      setCanvasState({ mode: CanvasMode.None });
-    }
-  };
+  const isEditable = canvasState.mode === CanvasMode.Typing && canvasState.selectedLayerId === id;
 
   const newBorderColor = borderColor
     ? colorToCss(borderColor)
     : theme === "dark"
       ? "rgb(180, 191, 204)"
       : "rgb(71, 85, 105)";
+
+  const textColor = fill ? getContrastingTextColor(fill) : "#000";
 
   return (
     <>
@@ -119,25 +75,12 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
         strokeWidth={1}
         stroke={selectionColor || "transparent"}
       >
-        <CustomContentEditable
-          value={value || ""}
-          onChange={handleContentChange}
-          onKeyDown={handleKeyDown}
-          style={{
-            width: "99%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            justifyItems: "center",
-            textAlign: "center",
-            color: fill ? getContrastingTextColor(fill) : "#000",
-            fontSize: calculateFontSize(width, height, camera.scale, value || ""),
-            fontWeight: valueStyle?.fontWeight,
-            textTransform: valueStyle?.textTransform,
-            wordBreak: "break-word",
-            outline: "none",
-          }}
+        <LayerText
+          id={id}
+          value={value}
+          textColor={textColor}
+          onContentChange={handleContentChange}
+          isEditable={isEditable}
         />
       </foreignObject>
     </>
