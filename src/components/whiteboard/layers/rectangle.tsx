@@ -16,29 +16,44 @@ interface RectangleProps {
   selectionColor?: string;
 }
 
-const calculateDimensions = (text: string, currentWidth: number, currentHeight: number) => ({
-  width: currentWidth,
-  height: currentHeight,
-});
+const calculateDimensions = (text: string, currentWidth: number, currentHeight: number, textHeight?: number) => {
+  // If we have a textHeight that's larger than current height, use that instead
+  const newHeight = textHeight && textHeight > currentHeight ? textHeight : currentHeight;
+
+  return {
+    width: currentWidth,
+    height: newHeight,
+  };
+};
 
 const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps) => {
   const { theme } = useTheme();
 
-  const { x, y, width, height, fill, value, valueStyle, borderWidth, borderType, borderColor } = layer;
+  const { x, y, width, height, fill, value, borderWidth, borderType, borderColor } = layer;
 
-  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+  const canvasState = useRecoilValue(canvasStateAtom);
 
   const boardId = useRecoilValue(boardIdState);
 
   const updateLayer = useUpdateElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
-    const { width: newWidth, height: newHeight } = calculateDimensions(newValue, width, height);
-
     updateLayer({
       id,
-      updatedElementLayer: { value: newValue, width: newWidth, height: newHeight },
+      updatedElementLayer: { value: newValue },
     });
+  };
+
+  const handleHeightChange = (textHeight: number) => {
+    // Only update if the text height is actually different from current height
+    if (textHeight > height) {
+      const { width: newWidth, height: newHeight } = calculateDimensions("", width, height, textHeight);
+
+      updateLayer({
+        id,
+        updatedElementLayer: { width: newWidth, height: newHeight },
+      });
+    }
   };
 
   const isEditable = canvasState.mode === CanvasMode.Typing && canvasState.selectedLayerId === id;
@@ -80,6 +95,7 @@ const Rectangle = ({ id, layer, onPointerDown, selectionColor }: RectangleProps)
           value={value}
           textColor={textColor}
           onContentChange={handleContentChange}
+          onHeightChange={handleHeightChange}
           isEditable={isEditable}
         />
       </foreignObject>
