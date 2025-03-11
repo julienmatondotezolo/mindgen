@@ -83,8 +83,8 @@ function LayerText({
     >
       <div
         ref={editableRef}
-        role="textbox"
-        tabIndex={0}
+        role={isEditable ? "textbox" : undefined}
+        tabIndex={isEditable ? 0 : -1}
         contentEditable={isEditable}
         onInput={handleInput}
         style={{
@@ -99,6 +99,8 @@ function LayerText({
           fontSize: "inherit",
           lineHeight: "1.5",
           cursor: isEditable ? "text" : "default",
+          userSelect: isEditable ? "text" : "none",
+          pointerEvents: isEditable ? "auto" : "none",
           wordWrap: "break-word",
           overflowWrap: "break-word",
           whiteSpace: "normal",

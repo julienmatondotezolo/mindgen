@@ -172,7 +172,11 @@ function EdgeTextComponent({
         y={edgeTextBbox.height / 2}
         dy="0.3em"
         ref={edgeTextRef}
-        style={labelStyle}
+        style={{
+          ...labelStyle,
+          userSelect: "none",
+          pointerEvents: "none",
+        }}
       >
         {label}
       </text>
