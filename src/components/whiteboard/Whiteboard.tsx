@@ -28,6 +28,7 @@ import {
   XYWH,
 } from "@/_types";
 import { ablyClient } from "@/app/providers";
+import { useMessage } from "@/components/ui/message-provider";
 import { useLiveValue, useSelectionBounds } from "@/hooks";
 import {
   activeEdgeIdAtom,
@@ -79,6 +80,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const DEBUG_MODE: string | undefined = process.env.NEXT_PUBLIC_DEBUG_MODE;
 
+  const { showMessage } = useMessage();
+
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
 
@@ -101,6 +104,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     g: 20,
     b: 188,
   });
+
+  const [copiedLayers, setCopiedLayers] = useState<Layer[]>([]);
+  const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
 
   const MAX_LAYERS = 100;
   const PERMISSIONS = userMindmapDetails.connectedMemberPermissions;
@@ -1761,9 +1767,107 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     };
   }, [canvasState.mode]);
 
+  // Show/hide copy feedback
+  useEffect(() => {
+    if (copyFeedback) {
+      const timer = setTimeout(() => {
+        setCopyFeedback(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [copyFeedback]);
+
   // Adjusted keyboard event handlers
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Copy layers when Cmd+C or Ctrl+C is pressed
+      if ((event.metaKey || event.ctrlKey) && event.code === "KeyC") {
+        if (allActiveLayers?.length > 0 && canvasState.mode !== CanvasMode.Typing) {
+          const selectedLayers = layers.filter((layer) => allActiveLayers?.includes(layer.id));
+
+          setCopiedLayers(selectedLayers);
+          setCopyFeedback(true);
+        }
+      }
+
+      // Paste layers when Cmd+V or Ctrl+V is pressed
+      if ((event.metaKey || event.ctrlKey) && event.code === "KeyV") {
+        if (copiedLayers.length > 0 && checkPermission(PERMISSIONS, "UPDATE")) {
+          // Offset for pasted layers (to avoid exact overlap)
+          const OFFSET_X = 20;
+          const OFFSET_Y = 20;
+
+          const newLayerIds: string[] = [];
+          // Map to keep track of original ID to new ID
+          const idMapping: Record<string, string> = {};
+
+          copiedLayers.forEach((copiedLayer) => {
+            const newLayerId = nanoid().toString();
+
+            newLayerIds.push(newLayerId);
+
+            // Store mapping from original ID to new ID
+            idMapping[copiedLayer.id] = newLayerId;
+
+            // Create a new layer based on the copied one, with a slight position offset
+            const newLayer = {
+              ...copiedLayer,
+              id: newLayerId,
+              x: copiedLayer.x + OFFSET_X,
+              y: copiedLayer.y + OFFSET_Y,
+            };
+
+            addLayer({ layer: newLayer });
+          });
+
+          // Copy edges between the copied layers
+          const copiedLayerIds = copiedLayers.map((layer) => layer.id);
+          const relevantEdges = edges.filter(
+            (edge) =>
+              edge.fromLayerId &&
+              edge.toLayerId &&
+              copiedLayerIds.includes(edge.fromLayerId) &&
+              copiedLayerIds.includes(edge.toLayerId),
+          );
+
+          // Create new edges between the copied layers
+          relevantEdges.forEach((edge) => {
+            if (edge.fromLayerId && edge.toLayerId) {
+              const newFromLayerId = idMapping[edge.fromLayerId];
+              const newToLayerId = idMapping[edge.toLayerId];
+
+              if (newFromLayerId && newToLayerId) {
+                const newEdge: Edge = {
+                  ...edge,
+                  id: nanoid().toString(),
+                  fromLayerId: newFromLayerId,
+                  toLayerId: newToLayerId,
+                  start: {
+                    x: edge.start.x + OFFSET_X,
+                    y: edge.start.y + OFFSET_Y,
+                  },
+                  end: {
+                    x: edge.end.x + OFFSET_X,
+                    y: edge.end.y + OFFSET_Y,
+                  },
+                };
+
+                addEdge({ edge: newEdge });
+              }
+            }
+          });
+
+          // Select the newly pasted layers
+          selectLayer({ layerIds: newLayerIds });
+
+          // Reset canvas state
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+        }
+      }
+
       if (event.code === "Space") {
         if (canvasState.mode === CanvasMode.Typing || !checkPermission(PERMISSIONS, "UPDATE")) return;
         event.preventDefault();
@@ -1842,6 +1946,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     allActiveLayers,
     canvasState,
     layers,
+    copiedLayers,
+    edges,
     removeLayer,
     handleUnSelectLayer,
     setCanvasState,
@@ -1852,6 +1958,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     allActiveEdges,
     PERMISSIONS,
     activeEdgeId,
+    addLayer,
+    selectLayer,
+    addEdge,
   ]);
 
   // Hande Mouse move
@@ -1876,6 +1985,13 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mx-auto mb-2"></div>
             <p>We are saving your mindmap...</p>
           </div>
+        </div>
+      )}
+      {copyFeedback && (
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl shadow-md border border-slate-200/50 dark:border-slate-700/50 px-4 py-2 text-sm">
+          <span>
+            {copiedLayers.length} {copiedLayers.length === 1 ? "layer" : "layers"} copied
+          </span>
         </div>
       )}
       {DEBUG_MODE && (
