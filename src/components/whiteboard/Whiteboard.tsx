@@ -28,7 +28,6 @@ import {
   XYWH,
 } from "@/_types";
 import { ablyClient } from "@/app/providers";
-import { useMessage } from "@/components/ui/message-provider";
 import { useLiveValue, useSelectionBounds } from "@/hooks";
 import {
   activeEdgeIdAtom,
@@ -79,8 +78,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const router = useRouter();
 
   const DEBUG_MODE: string | undefined = process.env.NEXT_PUBLIC_DEBUG_MODE;
-
-  const { showMessage } = useMessage();
 
   const { theme } = useTheme();
   const boardId = userMindmapDetails.id;
