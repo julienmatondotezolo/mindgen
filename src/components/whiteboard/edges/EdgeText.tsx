@@ -65,13 +65,12 @@ function EdgeTextComponent({
 
   // Effect to handle clicking outside the input
   useEffect(() => {
-    if (canvasState.mode !== CanvasMode.Typing) {
-      setIsEditing(false);
+    if (!isEditing) {
       return;
     }
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (isEditing && inputRef.current && !inputRef.current.contains(event.target as Node)) {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
         setIsEditing(false);
         setCanvasState({ mode: CanvasMode.None });
 
@@ -86,7 +85,14 @@ function EdgeTextComponent({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isEditing, labelText, label, onLabelChange, setCanvasState, canvasState.mode]);
+  }, [isEditing, labelText, label, onLabelChange, setCanvasState]);
+
+  // Watch for canvas mode changes to exit editing
+  useEffect(() => {
+    if (isEditing && canvasState.mode !== CanvasMode.Typing) {
+      setIsEditing(false);
+    }
+  }, [canvasState.mode, isEditing]);
 
   const handlePointerDown = (e: React.MouseEvent) => {
     e.stopPropagation();

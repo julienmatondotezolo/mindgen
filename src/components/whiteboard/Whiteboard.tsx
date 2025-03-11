@@ -529,6 +529,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const onHandleMouseEnter = useCallback(
     (event: React.MouseEvent, layerId: string, position: HandlePosition) => {
       if (
+        canvasState.mode === CanvasMode.Resizing ||
         canvasState.mode === CanvasMode.EdgeDrawing ||
         canvasState.mode === CanvasMode.SelectionNet ||
         canvasState.mode === CanvasMode.Typing
@@ -580,6 +581,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const onHandleMouseLeave = useCallback(() => {
     if (
+      canvasState.mode === CanvasMode.Resizing ||
       canvasState.mode === CanvasMode.EdgeDrawing ||
       canvasState.mode === CanvasMode.SelectionNet ||
       canvasState.mode === CanvasMode.Typing ||
