@@ -9,7 +9,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { Organization } from "@/_types";
 import boardElement from "@/assets/images/elements.svg";
 import { BackDropGradient, Button, CurrentPlan } from "@/components";
-import { LeftBoards, MindGenTemplates, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
+import { LeftBoards, Navigation, OrgSidebar, RecentMindMap } from "@/components/dashboard";
 import {
   DeleteBoardDialog,
   GenerateMindmapDialog,
@@ -114,7 +114,7 @@ export default function Dashboard() {
             </div>
             {selectedOrganization ? (
               <div className="w-full space-y-12">
-                <MindGenTemplates />
+                {/* <MindGenTemplates /> */}
                 <section className="flex flex-wrap items-center justify-between space-y-4">
                   <LeftBoards />
                 </section>

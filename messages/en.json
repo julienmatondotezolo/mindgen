@@ -209,6 +209,14 @@
     "ERROR_MEMBER_REMOVAL": "Error removing member",
     "SUCCESSFUL_MEMBER_LEAVE": "Successfully left organization",
     "ENTER_VALID_EMAILS": "Please enter valid email(s).",
-    "ERROR_UPGRADE_ACCOUNT": "Impossible to upgrade your account"
+    "ERROR_UPGRADE_ACCOUNT": "Impossible to upgrade your account",
+    "SUCCESSFUL_CREATE_BOARD": "Successfully created board",
+    "ERROR_CREATE_BOARD": "Error creating board",
+    "SUCCESSFUL_GENERATE_BOARD": "Successfully generated board",
+    "ERROR_GENERATE_BOARD": "Error generating board",
+    "SUCCESSFUL_DELETE_BOARD": "Successfully deleted board",
+    "ERROR_DELETE_BOARD": "Error deleting board",
+    "SUCCESSFUL_UPDATE_BOARD": "Successfully updated board",
+    "ERROR_UPDATE_BOARD": "Error updating board"
   }
 }

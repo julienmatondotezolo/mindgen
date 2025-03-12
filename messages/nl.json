@@ -207,6 +207,14 @@
     "ERROR_MEMBER_REMOVAL": "Fout bij het verwijderen van het lid",
     "SUCCESSFUL_MEMBER_LEAVE": "Lid verlaten",
     "ENTER_VALID_EMAILS": "Voer geldig e-mailadres(sen) in.",
-    "ERROR_UPGRADE_ACCOUNT": "Fout bij het upgraden van uw account."
+    "ERROR_UPGRADE_ACCOUNT": "Fout bij het upgraden van uw account.",
+    "SUCCESSFUL_CREATE_BOARD": "Board succesvol gemaakt",
+    "ERROR_CREATE_BOARD": "Fout bij het maken van het board",
+    "SUCCESSFUL_GENERATE_BOARD": "Board succesvol gegenereerd",
+    "ERROR_GENERATE_BOARD": "Fout bij het genereren van het board",
+    "SUCCESSFUL_DELETE_BOARD": "Board succesvol verwijderd",
+    "ERROR_DELETE_BOARD": "Fout bij het verwijderen van het board",
+    "SUCCESSFUL_UPDATE_BOARD": "Board succesvol bijgewerkt",
+    "ERROR_UPDATE_BOARD": "Fout bij het bijwerken van het board"
   }
 }

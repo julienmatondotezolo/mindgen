@@ -29,6 +29,8 @@ import { useRouter } from "@/navigation";
 import { selectedOrganizationState } from "@/state";
 import { emptyMindMapObject, uppercaseFirstLetter } from "@/utils";
 
+import { useMessage } from "./message-provider";
+
 const DiagramOption = ({
   icon: Icon,
   title,
@@ -159,6 +161,8 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
     setIsOpen(false);
   };
 
+  const { showMessage } = useMessage();
+
   const queryClient = useQueryClient();
   const fetchGenerateMindmap = useMutation(generatedMindmap, {
     mutationKey: "GENERATE_MINDMAP",
@@ -183,6 +187,11 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         // Invalidate the query to cause a re-fetch
         queryClient.invalidateQueries("userMindmap");
       }
+      showMessage("success", "SUCCESSFUL_CREATE_BOARD");
+      handleClose();
+    },
+    onError: () => {
+      showMessage("error", "ERROR_CREATE_BOARD");
     },
   });
 
@@ -220,14 +229,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         visibility: inputVisibility,
       });
 
-      try {
-        fetchCreateMindmap.mutate({ mindmapObject: emptyMindmapObject });
-        handleClose();
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(`An error has occurred: ${error.message}`);
-        }
-      }
+      fetchCreateMindmap.mutate({ session: safeSession, mindmapObject: emptyMindmapObject });
     }
 
     setInputTitle("");

@@ -626,30 +626,34 @@ export async function fetchMindmaps({ session, organizationId }: {session: Custo
     }
 }
 
-export async function createMindmap({ mindmapObject }: {mindmapObject: any}): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responseCreatedMindMap: Response = await fetch(baseUrl + `/mindmap`, {
-      method: "POST",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-      body: JSON.stringify(mindmapObject),
-    });
-
-    if (responseCreatedMindMap.ok) {
-      return responseCreatedMindMap.json();
-    } else {
-      throw responseCreatedMindMap;
-    }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
+export async function createMindmap({ session, mindmapObject }: {session: CustomSession | null, mindmapObject: any}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
   }
+
+  const responseCreatedMindMap: Response = await fetch(baseUrl + `/mindmap`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(mindmapObject),
+  });
+
+  if (!responseCreatedMindMap.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Create mindmap",
+      statusCode: responseCreatedMindMap.status,
+      message: await responseCreatedMindMap.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseCreatedMindMap.json();
 }
 
 export async function favoriteMindmap({ mindmapId }: {mindmapId: string}): Promise<any> {

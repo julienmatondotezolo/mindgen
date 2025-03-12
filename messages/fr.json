@@ -209,6 +209,14 @@
     "ERROR_MEMBER_REMOVAL": "Erreur lors de la suppression du membre",
     "SUCCESSFUL_MEMBER_LEAVE": "Membre quitte l'organisation avec succès",
     "ENTER_VALID_EMAILS": "Veuillez entrer des adresses e-mail valides.",
-    "ERROR_UPGRADE_ACCOUNT": "Impossible de mettre à niveau votre compte"
+    "ERROR_UPGRADE_ACCOUNT": "Impossible de mettre à niveau votre compte",
+    "SUCCESSFUL_CREATE_BOARD": "Tableau créé avec succès",
+    "ERROR_CREATE_BOARD": "Erreur lors de la création du tableau",
+    "SUCCESSFUL_GENERATE_BOARD": "Tableau généré avec succès",
+    "ERROR_GENERATE_BOARD": "Erreur lors de la génération du tableau",
+    "SUCCESSFUL_DELETE_BOARD": "Tableau supprimé avec succès",
+    "ERROR_DELETE_BOARD": "Erreur lors de la suppression du tableau",
+    "SUCCESSFUL_UPDATE_BOARD": "Tableau mis à jour avec succès",
+    "ERROR_UPDATE_BOARD": "Erreur lors de la mise à jour du tableau"
   }
 }
