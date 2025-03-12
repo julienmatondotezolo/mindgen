@@ -34,8 +34,8 @@ import { uppercaseFirstLetter } from "@/utils";
 
 export default function Dashboard() {
   const text = useTranslations("Index");
+  const dashboardText = useTranslations("Dashboard");
   const textOrga = useTranslations("Organization");
-  const recentMindmapText = useTranslations("Dashboard");
 
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
   const [isDeleteBoardState, setIsDeleteBoardState] = useRecoilState(deleteBoardModalState);
@@ -87,7 +87,7 @@ export default function Dashboard() {
                   >
                     <Link href="/dashboard">
                       <LayoutDashboard className="h-4 w-4 mr-2" />
-                      Organisation Boards
+                      {dashboardText("organisationBoards")}
                     </Link>
                   </Button>
                   <Button
@@ -105,7 +105,7 @@ export default function Dashboard() {
                       }}
                     >
                       <Star className="h-4 w-4 mr-2" />
-                      Favourite Boards
+                      {dashboardText("favouriteBoards")}
                     </Link>
                   </Button>
                 </div>
@@ -117,7 +117,6 @@ export default function Dashboard() {
                 <MindGenTemplates />
                 <section className="flex flex-wrap items-center justify-between space-y-4">
                   <LeftBoards />
-                  <p className="text-xl font-medium dark:text-white">{recentMindmapText("myRecentBoards")}</p>
                 </section>
                 <RecentMindMap />
               </div>

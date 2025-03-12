@@ -89,7 +89,20 @@
     "welcome": "Welcome to Mindgen,",
     "myRecentBoards": "My recent boards",
     "yesterday": "Yesterday",
-    "today": "Today"
+    "today": "Today",
+    "boardsRemaining": "boards remaining",
+    "total": "total",
+    "youUsed": "You used",
+    "board": "board",
+    "boards": "boards",
+    "used": "used",
+    "favouriteBoards": "Favourite boards",
+    "organisationBoards": "Organisation boards",
+    "recentlyViewed": "Recently viewed",
+    "myBoards": "My boards",
+    "startYourFirstBoard": "Start your first board",
+    "startYourFirstBoardExplanation": "Begin your creative journey by creating a new board. Organize your thoughts, brainstorm ideas, and visualize connections.",
+    "searchBoards": "Search board"
   },
   "Pricing": {
     "hero": "Pricing",

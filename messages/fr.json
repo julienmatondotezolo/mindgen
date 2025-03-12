@@ -89,7 +89,20 @@
     "welcome": "Bienvenue sur Mindgen,",
     "myRecentBoards": "Mes tableaux récents",
     "yesterday": "Hier",
-    "today": "Aujourd'hui"
+    "today": "Aujourd'hui",
+    "boardsRemaining": "tableaux restants",
+    "total": "total",
+    "youUsed": "Vous avez utilisé",
+    "board": "tableau",
+    "boards": "tableaux",
+    "used": "utilisé",
+    "favouriteBoards": "Tableaux favoris",
+    "organisationBoards": "Tableaux de l'organisation",
+    "recentlyViewed": "Récemment consultés",
+    "myBoards": "Mes tableaux",
+    "startYourFirstBoard": "Créer votre premier tableau",
+    "startYourFirstBoardExplanation": "Commencez votre parcours créatif en créant un nouveau tableau. Organisez vos pensées, brainstormez des idées et visualisez les connexions.",
+    "searchBoards": "Rechercher un tableau"
   },
   "Pricing": {
     "hero": "Prix",

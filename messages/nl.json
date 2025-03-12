@@ -89,7 +89,20 @@
     "welcome": "Welkom bij Mindgen,",
     "myRecentBoards": "Mijn recente boards",
     "yesterday": "Gisteren",
-    "today": "Vandaag"
+    "today": "Vandaag",
+    "boardsRemaining": "boards over",
+    "total": "totaal",
+    "youUsed": "Je hebt gebruikt",
+    "board": "board",
+    "boards": "boards",
+    "used": "gebruikt",
+    "favouriteBoards": "Favoriete boards",
+    "organisationBoards": "Organisatie boards",
+    "recentlyViewed": "Recente boards",
+    "myBoards": "Mijn boards",
+    "startYourFirstBoard": "Maak je eerste board",
+    "startYourFirstBoardExplanation": "Begin je creatieve reis door een nieuw board te maken. Organiseer je gedachten, brainstorm ideeën en visualiseer connecties.",
+    "searchBoards": "Zoek een board"
   },
   "Pricing": {
     "hero": "Prijzen",

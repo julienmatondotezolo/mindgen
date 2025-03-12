@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -16,13 +14,14 @@ import { MindMapBoards } from "./MindMapBoards";
 
 function RecentMindMap() {
   const text = useTranslations("Index");
+  const dashboardText = useTranslations("Dashboard");
   const [isOpen, setIsOpen] = useRecoilState(newBoardState);
   const maxMindmap = useRecoilValue(profilMaxMindmapState);
   const boardLength = useRecoilValue(boardsLengthState);
   const leftBoards = maxMindmap - boardLength;
 
   const searchParams = useSearchParams();
-  const showFavorites = searchParams.get("usermindmaps") === "true";
+  const showUserBoards = searchParams.get("userBoards") === "true";
 
   const canCreateNewBoard = leftBoards > 0;
 
@@ -61,34 +60,30 @@ function RecentMindMap() {
     >
       <div className="w-full flex justify-between items-center mb-8">
         <section className="grid grid-cols-2 gap-8">
-          <div className="flex space-x-3">
+          <div className="flex space-x-8">
             <Link href="/dashboard">
-              <motion.article
-                variants={filterVariants}
-                initial="initial"
-                whileHover="hover"
-                className={`${
-                  !showFavorites
-                    ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
-                    : ""
-                } rounded-xl px-4 py-2 transition-all duration-300`}
-              >
-                <p className="text-sm font-medium">Recently viewed</p>
-              </motion.article>
+              <Button variant={showUserBoards ? "ghost" : "boardClicked"}>
+                <motion.article
+                  variants={filterVariants}
+                  initial="initial"
+                  whileHover="hover"
+                  className={"transition-all duration-300"}
+                >
+                  <p className="text-sm font-medium">{dashboardText("recentlyViewed")}</p>
+                </motion.article>
+              </Button>
             </Link>
-            <Link href={{ pathname: "/dashboard", query: { usermindmaps: "true" } }}>
-              <motion.article
-                variants={filterVariants}
-                initial="initial"
-                whileHover="hover"
-                className={`${
-                  showFavorites
-                    ? "bg-gradient-to-r from-primary-color/10 to-secondary-color/10 dark:from-primary-color/20 dark:to-secondary-color/20"
-                    : ""
-                } rounded-xl px-4 py-2 transition-all duration-300`}
-              >
-                <p className="text-sm font-medium">My mindmaps</p>
-              </motion.article>
+            <Link href={{ pathname: "/dashboard", query: { userBoards: "true" } }}>
+              <Button variant={showUserBoards ? "boardClicked" : "ghost"}>
+                <motion.article
+                  variants={filterVariants}
+                  initial="initial"
+                  whileHover="hover"
+                  className={"transition-all duration-300"}
+                >
+                  <p className="text-sm font-medium">{dashboardText("myBoards")}</p>
+                </motion.article>
+              </Button>
             </Link>
           </div>
         </section>
@@ -96,7 +91,9 @@ function RecentMindMap() {
           <motion.div variants={buttonVariants} initial="initial" whileHover="hover" whileTap="tap">
             <Button onClick={handleNewBoard} className="bg-primary-color hover:opacity-90 transition-all duration-300">
               <Plus className="mr-2" height={size} />
-              <span className="font-medium">{uppercaseFirstLetter(text("new"))} board</span>
+              <span className="font-medium">
+                {uppercaseFirstLetter(text("new"))} {dashboardText("board")}
+              </span>
             </Button>
           </motion.div>
         </section>
