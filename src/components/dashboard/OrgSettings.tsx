@@ -59,6 +59,10 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
       setSelectedOrga(updatedOrga);
       queryClient.invalidateQueries("userOrgaById");
       queryClient.invalidateQueries("userOrganizations");
+      showMessage("success", "SUCCESSFUL_UPDATE_ORGANIZATION");
+    },
+    onError: () => {
+      showMessage("error", "ERROR_UPDATE_ORGANIZATION");
     },
   });
 
@@ -71,6 +75,7 @@ function OrgSettings({ userOrgaData, isLoading }: OrgProps) {
     };
 
     updateOrgaMutation.mutate({
+      session: safeSession,
       organizationId: selectedOrga!.id,
       organizationObject: newOrgaObject,
     });

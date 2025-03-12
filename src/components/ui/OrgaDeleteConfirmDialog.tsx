@@ -173,7 +173,7 @@ const OrgaDeleteConfirmDialog: FC<OrgaDeleteConfirmDialogProps> = ({
                   className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md"
                   onClick={handleClose}
                 >
-                  {text("cancel")}
+                  {uppercaseFirstLetter(text("cancel"))}
                 </Button>
                 <Button
                   disabled={!isConfirmed}

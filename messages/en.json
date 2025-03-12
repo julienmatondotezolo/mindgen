@@ -185,6 +185,8 @@
   "ResponseMesssagesCode": {
     "SUCCESSFUL_CREATE_ORGANIZATION": "Organization created successfully",
     "ERROR_CREATE_ORGANIZATION": "Error creating organization",
+    "SUCCESSFUL_UPDATE_ORGANIZATION": "Organization updated successfully",
+    "ERROR_UPDATE_ORGANIZATION": "Error updating organization",
     "SUCCESSFUL_DELETE_ORGANIZATION": "Organization deleted successfully",
     "ERROR_DELETE_ORGANIZATION": "Error deleting organization",
     "SUCCESSFUL_INVITATION": "Successfully invited members",

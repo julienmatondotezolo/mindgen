@@ -183,6 +183,8 @@
   "ResponseMesssagesCode": {
     "SUCCESSFUL_CREATE_ORGANIZATION": "Organisatie succesvol gemaakt",
     "ERROR_CREATE_ORGANIZATION": "Fout bij het maken van de organisatie",
+    "SUCCESSFUL_UPDATE_ORGANIZATION": "Organisatie succesvol bijgewerkt",
+    "ERROR_UPDATE_ORGANIZATION": "Fout bij het bijwerken van de organisatie",
     "SUCCESSFUL_DELETE_ORGANIZATION": "Organisatie succesvol verwijderd",
     "ERROR_DELETE_ORGANIZATION": "Fout bij het verwijderen van de organisatie",
     "SUCCESSFUL_INVITATION": "Leden uitgenodigd",

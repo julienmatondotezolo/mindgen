@@ -333,30 +333,34 @@ export async function createOrganization(organizationObject: any): Promise<any> 
   }
 }
 
-export async function updateOrganization({ organizationId, organizationObject }: { organizationId: string, organizationObject: any }): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responseUpdateOrganization: Response = await fetch(baseUrl + `/organization/${organizationId}`, {
-      method: "PUT",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-      body: JSON.stringify(organizationObject),
-    });
-
-    if (responseUpdateOrganization.ok) {
-      return await responseUpdateOrganization.json();
-    } else {
-      throw responseUpdateOrganization;
-    }
-  } catch (error) {
-    console.error("Impossible to update organization:", error);
+export async function updateOrganization({ session, organizationId, organizationObject }: { session: CustomSession | null, organizationId: string, organizationObject: any }): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
   }
+
+  const responseUpdateOrganization: Response = await fetch(baseUrl + `/organization/${organizationId}`, {
+    method: "PUT",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(organizationObject),
+  });
+
+  if (!responseUpdateOrganization.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Update organization",
+      statusCode: responseUpdateOrganization.status,
+      message: await responseUpdateOrganization.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseUpdateOrganization.json();
 }
 
 export async function deleteOrganizationById({ session, organizationId }: { session: CustomSession | null, organizationId: string }): Promise<any> {
@@ -439,7 +443,7 @@ export async function updateOrganizationMember({
   if (!updateOrganizationRoles.ok) {
     // Create a structured error object
     const errorData: ApiError = {
-      name: "Update organization",
+      name: "Update organization member roles",
       statusCode: updateOrganizationRoles.status,
       message: await updateOrganizationRoles.text(),
     };
