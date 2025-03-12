@@ -102,7 +102,18 @@
     "myBoards": "Mijn boards",
     "startYourFirstBoard": "Maak je eerste board",
     "startYourFirstBoardExplanation": "Begin je creatieve reis door een nieuw board te maken. Organiseer je gedachten, brainstorm ideeën en visualiseer connecties.",
-    "searchBoards": "Zoek een board"
+    "searchBoards": "Zoek een board",
+    "createNewBoard": "Maak een nieuw board",
+    "selectLayoutType": "Selecteer het type layout",
+    "blankBoard": "Blank board",
+    "mindMap": "Mind map",
+    "flowChart": "Flow chart",
+    "radialLayout": "Radial layout",
+    "hierarchicalLayout": "Hierarchical layout",
+    "swotText": "Analyseer krachten en zwaktes",
+    "barChartText": "Vergelijk categorieën van gegevens",
+    "lineChartText": "Volg trends in de tijd",
+    "generateBoard": "Genereer een board"
   },
   "Pricing": {
     "hero": "Prijzen",

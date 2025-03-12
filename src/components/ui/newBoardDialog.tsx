@@ -109,6 +109,7 @@ const LayoutOption = ({
 
 const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
+  const dashboardText = useTranslations("Dashboard");
   const modalRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
@@ -127,31 +128,31 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       id: "BLANK",
       icon: Plus,
       title: "Blank board",
-      description: "Create a board from scratch",
+      description: dashboardText("blankBoard"),
       disabled: false,
     },
     {
       id: "MIND_MAP",
       icon: BrainCircuit,
       title: "Mind Map",
-      description: "Organize ideas hierarchically",
+      description: dashboardText("mindMap"),
       disabled: false,
     },
     {
       id: "FLOW_CHART",
       icon: Workflow,
       title: "Flow Chart",
-      description: "Visualize processes and workflows",
+      description: dashboardText("flowChart"),
       disabled: true,
     },
-    { id: "SWOT", icon: Cpu, title: "SWOT", description: "Analyze strengths and weaknesses", disabled: true },
-    { id: "BAR", icon: BarChart, title: "Bar Chart", description: "Compare data categories", disabled: true },
-    { id: "LINE", icon: LineChart, title: "Line Chart", description: "Track trends over time", disabled: true },
+    { id: "SWOT", icon: Cpu, title: "SWOT", description: dashboardText("swotText"), disabled: true },
+    { id: "BAR", icon: BarChart, title: "Bar Chart", description: dashboardText("barChartText"), disabled: true },
+    { id: "LINE", icon: LineChart, title: "Line Chart", description: dashboardText("lineChartText"), disabled: true },
   ];
 
   const layoutOptions = [
-    { id: "CIRCLE", icon: CircleDot, title: "Radial Layout" },
-    { id: "PYRAMID", icon: Network, title: "Hierarchical Layout" },
+    { id: "CIRCLE", icon: CircleDot, title: dashboardText("radialLayout") },
+    { id: "PYRAMID", icon: Network, title: dashboardText("hierarchicalLayout") },
   ];
 
   const handleClose = () => {
@@ -290,7 +291,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
               >
                 <div className="flex items-center space-x-3">
                   <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-                  <h2 className="text-2xl font-bold">Create New Board</h2>
+                  <h2 className="text-2xl font-bold">{dashboardText("createNewBoard")}</h2>
                 </div>
                 <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-700">
                   <X className="w-5 h-5" />
@@ -321,7 +322,9 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                   animate={{ opacity: 1, height: "auto" }}
                   className="flex flex-col space-y-2"
                 >
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Select Layout Type</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {dashboardText("selectLayoutType")}
+                  </p>
                   <div className="flex space-x-4">
                     {layoutOptions.map((option) => (
                       <LayoutOption
@@ -362,9 +365,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                       <p className="text-grey dark:text-grey-blue text-sm mb-2">{text("description")}</p>
                       <Textarea
                         placeholder={`${
-                          selectedType == "BLANK"
-                            ? text("description").toLowerCase()
-                            : "Write your prompt here to generate a board."
+                          selectedType == "BLANK" ? text("description").toLowerCase() : dashboardText("generateBoard")
                         }`}
                         value={inputDescription}
                         onChange={handleDescriptionChange}

@@ -102,7 +102,18 @@
     "myBoards": "Mes tableaux",
     "startYourFirstBoard": "Créer votre premier tableau",
     "startYourFirstBoardExplanation": "Commencez votre parcours créatif en créant un nouveau tableau. Organisez vos pensées, brainstormez des idées et visualisez les connexions.",
-    "searchBoards": "Rechercher un tableau"
+    "searchBoards": "Rechercher un tableau",
+    "createNewBoard": "Créer un nouveau tableau",
+    "selectLayoutType": "Sélectionner le type de disposition",
+    "blankBoard": "Tableau vide",
+    "mindMap": "Carte mentale",
+    "flowChart": "Diagramme de flux",
+    "radialLayout": "Disposition radiale",
+    "hierarchicalLayout": "Disposition hiérarchique",
+    "swotText": "Analyser les forces et les faiblesses",
+    "barChartText": "Comparer les catégories de données",
+    "lineChartText": "Suivre les tendances au fil du temps",
+    "generateBoard": "Générer un tableau"
   },
   "Pricing": {
     "hero": "Prix",
