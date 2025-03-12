@@ -17,10 +17,15 @@ import { Link } from "@/navigation";
 import { canvasStateAtom } from "@/state";
 import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
+import { useMessage } from "../ui/message-provider";
+
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const session = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const { showMessage } = useMessage();
   const text = useTranslations("Index");
+  const dashboardText = useTranslations("Dashboard");
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const PERMISSIONS = userMindmapDetails?.connectedMemberPermissions;
 
@@ -39,6 +44,10 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
     onSuccess: () => {
       queryClient.invalidateQueries("mindmaps");
       setIsSheetOpen(false);
+      showMessage("success", "SUCCESSFUL_UPDATE_BOARD");
+    },
+    onError: () => {
+      showMessage("error", "ERROR_UPDATE_BOARD");
     },
   });
 
@@ -108,7 +117,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
           <SheetHeader className="mb-6">
             <SheetTitle className="flex items-center gap-2 text-xl">
               <Settings className="h-5 w-5" />
-              {uppercaseFirstLetter(text("save"))} mind map
+              {uppercaseFirstLetter(text("save"))} {dashboardText("board")}
             </SheetTitle>
           </SheetHeader>
 

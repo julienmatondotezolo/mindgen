@@ -784,27 +784,33 @@ export async function updateBoardMetadataById({
   mindmapId: string | undefined;
   mindmapObject: any;
 }): Promise<any> {
-  if(session)
-    try {
-      const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/metadata/${mindmapId}`, {
-        method: "PUT",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.data.session.user.token}`,
-          "ngrok-skip-browser-warning": "1",
-        },
-        body: JSON.stringify(mindmapObject),
-      });
+  if (!session) {
+    throw new Error('No session provided');
+  }
 
-      if (responseUpdatedMindMap.ok) {
-        return responseUpdatedMindMap;
-      } else {
-        throw responseUpdatedMindMap;
-      }
-    } catch (error) {
-      console.error("Impossible to fetch profiles:", error);
-    }
+  const responseUpdatedMindMap: Response = await fetch(baseUrl + `/mindmap/metadata/${mindmapId}`, {
+    method: "PUT",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify(mindmapObject),
+  });
+
+  if (!responseUpdatedMindMap.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Update board metadata",
+      statusCode: responseUpdatedMindMap.status,
+      message: await responseUpdatedMindMap.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseUpdatedMindMap.json();
 }
 
 export async function deleteMindmapById({ session, mindmapId }: {session: CustomSession | null, mindmapId: string}): Promise<any> {
