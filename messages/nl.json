@@ -149,7 +149,10 @@
     "existingPassword": "Bestaand wachtwoord",
     "newPassword": "Nieuw wachtwoord",
     "currentPassword": "Huidig wachtwoord",
-    "confirmNewPassword": "Bevestig nieuw wachtwoord"
+    "confirmNewPassword": "Bevestig nieuw wachtwoord",
+    "currentUsage": "Huidig gebruik",
+    "creditsUsedOut": "credits gebruikt uit",
+    "credits": "credits"
   },
   "Chat": {
     "promptInput": "Vraag/Genereer alles over deze mindmap...",

@@ -149,7 +149,10 @@
     "existingPassword": "Existing password",
     "newPassword": "New password",
     "currentPassword": "Current password",
-    "confirmNewPassword": "Confirm new password"
+    "confirmNewPassword": "Confirm new password",
+    "currentUsage": "Current usage",
+    "creditsUsedOut": "credits used out of",
+    "credits": "credits"
   },
   "Chat": {
     "promptInput": "Ask/generate anything about this mindmap...",

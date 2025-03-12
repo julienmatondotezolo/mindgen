@@ -1,5 +1,6 @@
 import { capitalize } from "lodash";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import React from "react";
 import { useQuery } from "react-query";
 
@@ -11,6 +12,9 @@ import { Progress } from "..";
 function CurrentPlan() {
   const session = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const profileText = useTranslations("Profile");
+  const dashboardText = useTranslations("Dashboard");
 
   const fetchUserProfile = () => fetchProfile({ session: safeSession });
   const { data: userProfile } = useQuery<ProfileProps>("userProfile", fetchUserProfile);
@@ -28,15 +32,16 @@ function CurrentPlan() {
 
   return (
     <div className="w-full p-4 bg-[#f3f5f7] dark:bg-slate-500 dark:bg-opacity-20 rounded-2xl space-y-4">
-      <p className="font-bold">Current Usage</p>
+      <p className="font-bold">{profileText("currentUsage")}</p>
       <p className="text-sm">
-        {capitalize(userProfile?.plan.toLowerCase())}: <span className="font-bold">{percentageUsed}%</span> used
+        {capitalize(userProfile?.plan.toLowerCase())}: <span className="font-bold">{percentageUsed}%</span>{" "}
+        {dashboardText("used")}
       </p>
       <section className="space-y-2">
         <Progress value={percentageUsed} />
         <p className="text-[12px] text-grey dark:text-grey-blue">
-          <span className="font-bold">{userProfile?.usedCredits}</span> credits used out of{" "}
-          <span className="font-bold">{userProfile?.subscriptionDetails.maxCredits}</span> credits
+          <span className="font-bold">{userProfile?.usedCredits}</span> {profileText("creditsUsedOut")}{" "}
+          <span className="font-bold">{userProfile?.subscriptionDetails.maxCredits}</span> {profileText("credits")}
         </p>
       </section>
       {/*       <Link href={`/pricing`}>
