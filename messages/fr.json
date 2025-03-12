@@ -148,6 +148,7 @@
     "changePassword": "Changer le mot de passe",
     "existingPassword": "Mot de passe existant",
     "newPassword": "Nouveau mot de passe",
+    "currentPassword": "Mot de passe actuel",
     "confirmNewPassword": "Confirmer le nouveau mot de passe"
   },
   "Chat": {
@@ -233,6 +234,9 @@
     "ERROR_UPDATE_BOARD": "Erreur lors de la mise à jour du tableau",
     "SUCCESSFUL_FAVORITE_BOARD": "Tableau favoris avec succès",
     "SUCCESSFUL_UNFAVORITE_BOARD": "Tableau défavorisé avec succès",
-    "ERROR_FAVORITE_BOARD": "Erreur lors de la favorisation du tableau"
+    "ERROR_FAVORITE_BOARD": "Erreur lors de la favorisation du tableau",
+    "SUCCESSFUL_PASSWORD_CHANGE": "Mot de passe modifié avec succès",
+    "ERROR_PASSWORD_CHANGE": "Erreur lors de la modification du mot de passe",
+    "INCORRECT_CURRENT_PASSWORD": "Mot de passe actuel incorrect"
   }
 }

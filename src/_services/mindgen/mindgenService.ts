@@ -173,7 +173,7 @@ export async function changePassword({ session, passwordBody }: { session: Custo
     throw errorData;
   }
 
-  return responsePasswordChange.json();
+  return responsePasswordChange.ok;
 }
 
 /* ======================================================== */
