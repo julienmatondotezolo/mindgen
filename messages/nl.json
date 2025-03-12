@@ -113,7 +113,9 @@
     "swotText": "Analyseer krachten en zwaktes",
     "barChartText": "Vergelijk categorieën van gegevens",
     "lineChartText": "Volg trends in de tijd",
-    "generateBoard": "Genereer een board"
+    "generateBoard": "Genereer een board",
+    "deleteBoardConfirmation": "Je bent op het punt om te verwijderen. Voer de naam:",
+    "toConfirm": "om de verwijderingte bevestigen."
   },
   "Pricing": {
     "hero": "Prijzen",

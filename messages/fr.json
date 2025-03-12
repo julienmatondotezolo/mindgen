@@ -113,7 +113,9 @@
     "swotText": "Analyser les forces et les faiblesses",
     "barChartText": "Comparer les catégories de données",
     "lineChartText": "Suivre les tendances au fil du temps",
-    "generateBoard": "Générer un tableau"
+    "generateBoard": "Générer un tableau",
+    "deleteBoardConfirmation": "Vous êtes sur le point de supprimer. Veuillez entrer le nom:",
+    "toConfirm": "pour confirmer la supression."
   },
   "Pricing": {
     "hero": "Prix",

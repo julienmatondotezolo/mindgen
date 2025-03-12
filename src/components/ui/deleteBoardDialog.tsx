@@ -1,25 +1,33 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Trash2, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilValue } from "recoil";
 
 import { deleteMindmapById } from "@/_services";
+import { CustomSession } from "@/_types";
 import { MindMapDialogProps } from "@/_types/MindMapDialogProps";
 import { Button } from "@/components/ui";
 import { boardToDeleteState } from "@/state";
 import { uppercaseFirstLetter } from "@/utils";
 
+import { useMessage } from "./message-provider";
+
 const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
   const text = useTranslations("Index");
+  const dashboardText = useTranslations("Dashboard");
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const boardToDelete = useRecoilValue(boardToDeleteState);
   const [confirmText, setConfirmText] = useState("");
   const [isShaking, setIsShaking] = useState(false);
+
+  const session: any = useSession();
+  const safeSession = session ? (session as unknown as CustomSession) : null;
+
+  const { showMessage } = useMessage();
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -41,11 +49,15 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
         queryClient.invalidateQueries("userMindmap");
         setIsOpen(false);
         setConfirmText("");
+        showMessage("success", "SUCCESSFUL_DELETE_BOARD");
       } catch (error) {
         if (error instanceof Error) {
           console.error(`An error has occurred: ${error.message}`);
         }
       }
+    },
+    onError: () => {
+      showMessage("error", "ERROR_DELETE_BOARD");
     },
   });
 
@@ -56,13 +68,7 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       return;
     }
 
-    try {
-      await fetchDeleteMindmapById.mutateAsync(boardToDelete.id);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
-    }
+    await fetchDeleteMindmapById.mutateAsync({ session: safeSession, mindmapId: boardToDelete.id });
   };
 
   const overlayVariants = {
@@ -127,7 +133,7 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                       <AlertTriangle className="w-6 h-6 text-red-500" />
                     </motion.div>
                     <h2 className="text-xl font-bold dark:text-white">
-                      {text("remove")} {text("board")}?
+                      {uppercaseFirstLetter(text("remove"))} {dashboardText("board")} ?
                     </h2>
                   </motion.div>
                   <motion.button
@@ -142,8 +148,9 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
 
                 <motion.div animate={isShaking ? "shake" : ""} variants={shakeAnimation} className="space-y-4">
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {text("This action cannot be undone. Please type")}{" "}
-                    <span className="font-semibold text-red-500">{boardToDelete.name}</span> {text("to confirm")}:
+                    {dashboardText("deleteBoardConfirmation")}{" "}
+                    <span className="font-semibold text-red-500">{boardToDelete.name}</span>{" "}
+                    {dashboardText("toConfirm")}:
                   </p>
 
                   <input
@@ -152,7 +159,7 @@ const DeleteBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
                     value={confirmText}
                     onChange={(e) => setConfirmText(e.target.value)}
                     className="w-full px-4 py-2 text-sm border rounded-lg bg-transparent dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder={text("Type to confirm")}
+                    placeholder={boardToDelete.name}
                   />
                 </motion.div>
 

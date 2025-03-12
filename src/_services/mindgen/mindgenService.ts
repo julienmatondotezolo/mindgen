@@ -645,7 +645,7 @@ export async function createMindmap({ session, mindmapObject }: {session: Custom
   if (!responseCreatedMindMap.ok) {
     // Create a structured error object
     const errorData: ApiError = {
-      name: "Create mindmap",
+      name: "Create board",
       statusCode: responseCreatedMindMap.status,
       message: await responseCreatedMindMap.text(),
     };
@@ -807,28 +807,32 @@ export async function updateBoardMetadataById({
     }
 }
 
-export async function deleteMindmapById(mindmapId: string): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responseDeletedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseDeletedMindMap.ok) {
-      return responseDeletedMindMap;
-    } else {
-      throw responseDeletedMindMap;
-    }
-  } catch (error) {
-    console.error("Impossible to fetch profiles:", error);
+export async function deleteMindmapById({ session, mindmapId }: {session: CustomSession | null, mindmapId: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
   }
+
+  const responseDeletedMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseDeletedMindMap.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Delete board",
+      statusCode: responseDeletedMindMap.status,
+      message: await responseDeletedMindMap.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseDeletedMindMap.json();
 }
 
 export async function leaveMindmap(collaboratorId: string): Promise<any> {

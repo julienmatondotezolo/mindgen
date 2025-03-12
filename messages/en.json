@@ -113,7 +113,9 @@
     "swotText": "Analyze strengths and weaknesses",
     "barChartText": "Compare data categories",
     "lineChartText": "Track trends over time",
-    "generateBoard": "Generate board"
+    "generateBoard": "Generate board",
+    "deleteBoardConfirmation": "You are about to delete. Please type",
+    "toConfirm": "to confirm the deletion."
   },
   "Pricing": {
     "hero": "Pricing",
