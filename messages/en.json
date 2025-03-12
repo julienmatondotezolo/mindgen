@@ -230,6 +230,9 @@
     "SUCCESSFUL_DELETE_BOARD": "Successfully deleted board",
     "ERROR_DELETE_BOARD": "Error deleting board",
     "SUCCESSFUL_UPDATE_BOARD": "Successfully updated board",
-    "ERROR_UPDATE_BOARD": "Error updating board"
+    "ERROR_UPDATE_BOARD": "Error updating board",
+    "SUCCESSFUL_FAVORITE_BOARD": "Successfully favorited board",
+    "SUCCESSFUL_UNFAVORITE_BOARD": "Successfully unfavorited board",
+    "ERROR_FAVORITE_BOARD": "Error favoriting board"
   }
 }

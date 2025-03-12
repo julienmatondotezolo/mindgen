@@ -228,6 +228,9 @@
     "SUCCESSFUL_DELETE_BOARD": "Board succesvol verwijderd",
     "ERROR_DELETE_BOARD": "Fout bij het verwijderen van het board",
     "SUCCESSFUL_UPDATE_BOARD": "Board succesvol bijgewerkt",
-    "ERROR_UPDATE_BOARD": "Fout bij het bijwerken van het board"
+    "ERROR_UPDATE_BOARD": "Fout bij het bijwerken van het board",
+    "SUCCESSFUL_FAVORITE_BOARD": "Board succesvol gefavoriseerd",
+    "SUCCESSFUL_UNFAVORITE_BOARD": "Board succesvol gedefavoriseerd",
+    "ERROR_FAVORITE_BOARD": "Fout bij het favoriseren van het board"
   }
 }

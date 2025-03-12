@@ -656,29 +656,33 @@ export async function createMindmap({ session, mindmapObject }: {session: Custom
   return responseCreatedMindMap.json();
 }
 
-export async function favoriteMindmap({ mindmapId }: {mindmapId: string}): Promise<any> {
-  try {
-    const response: Response = await fetch(process.env.NEXT_PUBLIC_URL + "/api/auth/session");
-    const session = await response.json();
-
-    const responseFavoriteMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/favorite`, {
-      method: "PUT",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.session.user.token}`,
-        "ngrok-skip-browser-warning": "1",
-      },
-    });
-
-    if (responseFavoriteMindMap.ok) {
-      return responseFavoriteMindMap.json();
-    } else {
-      throw responseFavoriteMindMap;
-    }
-  } catch (error) {
-    console.error("Impossible to favorite mindmap:", error);
+export async function favoriteMindmap({ session, mindmapId }: {session: CustomSession | null, mindmapId: string}): Promise<any> {
+  if (!session) {
+    throw new Error('No session provided');
   }
+
+  const responseFavoriteMindMap: Response = await fetch(baseUrl + `/mindmap/${mindmapId}/favorite`, {
+    method: "PUT",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.data.session.user.token}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+  });
+
+  if (!responseFavoriteMindMap.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Favorite board",
+      statusCode: responseFavoriteMindMap.status,
+      message: await responseFavoriteMindMap.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseFavoriteMindMap.json();
 }
 
 export async function getMindmapById({ session, mindmapId }: {session: CustomSession | null, mindmapId: string}): Promise<any> {

@@ -230,6 +230,9 @@
     "SUCCESSFUL_DELETE_BOARD": "Tableau supprimé avec succès",
     "ERROR_DELETE_BOARD": "Erreur lors de la suppression du tableau",
     "SUCCESSFUL_UPDATE_BOARD": "Tableau mis à jour avec succès",
-    "ERROR_UPDATE_BOARD": "Erreur lors de la mise à jour du tableau"
+    "ERROR_UPDATE_BOARD": "Erreur lors de la mise à jour du tableau",
+    "SUCCESSFUL_FAVORITE_BOARD": "Tableau favoris avec succès",
+    "SUCCESSFUL_UNFAVORITE_BOARD": "Tableau défavorisé avec succès",
+    "ERROR_FAVORITE_BOARD": "Erreur lors de la favorisation du tableau"
   }
 }

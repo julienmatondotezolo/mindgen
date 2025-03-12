@@ -13,6 +13,7 @@ import { CustomSession, Filter, MindmapObject, Organization } from "@/_types";
 import deleteIcon from "@/assets/icons/delete.svg";
 import boardElement from "@/assets/images/elements.svg";
 import { SkeletonMindMapBoard } from "@/components/ui";
+import { useMessage } from "@/components/ui/message-provider";
 import {
   boardsLengthState,
   boardToDeleteState,
@@ -29,6 +30,8 @@ function MindMapBoards() {
   const dashboardText = useTranslations("Dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const { showMessage } = useMessage();
 
   const session: any = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
@@ -83,24 +86,22 @@ function MindMapBoards() {
 
   const fetchFavoriteMindmap = useMutation(favoriteMindmap, {
     onSuccess: async (data: any) => {
-      const response = await data;
-
-      if (response.id !== "") {
-        queryClient.invalidateQueries("userMindmap");
+      if (data.favorite) {
+        showMessage("success", "SUCCESSFUL_FAVORITE_BOARD");
+      } else {
+        showMessage("success", "SUCCESSFUL_UNFAVORITE_BOARD");
       }
+      queryClient.invalidateQueries("userMindmap");
+    },
+    onError: () => {
+      showMessage("error", "ERROR_FAVORITE_BOARD");
     },
   });
 
   const handleFavoriteMindmap = async (e: any, mindmapId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    try {
-      await fetchFavoriteMindmap.mutateAsync({ mindmapId });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`An error has occurred: ${error.message}`);
-      }
-    }
+    await fetchFavoriteMindmap.mutateAsync({ session: safeSession, mindmapId });
   };
 
   const handleDelete = async (e: any, board: MindmapObject) => {
