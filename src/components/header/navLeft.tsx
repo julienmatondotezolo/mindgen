@@ -18,6 +18,7 @@ import { canvasStateAtom } from "@/state";
 import { checkPermission, uppercaseFirstLetter } from "@/utils";
 
 import { useMessage } from "../ui/message-provider";
+import { MindGenLogo } from "../ui/MindGenLogo";
 
 function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsProps | undefined }) {
   const session = useSession();
@@ -97,14 +98,18 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
             </Button>
           </SheetTrigger>
 
-          <Link href="/dashboard">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="font-bold text-base dark:text-white"
-            >
-              MIND<span className="text-primary-color">GEN</span>
-            </motion.div>
+          <Link href={`/dashboard`}>
+            <figure className="relative group">
+              <MindGenLogo className="scale-75" />
+              <motion.div
+                className="absolute -top-[5px] -right-[5px] bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: [0.8, 1.1, 1] }}
+                transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <p className="font-bold tracking-wider">BETA</p>
+              </motion.div>
+            </figure>
           </Link>
         </div>
       </motion.nav>

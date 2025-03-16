@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui";
+import { MindGenLogo } from "@/components/ui/MindGenLogo";
 
 import { Link } from "../../navigation";
 import { NavProfile } from "./NavProfile";
@@ -43,32 +44,22 @@ function Navigation() {
         >
           <Link href={`/dashboard`}>
             <figure className="relative mr-8 group">
+              <MindGenLogo className="scale-75" />
               <motion.div
-                className="absolute -top-2 -right-5 bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
+                className="absolute -top-[5px] -right-[5px] bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: [0.8, 1.1, 1] }}
                 transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 4 }}
               >
                 <p className="font-bold tracking-wider">BETA</p>
               </motion.div>
-              <p className="font-bold text-lg dark:text-white tracking-tight">
-                MIND
-                <motion.span
-                  className="text-primary-color inline-block"
-                  initial={{ opacity: 0.8 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  GEN
-                </motion.span>
-              </p>
             </figure>
           </Link>
         </motion.section>
 
         <div className="flex items-center space-x-6">
           <AnimatePresence>
-            {session?.session == undefined && (
+            {!session && (
               <Link href={`/waitlist`}>
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
@@ -94,7 +85,7 @@ function Navigation() {
           </AnimatePresence>
 
           <AnimatePresence>
-            {session?.session && (
+            {session && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
