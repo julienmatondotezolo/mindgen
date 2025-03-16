@@ -12,6 +12,9 @@ const dmSans = DM_Sans({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "MindGen - Generate * with mindmap",
   description: "Generated everything with a mindmap",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
