@@ -27,6 +27,8 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning={true} lang={locale}>
       <head>
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <Script src="https://unpkg.com/react-scan/dist/install-hook.global.js" strategy="beforeInteractive" />
       </head>
       <body className={`${dmSans.className}`}>
