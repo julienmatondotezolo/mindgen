@@ -391,13 +391,33 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
       const layerId = nanoid();
 
+      let width = 200;
+      let height = 60;
+
+      switch (layerType) {
+        case LayerType.Rectangle:
+          width = 200;
+          height = 60;
+          break;
+        case LayerType.Ellipse:
+        case LayerType.Diamond:
+          width = 200;
+          height = 200;
+          break;
+        case LayerType.Path:
+        default:
+          width = 200;
+          height = 60;
+          break;
+      }
+
       const newLayer: any = {
         id: layerId.toString() + layers.length,
         type: layerType,
         x: position.x,
         y: position.y,
-        width: layerType === LayerType.Rectangle ? 200 : 150,
-        height: layerType === LayerType.Rectangle ? 60 : 150,
+        width: width,
+        height: height,
         fill: { r: 77, g: 106, b: 255 },
         value: whiteboardText("typeSomething"),
       };
@@ -750,8 +770,8 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       }
 
       // const HANDLE_DISTANCE = 30;
-      const MIN_WIDTH = 100; // Minimum width in pixels
-      const MIN_HEIGHT = 50; // Minimum height in pixels
+      let MIN_WIDTH = 100; // Minimum width in pixels
+      let MIN_HEIGHT = 50; // Minimum height in pixels
 
       const initialBounds = canvasState.initialBounds;
       let newBounds = resizeBounds(initialBounds, canvasState.corner, point);
@@ -760,6 +780,24 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         prevLayers.map((layer) => {
           if (!allActiveLayers?.includes(layer.id)) {
             return layer;
+          }
+
+          // Set minimum dimensions based on layer type
+          switch (layer.type) {
+            case LayerType.Rectangle:
+              MIN_WIDTH = 160;
+              MIN_HEIGHT = 50;
+              break;
+            case LayerType.Ellipse:
+            case LayerType.Diamond:
+              MIN_WIDTH = 160;
+              MIN_HEIGHT = 160;
+              break;
+            case LayerType.Path:
+            default:
+              MIN_WIDTH = 160;
+              MIN_HEIGHT = 50;
+              break;
           }
 
           // Shift key is pressed, maintain aspect ratio
