@@ -1,15 +1,14 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 
-import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
+import React from "react";
 import { useRecoilValue } from "recoil";
 
-import { Color, DiamondLayer } from "@/_types";
-import { boardIdState, cameraStateAtom, useUpdateElement } from "@/state";
+import { CanvasMode, Color, DiamondLayer } from "@/_types";
+import { boardIdState, canvasStateAtom, useUpdateElement } from "@/state";
 import { colorToCss, fillRGBA, getContrastingTextColor } from "@/utils";
 
-import { CustomContentEditable } from "./customContentEditable";
+import LayerText from "./LayerText";
 
 interface DiamondProps {
   id: string;
@@ -18,70 +17,56 @@ interface DiamondProps {
   selectionColor?: string;
 }
 
-const calculateDimensions = (text: string, currentWidth: number, currentHeight: number, scale: number) => {
-  const tempDiv = document.createElement("div");
-  // const padding = 40; // Padding for the content
-  const minWidth = 200; // Minimum width
-  const minHeight = 60; // Minimum height
-
-  tempDiv.style.position = "absolute";
-  tempDiv.style.visibility = "hidden";
-  tempDiv.style.wordBreak = "break-word";
-  // tempDiv.style.padding = `${padding / 2}px`;
-  tempDiv.style.fontSize = `${calculateFontSize(currentWidth, currentHeight, scale, text)}px`;
-  tempDiv.innerText = text;
-  document.body.appendChild(tempDiv);
-
-  // Calculate new dimensions based on content
-  const contentWidth = tempDiv.scrollWidth;
-  const newWidth = Math.max(minWidth, contentWidth);
-
-  // const contentHeight = (tempDiv.scrollWidth * 60) / 100;
-  const newHeight = Math.max(minHeight, (newWidth * 30) / 100);
-
-  document.body.removeChild(tempDiv);
+const calculateDimensions = (text: string, currentWidth: number, currentHeight: number, textHeight?: number) => {
+  // If we have a textHeight that's larger than current height, use that instead
+  const newHeight = textHeight && textHeight > currentHeight ? textHeight : currentHeight;
 
   return {
-    width: Math.max(minWidth, contentWidth),
+    width: currentWidth,
     height: newHeight,
-    // height: Math.max(minHeight, contentHeight),
   };
 };
 
-const calculateFontSize = (width: number, height: number, scale: number, text: string) => {
-  const maxFontSize = 96;
-  const scaleFactor = 0.08;
-  // Add dampening factor to make scaling more subtle
-  // (0.25 means scale has 25% of its original effect)
-  const dampedScale = 1 + (1 - scale) * 0.2;
-
-  const fontSizeBasedOnHeight = height * scaleFactor * dampedScale;
-  const fontSizeBasedOnWidth = width * scaleFactor * dampedScale;
-
-  return Math.min(36, fontSizeBasedOnHeight, fontSizeBasedOnWidth);
-};
-
 const Diamond = ({ id, layer, onPointerDown, selectionColor }: DiamondProps) => {
-  const session = useSession();
-  const currentUserId = session.data?.session?.user?.id;
-
   const { theme } = useTheme();
 
   const { x, y, width, height, fill, value, valueStyle, borderColor, borderWidth, borderType } = layer;
 
+  // Set a reasonable height for the text area (50% of diamond height)
+  const safeAreaHeight = height * 0.5;
+
+  const canvasState = useRecoilValue(canvasStateAtom);
+
   const boardId = useRecoilValue(boardIdState);
-  const camera = useRecoilValue(cameraStateAtom);
 
   const updateLayer = useUpdateElement({ roomId: boardId });
 
   const handleContentChange = (newValue: string) => {
-    const { width: newWidth, height: newHeight } = calculateDimensions(newValue, width, height, camera.scale);
-
     updateLayer({
       id,
-      updatedElementLayer: { value: newValue, width: newWidth, height: newHeight },
+      updatedElementLayer: { value: newValue },
     });
   };
+
+  const handleHeightChange = (textHeight: number) => {
+    // Only update if the text height is actually significantly different from the foreignObject height
+    // Add a buffer (e.g., 10px) to prevent frequent updates for small changes
+    if (textHeight > safeAreaHeight + 10) {
+      // Calculate how much taller the diamond needs to be to accommodate the text
+      // Since foreignObject is 50% of the diamond height, we need to multiply by 2
+      const requiredDiamondHeight = textHeight * 2;
+
+      // Only update if the required height is significantly different from current height
+      if (Math.abs(requiredDiamondHeight - height) > 20) {
+        updateLayer({
+          id,
+          updatedElementLayer: { height: requiredDiamondHeight },
+        });
+      }
+    }
+  };
+
+  const isEditable = canvasState.mode === CanvasMode.Typing && canvasState.selectedLayerId === id;
 
   const newBorderColor = borderColor
     ? colorToCss(borderColor)
@@ -89,53 +74,61 @@ const Diamond = ({ id, layer, onPointerDown, selectionColor }: DiamondProps) => 
       ? "rgb(180, 191, 204)"
       : "rgb(71, 85, 105)";
 
-  // Rounded corner offset
-  const cornerRadius = Math.min(width, height) * 0.1;
+  const textColor = fill ? getContrastingTextColor(fill) : "#000";
+
+  // Calculate the center of the shape
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+
+  // Define the points for the diamond shape
+  const diamondPoints = [
+    [centerX, y], // top point
+    [x + width, centerY], // right point
+    [centerX, y + height], // bottom point
+    [x, centerY], // left point
+  ];
+
+  // Convert points array to SVG points format (x,y x,y ...)
+  const pointsString = diamondPoints.map((point) => `${point[0]},${point[1]}`).join(" ");
 
   return (
     <g onPointerDown={(e) => onPointerDown(e, id)}>
-      <foreignObject
-        className={`relative shadow-md drop-shadow-xl`}
-        style={{
-          transform: `translate(${x}px, ${y}px)`,
-          backgroundColor: fillRGBA(fill, theme),
-          backdropFilter: "blur(5px)",
-          WebkitBackdropFilter: "blur(5px)",
-          clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-        }}
-        x={0}
-        y={0}
-        width={width}
-        height={height}
-      >
-        <CustomContentEditable
-          value={value || ""}
-          onChange={handleContentChange}
-          style={{
-            width: "99%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            color: fill ? getContrastingTextColor(fill) : "#000",
-            fontSize: calculateFontSize(width, height, camera.scale, value || ""),
-            fontWeight: valueStyle?.fontWeight,
-            textTransform: valueStyle?.textTransform,
-            wordBreak: "break-word",
-            outline: "none",
-          }}
-        />
-      </foreignObject>
-      <svg x={x} y={y} width={width} height={height} style={{ position: "absolute", pointerEvents: "none" }}>
-        <path
-          d={`M ${width / 2} 0 L ${width} ${height / 2} L ${width / 2} ${height} L 0 ${height / 2} Z`}
+      {/* Diamond shape as polygon */}
+      <polygon
+        points={pointsString}
+        fill={fill ? fillRGBA(fill as Color, theme) : "none"}
+        stroke={newBorderColor}
+        strokeWidth={borderWidth || 2}
+        strokeDasharray={borderType === "DASHED" ? "8 4" : undefined}
+        strokeLinejoin="round" // This gives a subtle rounding effect at corners
+      />
+      {value && (
+        <foreignObject
+          x={centerX - width * 0.25} // Center the object and make it 50% of the width
+          y={centerY - height * 0.25} // Center vertically and give some room
+          width={width * 0.5} // 50% of the diamond's width
+          height={safeAreaHeight} // Set a reasonable height
+        >
+          <LayerText
+            id={id}
+            value={value}
+            textColor={textColor}
+            onContentChange={handleContentChange}
+            onHeightChange={handleHeightChange}
+            isEditable={isEditable}
+          />
+        </foreignObject>
+      )}
+      {selectionColor && (
+        <polygon
+          points={pointsString}
           fill="none"
-          stroke={selectionColor || newBorderColor}
-          strokeWidth={borderWidth ? borderWidth : 2}
-          strokeDasharray={borderType === "DASHED" ? "4,2.5" : "none"}
+          stroke={selectionColor}
+          strokeWidth={borderWidth ? borderWidth + 2 : 4}
+          pointerEvents="none"
+          strokeLinejoin="round"
         />
-      </svg>
+      )}
     </g>
   );
 };

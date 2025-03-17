@@ -790,7 +790,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
               break;
             case LayerType.Ellipse:
             case LayerType.Diamond:
-              MIN_WIDTH = 160;
+              MIN_WIDTH = 168;
               MIN_HEIGHT = 160;
               break;
             case LayerType.Path:
