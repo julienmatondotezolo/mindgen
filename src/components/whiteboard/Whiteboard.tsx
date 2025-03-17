@@ -280,7 +280,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       const members = await space.members.getAll();
 
       if (members.length > 1) {
-        alert(members.length);
         // If more than one user is present, don't save
         return;
       }
