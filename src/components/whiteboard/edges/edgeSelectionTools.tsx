@@ -30,6 +30,7 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const boardId = useRecoilValue(boardIdState);
+  const canvasState = useRecoilValue(canvasStateAtom);
 
   const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
   const removeEdge = useRemoveEdge({ roomId: boardId });
@@ -136,7 +137,7 @@ export const EdgeSelectionTools = memo(({ camera, isDeletable, setLastUsedColor 
     [selectedEdge, updateEdge],
   );
 
-  if (!selectedEdge) return null;
+  if (!selectedEdge || canvasState.mode === CanvasMode.EdgeEditing) return null;
 
   const objectSizesWitdhWithoutScale = 410;
   const objectSizesHeightWithoutScale = 75;

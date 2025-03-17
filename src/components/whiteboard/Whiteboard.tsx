@@ -41,6 +41,7 @@ import {
   nearestLayerAtom,
   useAddEdgeElement,
   useAddElement,
+  useLayerEdgeSync,
   useRemoveEdge,
   useRemoveElement,
   useSelectEdgeElement,
@@ -2012,6 +2013,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [handleMouseMove]);
+
+  // Add edge synchronization with layers
+  useLayerEdgeSync();
 
   return (
     <main className="h-full w-full relative" onMouseLeave={handleSelfCursorLeave}>

@@ -78,18 +78,18 @@ export const boardsLengthState = atom<number>({
 // ================   LAYER STATES   ================== //
 
 export const layerAtomState = atom<Layer[]>({
-  key: "layerAtomState", // unique ID (with respect to other atoms/selectors)
-  default: [], // valeur par défaut (alias valeur initials)
+  key: "layerAtomState",
+  default: [],
 });
 
 export const activeLayersAtom = atom<string[]>({
   key: "activeLayersAtom",
-  default: [], // Start with no active layers
+  default: [],
 });
 
 export const hoveredLayerIdAtomState = atom<string>({
-  key: "hoveredLayerIdAtomState", // unique ID (with respect to other atoms/selectors)
-  default: "", // valeur par défaut (alias valeur initials)
+  key: "hoveredLayerIdAtomState",
+  default: "",
 });
 
 // ================   EDGES STATES   ================== //
