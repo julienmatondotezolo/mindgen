@@ -276,14 +276,14 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
     if (!checkPermission(PERMISSIONS, "UPDATE")) return;
 
     // Check if there are multiple users in the Ably space
-    if (space) {
-      const members = await space.members.getAll();
+    // if (space) {
+    //   const members = await space.members.getAll();
 
-      if (members.length > 1) {
-        // If more than one user is present, don't save
-        return;
-      }
-    }
+    //   if (members.length > 1) {
+    //     // If more than one user is present, don't save
+    //     return;
+    //   }
+    // }
 
     const newMindmapObject = {
       layers,
@@ -298,17 +298,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       mindmapId: userMindmapDetails.id,
       mindmapObject: newMindmapObject,
     });
-  }, [
-    PERMISSIONS,
-    edges,
-    layers,
-    session,
-    takeScreenshot,
-    unSelectLayer,
-    updateBoardMutation,
-    userMindmapDetails.id,
-    space,
-  ]);
+  }, [PERMISSIONS, edges, layers, session, takeScreenshot, unSelectLayer, updateBoardMutation, userMindmapDetails.id]);
 
   // Handle window/tab close and navigation away
   useEffect(() => {
