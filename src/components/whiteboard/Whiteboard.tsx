@@ -275,6 +275,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
   const saveMindmap = useCallback(async () => {
     if (!checkPermission(PERMISSIONS, "UPDATE")) return;
 
+    // Check if there are multiple users in the Ably space
+    if (space) {
+      const members = await space.members.getAll();
+
+      if (members.length > 1) {
+        alert(members.length);
+        // If more than one user is present, don't save
+        return;
+      }
+    }
+
     const newMindmapObject = {
       layers,
       edges,
@@ -288,7 +299,17 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
       mindmapId: userMindmapDetails.id,
       mindmapObject: newMindmapObject,
     });
-  }, [PERMISSIONS, edges, layers, session, takeScreenshot, unSelectLayer, updateBoardMutation, userMindmapDetails.id]);
+  }, [
+    PERMISSIONS,
+    edges,
+    layers,
+    session,
+    takeScreenshot,
+    unSelectLayer,
+    updateBoardMutation,
+    userMindmapDetails.id,
+    space,
+  ]);
 
   // Handle window/tab close and navigation away
   useEffect(() => {
@@ -1133,27 +1154,6 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
         // Exclude the layer we're dragging from
         const filteredLayers = layers.filter((layer) => layer.id !== drawingEdge.fromLayerId);
-
-        // const drawingFromLayer = layers.find((layer) => layer.id === drawingEdge.fromLayerId);
-
-        // if (drawingFromLayer && drawingEdge.fromHandlePosition) {
-        //   const { newLayerPosition } = calculateNewLayerPositions(
-        //     drawingFromLayer,
-        //     drawingEdge.fromHandlePosition,
-        //     150, // LAYER_SPACING
-        //     20, // HANDLE_DISTANCE
-        //     point,
-        //   );
-
-        //   setShadowState({
-        //     showShadow: true,
-        //     startPosition: null,
-        //     fromHandlePosition: lastUpdatedEdge.handleStart,
-        //     layerPosition: newLayerPosition,
-        //     edgePosition: null,
-        //     layer: drawingFromLayer,
-        //   });
-        // }
 
         const nearestHandle = findNearestLayerHandle(point, filteredLayers, snapThreshold);
         const nearestLayer = findNearestLayerHandle(point, filteredLayers, layerThreshold);
