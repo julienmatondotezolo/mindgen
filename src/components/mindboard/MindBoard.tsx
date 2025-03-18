@@ -3,7 +3,11 @@ import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 
+import { CanvasMode, Layer, Point } from "@/_types/canvas";
 import { activeLayersAtom, cameraStateAtom, canvasStateAtom, edgesAtomState, layerAtomState } from "@/state";
+import { getLayerById } from "@/utils/canvasUtils";
+
+import { Toolbar } from "../whiteboard";
 
 // Canvas-specific point conversion function
 const canvasPointFromEvent = (
@@ -21,244 +25,16 @@ const canvasPointFromEvent = (
   };
 };
 
-// Types for layers and edges
-type Point = { x: number; y: number };
-type Color = { r: number; g: number; b: number };
-type CanvasMode = "None" | "Translating" | "Selecting" | "Drawing" | "Resizing" | "Adding" | "Grab";
-
-// Toolbar component
-const Toolbar = ({
-  onAddShape,
-  onSelect,
-  onGrab,
-  onZoomIn,
-  onZoomOut,
-  onFitView,
-  currentMode,
-}: {
-  onAddShape: (shapeType: string) => void;
-  onSelect: () => void;
-  onGrab: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onFitView: () => void;
-  currentMode: CanvasMode;
-}) => (
-  <div className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex items-center gap-2 z-10">
-    {/* Shape tools */}
-    <div className="flex items-center gap-1 pr-2 border-r border-slate-200 dark:border-slate-700">
-      <button
-        className={`w-8 h-8 flex items-center justify-center rounded-lg ${currentMode === "Selecting" ? "bg-blue-100 dark:bg-blue-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}
-        onClick={onSelect}
-        title="Select"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        >
-          <path d="M4 13l5 5l11-11"></path>
-        </svg>
-      </button>
-      <button
-        className={`w-8 h-8 flex items-center justify-center rounded-lg ${currentMode === "Grab" ? "bg-blue-100 dark:bg-blue-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}
-        onClick={onGrab}
-        title="Pan Canvas"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 11.5V9a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v1.4"></path>
-          <path d="M14 10V8a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v.5"></path>
-          <path d="M10 9.1V5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v9.4"></path>
-          <path d="M6 14v1a6 6 0 0 0 12 0v-4"></path>
-        </svg>
-      </button>
-    </div>
-
-    {/* Shape tools */}
-    <div className="flex items-center gap-1 pr-2 border-r border-slate-200 dark:border-slate-700">
-      <button
-        className={`w-8 h-8 flex items-center justify-center rounded-lg ${currentMode === "Adding" ? "bg-blue-100 dark:bg-blue-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}
-        onClick={() => onAddShape("RECTANGLE")}
-        title="Add Rectangle"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"
-ry="2"></rect>
-        </svg>
-      </button>
-      <button
-        className={`w-8 h-8 flex items-center justify-center rounded-lg ${currentMode === "Adding" ? "bg-blue-100 dark:bg-blue-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}
-        onClick={() => onAddShape("ELLIPSE")}
-        title="Add Ellipse"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-        </svg>
-      </button>
-      <button
-        className={`w-8 h-8 flex items-center justify-center rounded-lg ${currentMode === "Adding" ? "bg-blue-100 dark:bg-blue-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}
-        onClick={() => onAddShape("DIAMOND")}
-        title="Add Diamond"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2.7,10.3l8.8-8.8c0.4-0.4,1-0.4,1.4,0l8.8,8.8c0.4,0.4,0.4,1,0,1.4l-8.8,8.8c-0.4,0.4-1,0.4-1.4,0l-8.8-8.8 C2.3,11.3,2.3,10.7,2.7,10.3z"></path>
-        </svg>
-      </button>
-    </div>
-
-    {/* Zoom controls */}
-    <div className="flex items-center gap-1">
-      <button
-        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-        onClick={onZoomOut}
-        title="Zoom Out"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          <line x1="8" y1="11" x2="14" y2="11"></line>
-        </svg>
-      </button>
-      <button
-        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-        onClick={onZoomIn}
-        title="Zoom In"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          <line x1="11" y1="8" x2="11" y2="14"></line>
-          <line x1="8" y1="11" x2="14" y2="11"></line>
-        </svg>
-      </button>
-      <button
-        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-        onClick={onFitView}
-        title="Fit View"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        >
-          <path d="M21 3H3v18h18V3z"></path>
-          <path d="M7 9l4-4 4 4"></path>
-          <path d="M17 15l-4 4-4-4"></path>
-        </svg>
-      </button>
-    </div>
-  </div>
-);
-
 const MindBoard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [layers, setLayers] = useRecoilState(layerAtomState);
   const [edges, setEdges] = useRecoilState(edgesAtomState);
-  const [camera, setCamera] = useRecoilState(cameraStateAtom);
+  const [camera] = useRecoilState(cameraStateAtom);
   const [activeLayers, setActiveLayers] = useRecoilState(activeLayersAtom);
-  const [canvasState, setCanvasState] = useState<{
-    mode: CanvasMode;
-    origin?: Point;
-    current?: Point;
-    dragStart?: Point;
-    selectedLayerId?: string;
-    activeShapeType?: string;
-  }>({
-    mode: "None",
-  });
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const { theme } = useTheme();
-
-  // Now let's add all the toolbar action handlers
-  // A function to handle adding a shape
-  const handleAddShape = useCallback((shapeType: string) => {
-    setCanvasState({
-      mode: "Adding",
-      activeShapeType: shapeType,
-    });
-  }, []);
-
-  // Handle selection mode
-  const handleSelectMode = useCallback(() => {
-    setCanvasState({
-      mode: "Selecting",
-    });
-  }, []);
-
-  // Handle grab mode for panning
-  const handleGrabMode = useCallback(() => {
-    setCanvasState({
-      mode: "Grab",
-    });
-  }, []);
-
-  // Zoom in function
-  const zoomIn = useCallback(() => {
-    setCamera((prev) => {
-      const newScale = Math.min(prev.scale * 1.2, 4);
-
-      return { ...prev, scale: newScale };
-    });
-  }, [setCamera]);
-
-  // Zoom out function
-  const zoomOut = useCallback(() => {
-    setCamera((prev) => {
-      const newScale = Math.max(prev.scale / 1.2, 0.1);
-
-      return { ...prev, scale: newScale };
-    });
-  }, [setCamera]);
-
-  // Fit view function
-  const fitView = useCallback(() => {
-    if (layers.length === 0) return;
-
-    // Find bounding box of all layers
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-
-    layers.forEach((layer) => {
-      minX = Math.min(minX, layer.x);
-      minY = Math.min(minY, layer.y);
-      maxX = Math.max(maxX, layer.x + layer.width);
-      maxY = Math.max(maxY, layer.y + layer.height);
-    });
-
-    // Add padding
-    const padding = 50;
-
-    minX -= padding;
-    minY -= padding;
-    maxX += padding;
-    maxY += padding;
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    // Calculate canvas dimensions
-    const canvas = canvasRef.current;
-
-    if (!canvas) return;
-    const canvasWidth = canvas.clientWidth;
-    const canvasHeight = canvas.clientHeight;
-
-    // Calculate scale to fit content
-    const scaleX = canvasWidth / width;
-    const scaleY = canvasHeight / height;
-    const scale = Math.min(scaleX, scaleY, 2); // Limit max scale
-
-    // Calculate new camera position to center content
-    const x = canvasWidth / 2 - (minX + width / 2) * scale;
-    const y = canvasHeight / 2 - (minY + height / 2) * scale;
-
-    setCamera({ x, y, scale });
-  }, [layers, setCamera]);
 
   // Setup canvas
   useEffect(() => {
@@ -367,7 +143,7 @@ const MindBoard = () => {
       context.stroke();
 
       // Draw arrow if needed
-      if (edge.arrows && edge.arrows.end) {
+      if (edge && edge.end) {
         const angle = Math.atan2(edge.end.y - edge.start.y, edge.end.x - edge.start.x);
         const size = 10;
 
@@ -477,7 +253,7 @@ const MindBoard = () => {
     });
 
     // Draw selection rectangle if in selection mode
-    if (canvasState.mode === "Selecting" && canvasState.origin && canvasState.current) {
+    if (canvasState.mode === CanvasMode.SelectionNet && canvasState.origin && canvasState.current) {
       const x = Math.min(canvasState.origin.x, canvasState.current.x);
       const y = Math.min(canvasState.origin.y, canvasState.current.y);
       const width = Math.abs(canvasState.origin.x - canvasState.current.x);
@@ -494,7 +270,7 @@ const MindBoard = () => {
   }, [layers, edges, activeLayers, theme, camera, canvasState, applyCamera, drawGrid, restoreContext]);
 
   // Check if point is inside layer
-  const isPointInLayer = useCallback((point: Point, layer: any) => {
+  const isPointInLayer = useCallback((point: Point, layer: Layer) => {
     if (layer.type === "RECTANGLE") {
       return (
         point.x >= layer.x &&
@@ -557,7 +333,7 @@ const MindBoard = () => {
   // Add a new layer
   const addLayer = useCallback(
     (type: string, point: Point) => {
-      const newLayer = {
+      const newLayer: Layer = {
         id: nanoid(),
         type: type as any,
         x: point.x - 100, // Center the layer on the click point
@@ -576,26 +352,26 @@ const MindBoard = () => {
     [setLayers, setActiveLayers],
   );
 
-  // Add a new edge
-  const addEdge = useCallback(
-    (start: Point, end: Point, fromLayerId?: string, toLayerId?: string) => {
-      const newEdge = {
-        id: nanoid(),
-        start,
-        end,
-        fromLayerId,
-        toLayerId,
-        color: { r: 180, g: 191, b: 204 },
-        thickness: 2,
-        arrows: { end: true },
-      };
+  // // Add a new edge
+  // const addEdge = useCallback(
+  //   (start: Point, end: Point, fromLayerId?: string, toLayerId?: string) => {
+  //     const newEdge = {
+  //       id: nanoid(),
+  //       start,
+  //       end,
+  //       fromLayerId,
+  //       toLayerId,
+  //       color: { r: 180, g: 191, b: 204 },
+  //       thickness: 2,
+  //       arrows: { end: true },
+  //     };
 
-      setEdges((prev) => [...prev, newEdge as any]);
+  //     setEdges((prev) => [...prev, newEdge as any]);
 
-      return newEdge.id;
-    },
-    [setEdges],
-  );
+  //     return newEdge.id;
+  //   },
+  //   [setEdges],
+  // );
 
   // Update mouse event handlers to handle different modes
   // Mouse event handlers
@@ -604,20 +380,18 @@ const MindBoard = () => {
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
       // Handle different modes
-      if (canvasState.mode === "Adding" && canvasState.activeShapeType) {
+      if (canvasState.mode === CanvasMode.Inserting && canvasState.layerType) {
         // Add a new shape at the click point
-        addLayer(canvasState.activeShapeType, point);
+        addLayer(canvasState.layerType, point);
         // After adding, switch back to select mode
         setCanvasState({
-          mode: "Selecting",
+          mode: CanvasMode.None,
         });
         return;
-      } else if (canvasState.mode === "Grab") {
+      } else if (canvasState.mode === CanvasMode.Grab) {
         // Start panning the canvas
         setCanvasState({
-          mode: "Grab",
-          origin: point,
-          current: point,
+          mode: CanvasMode.Grab,
         });
         setIsDrawing(true);
         return;
@@ -645,17 +419,16 @@ const MindBoard = () => {
 
           // Start translating
           setCanvasState({
-            mode: "Translating",
-            origin: point,
+            mode: CanvasMode.Translating,
             current: point,
-            selectedLayerId: layerId,
+            initialLayerBounds: getLayerById({ layerId, layers }),
           });
         }
       } else {
         // Clear selection and start selection rectangle
         setActiveLayers([]);
         setCanvasState({
-          mode: "Selecting",
+          mode: CanvasMode.SelectionNet,
           origin: point,
           current: point,
         });
@@ -663,7 +436,7 @@ const MindBoard = () => {
 
       setIsDrawing(true);
     },
-    [camera, canvasState, findLayersAtPoint, activeLayers, setActiveLayers, addLayer],
+    [camera, canvasState, findLayersAtPoint, addLayer, setCanvasState, setActiveLayers, activeLayers, layers],
   );
 
   const handleMouseMove = useCallback(
@@ -672,7 +445,7 @@ const MindBoard = () => {
 
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
-      if (canvasState.mode === "Selecting" && canvasState.origin) {
+      if (canvasState.mode === CanvasMode.SelectionNet && canvasState.origin) {
         setCanvasState((prev) => ({
           ...prev,
           current: point,
@@ -688,7 +461,7 @@ const MindBoard = () => {
 
           setActiveLayers(selectedLayerIds);
         }
-      } else if (canvasState.mode === "Translating") {
+      } else if (canvasState.mode === CanvasMode.Translating) {
         // Move selected layers
         const dx = point.x - canvasState.current!.x;
         const dy = point.y - canvasState.current!.y;
@@ -726,21 +499,6 @@ const MindBoard = () => {
           ...prev,
           current: point,
         }));
-      } else if (canvasState.mode === "Grab" && canvasState.current) {
-        // Pan the canvas
-        const dx = point.x - canvasState.current.x;
-        const dy = point.y - canvasState.current.y;
-
-        setCamera((prev) => ({
-          ...prev,
-          x: prev.x + dx * prev.scale,
-          y: prev.y + dy * prev.scale,
-        }));
-
-        setCanvasState((prev) => ({
-          ...prev,
-          current: point,
-        }));
       }
 
       renderCanvas();
@@ -749,27 +507,40 @@ const MindBoard = () => {
       isDrawing,
       camera,
       canvasState,
-      activeLayers,
+      renderCanvas,
+      setCanvasState,
       findLayersInSelection,
       setActiveLayers,
       setLayers,
       setEdges,
-      renderCanvas,
-      setCamera,
+      activeLayers,
     ],
   );
 
-  const handleMouseUp = useCallback(() => {
-    setIsDrawing(false);
+  const handleMouseUp = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
-    if (canvasState.mode === "Selecting") {
-      setCanvasState({ mode: "Selecting" });
-    } else if (canvasState.mode === "Translating") {
-      setCanvasState({ mode: "Selecting" });
-    } else if (canvasState.mode === "Grab") {
-      setCanvasState({ mode: "Grab" });
-    }
-  }, [canvasState]);
+      setIsDrawing(false);
+
+      if (canvasState.mode === CanvasMode.SelectionNet) {
+        setCanvasState({
+          mode: CanvasMode.SelectionNet,
+          origin: point,
+          current: point,
+        });
+      } else if (canvasState.mode === CanvasMode.Translating) {
+        setCanvasState({
+          mode: CanvasMode.SelectionNet,
+          origin: point,
+          current: point,
+        });
+      } else if (canvasState.mode === CanvasMode.Grab) {
+        setCanvasState({ mode: CanvasMode.Grab });
+      }
+    },
+    [camera, canvasState.mode, setCanvasState],
+  );
 
   // Handle keyboard events
   useEffect(() => {
@@ -779,7 +550,7 @@ const MindBoard = () => {
         e.preventDefault();
         setCanvasState((prev) => ({
           ...prev,
-          mode: "Grab",
+          mode: CanvasMode.Grab,
         }));
       }
 
@@ -803,9 +574,9 @@ const MindBoard = () => {
       if (e.key === "Escape") {
         setActiveLayers([]);
 
-        // Reset to select mode
+        // Reset canvas state
         setCanvasState({
-          mode: "Selecting",
+          mode: CanvasMode.None,
         });
       }
     };
@@ -815,7 +586,7 @@ const MindBoard = () => {
       if (e.code === "Space") {
         e.preventDefault();
         setCanvasState({
-          mode: "Selecting",
+          mode: CanvasMode.None,
         });
       }
     };
@@ -827,7 +598,7 @@ const MindBoard = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [activeLayers, setActiveLayers, setLayers, setEdges]);
+  }, [activeLayers, setActiveLayers, setLayers, setEdges, setCanvasState]);
 
   // Render effect
   useEffect(() => {
@@ -837,11 +608,9 @@ const MindBoard = () => {
   // Add this function before the return statement:
   const getCursorStyle = (mode: CanvasMode): string => {
     switch (mode) {
-      case "Translating":
-        return "grabbing";
-      case "Grab":
+      case CanvasMode.Grab:
         return "grab";
-      case "Adding":
+      case CanvasMode.Inserting:
         return "crosshair";
       default:
         return "default";
@@ -858,19 +627,11 @@ const MindBoard = () => {
         style={{
           width: "100%",
           height: "100%",
-          cursor: getCursorStyle(canvasState.mode)
+          cursor: getCursorStyle(canvasState.mode),
         }}
       />
 
-      <Toolbar
-        onAddShape={handleAddShape}
-        onSelect={handleSelectMode}
-        onGrab={handleGrabMode}
-        onZoomIn={zoomIn}
-        onZoomOut={zoomOut}
-        onFitView={fitView}
-        currentMode={canvasState.mode}
-      />
+      <Toolbar />
     </div>
   );
 };
