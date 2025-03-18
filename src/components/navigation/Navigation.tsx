@@ -44,9 +44,9 @@ function Navigation() {
         >
           <Link href={`/dashboard`}>
             <figure className="relative mr-8 group">
-              <MindGenLogo className="scale-75" />
+              <MindGenLogo />
               <motion.div
-                className="absolute -top-[5px] -right-[5px] bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
+                className="absolute -top-[6px] -right-[14px] bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: [0.8, 1.1, 1] }}
                 transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 4 }}
