@@ -61,11 +61,6 @@ const MindBoard = () => {
     };
 
     resizeCanvas();
-    // window.addEventListener("resize", resizeCanvas);
-
-    // return () => {
-    //   window.removeEventListener("resize", resizeCanvas);
-    // };
   }, []);
 
   // Apply camera transform
@@ -86,21 +81,41 @@ const MindBoard = () => {
   // Draw grid
   const drawGrid = useCallback(
     (context: CanvasRenderingContext2D) => {
-      const gridSize = 20;
-      const width = context.canvas.width / camera.scale;
-      const height = context.canvas.height / camera.scale;
+      // Adjust grid size based on zoom level for better performance
+      let gridSize = 20;
+      const scale = camera.scale;
 
-      const startX = Math.floor(-camera.x / camera.scale / gridSize) * gridSize;
-      const startY = Math.floor(-camera.y / camera.scale / gridSize) * gridSize;
+      // Increase grid spacing when zoomed out to reduce rendering load
+      if (scale < 0.5) {
+        gridSize = 30;
+      }
+      if (scale < 0.25) {
+        gridSize = 80;
+      }
 
-      context.fillStyle = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
+      const width = context.canvas.width / scale;
+      const height = context.canvas.height / scale;
 
-      // Define dot size (adjust as needed)
-      const dotSize = 1 / camera.scale;
+      const startX = Math.floor(-camera.x / scale / gridSize) * gridSize;
+      const startY = Math.floor(-camera.y / scale / gridSize) * gridSize;
 
-      // Draw dots at grid intersections
+      // Adjust opacity based on scale to make grid less prominent when zoomed out
+      const opacity = Math.min(0.1, 0.05 + scale * 0.1);
+
+      context.fillStyle = theme === "dark" ? `rgba(255, 255, 255, ${opacity})` : `rgba(0, 0, 0, ${opacity})`;
+
+      // Define dot size based on zoom level (smaller when zoomed out)
+      const dotSize = Math.max(0.5, 1 / scale);
+
+      // Skip drawing dots that are too close together when zoomed out
+      // This significantly improves performance at low zoom levels
       for (let x = startX; x < startX + width; x += gridSize) {
         for (let y = startY; y < startY + height; y += gridSize) {
+          // Skip some dots when extremely zoomed out for better performance
+          if (scale < 0.2 && (x % (gridSize * 2) !== 0 || y % (gridSize * 2) !== 0)) {
+            continue;
+          }
+
           context.beginPath();
           context.arc(x, y, dotSize, 0, Math.PI * 2);
           context.fill();
