@@ -185,7 +185,7 @@ export const Controls: React.FC<ControlsProps> = ({ layers, onFitView }) => {
   return (
     <div className="fixed bottom-6 left-6 z-10 group">
       <div className="relative flex items-center gap-3 p-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl">
-        <div className="flex items-center gap-2 pr-3 border-r border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 pr-3 border-r border-slate-200 dark:border-slate-800 select-none">
           <Button
             variant="ghost"
             onClick={zoomOut}
