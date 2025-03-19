@@ -9,6 +9,7 @@ import { getLayerById } from "@/utils/canvasUtils";
 
 import { Toolbar } from "../whiteboard";
 import { drawSelectionRectangle } from "./boardRender";
+import { Controls } from "./Controls";
 import { drawEdgeBasedOnType } from "./edgeRender";
 import { drawActiveLayerSelection, drawLayerBasedOnType, drawLayerHandles, drawLayerText } from "./layerRender";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
@@ -17,7 +18,7 @@ const MindBoard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [camera] = useRecoilState(cameraStateAtom);
+  const [camera, setCamera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const { theme } = useTheme();
 
@@ -393,6 +394,9 @@ const MindBoard = () => {
       />
 
       <Toolbar />
+
+      {/* Zoom Controls */}
+      <Controls layers={layers} />
     </div>
   );
 };

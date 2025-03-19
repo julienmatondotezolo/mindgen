@@ -3,6 +3,7 @@ import { useSpace } from "@ably/spaces/react";
 import { select } from "d3-selection";
 import { zoom, zoomIdentity, zoomTransform } from "d3-zoom";
 import html2canvas from "html2canvas";
+import { Maximize } from "lucide-react";
 import { nanoid } from "nanoid";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -2185,9 +2186,9 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
             <Button
               variant="ghost"
               onClick={fitView}
-              className="h-9 px-4 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 active:scale-95"
+              className="h-9 px-4 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200"
             >
-              Fit to Screen
+              <Maximize size={18} />
             </Button>
 
             <div className="absolute -z-10 inset-0 bg-white/40 dark:bg-slate-900/40 rounded-2xl blur-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
