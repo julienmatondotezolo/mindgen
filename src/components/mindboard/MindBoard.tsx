@@ -324,9 +324,9 @@ const MindBoard = () => {
         setCanvasState({ mode: CanvasMode.Grab });
       }
 
-      fitView(layers);
+      // fitView(layers);
     },
-    [camera, canvasState.mode, fitView, layers, setCanvasState],
+    [camera, canvasState.mode, setCanvasState],
   );
 
   // Handle keyboard events

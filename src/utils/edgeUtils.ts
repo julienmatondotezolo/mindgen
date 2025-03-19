@@ -11,7 +11,7 @@ export type GetControlWithCurvatureParams = {
 };
 
 // ============================================================================= //
-// ==================== GET EDGE BEZIER PATH STRING ============================ //
+// ======================== EDGE STEP PATH STRING ============================ //
 // ============================================================================= //
 
 const handleDirections = {
@@ -248,7 +248,7 @@ export function edgeSmoothStepPathString({ edge }: { edge: Edge }): string {
 }
 
 // ============================================================================= //
-// ==================== GET EDGE BEZIER PATH STRING ============================ //
+// ======================= EDGE BEZIER PATH STRING ============================= //
 // ============================================================================= //
 
 function calculateControlOffset(distance: number, curvature: number): number {

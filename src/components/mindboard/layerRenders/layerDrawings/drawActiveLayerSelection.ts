@@ -13,7 +13,7 @@ export const drawActiveLayerSelection = ({
 }): void => {
   if (activeLayers.includes(layer.id)) {
     context.strokeStyle = "#2563eb"; // Blue selection color
-    context.lineWidth = 2 / camera.scale;
+    context.lineWidth = 4 / camera.scale;
 
     switch (layer.type) {
       case LayerType.Rectangle:
