@@ -1,5 +1,5 @@
 import { Edge, EdgeShape, HandlePosition } from "@/_types";
-import { getControlWithCurvature } from "@/utils/edgeUtils";
+import { drawEdgeCurvedLine, getControlWithCurvature } from "@/utils/edgeUtils";
 
 export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: CanvasRenderingContext2D }) => {
   context.beginPath();
@@ -13,30 +13,7 @@ export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: Ca
 
     // draw curved line
     case EdgeShape.Curved: {
-      const sourcePosition = edge.handleStart || HandlePosition.Top;
-      const targetPosition = edge.handleEnd || HandlePosition.Top;
-      const curvature = 0.5;
-
-      const [sourceControlX, sourceControlY] = getControlWithCurvature({
-        pos: sourcePosition,
-        x1: edge.start.x,
-        y1: edge.start.y,
-        x2: edge.end.x,
-        y2: edge.end.y,
-        c: curvature,
-      });
-
-      const [targetControlX, targetControlY] = getControlWithCurvature({
-        pos: targetPosition,
-        x1: edge.end.x,
-        y1: edge.end.y,
-        x2: edge.start.x,
-        y2: edge.start.y,
-        c: curvature,
-      });
-
-      context.moveTo(edge.start.x, edge.start.y);
-      context.bezierCurveTo(sourceControlX, sourceControlY, targetControlX, targetControlY, edge.end.x, edge.end.y);
+      drawEdgeCurvedLine({ edge, context });
       break;
     }
 
