@@ -4,6 +4,7 @@ import { useRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types/canvas";
 import { useEdgeOperations, useLayerOperations } from "@/hooks";
+import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom } from "@/state";
 import { getLayerById } from "@/utils/canvasUtils";
 
@@ -26,7 +27,11 @@ const MindBoard = () => {
     useLayerOperations();
 
   const { edges, setEdges } = useEdgeOperations();
+
   const { fitView } = useCameraControls();
+
+  // Initialize canvas navigation with D3 (this handles all zoom and pan operations)
+  useCanvasNavigation({ canvasRef });
 
   // Setup canvas
   useEffect(() => {
@@ -322,7 +327,7 @@ const MindBoard = () => {
   // Handle keyboard events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Spacebar for grab mode
+      // Spacebar for grab mode - D3 handles the actual panning
       if (e.code === "Space" && !e.repeat) {
         e.preventDefault();
         setCanvasState((prev) => ({
@@ -393,12 +398,13 @@ const MindBoard = () => {
           width: "100%",
           height: "100%",
           cursor: getCursorStyle(canvasState.mode),
+          touchAction: "none", // Prevents default touch behaviors for D3 handling
         }}
       />
 
       <Toolbar />
 
-      {/* Zoom Controls */}
+      {/* Zoom Controls (using D3 via useCameraControls) */}
       <Controls layers={layers} />
     </div>
   );
