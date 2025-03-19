@@ -1,6 +1,4 @@
-import { select, Selection } from "d3-selection";
-import { zoom, zoomIdentity } from "d3-zoom";
-import { RefObject, useCallback, useEffect } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types/canvas";
@@ -13,10 +11,16 @@ interface UseCanvasNavigationProps {
 export const useCanvasNavigation = ({ canvasRef }: UseCanvasNavigationProps) => {
   const [camera, setCamera] = useRecoilState(cameraStateAtom);
   const [canvasState] = useRecoilState(canvasStateAtom);
+  const transformRef = useRef({ x: camera.x, y: camera.y, k: camera.scale });
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
 
-  // Update camera when D3 zoom events occur
+  // Update camera when transform changes
   const updateCamera = useCallback(
     (x: number, y: number, k: number) => {
+      // Update the transform ref to keep it in sync
+      transformRef.current = { x, y, k };
+      // Update Recoil state
       setCamera({ x, y, scale: k });
     },
     [setCamera],
@@ -28,87 +32,50 @@ export const useCanvasNavigation = ({ canvasRef }: UseCanvasNavigationProps) => 
 
     const canvas = canvasRef.current;
 
-    // Use type assertion to handle D3 typing issues
-    const selection = select(canvas) as unknown as Selection<Element, unknown, null, undefined>;
-
-    // Create zoom behavior
-    const zoomBehavior = zoom<Element, unknown>()
-      .scaleExtent([0.1, 5]) // Min/max zoom scale
-      .filter((event) => {
-        // Only handle zoom/pan events with specific conditions:
-
-        // 1. Always handle wheel events (for zooming) when Ctrl key is pressed
-        if (event.type === "wheel" && event.ctrlKey) {
-          event.preventDefault();
-          return true;
-        }
-
-        // 2. Handle mouse/touch events only when in grab mode or middle button is pressed
-        if (
-          event.type === "mousedown" ||
-          event.type === "mousemove" ||
-          event.type === "mouseup" ||
-          event.type === "touchstart" ||
-          event.type === "touchmove" ||
-          event.type === "touchend"
-        ) {
-          // Let native events handle these normally when not in Grab mode
-          // (unless middle mouse button is used)
-          if (
-            canvasState.mode !== CanvasMode.Grab &&
-            event.type === "mousedown" &&
-            (event as MouseEvent).button !== 1
-          ) {
-            return false;
-          }
-
-          // For middle button (button 1) or Grab mode, let D3 handle it
-          if (
-            (event.type === "mousedown" && (event as MouseEvent).button === 1) ||
-            canvasState.mode === CanvasMode.Grab
-          ) {
-            // Prevent default to ensure no text selection, etc.
-            event.preventDefault();
-            return true;
-          }
-        }
-
-        // 3. Always handle multitouch/pinch events
-        if (event.type === "touchstart" || event.type === "touchmove") {
-          const touchEvent = event as TouchEvent;
-
-          if (touchEvent.touches.length >= 2) {
-            event.preventDefault();
-            return true;
-          }
-        }
-
-        // By default, let the native event handlers process the event
-        return false;
-      })
-      .on("zoom", (event) => {
-        const { x, y, k } = event.transform;
-
-        updateCamera(x, y, k);
-      });
-
     // Initialize with current camera state
-    const initialTransform = zoomIdentity.translate(camera.x, camera.y).scale(camera.scale);
+    transformRef.current = { x: camera.x, y: camera.y, k: camera.scale };
 
-    // Apply initial transform
-    selection.call(zoomBehavior.transform, initialTransform);
+    // Custom handler for wheel events that better handles trackpad interactions
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
 
-    // Apply zoom behavior to canvas
-    selection.call(zoomBehavior);
+      // Get current transform from ref
+      const transform = transformRef.current;
 
-    // Disable double-click to zoom
-    selection.on("dblclick.zoom", null);
+      // Check if the wheel event is from a trackpad
+      // This is a heuristic - small deltaY values often indicate a trackpad
+      const isTrackpad = Math.abs(e.deltaY) < 40;
 
-    // Event handlers for better touch experience
-    const handleWheelEvent = (event: WheelEvent) => {
-      // Only prevent default for ctrl+wheel to allow normal scrolling
-      if (event.ctrlKey) {
-        event.preventDefault();
+      if (isTrackpad && e.ctrlKey) {
+        // Trackpad pinch-to-zoom
+        const delta = -e.deltaY * 0.01;
+        const newScale = Math.max(0.1, Math.min(5, transform.k * (1 + delta)));
+        const mouseX = e.offsetX;
+        const mouseY = e.offsetY;
+
+        // Calculate new transform and update
+        const newX = mouseX - (mouseX - transform.x) * (newScale / transform.k);
+        const newY = mouseY - (mouseY - transform.y) * (newScale / transform.k);
+
+        updateCamera(newX, newY, newScale);
+      } else if (isTrackpad && !e.ctrlKey) {
+        // Trackpad two-finger pan
+        const newX = transform.x - e.deltaX;
+        const newY = transform.y - e.deltaY;
+
+        updateCamera(newX, newY, transform.k);
+      } else {
+        // Standard mouse wheel zoom
+        const delta = -e.deltaY * 0.001;
+        const newScale = Math.max(0.1, Math.min(5, transform.k * (1 + delta)));
+        const mouseX = e.offsetX;
+        const mouseY = e.offsetY;
+
+        // Calculate new transform with zoom centered on mouse position
+        const newX = mouseX - (mouseX - transform.x) * (newScale / transform.k);
+        const newY = mouseY - (mouseY - transform.y) * (newScale / transform.k);
+
+        updateCamera(newX, newY, newScale);
       }
     };
 
@@ -119,19 +86,58 @@ export const useCanvasNavigation = ({ canvasRef }: UseCanvasNavigationProps) => 
       }
     };
 
-    // Manual event listeners for preventing default behaviors in specific conditions
-    canvas.addEventListener("wheel", handleWheelEvent, { passive: false });
+    const handleMouseDown = (event: MouseEvent) => {
+      // Only handle mouse drag in Grab mode or when middle mouse button is pressed
+      if (canvasState.mode === CanvasMode.Grab || event.button === 1) {
+        event.preventDefault();
+        lastMousePosRef.current.x = event.clientX;
+        lastMousePosRef.current.y = event.clientY;
+        setIsMouseDown(true);
+      }
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isMouseDown) return;
+
+      if (canvasState.mode === CanvasMode.Grab || event.buttons === 4) {
+        // 4 is middle button
+        event.preventDefault();
+
+        // Calculate the delta
+        const deltaX = event.clientX - lastMousePosRef.current.x;
+        const deltaY = event.clientY - lastMousePosRef.current.y;
+
+        // Update last position
+        lastMousePosRef.current.x = event.clientX;
+        lastMousePosRef.current.y = event.clientY;
+
+        // Update camera position
+        const transform = transformRef.current;
+
+        updateCamera(transform.x + deltaX, transform.y + deltaY, transform.k);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsMouseDown(false);
+    };
+
+    // Add event listeners
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
     canvas.addEventListener("touchstart", handleTouchEvent, { passive: false });
     canvas.addEventListener("touchmove", handleTouchEvent, { passive: false });
+    canvas.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       // Clean up event listeners
-      selection.on(".zoom", null);
-      canvas.removeEventListener("wheel", handleWheelEvent);
+      canvas.removeEventListener("wheel", handleWheel);
       canvas.removeEventListener("touchstart", handleTouchEvent);
       canvas.removeEventListener("touchmove", handleTouchEvent);
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [canvasRef, camera.x, camera.y, camera.scale, updateCamera, canvasState.mode]);
-
-  return { camera };
+  }, [canvasRef, camera.x, camera.y, camera.scale, updateCamera, canvasState.mode, isMouseDown]);
 };
