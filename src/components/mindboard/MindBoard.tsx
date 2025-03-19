@@ -9,7 +9,7 @@ import { getLayerById } from "@/utils/canvasUtils";
 
 import { Toolbar } from "../whiteboard";
 import { drawSelectionRectangle } from "./boardRender";
-import { Controls } from "./Controls";
+import { Controls, useCameraControls } from "./Controls";
 import { drawEdgeBasedOnType } from "./edgeRender";
 import { drawActiveLayerSelection, drawLayerBasedOnType, drawLayerHandles, drawLayerText } from "./layerRender";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
@@ -18,7 +18,7 @@ const MindBoard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [camera, setCamera] = useRecoilState(cameraStateAtom);
+  const [camera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const { theme } = useTheme();
 
@@ -26,6 +26,7 @@ const MindBoard = () => {
     useLayerOperations();
 
   const { edges, setEdges } = useEdgeOperations();
+  const { fitView } = useCameraControls();
 
   // Setup canvas
   useEffect(() => {
@@ -312,8 +313,10 @@ const MindBoard = () => {
       } else if (canvasState.mode === CanvasMode.Grab) {
         setCanvasState({ mode: CanvasMode.Grab });
       }
+
+      fitView(layers);
     },
-    [camera, canvasState.mode, setCanvasState],
+    [camera, canvasState.mode, fitView, layers, setCanvasState],
   );
 
   // Handle keyboard events
