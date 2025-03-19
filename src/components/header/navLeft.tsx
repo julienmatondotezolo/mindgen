@@ -87,7 +87,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
         animate={{ opacity: 1, y: 0 }}
         className="flex px-2 py-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <SheetTrigger asChild>
             <Button
               variant="ghost"
@@ -100,7 +100,7 @@ function NavLeft({ userMindmapDetails }: { userMindmapDetails: MindMapDetailsPro
 
           <Link href={`/dashboard`}>
             <figure className="relative group">
-              <MindGenLogo className="scale-75" />
+              <MindGenLogo className="scale-[0.8]" />
               <motion.div
                 className="absolute -top-[5px] -right-[5px] bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
                 initial={{ scale: 0.8 }}

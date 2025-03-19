@@ -1,40 +1,30 @@
-import { nanoid } from "nanoid";
 import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 
-import { CanvasMode, Layer, Point } from "@/_types/canvas";
-import { activeLayersAtom, cameraStateAtom, canvasStateAtom, edgesAtomState, layerAtomState } from "@/state";
+import { CanvasMode } from "@/_types/canvas";
+import { useEdgeOperations, useLayerOperations } from "@/hooks";
+import { cameraStateAtom, canvasStateAtom } from "@/state";
 import { getLayerById } from "@/utils/canvasUtils";
 
 import { Toolbar } from "../whiteboard";
-
-// Canvas-specific point conversion function
-const canvasPointFromEvent = (
-  e: React.PointerEvent<HTMLCanvasElement>,
-  camera: { x: number; y: number; scale: number },
-  canvas: HTMLCanvasElement | null,
-): { x: number; y: number } => {
-  if (!canvas) return { x: 0, y: 0 };
-
-  const rect = canvas.getBoundingClientRect();
-
-  return {
-    x: (e.clientX - rect.left - camera.x) / camera.scale,
-    y: (e.clientY - rect.top - camera.y) / camera.scale,
-  };
-};
+import { drawSelectionRectangle } from "./boardRender";
+import { drawEdgeBasedOnType } from "./edgeRender";
+import { drawActiveLayerSelection, drawLayerBasedOnType, drawLayerHandles, drawLayerText } from "./layerRender";
+import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
 
 const MindBoard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [layers, setLayers] = useRecoilState(layerAtomState);
-  const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [camera] = useRecoilState(cameraStateAtom);
-  const [activeLayers, setActiveLayers] = useRecoilState(activeLayersAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const { theme } = useTheme();
+
+  const { findLayersAtPoint, findLayersInSelection, addLayer, layers, setLayers, activeLayers, setActiveLayers } =
+    useLayerOperations();
+
+  const { edges, setEdges } = useEdgeOperations();
 
   // Setup canvas
   useEffect(() => {
@@ -64,11 +54,11 @@ const MindBoard = () => {
     };
 
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    // window.addEventListener("resize", resizeCanvas);
 
-    return () => {
-      window.removeEventListener("resize", resizeCanvas);
-    };
+    // return () => {
+    //   window.removeEventListener("resize", resizeCanvas);
+    // };
   }, []);
 
   // Apply camera transform
@@ -96,23 +86,19 @@ const MindBoard = () => {
       const startX = Math.floor(-camera.x / camera.scale / gridSize) * gridSize;
       const startY = Math.floor(-camera.y / camera.scale / gridSize) * gridSize;
 
-      context.beginPath();
-      context.strokeStyle = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
-      context.lineWidth = 1 / camera.scale;
+      context.fillStyle = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
 
-      // Draw vertical lines
+      // Define dot size (adjust as needed)
+      const dotSize = 1 / camera.scale;
+
+      // Draw dots at grid intersections
       for (let x = startX; x < startX + width; x += gridSize) {
-        context.moveTo(x, startY);
-        context.lineTo(x, startY + height);
+        for (let y = startY; y < startY + height; y += gridSize) {
+          context.beginPath();
+          context.arc(x, y, dotSize, 0, Math.PI * 2);
+          context.fill();
+        }
       }
-
-      // Draw horizontal lines
-      for (let y = startY; y < startY + height; y += gridSize) {
-        context.moveTo(startX, y);
-        context.lineTo(startX + width, y);
-      }
-
-      context.stroke();
     },
     [camera, theme],
   );
@@ -135,243 +121,30 @@ const MindBoard = () => {
 
     // Draw edges
     edges.forEach((edge) => {
-      context.beginPath();
-      context.moveTo(edge.start.x, edge.start.y);
-      context.lineTo(edge.end.x, edge.end.y);
-      context.strokeStyle = `rgb(${edge.color.r}, ${edge.color.g}, ${edge.color.b})`;
-      context.lineWidth = edge.thickness;
-      context.stroke();
-
-      // Draw arrow if needed
-      if (edge && edge.end) {
-        const angle = Math.atan2(edge.end.y - edge.start.y, edge.end.x - edge.start.x);
-        const size = 10;
-
-        context.beginPath();
-        context.moveTo(edge.end.x, edge.end.y);
-        context.lineTo(
-          edge.end.x - size * Math.cos(angle - Math.PI / 6),
-          edge.end.y - size * Math.sin(angle - Math.PI / 6),
-        );
-        context.lineTo(
-          edge.end.x - size * Math.cos(angle + Math.PI / 6),
-          edge.end.y - size * Math.sin(angle + Math.PI / 6),
-        );
-        context.closePath();
-        context.fillStyle = `rgb(${edge.color.r}, ${edge.color.g}, ${edge.color.b})`;
-        context.fill();
-      }
+      drawEdgeBasedOnType({ edge, context });
     });
 
     // Draw layers
     layers.forEach((layer) => {
-      context.fillStyle = `rgb(${layer.fill.r}, ${layer.fill.g}, ${layer.fill.b})`;
-
       // Draw shapes based on type
-      if (layer.type === "RECTANGLE") {
-        context.fillRect(layer.x, layer.y, layer.width, layer.height);
-      } else if (layer.type === "ELLIPSE") {
-        context.beginPath();
-        context.ellipse(
-          layer.x + layer.width / 2,
-          layer.y + layer.height / 2,
-          layer.width / 2,
-          layer.height / 2,
-          0,
-          0,
-          Math.PI * 2,
-        );
-        context.fill();
-      } else if (layer.type === "DIAMOND") {
-        context.beginPath();
-        context.moveTo(layer.x + layer.width / 2, layer.y);
-        context.lineTo(layer.x + layer.width, layer.y + layer.height / 2);
-        context.lineTo(layer.x + layer.width / 2, layer.y + layer.height);
-        context.lineTo(layer.x, layer.y + layer.height / 2);
-        context.closePath();
-        context.fill();
-      }
+      drawLayerBasedOnType({ layer, context });
 
       // Draw selection outline for active layers
-      if (activeLayers.includes(layer.id)) {
-        context.strokeStyle = "#2563eb"; // Blue selection color
-        context.lineWidth = 2 / camera.scale;
+      drawActiveLayerSelection({ layer, context, camera, activeLayers });
 
-        if (layer.type === "RECTANGLE") {
-          context.strokeRect(layer.x, layer.y, layer.width, layer.height);
-        } else if (layer.type === "ELLIPSE") {
-          context.beginPath();
-          context.ellipse(
-            layer.x + layer.width / 2,
-            layer.y + layer.height / 2,
-            layer.width / 2,
-            layer.height / 2,
-            0,
-            0,
-            Math.PI * 2,
-          );
-          context.stroke();
-        } else if (layer.type === "DIAMOND") {
-          context.beginPath();
-          context.moveTo(layer.x + layer.width / 2, layer.y);
-          context.lineTo(layer.x + layer.width, layer.y + layer.height / 2);
-          context.lineTo(layer.x + layer.width / 2, layer.y + layer.height);
-          context.lineTo(layer.x, layer.y + layer.height / 2);
-          context.closePath();
-          context.stroke();
-        }
-
-        // Draw resize handles
-        const handleSize = 8 / camera.scale;
-        const handles = [
-          { x: layer.x - handleSize / 2, y: layer.y - handleSize / 2 }, // top-left
-          { x: layer.x + layer.width / 2 - handleSize / 2, y: layer.y - handleSize / 2 }, // top-center
-          { x: layer.x + layer.width - handleSize / 2, y: layer.y - handleSize / 2 }, // top-right
-          { x: layer.x + layer.width - handleSize / 2, y: layer.y + layer.height / 2 - handleSize / 2 }, // middle-right
-          { x: layer.x + layer.width - handleSize / 2, y: layer.y + layer.height - handleSize / 2 }, // bottom-right
-          { x: layer.x + layer.width / 2 - handleSize / 2, y: layer.y + layer.height - handleSize / 2 }, // bottom-center
-          { x: layer.x - handleSize / 2, y: layer.y + layer.height - handleSize / 2 }, // bottom-left
-          { x: layer.x - handleSize / 2, y: layer.y + layer.height / 2 - handleSize / 2 }, // middle-left
-        ];
-
-        handles.forEach((handle) => {
-          context.fillStyle = "#ffffff";
-          context.fillRect(handle.x, handle.y, handleSize, handleSize);
-          context.strokeStyle = "#2563eb";
-          context.strokeRect(handle.x, handle.y, handleSize, handleSize);
-        });
-      }
+      // Draw layer handles
+      drawLayerHandles({ layer, context, camera, activeLayers });
 
       // Draw layer text
-      if (layer.value) {
-        context.font = `${14 / camera.scale}px Arial`;
-        context.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(layer.value, layer.x + layer.width / 2, layer.y + layer.height / 2);
-      }
+      drawLayerText({ layer, context, camera, theme });
     });
 
     // Draw selection rectangle if in selection mode
-    if (canvasState.mode === CanvasMode.SelectionNet && canvasState.origin && canvasState.current) {
-      const x = Math.min(canvasState.origin.x, canvasState.current.x);
-      const y = Math.min(canvasState.origin.y, canvasState.current.y);
-      const width = Math.abs(canvasState.origin.x - canvasState.current.x);
-      const height = Math.abs(canvasState.origin.y - canvasState.current.y);
-
-      context.strokeStyle = "rgba(37, 99, 235, 0.5)";
-      context.fillStyle = "rgba(37, 99, 235, 0.1)";
-      context.fillRect(x, y, width, height);
-      context.strokeRect(x, y, width, height);
-    }
+    drawSelectionRectangle({ context, canvasState });
 
     // Restore context to clear transformations
     restoreContext(context);
   }, [layers, edges, activeLayers, theme, camera, canvasState, applyCamera, drawGrid, restoreContext]);
-
-  // Check if point is inside layer
-  const isPointInLayer = useCallback((point: Point, layer: Layer) => {
-    if (layer.type === "RECTANGLE") {
-      return (
-        point.x >= layer.x &&
-        point.x <= layer.x + layer.width &&
-        point.y >= layer.y &&
-        point.y <= layer.y + layer.height
-      );
-    } else if (layer.type === "ELLIPSE") {
-      const centerX = layer.x + layer.width / 2;
-      const centerY = layer.y + layer.height / 2;
-      const rx = layer.width / 2;
-      const ry = layer.height / 2;
-
-      const dx = (point.x - centerX) / rx;
-      const dy = (point.y - centerY) / ry;
-
-      return dx * dx + dy * dy <= 1;
-    } else if (layer.type === "DIAMOND") {
-      // Convert to a local coordinate system where the diamond is centered at the origin
-      const centerX = layer.x + layer.width / 2;
-      const centerY = layer.y + layer.height / 2;
-      const rx = layer.width / 2;
-      const ry = layer.height / 2;
-
-      const dx = Math.abs(point.x - centerX) / rx;
-      const dy = Math.abs(point.y - centerY) / ry;
-
-      return dx + dy <= 1;
-    }
-
-    return false;
-  }, []);
-
-  // Find layers under a point
-  const findLayersAtPoint = useCallback(
-    (point: Point) => layers.filter((layer) => isPointInLayer(point, layer)).map((layer) => layer.id),
-    [layers, isPointInLayer],
-  );
-
-  // Find layers inside a selection rectangle
-  const findLayersInSelection = useCallback(
-    (origin: Point, current: Point) => {
-      const x = Math.min(origin.x, current.x);
-      const y = Math.min(origin.y, current.y);
-      const width = Math.abs(origin.x - current.x);
-      const height = Math.abs(origin.y - current.y);
-
-      return layers
-        .filter((layer) => {
-          const layerCenterX = layer.x + layer.width / 2;
-          const layerCenterY = layer.y + layer.height / 2;
-
-          return layerCenterX >= x && layerCenterX <= x + width && layerCenterY >= y && layerCenterY <= y + height;
-        })
-        .map((layer) => layer.id);
-    },
-    [layers],
-  );
-
-  // Add a new layer
-  const addLayer = useCallback(
-    (type: string, point: Point) => {
-      const newLayer: Layer = {
-        id: nanoid(),
-        type: type as any,
-        x: point.x - 100, // Center the layer on the click point
-        y: point.y - 30,
-        width: 200,
-        height: type === "RECTANGLE" ? 60 : 200, // Make ellipses and diamonds square
-        fill: { r: 77, g: 106, b: 255 },
-        value: "New Layer",
-      };
-
-      setLayers((prev) => [...prev, newLayer]);
-      setActiveLayers([newLayer.id]);
-
-      return newLayer.id;
-    },
-    [setLayers, setActiveLayers],
-  );
-
-  // // Add a new edge
-  // const addEdge = useCallback(
-  //   (start: Point, end: Point, fromLayerId?: string, toLayerId?: string) => {
-  //     const newEdge = {
-  //       id: nanoid(),
-  //       start,
-  //       end,
-  //       fromLayerId,
-  //       toLayerId,
-  //       color: { r: 180, g: 191, b: 204 },
-  //       thickness: 2,
-  //       arrows: { end: true },
-  //     };
-
-  //     setEdges((prev) => [...prev, newEdge as any]);
-
-  //     return newEdge.id;
-  //   },
-  //   [setEdges],
-  // );
 
   // Update mouse event handlers to handle different modes
   // Mouse event handlers
@@ -604,18 +377,6 @@ const MindBoard = () => {
   useEffect(() => {
     renderCanvas();
   }, [renderCanvas]);
-
-  // Add this function before the return statement:
-  const getCursorStyle = (mode: CanvasMode): string => {
-    switch (mode) {
-      case CanvasMode.Grab:
-        return "grab";
-      case CanvasMode.Inserting:
-        return "crosshair";
-      default:
-        return "default";
-    }
-  };
 
   return (
     <div className="h-full w-full relative">

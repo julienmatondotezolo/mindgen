@@ -200,6 +200,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.Importing; // New mode for exporting
     };
+
 export enum CanvasMode {
   None,
   Grab,
