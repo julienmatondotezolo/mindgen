@@ -12,7 +12,7 @@ import { Toolbar } from "../whiteboard";
 import { drawSelectionRectangle } from "./boardRender";
 import { Controls, useCameraControls } from "./Controls";
 import { drawEdgeBasedOnType } from "./edgeRender";
-import { drawActiveLayerSelection, drawLayerBasedOnType, drawLayerHandles, drawLayerText } from "./layerRender";
+import { layerRender } from "./layerRenders";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
 
 const MindBoard = () => {
@@ -148,17 +148,7 @@ const MindBoard = () => {
 
     // Draw layers
     layers.forEach((layer) => {
-      // Draw shapes based on type
-      drawLayerBasedOnType({ layer, context });
-
-      // Draw selection outline for active layers
-      drawActiveLayerSelection({ layer, context, camera, activeLayers });
-
-      // Draw layer handles
-      drawLayerHandles({ layer, context, camera, activeLayers });
-
-      // Draw layer text
-      drawLayerText({ layer, context, camera, theme });
+      layerRender({ layer, context, camera, activeLayers, theme });
     });
 
     // Draw selection rectangle if in selection mode

@@ -12,8 +12,14 @@ export const drawLayerHandles = ({
   activeLayers: string[];
 }): void => {
   if (activeLayers.includes(layer.id)) {
-    context.strokeStyle = "#2563eb"; // Blue selection color
+    // draw layer stroke
+    // context.strokeStyle = "#2563eb";
+    // context.lineWidth = 2 / camera.scale;
+
+    // Draw layer bounding box
+    context.strokeStyle = "#2563eb";
     context.lineWidth = 2 / camera.scale;
+    context.strokeRect(layer.x, layer.y, layer.width, layer.height);
 
     // Draw resize handles
     const handleSize = 8 / camera.scale;
