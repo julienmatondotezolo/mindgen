@@ -16,7 +16,7 @@ export const layerRender = ({
   theme: string | undefined;
 }): void => {
   // Draw shapes based on type
-  drawLayerBasedOnType({ layer, context });
+  drawLayerBasedOnType({ layer, context, theme });
 
   // Draw selection outline for active layers
   drawActiveLayerSelection({ layer, context, camera, activeLayers });
