@@ -1,4 +1,6 @@
-import { Camera, Layer } from "@/_types";
+import { Camera, HandlePosition, Layer } from "@/_types";
+
+import { getHandlePosition } from "../../layerUtils";
 
 export const drawLayerHandles = ({
   layer,
@@ -13,38 +15,8 @@ export const drawLayerHandles = ({
 }): void => {
   // Only draw handles for active/selected layers
   if (activeLayers.includes(layer.id) && activeLayers.length === 1) {
-    // Constants to control handle appearance
-    // Controls how far handles are positioned from layer edges
-    let HANDLE_DISTANCE_FACTOR = 2.5;
-    // Calculate positions for the 4 handles
-    let handleSize = 12;
-
-    const handlePositions = [
-      // top
-      {
-        x: layer.x + layer.width / 2,
-        y: layer.y - handleSize * HANDLE_DISTANCE_FACTOR,
-        arrowDirection: "up",
-      },
-      // right
-      {
-        x: layer.x + layer.width + handleSize * HANDLE_DISTANCE_FACTOR,
-        y: layer.y + layer.height / 2,
-        arrowDirection: "right",
-      },
-      // bottom
-      {
-        x: layer.x + layer.width / 2,
-        y: layer.y + layer.height + handleSize * HANDLE_DISTANCE_FACTOR,
-        arrowDirection: "down",
-      },
-      // left
-      {
-        x: layer.x - handleSize * HANDLE_DISTANCE_FACTOR,
-        y: layer.y + layer.height / 2,
-        arrowDirection: "left",
-      },
-    ];
+    // Get handle position
+    const { handlePositions, handleSize } = getHandlePosition(layer);
 
     // Draw each handle
     handlePositions.forEach((handle) => {
@@ -68,22 +40,27 @@ export const drawLayerHandles = ({
 
       context.beginPath();
 
-      if (handle.arrowDirection === "up") {
-        context.moveTo(handle.x, handle.y - arrowSize / 3);
-        context.lineTo(handle.x - arrowSize / 3, handle.y + arrowSize / 3);
-        context.lineTo(handle.x + arrowSize / 3, handle.y + arrowSize / 3);
-      } else if (handle.arrowDirection === "right") {
-        context.moveTo(handle.x + arrowSize / 3, handle.y);
-        context.lineTo(handle.x - arrowSize / 3, handle.y - arrowSize / 3);
-        context.lineTo(handle.x - arrowSize / 3, handle.y + arrowSize / 3);
-      } else if (handle.arrowDirection === "down") {
-        context.moveTo(handle.x, handle.y + arrowSize / 3);
-        context.lineTo(handle.x - arrowSize / 3, handle.y - arrowSize / 3);
-        context.lineTo(handle.x + arrowSize / 3, handle.y - arrowSize / 3);
-      } else if (handle.arrowDirection === "left") {
-        context.moveTo(handle.x - arrowSize / 3, handle.y);
-        context.lineTo(handle.x + arrowSize / 3, handle.y - arrowSize / 3);
-        context.lineTo(handle.x + arrowSize / 3, handle.y + arrowSize / 3);
+      switch (handle.position) {
+        case HandlePosition.Top:
+          context.moveTo(handle.x, handle.y - arrowSize / 3);
+          context.lineTo(handle.x - arrowSize / 3, handle.y + arrowSize / 3);
+          context.lineTo(handle.x + arrowSize / 3, handle.y + arrowSize / 3);
+          break;
+        case HandlePosition.Right:
+          context.moveTo(handle.x + arrowSize / 3, handle.y);
+          context.lineTo(handle.x - arrowSize / 3, handle.y - arrowSize / 3);
+          context.lineTo(handle.x - arrowSize / 3, handle.y + arrowSize / 3);
+          break;
+        case HandlePosition.Bottom:
+          context.moveTo(handle.x, handle.y + arrowSize / 3);
+          context.lineTo(handle.x - arrowSize / 3, handle.y - arrowSize / 3);
+          context.lineTo(handle.x + arrowSize / 3, handle.y - arrowSize / 3);
+          break;
+        case HandlePosition.Left:
+          context.moveTo(handle.x - arrowSize / 3, handle.y);
+          context.lineTo(handle.x + arrowSize / 3, handle.y - arrowSize / 3);
+          context.lineTo(handle.x + arrowSize / 3, handle.y + arrowSize / 3);
+          break;
       }
 
       context.closePath();

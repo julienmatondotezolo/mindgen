@@ -148,6 +148,11 @@ export type CanvasState =
       mode: CanvasMode.Edge;
       origin?: Point;
       current?: Point;
+      handleInfo?: {
+        layerId: string;
+        handlePosition: HandlePosition;
+        coordinates: Point;
+      };
     }
   | {
       mode: CanvasMode.EdgeDrawing;

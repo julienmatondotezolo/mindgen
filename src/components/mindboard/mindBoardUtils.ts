@@ -25,6 +25,8 @@ export const getCursorStyle = (mode: CanvasMode): string => {
       return "grab";
     case CanvasMode.Inserting:
       return "crosshair";
+    case CanvasMode.Edge:
+      return "crosshair";
     default:
       return "default";
   }

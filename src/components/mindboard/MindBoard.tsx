@@ -28,6 +28,7 @@ const MindBoard = () => {
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(true);
 
   const {
+    findHandleAtPoint,
     findLayerAtPoint,
     findLayerIdsAtPoint,
     findLayersInSelection,
@@ -238,15 +239,38 @@ const MindBoard = () => {
   const handleMouseMove = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
+      // Find layers at current mouse position
+      const layersAtPoint = findLayerAtPoint(point);
+      // Find nearest handle at current mouse position
+      const handleInfo = findHandleAtPoint(point);
 
       if (canvasState.mode === CanvasMode.None) {
-        // Find layers at current mouse position
-        const layersAtPoint = findLayerAtPoint(point);
+        // If the layer is active, don't set the hoveredLayerId
+        if (layersAtPoint && activeLayers.includes(layersAtPoint.id)) {
+          return;
+        }
 
+        if (handleInfo && activeLayers.includes(handleInfo.layerId)) {
+          setCanvasState({
+            mode: CanvasMode.Edge,
+            current: handleInfo.coordinates,
+            handleInfo,
+          });
+          return;
+        }
+
+        // Only set to None mode if we didn't set to Edge mode
         setCanvasState({
           mode: CanvasMode.None,
           hoveredLayerId: layersAtPoint?.id,
         });
+      } else if (canvasState.mode === CanvasMode.Edge) {
+        if (!handleInfo) {
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+          return;
+        }
       } else if (canvasState.mode === CanvasMode.SelectionNet) {
         setCanvasState((prev) => ({
           ...prev,
@@ -315,13 +339,14 @@ const MindBoard = () => {
       canvasState,
       renderCanvas,
       findLayerAtPoint,
+      activeLayers,
+      findHandleAtPoint,
       setCanvasState,
       findLayersInSelection,
       setActiveLayers,
       setLayers,
       setEdges,
       isDebugMode,
-      activeLayers,
     ],
   );
 
