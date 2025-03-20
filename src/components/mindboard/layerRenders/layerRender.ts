@@ -30,7 +30,7 @@ export const layerRender = ({
   drawActiveLayerSelection({ layer, context, camera, activeLayers, canvasState });
 
   // Draw layer handles
-  drawLayerHandles({ layer, context, camera, activeLayers });
+  drawLayerHandles({ layer, context, camera, activeLayers, canvasState });
 
   // Draw resize grips
   drawResizeGrips({ layer, context, camera, activeLayers });
