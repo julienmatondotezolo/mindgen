@@ -1,5 +1,5 @@
 import { Edge, EdgeShape, HandlePosition } from "@/_types";
-import { drawEdgeCurvedLine, getControlWithCurvature } from "@/utils/edgeUtils";
+import { drawEdgeCurvedLine, drawEdgeStepLine, getControlWithCurvature } from "@/utils/edgeUtils";
 
 export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: CanvasRenderingContext2D }) => {
   context.beginPath();
@@ -18,10 +18,10 @@ export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: Ca
     }
 
     // draw smooth step line
-    case EdgeShape.SmoothStep:
-      context.moveTo(edge.start.x, edge.start.y);
-      context.lineTo(edge.end.x, edge.end.y);
+    case EdgeShape.SmoothStep: {
+      drawEdgeStepLine({ edge, context });
       break;
+    }
 
     default:
       context.moveTo(edge.start.x, edge.start.y);
@@ -77,7 +77,7 @@ export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: Ca
 
     const size = edge.thickness === 2 ? 14 : 20;
     // Calculate the arrow position with an offset of -2 from the end point
-    const arrowOffset = -3;
+    const arrowOffset = -12;
     const arrowX = edge.end.x - arrowOffset * Math.cos(angle);
     const arrowY = edge.end.y - arrowOffset * Math.sin(angle);
 

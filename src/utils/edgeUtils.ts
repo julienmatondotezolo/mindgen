@@ -55,10 +55,16 @@ function getPoints({
   center: Partial<Point>;
   offset: number;
 }): [Point[], number, number, number, number] {
-  const sourceDir = handleDirections[sourcePosition];
-  const targetDir = handleDirections[targetPosition];
+  // Use safe fallbacks for positions
+  const safeSourcePosition = sourcePosition || HandlePosition.Top;
+  const safeTargetPosition = targetPosition || HandlePosition.Top;
+
+  const sourceDir = handleDirections[safeSourcePosition];
+  const targetDir = handleDirections[safeTargetPosition];
+
   const sourceGapped: Point = { x: source.x + sourceDir.x * offset, y: source.y + sourceDir.y * offset };
   const targetGapped: Point = { x: target.x + targetDir.x * offset, y: target.y + targetDir.y * offset };
+
   const dir = getDirection({
     source: sourceGapped,
     sourcePosition,
@@ -112,7 +118,7 @@ function getPoints({
       points = sourceDir.y === currDir ? sourceTarget : targetSource;
     }
 
-    if (sourcePosition === targetPosition) {
+    if (safeSourcePosition === safeTargetPosition) {
       const diff = Math.abs(source[dirAccessor] - target[dirAccessor]);
 
       // if an edge goes from right to right for example (sourcePosition === targetPosition) and the distance between source.x and target.x is less than the offset, the added point and the gapped source/target will overlap. This leads to a weird edge path. To avoid this we add a gapOffset to the source/target
@@ -128,7 +134,7 @@ function getPoints({
     }
 
     // these are conditions for handling mixed handle positions like Right -> Bottom for example
-    if (sourcePosition !== targetPosition) {
+    if (safeSourcePosition !== safeTargetPosition) {
       const dirAccessorOpposite = dirAccessor === "x" ? "y" : "x";
       const isSameDir = sourceDir[dirAccessor] === targetDir[dirAccessorOpposite];
       const sourceGtTargetOppo = sourceGapped[dirAccessorOpposite] > targetGapped[dirAccessorOpposite];
@@ -334,4 +340,344 @@ export function drawEdgeCurvedLine({ edge, context }: { edge: Edge; context: Can
 
   context.moveTo(edge.start.x, edge.start.y);
   context.bezierCurveTo(sourceControlX, sourceControlY, targetControlX, targetControlY, edge.end.x, edge.end.y);
+}
+
+// ============================================================================= //
+// =============================== EDGE STEP LINE ============================== //
+// ============================================================================= //
+
+export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: CanvasRenderingContext2D }) {
+  const sourcePosition = edge.handleStart || HandlePosition.Top;
+  const targetPosition = edge.handleEnd || HandlePosition.Top;
+
+  // Start drawing from the source point
+  context.moveTo(edge.start.x, edge.start.y);
+
+  // Calculate initial offset distance from each node
+  const offset = 25;
+  const borderRadius = 8; // Radius for the rounded corners
+
+  // Calculate source direction based on position
+  let sourceDirX = 0,
+    sourceDirY = 0;
+
+  switch (sourcePosition) {
+    case HandlePosition.Left:
+      sourceDirX = -1;
+      break;
+    case HandlePosition.Right:
+      sourceDirX = 1;
+      break;
+    case HandlePosition.Top:
+      sourceDirY = -1;
+      break;
+    case HandlePosition.Bottom:
+      sourceDirY = 1;
+      break;
+  }
+
+  // Calculate target direction based on position
+  let targetDirX = 0,
+    targetDirY = 0;
+
+  switch (targetPosition) {
+    case HandlePosition.Left:
+      targetDirX = -1;
+      break;
+    case HandlePosition.Right:
+      targetDirX = 1;
+      break;
+    case HandlePosition.Top:
+      targetDirY = -1;
+      break;
+    case HandlePosition.Bottom:
+      targetDirY = 1;
+      break;
+  }
+
+  // Calculate the first segment point (moving out from source in handle direction)
+  const sourceOutPoint = {
+    x: edge.start.x + sourceDirX * offset,
+    y: edge.start.y + sourceDirY * offset,
+  };
+
+  // Calculate the last segment point (moving into target in handle direction)
+  const targetInPoint = {
+    x: edge.end.x + targetDirX * offset,
+    y: edge.end.y + targetDirY * offset,
+  };
+
+  // Determine the routing type based on source and target handle positions
+  const routingType = getRoutingType(sourcePosition, targetPosition);
+
+  // Use Manhattan routing with rounded corners based on the routing type
+  switch (routingType) {
+    case "horizontal-to-vertical": {
+      // Horizontal source (Left/Right), vertical target (Top/Bottom)
+      const cornerX = sourceOutPoint.x;
+      const cornerY = targetInPoint.y;
+
+      // Draw line to source offset point
+      context.lineTo(sourceOutPoint.x - sourceDirX * borderRadius, sourceOutPoint.y);
+
+      // First corner
+      context.quadraticCurveTo(
+        cornerX,
+        sourceOutPoint.y,
+        cornerX,
+        sourceOutPoint.y + (cornerY > sourceOutPoint.y ? borderRadius : -borderRadius),
+      );
+
+      // Draw line to next corner
+      context.lineTo(cornerX, cornerY - targetDirY * borderRadius);
+
+      // Second corner
+      context.quadraticCurveTo(
+        cornerX,
+        cornerY,
+        cornerX + (targetInPoint.x > cornerX ? borderRadius : -borderRadius),
+        cornerY,
+      );
+
+      // Draw line to target in point
+      context.lineTo(targetInPoint.x, targetInPoint.y);
+      break;
+    }
+
+    case "vertical-to-horizontal": {
+      // Vertical source (Top/Bottom), horizontal target (Left/Right)
+      const cornerX = targetInPoint.x;
+      const cornerY = sourceOutPoint.y;
+
+      // Draw line to source offset point
+      context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
+
+      // First corner
+      context.quadraticCurveTo(
+        sourceOutPoint.x,
+        cornerY,
+        sourceOutPoint.x + (cornerX > sourceOutPoint.x ? borderRadius : -borderRadius),
+        cornerY,
+      );
+
+      // Draw line to next corner
+      context.lineTo(cornerX - targetDirX * borderRadius, cornerY);
+
+      // Second corner
+      context.quadraticCurveTo(
+        cornerX,
+        cornerY,
+        cornerX,
+        cornerY + (targetInPoint.y > cornerY ? borderRadius : -borderRadius),
+      );
+
+      // Draw line to target in point
+      context.lineTo(targetInPoint.x, targetInPoint.y);
+      break;
+    }
+
+    case "horizontal-to-horizontal": {
+      // Horizontal to horizontal
+      const midY = (sourceOutPoint.y + targetInPoint.y) / 2;
+
+      // Draw line to first corner point
+      context.lineTo(sourceOutPoint.x - sourceDirX * borderRadius, sourceOutPoint.y);
+
+      // First corner
+      context.quadraticCurveTo(
+        sourceOutPoint.x,
+        sourceOutPoint.y,
+        sourceOutPoint.x,
+        sourceOutPoint.y + (midY > sourceOutPoint.y ? borderRadius : -borderRadius),
+      );
+
+      // Middle vertical segment
+      context.lineTo(sourceOutPoint.x, midY);
+
+      // Second corner
+      context.quadraticCurveTo(
+        sourceOutPoint.x,
+        midY,
+        sourceOutPoint.x + (targetInPoint.x > sourceOutPoint.x ? borderRadius : -borderRadius),
+        midY,
+      );
+
+      // Middle horizontal segment
+      context.lineTo(targetInPoint.x - (targetInPoint.x > sourceOutPoint.x ? borderRadius : -borderRadius), midY);
+
+      // Third corner
+      context.quadraticCurveTo(
+        targetInPoint.x,
+        midY,
+        targetInPoint.x,
+        midY + (targetInPoint.y > midY ? borderRadius : -borderRadius),
+      );
+
+      // Final vertical segment
+      context.lineTo(targetInPoint.x, targetInPoint.y - targetDirY * borderRadius);
+
+      // Fourth/last corner
+      context.quadraticCurveTo(
+        targetInPoint.x,
+        targetInPoint.y,
+        targetInPoint.x + (edge.end.x > targetInPoint.x ? borderRadius : -borderRadius),
+        targetInPoint.y,
+      );
+      break;
+    }
+
+    case "vertical-to-vertical": {
+      // Target is underneath source
+      if (targetInPoint.y > sourceOutPoint.y) {
+        // First line segment (vertical from source)
+        context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
+
+        // First corner
+        context.quadraticCurveTo(
+          sourceOutPoint.x,
+          sourceOutPoint.y,
+          sourceOutPoint.x,
+          sourceOutPoint.y + (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius),
+        );
+
+        // Middle vertical segment
+        context.lineTo(
+          sourceOutPoint.x,
+          targetInPoint.y - (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius),
+        );
+
+        // Second corner
+        context.quadraticCurveTo(
+          sourceOutPoint.x,
+          targetInPoint.y,
+          sourceOutPoint.x + (targetInPoint.x > sourceOutPoint.x ? borderRadius : -borderRadius),
+          targetInPoint.y,
+        );
+
+        // Horizontal segment at target height
+        context.lineTo(targetInPoint.x - targetDirX * borderRadius, targetInPoint.y);
+
+        // Fourth/last corner - connect directly to the target
+        context.quadraticCurveTo(
+          targetInPoint.x,
+          targetInPoint.y,
+          edge.end.x,
+          edge.end.y
+        );
+      } else {
+        // Vertical to vertical
+        const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
+
+        // First line segment
+        context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
+
+        // First corner
+        context.quadraticCurveTo(
+          sourceOutPoint.x,
+          sourceOutPoint.y,
+          sourceOutPoint.x + (midX > sourceOutPoint.x ? borderRadius : -borderRadius),
+          sourceOutPoint.y,
+        );
+
+        // Middle horizontal segment
+        context.lineTo(midX - (midX > sourceOutPoint.x ? borderRadius : -borderRadius), sourceOutPoint.y);
+
+        // Second corner
+        context.quadraticCurveTo(
+          midX,
+          sourceOutPoint.y,
+          midX,
+          sourceOutPoint.y + (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius),
+        );
+
+        // Middle vertical segment
+        context.lineTo(midX, targetInPoint.y - (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius));
+
+        // Third corner
+        context.quadraticCurveTo(
+          midX,
+          targetInPoint.y,
+          midX + (targetInPoint.x > midX ? borderRadius : -borderRadius),
+          targetInPoint.y,
+        );
+
+        // Final horizontal segment
+        context.lineTo(targetInPoint.x - targetDirX * borderRadius, targetInPoint.y);
+
+        // Fourth/last corner - connect directly to the target
+        context.quadraticCurveTo(
+          targetInPoint.x,
+          targetInPoint.y,
+          edge.end.x,
+          edge.end.y
+        );
+      }
+      break;
+    }
+  }
+}
+
+// Helper function to determine the routing type based on handle positions
+function getRoutingType(sourcePosition: HandlePosition, targetPosition: HandlePosition): string {
+  // Create a more specific routing type based on exact handle positions
+  switch (sourcePosition) {
+    case HandlePosition.Left:
+      switch (targetPosition) {
+        case HandlePosition.Left:
+          return "horizontal-to-horizontal";
+        case HandlePosition.Right:
+          return "horizontal-to-horizontal";
+        case HandlePosition.Top:
+          return "horizontal-to-vertical";
+        case HandlePosition.Bottom:
+          return "horizontal-to-vertical";
+        default:
+          return "horizontal-to-vertical";
+      }
+
+    case HandlePosition.Right:
+      switch (targetPosition) {
+        case HandlePosition.Left:
+          return "horizontal-to-horizontal";
+        case HandlePosition.Right:
+          return "horizontal-to-horizontal";
+        case HandlePosition.Top:
+          return "horizontal-to-vertical";
+        case HandlePosition.Bottom:
+          return "horizontal-to-vertical";
+        default:
+          return "horizontal-to-vertical";
+      }
+
+    case HandlePosition.Top:
+      switch (targetPosition) {
+        case HandlePosition.Left:
+          return "vertical-to-horizontal";
+        case HandlePosition.Right:
+          return "vertical-to-horizontal";
+        case HandlePosition.Top:
+          return "vertical-to-vertical";
+        case HandlePosition.Bottom:
+          return "vertical-to-vertical";
+        default:
+          return "vertical-to-vertical";
+      }
+
+    case HandlePosition.Bottom:
+      switch (targetPosition) {
+        case HandlePosition.Left:
+          return "vertical-to-horizontal";
+        case HandlePosition.Right:
+          return "vertical-to-horizontal";
+        case HandlePosition.Top:
+          return "vertical-to-vertical";
+        case HandlePosition.Bottom:
+          return "vertical-to-vertical";
+        default:
+          return "vertical-to-vertical";
+      }
+
+    default:
+      return "vertical-to-vertical";
+  }
 }
