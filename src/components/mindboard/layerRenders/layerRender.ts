@@ -1,4 +1,4 @@
-import { Camera, Layer } from "@/_types";
+import { Camera, CanvasState, Layer } from "@/_types";
 
 import { drawActiveLayerSelection, drawLayerBasedOnType, drawLayerHandles, drawLayerText } from "./layerDrawings";
 
@@ -8,18 +8,20 @@ export const layerRender = ({
   camera,
   activeLayers,
   theme,
+  canvasState,
 }: {
   layer: Layer;
   context: CanvasRenderingContext2D;
   camera: Camera;
   activeLayers: string[];
   theme: string | undefined;
+  canvasState: CanvasState;
 }): void => {
   // Draw shapes based on type
   drawLayerBasedOnType({ layer, context, theme });
 
   // Draw selection outline for active layers
-  drawActiveLayerSelection({ layer, context, camera, activeLayers });
+  drawActiveLayerSelection({ layer, context, camera, activeLayers, canvasState });
 
   // Draw layer handles
   drawLayerHandles({ layer, context, camera, activeLayers });

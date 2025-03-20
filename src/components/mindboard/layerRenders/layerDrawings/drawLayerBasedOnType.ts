@@ -23,8 +23,10 @@ export const drawLayerBasedOnType = ({
       context.beginPath();
       context.roundRect(layer.x, layer.y, layer.width, layer.height, 100);
       context.strokeStyle = newBorderColor;
-      context.lineWidth = layer.borderWidth || 0;
-      context.stroke();
+      if (layer.borderWidth) {
+        context.lineWidth = layer.borderWidth;
+        context.stroke();
+      }
       context.fill();
       break;
 
@@ -40,8 +42,10 @@ export const drawLayerBasedOnType = ({
         Math.PI * 2,
       );
       context.strokeStyle = newBorderColor;
-      context.lineWidth = layer.borderWidth || 0;
-      context.stroke();
+      if (layer.borderWidth) {
+        context.lineWidth = layer.borderWidth;
+        context.stroke();
+      }
       context.fill();
       break;
 
@@ -53,8 +57,10 @@ export const drawLayerBasedOnType = ({
       context.lineTo(layer.x, layer.y + layer.height / 2);
       context.closePath();
       context.strokeStyle = newBorderColor;
-      context.lineWidth = layer.borderWidth || 0;
-      context.stroke();
+      if (layer.borderWidth) {
+        context.lineWidth = layer.borderWidth;
+        context.stroke();
+      }
       context.fill();
       break;
 

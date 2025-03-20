@@ -160,7 +160,7 @@ const MindBoard = () => {
 
     // Draw layers
     layers.forEach((layer) => {
-      layerRender({ layer, context, camera, activeLayers, theme });
+      layerRender({ layer, context, camera, activeLayers, theme, canvasState });
     });
 
     // Draw selection rectangle if in selection mode
