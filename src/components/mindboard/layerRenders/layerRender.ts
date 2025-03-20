@@ -1,6 +1,12 @@
 import { Camera, CanvasState, Layer } from "@/_types";
 
-import { drawActiveLayerSelection, drawLayerBasedOnType, drawLayerHandles, drawLayerText } from "./layerDrawings";
+import {
+  drawActiveLayerSelection,
+  drawLayerBasedOnType,
+  drawLayerHandles,
+  drawLayerText,
+  drawResizeGrips,
+} from "./layerDrawings";
 
 export const layerRender = ({
   layer,
@@ -25,6 +31,9 @@ export const layerRender = ({
 
   // Draw layer handles
   drawLayerHandles({ layer, context, camera, activeLayers });
+
+  // Draw resize grips
+  drawResizeGrips({ layer, context, camera, activeLayers });
 
   // Draw layer text
   drawLayerText({ layer, context, camera, theme });

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types/canvas";
-import { useEdgeOperations, useLayerOperations } from "@/hooks";
+import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations } from "@/hooks";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom } from "@/state";
 import { getLayerById } from "@/utils/canvasUtils";
@@ -325,95 +325,29 @@ const MindBoard = () => {
     ],
   );
 
-  const handleMouseUp = useCallback(
-    (e: React.PointerEvent<HTMLCanvasElement>) => {
-      const point = canvasPointFromEvent(e, camera, canvasRef.current);
-
-      switch (canvasState.mode) {
-        case CanvasMode.None:
-          fitView(layers);
-          break;
-        case CanvasMode.SelectionNet:
-          setCanvasState({ mode: CanvasMode.None });
-          break;
-        case CanvasMode.Translating:
-          setCanvasState({
-            mode: CanvasMode.None,
-          });
-          break;
-        case CanvasMode.Grab:
-          setCanvasState({ mode: CanvasMode.Grab });
-          break;
-      }
-    },
-    [camera, canvasState.mode, fitView, layers, setCanvasState],
-  );
+  const handleMouseUp = useCallback(() => {
+    switch (canvasState.mode) {
+      case CanvasMode.None:
+        fitView(layers);
+        break;
+      case CanvasMode.SelectionNet:
+        setCanvasState({ mode: CanvasMode.None });
+        break;
+      case CanvasMode.Translating:
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+        break;
+      case CanvasMode.Grab:
+        setCanvasState({ mode: CanvasMode.Grab });
+        break;
+    }
+  }, [canvasState.mode, fitView, layers, setCanvasState]);
 
   // Handle keyboard events
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Spacebar for grab mode - D3 handles the actual panning
-      if (e.code === "Space" && !e.repeat) {
-        e.preventDefault();
-        setCanvasState((prev) => ({
-          ...prev,
-          mode: CanvasMode.Grab,
-        }));
-      }
-
-      // Debug mode toggle with Ctrl+Alt+D
-      if (e.code === "KeyD" && e.ctrlKey && e.altKey) {
-        e.preventDefault();
-        setIsDebugMode((prev) => !prev);
-      }
-
-      // Delete selected layers
-      if ((e.key === "Delete" || e.key === "Backspace") && activeLayers.length > 0) {
-        // Delete connected edges
-        setEdges((prev) =>
-          prev.filter(
-            (edge) =>
-              !(edge.fromLayerId && activeLayers.includes(edge.fromLayerId)) &&
-              !(edge.toLayerId && activeLayers.includes(edge.toLayerId)),
-          ),
-        );
-
-        // Delete layers
-        setLayers((prev) => prev.filter((layer) => !activeLayers.includes(layer.id)));
-        setActiveLayers([]);
-        fitView(layers);
-      }
-
-      // Deselect all with Escape
-      if (e.key === "Escape") {
-        setActiveLayers([]);
-
-        // Reset canvas state
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      // Release spacebar - return to previous mode
-      if (e.code === "Space") {
-        e.preventDefault();
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLayers, setActiveLayers, setLayers, setEdges, setCanvasState, layers, setIsDebugMode]);
+  useBoardKeyboardEvents({
+    setIsDebugMode,
+  });
 
   // Render effect
   useEffect(() => {
