@@ -6,12 +6,14 @@ export const drawLayerHandles = ({
   layer,
   context,
   camera,
+  theme,
   activeLayers,
   canvasState,
 }: {
   layer: Layer;
   context: CanvasRenderingContext2D;
   camera: Camera;
+  theme: string | undefined;
   activeLayers: string[];
   canvasState: CanvasState;
 }): void => {
@@ -35,12 +37,28 @@ export const drawLayerHandles = ({
       const scaleFactor = isHovered ? 3 : 1;
       const handleSize = baseHandleSize * scaleFactor;
 
+      const handleStrokeColor = theme === "light" ? "#fdfdff" : "#050713";
+      const handleHoveredFillColor = theme === "light" ? "#cfdaf2" : "#030f2d";
+      const handleFillColor = theme === "light" ? "#a7c0f8" : "#041642";
+
+      // Draw ellipse bigger then the arc with a the handleColor
+      const sizeControler = 1.2;
+
+      if (!isHovered) {
+        context.beginPath();
+        context.ellipse(handle.x, handle.y, handleSize / sizeControler, handleSize / sizeControler, 0, 0, Math.PI * 2);
+        context.strokeStyle = handleStrokeColor;
+        context.lineWidth = 8;
+        context.stroke();
+        context.closePath();
+      }
+
       // Draw circle
       context.beginPath();
       context.arc(handle.x, handle.y, handleSize / 2, 0, Math.PI * 2);
-      context.fillStyle = isHovered ? "#e0f2fe" : "#2564EB65"; // Lighter blue background when hovered
+      context.fillStyle = isHovered ? handleHoveredFillColor : handleFillColor; // Lighter blue background when hovered
       context.fill();
-      context.strokeStyle = isHovered ? "#3b82f6" : "#2563eb"; // Brighter blue stroke when hovered
+      context.strokeStyle = "#2563eb"; // Brighter blue stroke when hovered
       context.lineWidth = (isHovered ? 2 : 1.5) / camera.scale;
       context.stroke();
       context.closePath();
