@@ -11,6 +11,7 @@ import { getLayerById } from "@/utils/canvasUtils";
 import { Toolbar } from "../whiteboard";
 import { drawSelectionRectangle } from "./boardRender";
 import { Controls, useCameraControls } from "./Controls";
+import { DebugPanel } from "./DebugPanel";
 import { drawEdgeBasedOnType } from "./edgeRender";
 import { layerRender } from "./layerRenders";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
@@ -18,13 +19,24 @@ import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
 const MindBoard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [camera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const { theme } = useTheme();
 
-  const { findLayersAtPoint, findLayersInSelection, addLayer, layers, setLayers, activeLayers, setActiveLayers } =
-    useLayerOperations();
+  // Debug mode state
+  const [isDebugMode, setIsDebugMode] = useState(false);
+  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(true);
+
+  const {
+    findLayerAtPoint,
+    findLayerIdsAtPoint,
+    findLayersInSelection,
+    addLayer,
+    layers,
+    setLayers,
+    activeLayers,
+    setActiveLayers,
+  } = useLayerOperations();
 
   const { edges, setEdges } = useEdgeOperations();
 
@@ -164,27 +176,28 @@ const MindBoard = () => {
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
-      // Handle different modes
-      if (canvasState.mode === CanvasMode.Inserting && canvasState.layerType) {
-        // Add a new shape at the click point
-        addLayer(canvasState.layerType, point);
-        // After adding, switch back to select mode
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
-        return;
-      } else if (canvasState.mode === CanvasMode.Grab) {
-        // Start panning the canvas
-        setCanvasState({
-          mode: CanvasMode.Grab,
-        });
-        setIsDrawing(true);
-        return;
+      switch (canvasState.mode) {
+        case CanvasMode.Inserting:
+          // Add a new shape at the click point
+          addLayer(canvasState.layerType, point);
+          // After adding, switch back to select mode
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+          return;
+        case CanvasMode.Grab:
+          // Start panning the canvas
+          setCanvasState({
+            mode: CanvasMode.Grab,
+          });
+          return;
+        default:
+          break;
       }
 
       // Default behavior for selection mode
       // Check if we clicked on a layer
-      const clickedLayerIds = findLayersAtPoint(point);
+      const clickedLayerIds = findLayerIdsAtPoint(point);
 
       if (clickedLayerIds.length > 0) {
         // If holding shift, toggle selection
@@ -218,19 +231,23 @@ const MindBoard = () => {
           current: point,
         });
       }
-
-      setIsDrawing(true);
     },
-    [camera, canvasState, findLayersAtPoint, addLayer, setCanvasState, layers, setActiveLayers, activeLayers],
+    [camera, canvasState, findLayerIdsAtPoint, addLayer, setCanvasState, layers, setActiveLayers, activeLayers],
   );
 
   const handleMouseMove = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
-      if (!isDrawing) return;
-
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
-      if (canvasState.mode === CanvasMode.SelectionNet && canvasState.origin) {
+      if (canvasState.mode === CanvasMode.None) {
+        // Find layers at current mouse position
+        const layersAtPoint = findLayerAtPoint(point);
+
+        setCanvasState({
+          mode: CanvasMode.None,
+          hoveredLayerId: layersAtPoint?.id,
+        });
+      } else if (canvasState.mode === CanvasMode.SelectionNet) {
         setCanvasState((prev) => ({
           ...prev,
           current: point,
@@ -284,20 +301,26 @@ const MindBoard = () => {
           ...prev,
           current: point,
         }));
+
+        // Force re-render if in debug mode to update the debug panel
+        if (isDebugMode) {
+          requestAnimationFrame(renderCanvas);
+        }
       }
 
       renderCanvas();
     },
     [
-      isDrawing,
       camera,
       canvasState,
       renderCanvas,
+      findLayerAtPoint,
       setCanvasState,
       findLayersInSelection,
       setActiveLayers,
       setLayers,
       setEdges,
+      isDebugMode,
       activeLayers,
     ],
   );
@@ -306,18 +329,16 @@ const MindBoard = () => {
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
-      setIsDrawing(false);
-
       switch (canvasState.mode) {
         case CanvasMode.None:
           fitView(layers);
           break;
         case CanvasMode.SelectionNet:
+          setCanvasState({ mode: CanvasMode.None });
+          break;
         case CanvasMode.Translating:
           setCanvasState({
-            mode: CanvasMode.SelectionNet,
-            origin: point,
-            current: point,
+            mode: CanvasMode.None,
           });
           break;
         case CanvasMode.Grab:
@@ -338,6 +359,12 @@ const MindBoard = () => {
           ...prev,
           mode: CanvasMode.Grab,
         }));
+      }
+
+      // Debug mode toggle with Ctrl+Alt+D
+      if (e.code === "KeyD" && e.ctrlKey && e.altKey) {
+        e.preventDefault();
+        setIsDebugMode((prev) => !prev);
       }
 
       // Delete selected layers
@@ -386,7 +413,7 @@ const MindBoard = () => {
       window.removeEventListener("keyup", handleKeyUp);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLayers, setActiveLayers, setLayers, setEdges, setCanvasState, layers]);
+  }, [activeLayers, setActiveLayers, setLayers, setEdges, setCanvasState, layers, setIsDebugMode]);
 
   // Render effect
   useEffect(() => {
@@ -409,6 +436,18 @@ const MindBoard = () => {
       />
 
       <Toolbar />
+
+      {/* Debug Panel */}
+      {isDebugMode && (
+        <DebugPanel
+          canvasState={canvasState}
+          camera={camera}
+          activeLayers={activeLayers}
+          layers={layers}
+          isOpen={isDebugPanelOpen}
+          setIsOpen={setIsDebugPanelOpen}
+        />
+      )}
 
       {/* Zoom Controls (using D3 via useCameraControls) */}
       <Controls layers={layers} />

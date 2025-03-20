@@ -135,6 +135,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.None;
       current?: Point;
+      hoveredLayerId?: string;
     }
   | {
       mode: CanvasMode.Grab;

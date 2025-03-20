@@ -43,9 +43,14 @@ export const useLayerOperations = () => {
 
     return false;
   }, []);
-
   // Find layers under a point
-  const findLayersAtPoint = useCallback(
+  const findLayerAtPoint = useCallback(
+    (point: Point): Layer | undefined => layers.find((layer) => isPointInLayer(point, layer)),
+    [layers, isPointInLayer],
+  );
+
+  // Find layer id under a point
+  const findLayerIdsAtPoint = useCallback(
     (point: Point) => layers.filter((layer) => isPointInLayer(point, layer)).map((layer) => layer.id),
     [layers, isPointInLayer],
   );
@@ -94,7 +99,8 @@ export const useLayerOperations = () => {
 
   return {
     isPointInLayer,
-    findLayersAtPoint,
+    findLayerAtPoint,
+    findLayerIdsAtPoint,
     findLayersInSelection,
     addLayer,
     layers,
