@@ -12,7 +12,7 @@ const handleHoverStates = new Map<
 >();
 
 // Animation duration in milliseconds
-const ANIMATION_DURATION = 100;
+const ANIMATION_DURATION = 50;
 
 export const drawLayerHandles = ({
   layer,
@@ -44,6 +44,13 @@ export const drawLayerHandles = ({
         canvasState.mode === CanvasMode.Edge &&
         canvasState.handleInfo?.layerId === layer.id &&
         canvasState.handleInfo?.handlePosition === handle.position;
+
+      // Check if this handle is being hovered (in Edge mode)
+      const isInHandle =
+        canvasState.mode === CanvasMode.Edge &&
+        canvasState.handleInfo?.layerId === layer.id &&
+        canvasState.handleInfo?.handlePosition === handle.position &&
+        canvasState.handleInfo?.isInHandle;
 
       // Create unique key for this handle
       const handleKey = `${layer.id}-${handle.position}`;
@@ -88,7 +95,7 @@ export const drawLayerHandles = ({
       // Draw circle
       context.beginPath();
       context.arc(handle.x, handle.y, handleSize / 2, 0, Math.PI * 2);
-      context.fillStyle = isHovered ? handleHoveredFillColor : handleFillColor; // Lighter blue background when hovered
+      context.fillStyle = isHovered ? (isInHandle ? "#2563eb" : handleHoveredFillColor) : handleFillColor; // Lighter blue background when hovered
       context.fill();
       context.strokeStyle = "#2563eb"; // Brighter blue stroke when hovered
       context.lineWidth = (isHovered ? 2 : 1.5) / camera.scale;
@@ -98,7 +105,7 @@ export const drawLayerHandles = ({
       // Only draw arrow if handle is hovered
       if (isHovered) {
         // Draw arrow based on direction
-        context.fillStyle = "#3b82f6"; // Brighter blue when hovered
+        context.fillStyle = isInHandle ? "#fdfdff" : "#2563eb";
 
         // Draw arrow inside the circle
         const arrowSize = handleSize * 0.6;

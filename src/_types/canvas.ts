@@ -149,8 +149,9 @@ export type CanvasState =
       origin?: Point;
       current?: Point;
       handleInfo?: {
-        layerId: string;
+        isInHandle: boolean;
         handlePosition: HandlePosition;
+        layerId: string;
         coordinates: Point;
       };
     }

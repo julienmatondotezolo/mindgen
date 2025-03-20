@@ -55,6 +55,41 @@ export const useLayerOperations = () => {
     }
 
     // Get handle position (same as in drawLayerHandles.ts)
+    const { handlePositions, handleSize } = getHandlePosition(layer);
+
+    // Check if point is inside any handle (circular hit test)
+    for (const handle of handlePositions) {
+      const dx = point.x - handle.x;
+      const dy = point.y - handle.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // return true if the distance is less than the handle size
+      const handleSizeAfterHover = 8;
+
+      if (distance <= handleSize + handleSizeAfterHover) {
+        return {
+          isInHandle: true,
+          handlePosition: handle.position,
+          layerId: layer.id,
+          coordinates: {
+            x: handle.x,
+            y: handle.y,
+          },
+        };
+      }
+    }
+
+    return false;
+  }, []);
+
+  // Check if point is near a handle
+  const isPointNearHandle = useCallback((point: Point, layer: Layer, activeLayers: string[]) => {
+    // Only check handles for active/selected layers
+    if (!activeLayers.includes(layer.id) || activeLayers.length !== 1) {
+      return;
+    }
+
+    // Get handle position (same as in drawLayerHandles.ts)
     const { handlePositions } = getHandlePosition(layer);
 
     // Check if point is inside any handle (circular hit test)
@@ -63,15 +98,16 @@ export const useLayerOperations = () => {
       const dy = point.y - handle.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // Use a threshold of 30 pixels for better usability
-      if (distance <= 30) {
+      // Use a threshold of 45 pixels for better usability
+      if (distance <= 45) {
         return {
+          isInHandle: false,
           handlePosition: handle.position,
+          layerId: layer.id,
           coordinates: {
             x: handle.x,
             y: handle.y,
           },
-          layerId: layer.id,
         };
       }
     }
@@ -90,11 +126,11 @@ export const useLayerOperations = () => {
   );
 
   // Find a handle at a specific point
-  const findHandleAtPoint = useCallback(
+  const findHandleNearPoint = useCallback(
     (point: Point) => {
       // Only check handles for active layers
       for (const layer of layers) {
-        const handleInfo = isPointInHandle(point, layer, activeLayers);
+        const handleInfo = isPointNearHandle(point, layer, activeLayers);
 
         // If a handle was found, return its information
         if (handleInfo && handleInfo.layerId) return handleInfo;
@@ -102,7 +138,23 @@ export const useLayerOperations = () => {
 
       return null;
     },
-    [layers, activeLayers, isPointInHandle],
+    [layers, activeLayers, isPointNearHandle],
+  );
+
+  // Find a handle at a specific point
+  const findHandleAtPoint = useCallback(
+    (point: Point) => {
+      // Only check handles for active layers
+      for (const layer of layers) {
+        const handleInfo = isPointInHandle(point, layer, activeLayers);
+
+        // If a handle was found, return its information
+        if (handleInfo && handleInfo.isInHandle) return handleInfo;
+      }
+
+      return null;
+    },
+    [layers, activeLayers, isPointNearHandle],
   );
 
   // Find layers inside a selection rectangle
@@ -149,9 +201,10 @@ export const useLayerOperations = () => {
 
   return {
     isPointInLayer,
-    isPointInHandle,
+    isPointNearHandle,
     findLayerAtPoint,
     findLayerIdsAtPoint,
+    findHandleNearPoint,
     findHandleAtPoint,
     findLayersInSelection,
     addLayer,

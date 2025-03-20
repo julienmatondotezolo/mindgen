@@ -28,6 +28,7 @@ const MindBoard = () => {
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(true);
 
   const {
+    findHandleNearPoint,
     findHandleAtPoint,
     findLayerAtPoint,
     findLayerIdsAtPoint,
@@ -242,7 +243,7 @@ const MindBoard = () => {
       // Find layers at current mouse position
       const layersAtPoint = findLayerAtPoint(point);
       // Find nearest handle at current mouse position
-      const handleInfo = findHandleAtPoint(point);
+      const handleInfo = findHandleNearPoint(point);
 
       if (canvasState.mode === CanvasMode.None) {
         // If the layer is active, don't set the hoveredLayerId
@@ -265,6 +266,30 @@ const MindBoard = () => {
           hoveredLayerId: layersAtPoint?.id,
         });
       } else if (canvasState.mode === CanvasMode.Edge) {
+        const isPointInHandle = findHandleAtPoint(point);
+
+        // If the point is in the handle, set the isInHandle to true else set it to false
+        if (isPointInHandle) {
+          setCanvasState((prev) => ({
+            ...prev,
+            handleInfo: {
+              ...prev.handleInfo,
+              isInHandle: isPointInHandle.isInHandle,
+            },
+          }));
+
+          return;
+        } else {
+          setCanvasState((prev) => ({
+            ...prev,
+            handleInfo: {
+              ...prev.handleInfo,
+              isInHandle: false,
+            },
+          }));
+        }
+
+        // If the point is not in the handle, set the mode to None
         if (!handleInfo) {
           setCanvasState({
             mode: CanvasMode.None,
@@ -340,7 +365,7 @@ const MindBoard = () => {
       renderCanvas,
       findLayerAtPoint,
       activeLayers,
-      findHandleAtPoint,
+      findHandleNearPoint,
       setCanvasState,
       findLayersInSelection,
       setActiveLayers,
