@@ -63,7 +63,7 @@ export const useLayerOperations = () => {
       const dy = point.y - handle.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // Use a threshold of 50 pixels for better usability
+      // Use a threshold of 30 pixels for better usability
       if (distance <= 30) {
         return {
           handlePosition: handle.position,
