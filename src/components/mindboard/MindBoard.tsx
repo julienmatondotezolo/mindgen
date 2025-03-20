@@ -221,7 +221,7 @@ const MindBoard = () => {
 
       setIsDrawing(true);
     },
-    [camera, canvasState, findLayersAtPoint, addLayer, setCanvasState, setActiveLayers, activeLayers, layers],
+    [camera, canvasState, findLayersAtPoint, addLayer, setCanvasState, layers, setActiveLayers, activeLayers],
   );
 
   const handleMouseMove = useCallback(
@@ -308,25 +308,24 @@ const MindBoard = () => {
 
       setIsDrawing(false);
 
-      if (canvasState.mode === CanvasMode.SelectionNet) {
-        setCanvasState({
-          mode: CanvasMode.SelectionNet,
-          origin: point,
-          current: point,
-        });
-      } else if (canvasState.mode === CanvasMode.Translating) {
-        setCanvasState({
-          mode: CanvasMode.SelectionNet,
-          origin: point,
-          current: point,
-        });
-      } else if (canvasState.mode === CanvasMode.Grab) {
-        setCanvasState({ mode: CanvasMode.Grab });
+      switch (canvasState.mode) {
+        case CanvasMode.None:
+          fitView(layers);
+          break;
+        case CanvasMode.SelectionNet:
+        case CanvasMode.Translating:
+          setCanvasState({
+            mode: CanvasMode.SelectionNet,
+            origin: point,
+            current: point,
+          });
+          break;
+        case CanvasMode.Grab:
+          setCanvasState({ mode: CanvasMode.Grab });
+          break;
       }
-
-      // fitView(layers);
     },
-    [camera, canvasState.mode, setCanvasState],
+    [camera, canvasState.mode, fitView, layers, setCanvasState],
   );
 
   // Handle keyboard events
@@ -355,6 +354,7 @@ const MindBoard = () => {
         // Delete layers
         setLayers((prev) => prev.filter((layer) => !activeLayers.includes(layer.id)));
         setActiveLayers([]);
+        fitView(layers);
       }
 
       // Deselect all with Escape
@@ -385,7 +385,8 @@ const MindBoard = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [activeLayers, setActiveLayers, setLayers, setEdges, setCanvasState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLayers, setActiveLayers, setLayers, setEdges, setCanvasState, layers]);
 
   // Render effect
   useEffect(() => {

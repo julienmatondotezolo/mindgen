@@ -355,11 +355,14 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
 
   // Calculate initial offset distance from each node
   const offset = 25;
-  const borderRadius = 8; // Radius for the rounded corners
+  const borderRadius = 12; // Radius for the rounded corners
 
   // Calculate source direction based on position
   let sourceDirX = 0,
     sourceDirY = 0;
+
+  // Lin gap filler to arrowEnd
+  const gapFiller = 20;
 
   switch (sourcePosition) {
     case HandlePosition.Left:
@@ -528,45 +531,47 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
 
     case "vertical-to-vertical": {
       // Target is underneath source
-      if (targetInPoint.y > sourceOutPoint.y) {
+      if (targetInPoint.y + 13 > sourceOutPoint.y) {
+        // Constant
+        const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
+        const midY = (sourceOutPoint.y + targetInPoint.y) / 2;
+
+        // Check if midX is within 10 pixels of sourceOutPoint.x
+        if (Math.abs(midX - sourceOutPoint.x) <= 7) {
+          // Only draw the last line segment when midX is very close to sourceOutPoint.x
+          context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
+          return;
+        }
+
         // First line segment (vertical from source)
-        context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
+        context.lineTo(sourceOutPoint.x, midY - borderRadius);
 
         // First corner
         context.quadraticCurveTo(
           sourceOutPoint.x,
-          sourceOutPoint.y,
-          sourceOutPoint.x,
-          sourceOutPoint.y + (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius),
+          midY - borderRadius + borderRadius,
+          sourceOutPoint.x + (midX > sourceOutPoint.x ? borderRadius : -borderRadius),
+          midY,
         );
 
-        // Middle vertical segment
-        context.lineTo(
-          sourceOutPoint.x,
-          targetInPoint.y - (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius),
-        );
+        // Middle horizontal segment
+        context.lineTo(targetInPoint.x - (midX > sourceOutPoint.x ? borderRadius : -borderRadius), midY);
 
-        // Second corner
-        context.quadraticCurveTo(
-          sourceOutPoint.x,
-          targetInPoint.y,
-          sourceOutPoint.x + (targetInPoint.x > sourceOutPoint.x ? borderRadius : -borderRadius),
-          targetInPoint.y,
-        );
+        // Last corner
+        context.quadraticCurveTo(targetInPoint.x, midY, targetInPoint.x, midY + borderRadius);
 
-        // Horizontal segment at target height
-        context.lineTo(targetInPoint.x - targetDirX * borderRadius, targetInPoint.y);
-
-        // Fourth/last corner - connect directly to the target
-        context.quadraticCurveTo(
-          targetInPoint.x,
-          targetInPoint.y,
-          edge.end.x,
-          edge.end.y
-        );
+        // Last line segment (vertical to target)
+        context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
       } else {
         // Vertical to vertical
         const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
+
+        // Check if midX is within 10 pixels of sourceOutPoint.x
+        if (Math.abs(midX - sourceOutPoint.x) <= 10) {
+          // Only draw the last line segment when midX is very close to sourceOutPoint.x
+          context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
+          return;
+        }
 
         // First line segment
         context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
@@ -602,15 +607,13 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
         );
 
         // Final horizontal segment
-        context.lineTo(targetInPoint.x - targetDirX * borderRadius, targetInPoint.y);
+        context.lineTo(targetInPoint.x - (midX > sourceOutPoint.x ? borderRadius : -borderRadius), targetInPoint.y);
 
         // Fourth/last corner - connect directly to the target
-        context.quadraticCurveTo(
-          targetInPoint.x,
-          targetInPoint.y,
-          edge.end.x,
-          edge.end.y
-        );
+        context.quadraticCurveTo(targetInPoint.x, targetInPoint.y, targetInPoint.x, targetInPoint.y + borderRadius);
+
+        // Final vertical segment
+        context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
       }
       break;
     }
