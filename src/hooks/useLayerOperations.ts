@@ -1,5 +1,6 @@
 /* eslint-disable no-case-declarations */
 import { nanoid } from "nanoid";
+import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
@@ -10,6 +11,7 @@ import { activeLayersAtom, layerAtomState } from "@/state";
 export const useLayerOperations = () => {
   const [layers, setLayers] = useRecoilState(layerAtomState);
   const [activeLayers, setActiveLayers] = useRecoilState(activeLayersAtom);
+  const whiteboardText = useTranslations("Whiteboard");
 
   // Check if point is inside layer
   const isPointInLayer = useCallback((point: Point, layer: Layer) => {
@@ -154,7 +156,7 @@ export const useLayerOperations = () => {
 
       return null;
     },
-    [layers, activeLayers, isPointNearHandle],
+    [layers, isPointInHandle, activeLayers],
   );
 
   // Find layers inside a selection rectangle
@@ -188,7 +190,7 @@ export const useLayerOperations = () => {
         width: 200,
         height: type === "RECTANGLE" ? 60 : 200, // Make ellipses and diamonds square
         fill: { r: 77, g: 106, b: 255 },
-        value: "New Layer",
+        value: whiteboardText("typeSomething"),
       };
 
       setLayers((prev) => [...prev, newLayer]);
@@ -196,7 +198,7 @@ export const useLayerOperations = () => {
 
       return newLayer.id;
     },
-    [setLayers, setActiveLayers],
+    [whiteboardText, setLayers, setActiveLayers],
   );
 
   return {
