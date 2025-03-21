@@ -162,7 +162,7 @@ export const useBoard = () => {
 
     // Draw layers
     layers.forEach((layer) => {
-      layerRender({ layer, context, camera, activeLayers, theme, canvasState });
+      layerRender({ layer, context, camera, activeLayers, theme, canvasState, allLayers: layers });
     });
 
     // Draw selection rectangle if in selection mode

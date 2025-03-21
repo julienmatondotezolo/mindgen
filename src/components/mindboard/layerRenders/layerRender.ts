@@ -16,6 +16,7 @@ export const layerRender = ({
   activeLayers,
   theme,
   canvasState,
+  allLayers,
 }: {
   layer: Layer;
   context: CanvasRenderingContext2D;
@@ -23,6 +24,7 @@ export const layerRender = ({
   activeLayers: string[];
   theme: string | undefined;
   canvasState: CanvasState;
+  allLayers: Layer[];
 }): void => {
   // Draw shadow layer
   drawShadowLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
@@ -37,7 +39,7 @@ export const layerRender = ({
   drawLayerHandles({ layer, context, camera, theme, activeLayers, canvasState });
 
   // Draw resize grips
-  drawResizeGrips({ layer, context, camera, activeLayers, canvasState });
+  drawResizeGrips({ layer, context, camera, activeLayers, canvasState, allLayers });
 
   // Draw layer text
   drawLayerText({ layer, context, camera, theme });
