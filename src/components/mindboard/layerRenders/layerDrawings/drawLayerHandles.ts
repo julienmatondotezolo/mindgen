@@ -32,13 +32,13 @@ export const drawLayerHandles = ({
 
       // Check if this handle is being hovered (in Edge mode)
       const isHovered =
-        canvasState.mode === CanvasMode.Edge &&
+        (canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing) &&
         canvasState.handleInfo?.layerId === layer.id &&
         canvasState.handleInfo?.handlePosition === handle.position;
 
       // Check if this handle is being hovered (in Edge mode)
       const isInHandle =
-        canvasState.mode === CanvasMode.Edge &&
+        (canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing) &&
         canvasState.handleInfo?.layerId === layer.id &&
         canvasState.handleInfo?.handlePosition === handle.position &&
         canvasState.handleInfo?.isInHandle;
