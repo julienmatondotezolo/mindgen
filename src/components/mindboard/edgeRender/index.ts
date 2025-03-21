@@ -1,1 +1,1 @@
-export * from "./drawEdgeBasedOnType";
+export * from "./edgeRender";
