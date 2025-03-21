@@ -21,6 +21,8 @@ export const drawShadowLayerBasedOnType = ({
   const isHandleInActiveLayer = activeLayers.includes(canvasState.handleInfo?.layerId);
   // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
   const isInHandle = canvasState.handleInfo?.isInHandle === true;
+  // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+  const isHandleInCurrentLayer = layer.id === canvasState.handleInfo?.layerId;
 
   // If canvas is not in edge mode, or the handle is not in the active layer, or the handle is not in the active layer, then don't show the shadow layer
   if (isEdgeMode == false) {
@@ -35,6 +37,10 @@ export const drawShadowLayerBasedOnType = ({
     return;
   }
 
+  if (isHandleInCurrentLayer === false) {
+    return;
+  }
+
   // Calculate position offset based on handle position (200px away)
   let positionOffset: Point = { x: 0, y: 0 };
 
@@ -43,17 +49,18 @@ export const drawShadowLayerBasedOnType = ({
 
   // offset number
   const offsetNumber = layer.width * 2;
+  const offsetNumberHorizontal = 1.5;
 
   if (handlePosition) {
     switch (handlePosition) {
       case HandlePosition.Top:
-        positionOffset = { x: 0, y: -offsetNumber }; // position offset in px above
+        positionOffset = { x: 0, y: -offsetNumber / offsetNumberHorizontal }; // position offset in px above
         break;
       case HandlePosition.Right:
         positionOffset = { x: offsetNumber, y: 0 }; // position offset in px to the right
         break;
       case HandlePosition.Bottom:
-        positionOffset = { x: 0, y: offsetNumber }; // position offset in px below
+        positionOffset = { x: 0, y: offsetNumber / offsetNumberHorizontal }; // position offset in px below
         break;
       case HandlePosition.Left:
         positionOffset = { x: -offsetNumber, y: 0 }; // position offset in px to the left
