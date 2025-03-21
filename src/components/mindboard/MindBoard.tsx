@@ -1,32 +1,36 @@
-import { useTheme } from "next-themes";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
 import { CanvasMode } from "@/_types/canvas";
 import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations } from "@/hooks";
+import { useBoard } from "@/hooks/useBoard";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom } from "@/state";
 import { getLayerById } from "@/utils/canvasUtils";
 
 import { Toolbar } from "../whiteboard";
-import { drawSelectionRectangle } from "./boardRender";
 import { Controls, useCameraControls } from "./Controls";
 import { DebugPanel } from "./DebugPanel";
-import { drawEdgeBasedOnType } from "./edgeRender";
-import { layerRender } from "./layerRenders";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
 
 const MindBoard = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [camera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
-  const { theme } = useTheme();
 
   // Debug mode state
   const [isDebugMode, setIsDebugMode] = useState(false);
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(true);
 
+  // Setup board & rendering
+  const { canvasRef, setupCanvas, renderCanvas } = useBoard();
+
+  // Camera controls
+  const { fitView } = useCameraControls();
+
+  // Initialize canvas navigation with D3 (this handles all zoom and pan operations)
+  useCanvasNavigation({ canvasRef });
+
+  // Layer operations
   const {
     findHandleNearPoint,
     findHandleAtPoint,
@@ -40,160 +44,13 @@ const MindBoard = () => {
     setActiveLayers,
   } = useLayerOperations();
 
-  const { edges, setEdges } = useEdgeOperations();
+  // Edge operations
+  const { setEdges } = useEdgeOperations();
 
-  const { fitView } = useCameraControls();
-
-  // Initialize canvas navigation with D3 (this handles all zoom and pan operations)
-  useCanvasNavigation({ canvasRef });
-
-  // Setup canvas
+  // Setup canvas on mount
   useEffect(() => {
-    const canvas = canvasRef.current;
-
-    if (!canvas) return;
-
-    const context = canvas.getContext("2d");
-
-    if (!context) return;
-
-    contextRef.current = context;
-
-    // Set canvas size
-    const resizeCanvas = () => {
-      const pixelRatio = window.devicePixelRatio || 1;
-
-      canvas.width = window.innerWidth * pixelRatio;
-      canvas.height = window.innerHeight * pixelRatio;
-
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-
-      context.scale(pixelRatio, pixelRatio);
-
-      renderCanvas();
-    };
-
-    resizeCanvas();
-  }, []);
-
-  // Apply camera transform
-  const applyCamera = useCallback(
-    (context: CanvasRenderingContext2D) => {
-      context.save();
-      context.translate(camera.x, camera.y);
-      context.scale(camera.scale, camera.scale);
-    },
-    [camera],
-  );
-
-  // Restore context
-  const restoreContext = useCallback((context: CanvasRenderingContext2D) => {
-    context.restore();
-  }, []);
-
-  // Draw grid
-  const drawGrid = useCallback(
-    (context: CanvasRenderingContext2D) => {
-      // Adjust grid size based on zoom level for better performance
-      let gridSize = 1;
-      const scale = camera.scale;
-
-      // Dynamic grid size based on zoom level
-      if (scale < 0.5) gridSize = 5;
-      if (scale < 0.25) gridSize = 10;
-
-      const width = context.canvas.width / scale;
-      const height = context.canvas.height / scale;
-
-      const startX = Math.floor(-camera.x / scale / gridSize) * gridSize;
-      const startY = Math.floor(-camera.y / scale / gridSize) * gridSize;
-      const endX = startX + width;
-      const endY = startY + height;
-
-      // Calculate number of columns and rows
-      const cols = Math.ceil(width / gridSize);
-      const rows = Math.ceil(height / gridSize);
-
-      // Adjust opacity based on scale
-      const opacity = Math.min(0.1, 0.02 + scale * 0.1);
-
-      context.fillStyle = theme === "dark" ? `rgba(255, 255, 255, ${opacity})` : `rgba(0, 0, 0, ${opacity})`;
-
-      // Define dot size based on zoom level
-      const dotSize = Math.max(0.5, scale < 0.2 ? 0.8 : 1 / scale);
-
-      // Use a single canvas path for better performance
-      context.beginPath();
-
-      // Determine how many dots to skip based on zoom level
-      let skipFactor = 1;
-
-      if (scale < 0.2) skipFactor = Math.max(2, Math.floor(4 / scale));
-
-      // Calculate total points after applying skip factor
-      const effectiveCols = Math.ceil(cols / skipFactor);
-      const effectiveRows = Math.ceil(rows / skipFactor);
-      const totalEffectivePoints = effectiveCols * effectiveRows;
-
-      // Use a single loop for all drawing
-      for (let i = 0; i < totalEffectivePoints; i++) {
-        const effectiveCol = i % effectiveCols;
-        const effectiveRow = Math.floor(i / effectiveCols);
-
-        // Calculate the actual grid coordinates
-        const col = effectiveCol * skipFactor;
-        const row = effectiveRow * skipFactor;
-
-        const x = startX + col * gridSize;
-        const y = startY + row * gridSize;
-
-        // Skip if outside visible area
-        if (x > endX || y > endY) continue;
-
-        // Draw the dot
-        context.moveTo(x + dotSize, y);
-        context.arc(x, y, dotSize, 0, Math.PI * 2);
-      }
-
-      // Fill all dots at once for better performance
-      context.fill();
-    },
-    [camera, theme],
-  );
-
-  // Render canvas
-  const renderCanvas = useCallback(() => {
-    const context = contextRef.current;
-
-    if (!context) return;
-
-    // Clear the canvas with background color
-    context.fillStyle = theme === "dark" ? "#050713" : "#fdfdff";
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-
-    // Apply camera transformation
-    applyCamera(context);
-
-    // Draw grid
-    // drawGrid(context);
-
-    // Draw edges
-    edges.forEach((edge) => {
-      drawEdgeBasedOnType({ edge, context });
-    });
-
-    // Draw layers
-    layers.forEach((layer) => {
-      layerRender({ layer, context, camera, activeLayers, theme, canvasState });
-    });
-
-    // Draw selection rectangle if in selection mode
-    drawSelectionRectangle({ context, canvasState });
-
-    // Restore context to clear transformations
-    restoreContext(context);
-  }, [layers, edges, activeLayers, theme, camera, canvasState, applyCamera, drawGrid, restoreContext]);
+    setupCanvas();
+  }, [setupCanvas]);
 
   // Update mouse event handlers to handle different modes
   // Mouse event handlers
@@ -257,7 +114,17 @@ const MindBoard = () => {
         });
       }
     },
-    [camera, canvasState, findLayerIdsAtPoint, addLayer, setCanvasState, layers, setActiveLayers, activeLayers],
+    [
+      camera,
+      canvasState,
+      findLayerIdsAtPoint,
+      addLayer,
+      setCanvasState,
+      layers,
+      setActiveLayers,
+      activeLayers,
+      canvasRef,
+    ],
   );
 
   const handleMouseMove = useCallback(
@@ -293,9 +160,11 @@ const MindBoard = () => {
 
         // If the point is in the handle, set the isInHandle to true else set it to false
         if (isPointInHandle) {
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           setCanvasState((prev) => ({
             ...prev,
             handleInfo: {
+              // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
               ...prev.handleInfo,
               isInHandle: isPointInHandle.isInHandle,
             },
@@ -303,9 +172,11 @@ const MindBoard = () => {
 
           return;
         } else {
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           setCanvasState((prev) => ({
             ...prev,
             handleInfo: {
+              // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
               ...prev.handleInfo,
               isInHandle: false,
             },
@@ -396,6 +267,7 @@ const MindBoard = () => {
       setLayers,
       setEdges,
       isDebugMode,
+      canvasRef,
     ],
   );
 

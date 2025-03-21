@@ -1,3 +1,4 @@
+export * from "./useBoard";
 export * from "./useBoardKeyboardEvents";
 export * from "./useCachedQuery";
 export * from "./useDidUpdateEffect";

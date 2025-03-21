@@ -43,7 +43,7 @@ function Navigation() {
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <Link href={`/dashboard`}>
-            <figure className="relative mr-8 group">
+            <figure className="relative mr-8 group select-none">
               <MindGenLogo />
               <motion.div
                 className="absolute -top-[6px] -right-[14px] bg-primary-color text-white text-[8px] px-2 py-0.5 rounded-full"
@@ -51,7 +51,7 @@ function Navigation() {
                 animate={{ scale: [0.8, 1.1, 1] }}
                 transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 4 }}
               >
-                <p className="font-bold tracking-wider">BETA</p>
+                <p className="font-bold tracking-wider select-none">BETA</p>
               </motion.div>
             </figure>
           </Link>
