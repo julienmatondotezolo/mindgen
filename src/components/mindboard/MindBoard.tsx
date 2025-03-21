@@ -59,6 +59,12 @@ const MindBoard = () => {
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
       switch (canvasState.mode) {
+        case CanvasMode.Grab:
+          // Start panning the canvas
+          setCanvasState({
+            mode: CanvasMode.Grab,
+          });
+          return;
         case CanvasMode.Inserting:
           // Add a new shape at the click point
           addLayer(canvasState.layerType, point);
@@ -67,11 +73,12 @@ const MindBoard = () => {
             mode: CanvasMode.None,
           });
           return;
-        case CanvasMode.Grab:
-          // Start panning the canvas
-          setCanvasState({
-            mode: CanvasMode.Grab,
-          });
+        case CanvasMode.Edge:
+          // Start drawing an edge
+          setCanvasState((prev) => ({
+            ...prev,
+            mode: CanvasMode.EdgeDrawing,
+          }));
           return;
         default:
           break;
@@ -144,7 +151,7 @@ const MindBoard = () => {
         if (handleInfo && activeLayers.includes(handleInfo.layerId)) {
           setCanvasState({
             mode: CanvasMode.Edge,
-            current: handleInfo.coordinates,
+            origin: handleInfo.coordinates,
             handleInfo,
           });
           return;
@@ -276,6 +283,9 @@ const MindBoard = () => {
       case CanvasMode.None:
         fitView(layers);
         break;
+      case CanvasMode.Grab:
+        setCanvasState({ mode: CanvasMode.Grab });
+        break;
       case CanvasMode.SelectionNet:
         setCanvasState({ mode: CanvasMode.None });
         break;
@@ -284,8 +294,8 @@ const MindBoard = () => {
           mode: CanvasMode.None,
         });
         break;
-      case CanvasMode.Grab:
-        setCanvasState({ mode: CanvasMode.Grab });
+      case CanvasMode.EdgeDrawing:
+        setCanvasState({ mode: CanvasMode.None });
         break;
     }
   }, [canvasState.mode, fitView, layers, setCanvasState]);

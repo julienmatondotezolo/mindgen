@@ -20,8 +20,8 @@ export const drawLayerHandles = ({
   activeLayers: string[];
   canvasState: CanvasState;
 }): void => {
-  // Only draw handles for active/selected layers
-  if (activeLayers.includes(layer.id) && activeLayers.length === 1) {
+  // Only draw handles for active/selected layers && if is not in Translating mode
+  if (activeLayers.includes(layer.id) && activeLayers.length === 1 && canvasState.mode !== CanvasMode.Translating) {
     // Get handle position
     const { handlePositions, handleSize: baseHandleSize } = getHandlePosition(layer);
 

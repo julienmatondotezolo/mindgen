@@ -172,7 +172,7 @@ export const useBoard = () => {
 
     // Restore context to clear transformations
     restoreContext(context);
-  }, [layers, edges, activeLayers, theme, camera, canvasState, applyCamera, drawGrid, restoreContext]);
+  }, [layers, edges, activeLayers, theme, camera, canvasState, applyCamera, restoreContext]);
 
   return {
     canvasRef,

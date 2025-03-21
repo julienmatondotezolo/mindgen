@@ -157,6 +157,14 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.EdgeDrawing;
+      origin?: Point;
+      current?: Point;
+      handleInfo?: {
+        isInHandle: boolean;
+        handlePosition: HandlePosition;
+        layerId: string;
+        coordinates: Point;
+      };
     }
   | {
       mode: CanvasMode.EdgeEditing;
