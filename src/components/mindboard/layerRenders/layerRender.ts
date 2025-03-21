@@ -6,6 +6,7 @@ import {
   drawLayerHandles,
   drawLayerText,
   drawResizeGrips,
+  drawShadowLayerBasedOnType,
 } from "./layerDrawings";
 
 export const layerRender = ({
@@ -24,7 +25,7 @@ export const layerRender = ({
   canvasState: CanvasState;
 }): void => {
   // Draw shapes based on type
-  drawLayerBasedOnType({ layer, context, theme });
+  drawLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
 
   // Draw selection outline for active layers
   drawActiveLayerSelection({ layer, context, camera, activeLayers, canvasState });
@@ -37,4 +38,7 @@ export const layerRender = ({
 
   // Draw layer text
   drawLayerText({ layer, context, camera, theme });
+
+  // Draw shadow layer
+  drawShadowLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
 };

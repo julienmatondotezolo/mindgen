@@ -141,10 +141,6 @@ export type CanvasState =
       mode: CanvasMode.Grab;
     }
   | {
-      mode: CanvasMode.EdgeActive;
-      origin?: Point;
-    }
-  | {
       mode: CanvasMode.Edge;
       origin?: Point;
       current?: Point;
@@ -165,6 +161,10 @@ export type CanvasState =
         layerId: string;
         coordinates: Point;
       };
+    }
+  | {
+      mode: CanvasMode.EdgeActive;
+      origin?: Point;
     }
   | {
       mode: CanvasMode.EdgeEditing;

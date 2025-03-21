@@ -1,37 +1,21 @@
-import { Layer, LayerType } from "@/_types/canvas";
+/* eslint-disable no-unused-vars */
+import { CanvasState, Layer, LayerType } from "@/_types/canvas";
 import { colorToCss } from "@/utils";
 
-/**
- * Helper function to draw rounded rectangles for cross-browser compatibility
- */
-const drawRoundedRect = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-) => {
-  if (width < 2 * radius) radius = width / 2;
-  if (height < 2 * radius) radius = height / 2;
-
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.arcTo(x + width, y, x + width, y + height, radius);
-  ctx.arcTo(x + width, y + height, x, y + height, radius);
-  ctx.arcTo(x, y + height, x, y, radius);
-  ctx.arcTo(x, y, x + width, y, radius);
-  ctx.closePath();
-};
+import { drawRoundedRect } from "../../layerUtils";
 
 export const drawLayerBasedOnType = ({
   layer,
   context,
   theme,
+  activeLayers,
+  canvasState,
 }: {
   layer: Layer;
   context: CanvasRenderingContext2D;
   theme: string | undefined;
+  activeLayers: string[];
+  canvasState: CanvasState;
 }): void => {
   context.fillStyle = `rgb(${layer.fill.r}, ${layer.fill.g}, ${layer.fill.b})`;
 
