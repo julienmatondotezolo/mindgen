@@ -46,13 +46,13 @@ export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }
             mode: CanvasMode.None,
           });
 
-          // If layer already selected go back to LayerSelected mode
-          if (allActiveLayers.length > 0) {
-            setCanvasState({
-              mode: CanvasMode.LayerSelected,
-            });
-            return;
-          }
+          // !!! If layer already selected go back to LayerSelected mode
+          // if (allActiveLayers.length > 0) {
+          //   setCanvasState({
+          //     mode: CanvasMode.LayerSelected,
+          //   });
+          //   return;
+          // }
         }}
         onPointerDown={(e) => {
           e.stopPropagation();
