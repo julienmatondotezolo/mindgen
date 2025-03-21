@@ -99,42 +99,65 @@ const MindBoard = () => {
       let gridSize = 20;
       const scale = camera.scale;
 
-      // Increase grid spacing when zoomed out to reduce rendering load
-      if (scale < 0.5) {
-        gridSize = 30;
-      }
-      if (scale < 0.25) {
-        gridSize = 80;
-      }
+      // Dynamic grid size based on zoom level
+      if (scale < 0.5) gridSize = 25;
+      if (scale < 0.25) gridSize = 40;
 
       const width = context.canvas.width / scale;
       const height = context.canvas.height / scale;
 
       const startX = Math.floor(-camera.x / scale / gridSize) * gridSize;
       const startY = Math.floor(-camera.y / scale / gridSize) * gridSize;
+      const endX = startX + width;
+      const endY = startY + height;
 
-      // Adjust opacity based on scale to make grid less prominent when zoomed out
-      const opacity = Math.min(0.1, 0.05 + scale * 0.1);
+      // Calculate number of columns and rows
+      const cols = Math.ceil(width / gridSize);
+      const rows = Math.ceil(height / gridSize);
+
+      // Adjust opacity based on scale
+      const opacity = Math.min(0.1, 0.02 + scale * 0.1);
 
       context.fillStyle = theme === "dark" ? `rgba(255, 255, 255, ${opacity})` : `rgba(0, 0, 0, ${opacity})`;
 
-      // Define dot size based on zoom level (smaller when zoomed out)
-      const dotSize = Math.max(0.5, 1 / scale);
+      // Define dot size based on zoom level
+      const dotSize = Math.max(0.5, scale < 0.2 ? 0.8 : 1 / scale);
 
-      // Skip drawing dots that are too close together when zoomed out
-      // This significantly improves performance at low zoom levels
-      for (let x = startX; x < startX + width; x += gridSize) {
-        for (let y = startY; y < startY + height; y += gridSize) {
-          // Skip some dots when extremely zoomed out for better performance
-          if (scale < 0.2 && (x % (gridSize * 2) !== 0 || y % (gridSize * 2) !== 0)) {
-            continue;
-          }
+      // Use a single canvas path for better performance
+      context.beginPath();
 
-          context.beginPath();
-          context.arc(x, y, dotSize, 0, Math.PI * 2);
-          context.fill();
-        }
+      // Determine how many dots to skip based on zoom level
+      let skipFactor = 1;
+
+      if (scale < 0.2) skipFactor = Math.max(2, Math.floor(4 / scale));
+
+      // Calculate total points after applying skip factor
+      const effectiveCols = Math.ceil(cols / skipFactor);
+      const effectiveRows = Math.ceil(rows / skipFactor);
+      const totalEffectivePoints = effectiveCols * effectiveRows;
+
+      // Use a single loop for all drawing
+      for (let i = 0; i < totalEffectivePoints; i++) {
+        const effectiveCol = i % effectiveCols;
+        const effectiveRow = Math.floor(i / effectiveCols);
+
+        // Calculate the actual grid coordinates
+        const col = effectiveCol * skipFactor;
+        const row = effectiveRow * skipFactor;
+
+        const x = startX + col * gridSize;
+        const y = startY + row * gridSize;
+
+        // Skip if outside visible area
+        if (x > endX || y > endY) continue;
+
+        // Draw the dot
+        context.moveTo(x + dotSize, y);
+        context.arc(x, y, dotSize, 0, Math.PI * 2);
       }
+
+      // Fill all dots at once for better performance
+      context.fill();
     },
     [camera, theme],
   );
@@ -361,12 +384,13 @@ const MindBoard = () => {
     },
     [
       camera,
+      findLayerAtPoint,
+      findHandleNearPoint,
       canvasState,
       renderCanvas,
-      findLayerAtPoint,
       activeLayers,
-      findHandleNearPoint,
       setCanvasState,
+      findHandleAtPoint,
       findLayersInSelection,
       setActiveLayers,
       setLayers,
