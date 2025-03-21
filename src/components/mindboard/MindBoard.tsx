@@ -96,12 +96,12 @@ const MindBoard = () => {
   const drawGrid = useCallback(
     (context: CanvasRenderingContext2D) => {
       // Adjust grid size based on zoom level for better performance
-      let gridSize = 20;
+      let gridSize = 1;
       const scale = camera.scale;
 
       // Dynamic grid size based on zoom level
-      if (scale < 0.5) gridSize = 25;
-      if (scale < 0.25) gridSize = 40;
+      if (scale < 0.5) gridSize = 5;
+      if (scale < 0.25) gridSize = 10;
 
       const width = context.canvas.width / scale;
       const height = context.canvas.height / scale;
@@ -176,7 +176,7 @@ const MindBoard = () => {
     applyCamera(context);
 
     // Draw grid
-    drawGrid(context);
+    // drawGrid(context);
 
     // Draw edges
     edges.forEach((edge) => {
