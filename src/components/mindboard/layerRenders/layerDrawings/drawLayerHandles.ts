@@ -2,15 +2,6 @@ import { Camera, CanvasMode, CanvasState, HandlePosition, Layer } from "@/_types
 
 import { getHandlePosition } from "../../layerUtils";
 
-// Track hover state transitions with timestamps for animation
-const handleHoverStates = new Map<
-  string,
-  {
-    isHovered: boolean;
-    transitionStartTime: number;
-  }
->();
-
 // Animation duration in milliseconds
 const ANIMATION_DURATION = 50;
 
@@ -52,26 +43,10 @@ export const drawLayerHandles = ({
         canvasState.handleInfo?.handlePosition === handle.position &&
         canvasState.handleInfo?.isInHandle;
 
-      // Create unique key for this handle
-      const handleKey = `${layer.id}-${handle.position}`;
-
-      // Check if hover state changed and update tracking
-      if (!handleHoverStates.has(handleKey) || handleHoverStates.get(handleKey)!.isHovered !== isHovered) {
-        handleHoverStates.set(handleKey, {
-          isHovered,
-          transitionStartTime: Date.now(),
-        });
-      }
-
-      // Get animation progress
-      const hoverState = handleHoverStates.get(handleKey)!;
-      const elapsedTime = Date.now() - hoverState.transitionStartTime;
-      const progress = Math.min(1, elapsedTime / ANIMATION_DURATION);
-
       // Calculate animated scale factor based on transition progress
       const targetScale = isHovered ? 3 : 1;
       const startScale = isHovered ? 1 : 3;
-      const currentScale = startScale + (targetScale - startScale) * progress;
+      const currentScale = startScale + (targetScale - startScale);
 
       // Final handle size with animation
       const handleSize = baseHandleSize * currentScale;
