@@ -49,18 +49,18 @@ export const drawShadowLayerBasedOnType = ({
 
   // offset number
   const offsetNumber = layer.width * 2;
-  const offsetNumberHorizontal = 1.5;
+  const offsetNumberHorizontal = layer.type === LayerType.Rectangle ? 5 : 25;
 
   if (handlePosition) {
     switch (handlePosition) {
       case HandlePosition.Top:
-        positionOffset = { x: 0, y: -offsetNumber / offsetNumberHorizontal }; // position offset in px above
+        positionOffset = { x: 0, y: -offsetNumber - offsetNumberHorizontal }; // position offset in px above
         break;
       case HandlePosition.Right:
         positionOffset = { x: offsetNumber, y: 0 }; // position offset in px to the right
         break;
       case HandlePosition.Bottom:
-        positionOffset = { x: 0, y: offsetNumber / offsetNumberHorizontal }; // position offset in px below
+        positionOffset = { x: 0, y: offsetNumber + offsetNumberHorizontal }; // position offset in px below
         break;
       case HandlePosition.Left:
         positionOffset = { x: -offsetNumber, y: 0 }; // position offset in px to the left
