@@ -1,17 +1,26 @@
-import { Camera, Layer } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Layer } from "@/_types";
 
 export const drawResizeGrips = ({
   layer,
   context,
   camera,
   activeLayers,
+  canvasState,
 }: {
   layer: Layer;
   context: CanvasRenderingContext2D;
   camera: Camera;
   activeLayers: string[];
+  canvasState: CanvasState;
 }): void => {
-  if (activeLayers.includes(layer.id)) {
+  // If layer is active and canvas state is None, Grab, or Inserting, then draw the resize grips
+  if (
+    activeLayers.includes(layer.id) &&
+    (canvasState.mode == CanvasMode.None ||
+      canvasState.mode == CanvasMode.Edge ||
+      canvasState.mode == CanvasMode.Grab ||
+      canvasState.mode == CanvasMode.Inserting)
+  ) {
     // draw layer stroke
     // context.strokeStyle = "#2563eb";
     // context.lineWidth = 2 / camera.scale;

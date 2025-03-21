@@ -37,7 +37,7 @@ export const layerRender = ({
   drawLayerHandles({ layer, context, camera, theme, activeLayers, canvasState });
 
   // Draw resize grips
-  drawResizeGrips({ layer, context, camera, activeLayers });
+  drawResizeGrips({ layer, context, camera, activeLayers, canvasState });
 
   // Draw layer text
   drawLayerText({ layer, context, camera, theme });

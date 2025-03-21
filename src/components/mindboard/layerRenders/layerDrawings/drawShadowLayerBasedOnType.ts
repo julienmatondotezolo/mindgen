@@ -16,7 +16,7 @@ export const drawShadowLayerBasedOnType = ({
   canvasState: CanvasState;
   activeLayers: string[];
 }): void => {
-  const isEdgeMode = canvasState.mode === CanvasMode.Edge;
+  const isEdgeOurEdgeDrawingMode = canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing;
   // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
   const isHandleInActiveLayer = activeLayers.includes(canvasState.handleInfo?.layerId);
   // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
@@ -25,7 +25,7 @@ export const drawShadowLayerBasedOnType = ({
   const isHandleInCurrentLayer = layer.id === canvasState.handleInfo?.layerId;
 
   // If canvas is not in edge mode, or the handle is not in the active layer, or the handle is not in the active layer, then don't show the shadow layer
-  if (isEdgeMode == false) {
+  if (isEdgeOurEdgeDrawingMode == false) {
     return;
   }
 

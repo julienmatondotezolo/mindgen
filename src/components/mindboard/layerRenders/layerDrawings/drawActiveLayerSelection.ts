@@ -14,8 +14,8 @@ export const drawActiveLayerSelection = ({
   canvasState: CanvasState;
 }): void => {
   if (
-    activeLayers.includes(layer.id) ||
-    (canvasState.mode === CanvasMode.None && canvasState?.hoveredLayerId === layer.id)
+    (canvasState.mode === CanvasMode.None && canvasState?.hoveredLayerId === layer.id) ||
+    (canvasState.mode === CanvasMode.SelectionNet && activeLayers.includes(layer.id))
   ) {
     const radius = 5;
 
