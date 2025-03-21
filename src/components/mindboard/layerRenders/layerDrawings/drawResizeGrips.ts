@@ -19,7 +19,9 @@ export const drawResizeGrips = ({
     (canvasState.mode == CanvasMode.None ||
       canvasState.mode == CanvasMode.Edge ||
       canvasState.mode == CanvasMode.Grab ||
-      canvasState.mode == CanvasMode.Inserting)
+      canvasState.mode == CanvasMode.Inserting ||
+      canvasState.mode == CanvasMode.Tooling ||
+      canvasState.mode == CanvasMode.Translating)
   ) {
     // draw layer stroke
     // context.strokeStyle = "#2563eb";

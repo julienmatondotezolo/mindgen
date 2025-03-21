@@ -20,6 +20,9 @@ export const drawLayerHandles = ({
   activeLayers: string[];
   canvasState: CanvasState;
 }): void => {
+  // If the layer is active and the mode is SelectionNet, don't draw handles
+  if (activeLayers.includes(layer.id) && canvasState.mode === CanvasMode.SelectionNet) return;
+
   // Only draw handles for active/selected layers && if is not in Translating mode
   if (activeLayers.includes(layer.id) && activeLayers.length === 1 && canvasState.mode !== CanvasMode.Translating) {
     // Get handle position
