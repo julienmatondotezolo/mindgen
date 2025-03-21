@@ -16,7 +16,6 @@ export const drawShadowLayerBasedOnType = ({
   canvasState: CanvasState;
   activeLayers: string[];
 }): void => {
-
   const isEdgeMode = canvasState.mode === CanvasMode.Edge;
   // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
   const isHandleInActiveLayer = activeLayers.includes(canvasState.handleInfo?.layerId);
@@ -24,8 +23,16 @@ export const drawShadowLayerBasedOnType = ({
   const isInHandle = canvasState.handleInfo?.isInHandle === true;
 
   // If canvas is not in edge mode, or the handle is not in the active layer, or the handle is not in the active layer, then don't show the shadow layer
-  if (!isEdgeMode && isInHandle === true && !isHandleInActiveLayer) {
-    return
+  if (isEdgeMode == false) {
+    return;
+  }
+
+  if (isInHandle === false) {
+    return;
+  }
+
+  if (isHandleInActiveLayer === false) {
+    return;
   }
 
   // Calculate position offset based on handle position (200px away)
@@ -35,7 +42,7 @@ export const drawShadowLayerBasedOnType = ({
   const handlePosition = canvasState.handleInfo?.handlePosition;
 
   // offset number
-  const offsetNumber = 400;
+  const offsetNumber = layer.width * 2;
 
   if (handlePosition) {
     switch (handlePosition) {
@@ -68,14 +75,7 @@ export const drawShadowLayerBasedOnType = ({
   switch (layer.type) {
     case LayerType.Rectangle:
       // Use cross-browser compatible rounded rectangle drawing
-      drawRoundedRect(
-        context, 
-        layer.x + positionOffset.x, 
-        layer.y + positionOffset.y, 
-        layer.width, 
-        layer.height, 
-        100
-      );
+      drawRoundedRect(context, layer.x + positionOffset.x, layer.y + positionOffset.y, layer.width, layer.height, 100);
       context.strokeStyle = newBorderColor;
       if (layer.borderWidth) {
         context.lineWidth = layer.borderWidth;

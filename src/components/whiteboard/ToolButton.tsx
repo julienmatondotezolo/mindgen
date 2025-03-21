@@ -16,6 +16,7 @@ interface ToolButtonProps {
 
 export const ToolButton = ({ icon: Icon, onClick, isActive, disabled, children }: ToolButtonProps) => {
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+  // eslint-disable-next-line no-unused-vars
   const allActiveLayers = useRecoilValue(activeLayersAtom);
 
   return (

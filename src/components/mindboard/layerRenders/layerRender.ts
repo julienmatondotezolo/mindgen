@@ -24,6 +24,9 @@ export const layerRender = ({
   theme: string | undefined;
   canvasState: CanvasState;
 }): void => {
+  // Draw shadow layer
+  drawShadowLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
+
   // Draw shapes based on type
   drawLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
 
@@ -38,7 +41,4 @@ export const layerRender = ({
 
   // Draw layer text
   drawLayerText({ layer, context, camera, theme });
-
-  // Draw shadow layer
-  drawShadowLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
 };

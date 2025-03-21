@@ -74,11 +74,18 @@ const MindBoard = () => {
           });
           return;
         case CanvasMode.Edge:
-          // Start drawing an edge
-          setCanvasState((prev) => ({
-            ...prev,
-            mode: CanvasMode.EdgeDrawing,
-          }));
+          // Start drawing an edge if point is in handle
+          // Otherwise put mode back to None
+          if (canvasState.handleInfo?.isInHandle === true) {
+            setCanvasState((prev) => ({
+              ...prev,
+              mode: CanvasMode.EdgeDrawing,
+            }));
+          } else {
+            setCanvasState({
+              mode: CanvasMode.None,
+            });
+          }
           return;
         default:
           break;
