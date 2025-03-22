@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Camera, CanvasState, Edge } from "@/_types";
 
-import { drawEdgeBasedOnType } from "./edgeDrawings";
+import { drawEdgeBasedOnType, drawShadowEdgeBasedOnType } from "./edgeDrawings";
 
 export const edgeRender = ({
   edge,

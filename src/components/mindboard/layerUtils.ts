@@ -1,6 +1,7 @@
-import { Color, HandlePosition, Layer } from "@/_types/canvas";
+/* eslint-disable prettier/prettier */
+import { CanvasMode, CanvasState, Color, HandlePosition, Layer, Point } from "@/_types/canvas";
 
-// Draw a rounded rectangle
+// Draw a Rounded Rectangle
 export const drawRoundedRect = ({
   ctx,
   x,
@@ -34,7 +35,7 @@ export const drawRoundedRect = ({
   ctx.closePath();
 };
 
-// Draw an ellipse
+// Draw an Ellipse
 export const drawEllipse = ({
   ctx,
   x,
@@ -59,7 +60,7 @@ export const drawEllipse = ({
   ctx.closePath();
 };
 
-// Draw a diamond
+// Draw a Diamond
 export const drawDiamond = ({
   ctx,
   x,
@@ -85,7 +86,7 @@ export const drawDiamond = ({
   ctx.closePath();
 };
 
-// get the handle position based on the layer type
+// Get the handle position based on the layer type
 export const getHandlePosition = (layer: Layer) => {
   // Constants to match those in drawLayerHandles.ts
   const handleSize = 12;
@@ -159,4 +160,108 @@ export const calculateLayerBoundingBox = (layers: Layer[]) => {
     width: right - left,
     height: bottom - top,
   };
+};
+
+// Return new layer position based on pointer position in handle
+export const getShadowsPositionBasedOnPointerPositionInHandle = ({
+  layer,
+  handlePosition,
+  canvasState,
+}: {
+  layer?: Layer;
+  handlePosition: HandlePosition | undefined;
+  canvasState: CanvasState;
+}): {
+  newLayerPosition: Point;
+  newEdgePosition: Point;
+} => {
+  // Calculate position offset based on handle position
+  const gapBetweenEdgeAndLayer = 32;
+  const layerOffsetPosition = 200;
+  const edgeOffsetPosition = 200 - gapBetweenEdgeAndLayer;
+  let newLayerPosition: Point = { x: 0, y: 0 };
+  let newEdgePosition: Point = { x: 0, y: 0 };
+
+  if (canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing) {
+    switch (handlePosition) {
+      case HandlePosition.Top:
+        if (canvasState.origin) {
+          newLayerPosition = layer
+            ? { x: canvasState.origin.x, y: canvasState.origin.y - layer.height / 2 - layerOffsetPosition }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.origin.x, y: canvasState.origin.y - edgeOffsetPosition };
+        }
+
+        if (canvasState.current) {
+          newLayerPosition = layer
+            ? {
+              x: canvasState.current.x,
+              y: canvasState.current.y - layer.height / 2 - gapBetweenEdgeAndLayer,
+            }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
+        }
+        break;
+      case HandlePosition.Right:
+        if (canvasState.origin) {
+          newLayerPosition = layer
+            ? { x: canvasState.origin.x + layer.width / 2 + layerOffsetPosition, y: canvasState.origin.y }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.origin.x + edgeOffsetPosition, y: canvasState.origin.y };
+        }
+
+        if (canvasState.current) {
+          newLayerPosition = layer
+            ? {
+              x: canvasState.current.x + layer.width / 2 + gapBetweenEdgeAndLayer,
+              y: canvasState.current.y,
+            }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
+        }
+        break;
+      case HandlePosition.Bottom:
+        if (canvasState.origin) {
+          newLayerPosition = layer
+            ? { x: canvasState.origin.x, y: canvasState.origin.y + layer.height / 2 + layerOffsetPosition }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.origin.x, y: canvasState.origin.y + edgeOffsetPosition };
+        }
+
+        if (canvasState.current) {
+          newLayerPosition = layer
+            ? {
+              x: canvasState.current.x,
+              y: canvasState.current.y + layer.height / 2 + gapBetweenEdgeAndLayer,
+            }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
+        }
+        break;
+      case HandlePosition.Left:
+        if (canvasState.origin) {
+          newLayerPosition = layer
+            ? { x: canvasState.origin.x - layer.width / 2 - layerOffsetPosition, y: canvasState.origin.y }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.origin.x - edgeOffsetPosition, y: canvasState.origin.y };
+        }
+
+        if (canvasState.current) {
+          newLayerPosition = layer
+            ? {
+              x: canvasState.current.x - layer.width / 2 - gapBetweenEdgeAndLayer,
+              y: canvasState.current.y,
+            }
+            : { x: 0, y: 0 };
+          newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
+        }
+        break;
+      default:
+        newLayerPosition = { x: 0, y: 0 };
+        newEdgePosition = { x: 0, y: 0 };
+        break;
+    }
+  }
+
+  return { newLayerPosition, newEdgePosition };
 };

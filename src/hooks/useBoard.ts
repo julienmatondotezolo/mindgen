@@ -2,7 +2,7 @@ import { useTheme } from "next-themes";
 import { useCallback, useRef } from "react";
 import { useRecoilValue } from "recoil";
 
-import { drawSelectionRectangle, edgeRender, layerRender } from "@/components/mindboard";
+import { drawSelectionRectangle, drawShadowEdgeBasedOnType, edgeRender, layerRender } from "@/components/mindboard";
 import { activeLayersAtom, cameraStateAtom, canvasStateAtom, edgesAtomState, layerAtomState } from "@/state";
 
 export const useBoard = () => {
@@ -159,6 +159,9 @@ export const useBoard = () => {
     edges.forEach((edge) => {
       edgeRender({ edge, context, camera, theme, canvasState });
     });
+
+    // Draw shadow edges
+    drawShadowEdgeBasedOnType({ context, theme, canvasState });
 
     // Draw layers
     layers.forEach((layer) => {

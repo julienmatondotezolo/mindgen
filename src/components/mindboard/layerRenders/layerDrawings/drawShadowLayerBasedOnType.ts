@@ -1,7 +1,12 @@
-import { CanvasMode, CanvasState, HandlePosition, Layer, LayerType, Point } from "@/_types/canvas";
+import { CanvasMode, CanvasState, Layer, LayerType } from "@/_types/canvas";
 import { colorToCss } from "@/utils";
 
-import { drawDiamond, drawEllipse, drawRoundedRect } from "../../layerUtils";
+import {
+  drawDiamond,
+  drawEllipse,
+  drawRoundedRect,
+  getShadowsPositionBasedOnPointerPositionInHandle,
+} from "../../layerUtils";
 
 export const drawShadowLayerBasedOnType = ({
   layer,
@@ -40,62 +45,14 @@ export const drawShadowLayerBasedOnType = ({
     return;
   }
 
-  // Calculate position offset based on handle position
-  const gapBetweenEdgeAndLayer = 32;
-  const offsetPosition = 200;
-  let newLayerPosition: Point = { x: 0, y: 0 };
+  // Return new layer position based on pointer position in handle
+  const { newLayerPosition } = getShadowsPositionBasedOnPointerPositionInHandle({
+    layer,
+    handlePosition: canvasState.handleInfo?.handlePosition,
+    canvasState,
+  });
 
-  // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-  const handlePosition = canvasState.handleInfo?.handlePosition;
-
-  if (handlePosition) {
-    switch (handlePosition) {
-      case HandlePosition.Top:
-        if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x, y: canvasState.origin.y - layer.height / 2 - offsetPosition };
-
-        if (canvasState.current)
-          newLayerPosition = {
-            x: canvasState.current.x,
-            y: canvasState.current.y - layer.height / 2 - gapBetweenEdgeAndLayer,
-          };
-        break;
-      case HandlePosition.Right:
-        if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x + layer.width / 2 + offsetPosition, y: canvasState.origin.y };
-
-        if (canvasState.current)
-          newLayerPosition = {
-            x: canvasState.current.x + layer.width / 2 + gapBetweenEdgeAndLayer,
-            y: canvasState.current.y,
-          };
-        break;
-      case HandlePosition.Bottom:
-        if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x, y: canvasState.origin.y + layer.height / 2 + offsetPosition };
-
-        if (canvasState.current)
-          newLayerPosition = {
-            x: canvasState.current.x,
-            y: canvasState.current.y + layer.height / 2 + gapBetweenEdgeAndLayer,
-          };
-        break;
-      case HandlePosition.Left:
-        if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x - layer.width / 2 - offsetPosition, y: canvasState.origin.y };
-
-        if (canvasState.current)
-          newLayerPosition = {
-            x: canvasState.current.x - layer.width / 2 - gapBetweenEdgeAndLayer,
-            y: canvasState.current.y,
-          };
-        break;
-      default:
-        newLayerPosition = { x: 0, y: 0 };
-        break;
-    }
-  }
-
+  // Get new border color
   const newBorderColor = layer.borderColor
     ? colorToCss(layer.borderColor)
     : theme === "dark"
