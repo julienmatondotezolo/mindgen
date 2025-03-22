@@ -1,7 +1,7 @@
 import { CanvasMode, CanvasState, HandlePosition, Layer, LayerType, Point } from "@/_types/canvas";
 import { colorToCss } from "@/utils";
 
-import { drawRoundedRect } from "../../layerUtils";
+import { drawDiamond, drawEllipse, drawRoundedRect } from "../../layerUtils";
 
 export const drawShadowLayerBasedOnType = ({
   layer,
@@ -42,24 +42,17 @@ export const drawShadowLayerBasedOnType = ({
 
   // Calculate position offset based on handle position
   const gapBetweenEdgeAndLayer = 32;
+  const offsetPosition = 200;
   let newLayerPosition: Point = { x: 0, y: 0 };
-
-  // Calculate position offset based on handle position (200px away)
-  let positionOffset: Point = { x: 0, y: 0 };
 
   // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
   const handlePosition = canvasState.handleInfo?.handlePosition;
 
-  // offset number
-  const offsetNumber = layer.width * 2;
-  const offsetNumberHorizontal = layer.type === LayerType.Rectangle ? 5 : 25;
-
   if (handlePosition) {
     switch (handlePosition) {
       case HandlePosition.Top:
-        positionOffset = { x: 0, y: -offsetNumber - offsetNumberHorizontal }; // position offset in px above
         if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x, y: canvasState.origin.y - layer.height / 2 };
+          newLayerPosition = { x: canvasState.origin.x, y: canvasState.origin.y - layer.height / 2 - offsetPosition };
 
         if (canvasState.current)
           newLayerPosition = {
@@ -68,9 +61,8 @@ export const drawShadowLayerBasedOnType = ({
           };
         break;
       case HandlePosition.Right:
-        positionOffset = { x: offsetNumber, y: 0 }; // position offset in px to the right
         if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x + layer.width / 2, y: canvasState.origin.y };
+          newLayerPosition = { x: canvasState.origin.x + layer.width / 2 + offsetPosition, y: canvasState.origin.y };
 
         if (canvasState.current)
           newLayerPosition = {
@@ -79,9 +71,8 @@ export const drawShadowLayerBasedOnType = ({
           };
         break;
       case HandlePosition.Bottom:
-        positionOffset = { x: 0, y: offsetNumber + offsetNumberHorizontal }; // position offset in px below
         if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x, y: canvasState.origin.y + layer.height / 2 };
+          newLayerPosition = { x: canvasState.origin.x, y: canvasState.origin.y + layer.height / 2 + offsetPosition };
 
         if (canvasState.current)
           newLayerPosition = {
@@ -90,9 +81,8 @@ export const drawShadowLayerBasedOnType = ({
           };
         break;
       case HandlePosition.Left:
-        positionOffset = { x: -offsetNumber, y: 0 }; // position offset in px to the left
         if (canvasState.origin)
-          newLayerPosition = { x: canvasState.origin.x - layer.width / 2, y: canvasState.origin.y };
+          newLayerPosition = { x: canvasState.origin.x - layer.width / 2 - offsetPosition, y: canvasState.origin.y };
 
         if (canvasState.current)
           newLayerPosition = {
@@ -101,19 +91,10 @@ export const drawShadowLayerBasedOnType = ({
           };
         break;
       default:
-        positionOffset = { x: 0, y: 0 };
+        newLayerPosition = { x: 0, y: 0 };
         break;
     }
   }
-
-  // if (canvasState.current) {
-  //   newLayerPosition = {
-  //     x: canvasState.current.x,
-  //     y: gapBetweenEdgeAndLayer + canvasState.current.y + layer.height / 2,
-  //   };
-  // }
-
-  context.fillStyle = `rgba(${layer.fill.r}, ${layer.fill.g}, ${layer.fill.b}, 0.5)`;
 
   const newBorderColor = layer.borderColor
     ? colorToCss(layer.borderColor)
@@ -124,43 +105,54 @@ export const drawShadowLayerBasedOnType = ({
   switch (layer.type) {
     case LayerType.Rectangle:
       // Use cross-browser compatible rounded rectangle drawing
-      drawRoundedRect(context, layer.x + positionOffset.x, layer.y + positionOffset.y, layer.width, layer.height, 100);
+      drawRoundedRect({
+        ctx: context,
+        x: newLayerPosition.x - layer.width / 2,
+        y: newLayerPosition.y - layer.height / 2,
+        width: layer.width,
+        height: layer.height,
+        fill: layer.fill,
+      });
+
+      // Draw border
       context.strokeStyle = newBorderColor;
       if (layer.borderWidth) {
         context.lineWidth = layer.borderWidth;
         context.stroke();
       }
-      context.fill();
       break;
 
     case LayerType.Ellipse:
-      context.beginPath();
-      context.ellipse(
-        // layer.x + layer.width / 2 + newLayerPosition.x,
-        // layer.y + layer.height / 2 + newLayerPosition.y,
-        newLayerPosition.x,
-        newLayerPosition.y,
-        layer.width / 2,
-        layer.height / 2,
-        0,
-        0,
-        Math.PI * 2,
-      );
+      // Draw Ellipse
+      drawEllipse({
+        ctx: context,
+        x: newLayerPosition.x,
+        y: newLayerPosition.y,
+        width: layer.width,
+        height: layer.height,
+        fill: layer.fill,
+      });
+
+      // Draw border
       context.strokeStyle = newBorderColor;
       if (layer.borderWidth) {
         context.lineWidth = layer.borderWidth;
         context.stroke();
       }
-      context.fill();
       break;
 
     case LayerType.Diamond:
-      context.beginPath();
-      context.moveTo(layer.x + layer.width / 2 + positionOffset.x, layer.y + positionOffset.y);
-      context.lineTo(layer.x + layer.width + positionOffset.x, layer.y + layer.height / 2 + positionOffset.y);
-      context.lineTo(layer.x + layer.width / 2 + positionOffset.x, layer.y + layer.height + positionOffset.y);
-      context.lineTo(layer.x + positionOffset.x, layer.y + layer.height / 2 + positionOffset.y);
-      context.closePath();
+      // Draw diamond
+      drawDiamond({
+        ctx: context,
+        x: newLayerPosition.x - layer.width / 2,
+        y: newLayerPosition.y - layer.height / 2,
+        width: layer.width,
+        height: layer.height,
+        fill: layer.fill,
+      });
+
+      // Draw border
       context.strokeStyle = newBorderColor;
       if (layer.borderWidth) {
         context.lineWidth = layer.borderWidth;

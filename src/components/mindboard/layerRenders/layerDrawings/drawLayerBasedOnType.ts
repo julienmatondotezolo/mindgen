@@ -2,7 +2,7 @@
 import { CanvasState, Layer, LayerType } from "@/_types/canvas";
 import { colorToCss } from "@/utils";
 
-import { drawRoundedRect } from "../../layerUtils";
+import { drawEllipse, drawRoundedRect } from "../../layerUtils";
 
 export const drawLayerBasedOnType = ({
   layer,
@@ -28,7 +28,16 @@ export const drawLayerBasedOnType = ({
   switch (layer.type) {
     case LayerType.Rectangle:
       // Use cross-browser compatible rounded rectangle drawing
-      drawRoundedRect(context, layer.x, layer.y, layer.width, layer.height, 100);
+      drawRoundedRect({
+        ctx: context,
+        x: layer.x,
+        y: layer.y,
+        width: layer.width,
+        height: layer.height,
+        fill: layer.fill,
+      });
+
+      // Draw border
       context.strokeStyle = newBorderColor;
       if (layer.borderWidth) {
         context.lineWidth = layer.borderWidth;
@@ -38,16 +47,17 @@ export const drawLayerBasedOnType = ({
       break;
 
     case LayerType.Ellipse:
-      context.beginPath();
-      context.ellipse(
-        layer.x + layer.width / 2,
-        layer.y + layer.height / 2,
-        layer.width / 2,
-        layer.height / 2,
-        0,
-        0,
-        Math.PI * 2,
-      );
+      // Draw Ellipse
+      drawEllipse({
+        ctx: context,
+        x: layer.x + layer.width / 2,
+        y: layer.y + layer.height / 2,
+        width: layer.width,
+        height: layer.height,
+        fill: layer.fill,
+      });
+
+      // Draw border
       context.strokeStyle = newBorderColor;
       if (layer.borderWidth) {
         context.lineWidth = layer.borderWidth;
@@ -63,6 +73,8 @@ export const drawLayerBasedOnType = ({
       context.lineTo(layer.x + layer.width / 2, layer.y + layer.height);
       context.lineTo(layer.x, layer.y + layer.height / 2);
       context.closePath();
+
+      // Draw border
       context.strokeStyle = newBorderColor;
       if (layer.borderWidth) {
         context.lineWidth = layer.borderWidth;
