@@ -59,6 +59,8 @@ export const drawShadowLayerBasedOnType = ({
       ? "rgb(180, 191, 204)"
       : "rgb(71, 85, 105)";
 
+  context.globalAlpha = 0.5;
+
   switch (layer.type) {
     case LayerType.Rectangle:
       // Use cross-browser compatible rounded rectangle drawing
@@ -115,6 +117,7 @@ export const drawShadowLayerBasedOnType = ({
         context.lineWidth = layer.borderWidth;
         context.stroke();
       }
+
       context.fill();
       break;
 
@@ -122,4 +125,6 @@ export const drawShadowLayerBasedOnType = ({
       console.warn(`Unsupported layer type: ${layer.type}`);
       break;
   }
+
+  context.globalAlpha = 1.0;
 };

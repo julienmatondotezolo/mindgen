@@ -684,3 +684,21 @@ function getRoutingType(sourcePosition: HandlePosition, targetPosition: HandlePo
       return "vertical-to-vertical";
   }
 }
+
+// Get Handle END position from handle start position
+export const getHandleEndPosition = ({
+  handleStartPosition,
+}: {
+  handleStartPosition: HandlePosition;
+}): HandlePosition => {
+  switch (handleStartPosition) {
+    case HandlePosition.Left:
+      return HandlePosition.Right;
+    case HandlePosition.Right:
+      return HandlePosition.Left;
+    case HandlePosition.Top:
+      return HandlePosition.Bottom;
+    case HandlePosition.Bottom:
+      return HandlePosition.Top;
+  }
+};

@@ -1,4 +1,5 @@
-import { CanvasMode, CanvasState } from "@/_types/canvas";
+import { CanvasMode, CanvasState, Edge, EdgeShape, EdgeType } from "@/_types/canvas";
+import { drawEdgeCurvedLine, getHandleEndPosition } from "@/utils/edgeUtils";
 
 import { getShadowsPositionBasedOnPointerPositionInHandle } from "../../layerUtils";
 
@@ -25,25 +26,38 @@ export const drawShadowEdgeBasedOnType = ({
     canvasState,
   });
 
-  // Create a shadow edge with semi-transparent color for the preview
-  const edgeColor = theme === "dark" ? "rgb(180, 191, 204)" : "rgb(71, 85, 105)";
+  // Set the color of the shadow edge
+  // const edgeColor = theme === "dark" ? "rgb(180, 191, 204, 0.5)" : "rgb(71, 85, 105, 0.5)";
+  const edgeColor = theme === "dark" ? { r: 180, g: 191, b: 204, a: 0.5 } : { r: 71, g: 85, b: 105, a: 0.5 };
 
-  // Apply semi-transparency to the shadow edge
-  context.globalAlpha = 0.5;
+  // Create a shadow edge with semi-transparent color for the preview
+  const shadowEdge: Edge = {
+    id: "shadow-edge",
+    start: canvasState.origin,
+    end: newEdgePosition,
+    color: edgeColor,
+    hoverColor: edgeColor,
+    thickness: 4,
+    orientation: "auto",
+    type: EdgeType.Solid,
+    label: "",
+    shape: EdgeShape.Curved,
+    handleStart: canvasState.handleInfo?.handlePosition,
+    handleEnd:
+      canvasState.handleInfo && getHandleEndPosition({ handleStartPosition: canvasState.handleInfo?.handlePosition }),
+  };
 
   // Begin drawing
   context.beginPath();
 
   // Draw line
-  context.moveTo(canvasState.origin.x, canvasState.origin.y);
-  context.lineTo(newEdgePosition.x, newEdgePosition.y);
+  drawEdgeCurvedLine({ edge: shadowEdge, context });
+  // context.moveTo(canvasState.origin.x, canvasState.origin.y);
+  // context.lineTo(newEdgePosition.x, newEdgePosition.y);
 
   // Draw the edge with semi-transparent color
-  context.strokeStyle = edgeColor;
+  context.strokeStyle = `rgba(${shadowEdge.color.r}, ${shadowEdge.color.g}, ${shadowEdge.color.b}, ${shadowEdge.color.a})`;
   context.lineWidth = 4;
   context.lineCap = "round";
   context.stroke();
-
-  // Reset alpha
-  context.globalAlpha = 1.0;
 };
