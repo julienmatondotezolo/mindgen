@@ -1,8 +1,6 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect } from "react";
-import { SetterOrUpdater, useRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 
-import { Edge, Layer } from "@/_types";
 import { CanvasMode } from "@/_types/canvas";
 import { useCameraControls } from "@/components/mindboard/Controls";
 import { canvasStateAtom } from "@/state";
@@ -22,7 +20,7 @@ export const useBoardKeyboardEvents = ({
 
   const { layers, setLayers, activeLayers, setActiveLayers } = useLayerOperations();
 
-  const { edges, setEdges } = useEdgeOperations();
+  const { setEdges, activeEdgeId, setActiveEdgeId } = useEdgeOperations();
 
   const { fitView } = useCameraControls();
 
@@ -60,6 +58,12 @@ export const useBoardKeyboardEvents = ({
         fitView(layers);
       }
 
+      // Delete selected edges
+      if (e.key === "Delete" || (e.key === "Backspace" && activeEdgeId.length > 0)) {
+        setEdges((prev) => prev.filter((edge) => !activeEdgeId.includes(edge.id)));
+        setActiveEdgeId([]);
+      }
+
       // Deselect all with Escape
       if (e.key === "Escape") {
         setActiveLayers([]);
@@ -88,5 +92,16 @@ export const useBoardKeyboardEvents = ({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [activeLayers, setActiveLayers, setLayers, setEdges, setCanvasState, layers, setIsDebugMode, fitView]);
+  }, [
+    activeLayers,
+    setActiveLayers,
+    setLayers,
+    setEdges,
+    setCanvasState,
+    layers,
+    setIsDebugMode,
+    fitView,
+    activeEdgeId,
+    setActiveEdgeId,
+  ]);
 };
