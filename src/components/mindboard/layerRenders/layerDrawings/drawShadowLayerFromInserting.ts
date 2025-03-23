@@ -26,14 +26,12 @@ export const drawShadowLayerFromInserting = ({
       width: 200,
       height: canvasState.layerType === LayerType.Rectangle ? 60 : 200,
       type: canvasState.layerType as any,
-      fill: { r: 77, g: 106, b: 255 },
+      fill: { r: 77, g: 106, b: 255, a: 0.2 },
       value: "",
     };
 
     // Draw the layer based on the type
-    context.globalAlpha = 0.5;
     drawLayerBasedOnType({ layer: newLayer, context, theme, newLayerPosition: canvasState.current });
-    context.globalAlpha = 1.0;
     return;
   }
 };

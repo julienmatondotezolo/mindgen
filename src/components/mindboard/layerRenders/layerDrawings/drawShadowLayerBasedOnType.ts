@@ -51,9 +51,10 @@ export const drawShadowLayerBasedOnType = ({
     canvasState,
   });
 
-  context.globalAlpha = 0.5;
+  const newLayer: Layer = {
+    ...layer,
+    fill: { r: layer.fill.r, g: layer.fill.g, b: layer.fill.b, a: 0.2 },
+  };
 
-  drawLayerBasedOnType({ layer, context, theme, newLayerPosition });
-
-  context.globalAlpha = 1.0;
+  drawLayerBasedOnType({ layer: newLayer, context, theme, newLayerPosition });
 };
