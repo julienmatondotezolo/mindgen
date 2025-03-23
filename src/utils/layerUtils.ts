@@ -188,7 +188,7 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
       case HandlePosition.Top:
         if (canvasState.origin) {
           newLayerPosition = layer
-            ? { x: canvasState.origin.x, y: canvasState.origin.y - layer.height / 2 - layerOffsetPosition }
+            ? { x: canvasState.origin.x - layer.width / 2, y: canvasState.origin.y - layer.height - layerOffsetPosition }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.origin.x, y: canvasState.origin.y - edgeOffsetPosition };
         }
@@ -196,8 +196,8 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
         if (canvasState.current) {
           newLayerPosition = layer
             ? {
-              x: canvasState.current.x,
-              y: canvasState.current.y - layer.height / 2 - gapBetweenEdgeAndLayer,
+              x: canvasState.current.x - layer.width / 2,
+              y: canvasState.current.y - layer.height - gapBetweenEdgeAndLayer,
             }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
@@ -206,7 +206,7 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
       case HandlePosition.Right:
         if (canvasState.origin) {
           newLayerPosition = layer
-            ? { x: canvasState.origin.x + layer.width / 2 + layerOffsetPosition, y: canvasState.origin.y }
+            ? { x: canvasState.origin.x + layerOffsetPosition, y: canvasState.origin.y - layer.height / 2 }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.origin.x + edgeOffsetPosition, y: canvasState.origin.y };
         }
@@ -214,8 +214,8 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
         if (canvasState.current) {
           newLayerPosition = layer
             ? {
-              x: canvasState.current.x + layer.width / 2 + gapBetweenEdgeAndLayer,
-              y: canvasState.current.y,
+              x: canvasState.current.x + gapBetweenEdgeAndLayer,
+              y: canvasState.current.y - layer.height / 2,
             }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
@@ -224,7 +224,7 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
       case HandlePosition.Bottom:
         if (canvasState.origin) {
           newLayerPosition = layer
-            ? { x: canvasState.origin.x, y: canvasState.origin.y + layer.height / 2 + layerOffsetPosition }
+            ? { x: canvasState.origin.x - layer.width / 2, y: canvasState.origin.y + layerOffsetPosition }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.origin.x, y: canvasState.origin.y + edgeOffsetPosition };
         }
@@ -232,8 +232,8 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
         if (canvasState.current) {
           newLayerPosition = layer
             ? {
-              x: canvasState.current.x,
-              y: canvasState.current.y + layer.height / 2 + gapBetweenEdgeAndLayer,
+              x: canvasState.current.x - layer.width / 2,
+              y: canvasState.current.y + gapBetweenEdgeAndLayer,
             }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
@@ -242,7 +242,7 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
       case HandlePosition.Left:
         if (canvasState.origin) {
           newLayerPosition = layer
-            ? { x: canvasState.origin.x - layer.width / 2 - layerOffsetPosition, y: canvasState.origin.y }
+            ? { x: canvasState.origin.x - layer.width - layerOffsetPosition, y: canvasState.origin.y - layer.height / 2 }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.origin.x - edgeOffsetPosition, y: canvasState.origin.y };
         }
@@ -250,8 +250,8 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
         if (canvasState.current) {
           newLayerPosition = layer
             ? {
-              x: canvasState.current.x - layer.width / 2 - gapBetweenEdgeAndLayer,
-              y: canvasState.current.y,
+              x: canvasState.current.x - layerOffsetPosition - gapBetweenEdgeAndLayer,
+              y: canvasState.current.y - layer.height / 2,
             }
             : { x: 0, y: 0 };
           newEdgePosition = { x: canvasState.current.x, y: canvasState.current.y };
