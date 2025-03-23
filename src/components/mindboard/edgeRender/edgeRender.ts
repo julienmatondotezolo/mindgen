@@ -17,5 +17,5 @@ export const edgeRender = ({
   canvasState: CanvasState;
 }): void => {
   // Draw shapes based on type
-  drawEdgeBasedOnType({ edge, context });
+  drawEdgeBasedOnType({ edge, context, canvasState });
 };

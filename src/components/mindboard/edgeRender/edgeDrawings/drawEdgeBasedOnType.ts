@@ -1,7 +1,20 @@
-import { Edge, EdgeShape, HandlePosition } from "@/_types";
+import { CanvasMode, CanvasState, Edge, EdgeShape, HandlePosition } from "@/_types";
 import { drawEdgeCurvedLine, drawEdgeStepLine, getControlWithCurvature } from "@/utils/edgeUtils";
 
-export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: CanvasRenderingContext2D }) => {
+export const drawEdgeBasedOnType = ({
+  edge,
+  context,
+  canvasState,
+}: {
+  edge: Edge;
+  context: CanvasRenderingContext2D;
+  canvasState: CanvasState;
+}) => {
+  const colorStyleOnHover =
+    canvasState.mode === CanvasMode.None && canvasState.hoveredEdgeId === edge.id
+      ? `rgb(${edge.hoverColor.r}, ${edge.hoverColor.g}, ${edge.hoverColor.b})`
+      : `rgb(${edge.color.r}, ${edge.color.g}, ${edge.color.b})`;
+
   context.beginPath();
 
   switch (edge.shape) {
@@ -29,7 +42,7 @@ export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: Ca
       break;
   }
 
-  context.strokeStyle = `rgb(${edge.color.r}, ${edge.color.g}, ${edge.color.b})`;
+  context.strokeStyle = colorStyleOnHover;
   context.lineWidth = edge.thickness;
   context.lineCap = "round";
   context.stroke();
@@ -86,7 +99,7 @@ export const drawEdgeBasedOnType = ({ edge, context }: { edge: Edge; context: Ca
     context.lineTo(arrowX - size * Math.cos(angle - Math.PI / 6), arrowY - size * Math.sin(angle - Math.PI / 6));
     context.lineTo(arrowX - size * Math.cos(angle + Math.PI / 6), arrowY - size * Math.sin(angle + Math.PI / 6));
     context.closePath();
-    context.fillStyle = `rgb(${edge.color.r}, ${edge.color.g}, ${edge.color.b})`;
+    context.fillStyle = colorStyleOnHover;
     context.fill();
   }
 };

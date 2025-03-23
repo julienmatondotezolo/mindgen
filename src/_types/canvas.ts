@@ -136,6 +136,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.None;
       current?: Point;
+      hoveredEdgeId?: string;
       hoveredLayerId?: string;
     }
   | {
@@ -168,6 +169,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.EdgeActive;
       origin?: Point;
+      edgeId?: string;
     }
   | {
       mode: CanvasMode.EdgeEditing;

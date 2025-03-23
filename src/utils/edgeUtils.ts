@@ -685,7 +685,10 @@ function getRoutingType(sourcePosition: HandlePosition, targetPosition: HandlePo
   }
 }
 
-// Get Handle END position from handle start position
+// ============================================================================= //
+// ============= GET HANDLE END POSITION FROM HANDLE START POSITION ============ //
+// ============================================================================= //
+
 export const getHandleEndPosition = ({
   handleStartPosition,
 }: {
@@ -702,3 +705,163 @@ export const getHandleEndPosition = ({
       return HandlePosition.Top;
   }
 };
+
+// ============================================================================= //
+// ================== HELPER FUNCTIONS FOR STEP LINE DETECTION ================= //
+// ============================================================================= //
+
+// Helper function to compute approximate smooth step segments
+const computeSmoothStepSegments = (
+  edge: Edge,
+  sourcePosition: HandlePosition,
+  targetPosition: HandlePosition,
+): Point[] => {
+  const offset = 20;
+  const segments: Point[] = [];
+
+  // Add source point
+  segments.push(edge.start);
+
+  // Calculate source direction
+  let sourceDirX = 0,
+    sourceDirY = 0;
+
+  switch (sourcePosition) {
+    case HandlePosition.Left:
+      sourceDirX = -1;
+      break;
+    case HandlePosition.Right:
+      sourceDirX = 1;
+      break;
+    case HandlePosition.Top:
+      sourceDirY = -1;
+      break;
+    case HandlePosition.Bottom:
+      sourceDirY = 1;
+      break;
+  }
+
+  // Calculate target direction
+  let targetDirX = 0,
+    targetDirY = 0;
+
+  switch (targetPosition) {
+    case HandlePosition.Left:
+      targetDirX = -1;
+      break;
+    case HandlePosition.Right:
+      targetDirX = 1;
+      break;
+    case HandlePosition.Top:
+      targetDirY = -1;
+      break;
+    case HandlePosition.Bottom:
+      targetDirY = 1;
+      break;
+  }
+
+  // Add source handle extension point
+  const sourceOutPoint = {
+    x: edge.start.x + sourceDirX * offset,
+    y: edge.start.y + sourceDirY * offset,
+  };
+
+  segments.push(sourceOutPoint);
+
+  // Add mid points based on handle positions
+  const isSourceHorizontal = sourcePosition === HandlePosition.Left || sourcePosition === HandlePosition.Right;
+  const isTargetHorizontal = targetPosition === HandlePosition.Left || targetPosition === HandlePosition.Right;
+
+  if (isSourceHorizontal && isTargetHorizontal) {
+    // Horizontal to horizontal
+    const midY = (sourceOutPoint.y + edge.end.y) / 2;
+
+    segments.push({ x: sourceOutPoint.x, y: midY });
+    segments.push({ x: edge.end.x + targetDirX * offset, y: midY });
+  } else if (!isSourceHorizontal && !isTargetHorizontal) {
+    // Vertical to vertical
+    const midX = (sourceOutPoint.x + edge.end.x) / 2;
+
+    segments.push({ x: midX, y: sourceOutPoint.y });
+    segments.push({ x: midX, y: edge.end.y + targetDirY * offset });
+  } else if (isSourceHorizontal && !isTargetHorizontal) {
+    // Horizontal to vertical
+    segments.push({ x: sourceOutPoint.x, y: edge.end.y + targetDirY * offset });
+  } else {
+    // Vertical to horizontal
+    segments.push({ x: edge.end.x + targetDirX * offset, y: sourceOutPoint.y });
+  }
+
+  // Add target handle extension point
+  segments.push({
+    x: edge.end.x + targetDirX * offset,
+    y: edge.end.y + targetDirY * offset,
+  });
+
+  // Add target point
+  segments.push(edge.end);
+
+  return segments;
+};
+
+// Helper function to calculate distance from point to line segment
+const distanceToLineSegment = (px: number, py: number, x1: number, y1: number, x2: number, y2: number): number => {
+  const A = px - x1;
+  const B = py - y1;
+  const C = x2 - x1;
+  const D = y2 - y1;
+
+  const dot = A * C + B * D;
+  const lenSq = C * C + D * D;
+  let param = -1;
+
+  if (lenSq !== 0) {
+    param = dot / lenSq;
+  }
+
+  let xx, yy;
+
+  if (param < 0) {
+    xx = x1;
+    yy = y1;
+  } else if (param > 1) {
+    xx = x2;
+    yy = y2;
+  } else {
+    xx = x1 + param * C;
+    yy = y1 + param * D;
+  }
+
+  const dx = px - xx;
+  const dy = py - yy;
+
+  return Math.sqrt(dx * dx + dy * dy);
+};
+
+// Fallback method using approximate line segments
+export function lineSegmentFallback({ edge, point, threshold }: { edge: Edge; point: Point; threshold: number }) {
+  // Create approximate line segments for the smooth step edge
+  const sourcePosition = edge.handleStart || HandlePosition.Top;
+  const targetPosition = edge.handleEnd || HandlePosition.Top;
+
+  // Calculate the key points of the path based on source and target positions
+  const segments = computeSmoothStepSegments(edge, sourcePosition, targetPosition);
+
+  // Check if the point is close to any line segment
+  for (let i = 0; i < segments.length - 1; i++) {
+    const distance = distanceToLineSegment(
+      point.x,
+      point.y,
+      segments[i].x,
+      segments[i].y,
+      segments[i + 1].x,
+      segments[i + 1].y,
+    );
+
+    if (distance <= threshold) {
+      return true;
+    }
+  }
+
+  return false;
+}

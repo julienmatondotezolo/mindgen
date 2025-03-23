@@ -45,7 +45,7 @@ const MindBoard = () => {
   } = useLayerOperations();
 
   // Edge operations
-  const { addEdge, setEdges } = useEdgeOperations();
+  const { addEdge, setEdges, findEdgeNearPoint } = useEdgeOperations();
 
   // Setup canvas on mount
   useEffect(() => {
@@ -152,6 +152,9 @@ const MindBoard = () => {
       // Find handle at current mouse position
       const isPointInHandle = findHandleAtPoint(point);
 
+      // Find edge at current mouse position
+      const edgeNearPoint = findEdgeNearPoint(point);
+
       if (canvasState.mode === CanvasMode.None) {
         // If the layer is active, don't set the hoveredLayerId
         if (layersAtPoint && activeLayers.includes(layersAtPoint.id)) {
@@ -171,6 +174,7 @@ const MindBoard = () => {
         setCanvasState({
           mode: CanvasMode.None,
           hoveredLayerId: layersAtPoint?.id,
+          hoveredEdgeId: edgeNearPoint?.id,
         });
       } else if (canvasState.mode === CanvasMode.Edge) {
         // If the point is in the handle, set the isInHandle to true else set it to false
@@ -285,19 +289,20 @@ const MindBoard = () => {
     },
     [
       camera,
+      canvasRef,
       findLayerAtPoint,
       findHandleNearPoint,
+      findHandleAtPoint,
+      findEdgeNearPoint,
       canvasState,
       renderCanvas,
       activeLayers,
       setCanvasState,
-      findHandleAtPoint,
       findLayersInSelection,
       setActiveLayers,
       setLayers,
       setEdges,
       isDebugMode,
-      canvasRef,
     ],
   );
 
