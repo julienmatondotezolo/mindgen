@@ -1,19 +1,24 @@
-import { CanvasMode, CanvasState, Edge, EdgeShape, HandlePosition } from "@/_types";
+/* eslint-disable no-unused-vars */
+import { Camera, CanvasMode, CanvasState, Edge, EdgeShape, HandlePosition } from "@/_types";
 import { drawEdgeCurvedLine, drawEdgeStepLine, getControlWithCurvature } from "@/utils/edgeUtils";
 
-export const drawEdgeBasedOnType = ({
+export const drawEdgeSelectionTool = ({
   edge,
   context,
   canvasState,
+  theme,
+  camera,
   activeEdgeId,
 }: {
   edge: Edge;
   context: CanvasRenderingContext2D;
   canvasState: CanvasState;
+  theme: string | undefined;
+  camera: Camera;
   activeEdgeId: string[];
 }) => {
   const colorStyleOnHover =
-    canvasState.mode === CanvasMode.None && canvasState.hoveredEdgeId === edge.id && !activeEdgeId.includes(edge.id)
+    canvasState.mode === CanvasMode.None && canvasState.hoveredEdgeId === edge.id
       ? `rgb(${edge.hoverColor.r}, ${edge.hoverColor.g}, ${edge.hoverColor.b})`
       : `rgb(${edge.color.r}, ${edge.color.g}, ${edge.color.b})`;
 

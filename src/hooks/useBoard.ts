@@ -6,7 +6,14 @@ import { drawSelectionRectangle } from "@/components/mindboard/boardRender";
 import { drawShadowEdgeBasedOnType, edgeRender } from "@/components/mindboard/edgeRender";
 import { layerRender } from "@/components/mindboard/layerRenders";
 import { drawShadowLayerFromInserting } from "@/components/mindboard/layerRenders/layerDrawings";
-import { activeLayersAtom, cameraStateAtom, canvasStateAtom, edgesAtomState, layerAtomState } from "@/state";
+import {
+  activeEdgeIdAtom,
+  activeLayersAtom,
+  cameraStateAtom,
+  canvasStateAtom,
+  edgesAtomState,
+  layerAtomState,
+} from "@/state";
 
 export const useBoard = () => {
   const layers = useRecoilValue(layerAtomState);
@@ -14,6 +21,7 @@ export const useBoard = () => {
   const camera = useRecoilValue(cameraStateAtom);
   const canvasState = useRecoilValue(canvasStateAtom);
   const activeLayers = useRecoilValue(activeLayersAtom);
+  const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -160,7 +168,7 @@ export const useBoard = () => {
 
     // Draw edges
     edges.forEach((edge) => {
-      edgeRender({ edge, context, camera, theme, canvasState });
+      edgeRender({ edge, context, camera, theme, canvasState, activeEdgeId });
     });
 
     // Draw shadow edges
@@ -179,7 +187,7 @@ export const useBoard = () => {
 
     // Restore context to clear transformations
     restoreContext(context);
-  }, [layers, edges, activeLayers, theme, camera, canvasState, applyCamera, restoreContext]);
+  }, [theme, applyCamera, edges, canvasState, layers, restoreContext, camera, activeEdgeId, activeLayers]);
 
   return {
     canvasRef,
