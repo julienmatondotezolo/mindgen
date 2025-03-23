@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
 import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition } from "@/_types";
-import { edgesAtomState } from "@/state";
+import { activeEdgeIdAtom, edgesAtomState } from "@/state";
 import {
   edgeSmoothStepPathString,
   getControlWithCurvature,
@@ -15,6 +15,7 @@ import {
 
 export const useEdgeOperations = () => {
   const [edges, setEdges] = useRecoilState(edgesAtomState);
+  const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
   const { theme } = useTheme();
 
   const isPointOnCurvedEdge = useCallback(
@@ -195,6 +196,8 @@ export const useEdgeOperations = () => {
     findEdgeNearPoint,
     edges,
     setEdges,
+    activeEdgeId,
+    setActiveEdgeId,
     addEdge,
   };
 };

@@ -7,20 +7,17 @@ export const DebugPanel = ({
   canvasState,
   camera,
   activeLayers,
-  layers,
+  activeEdgeId,
   isOpen,
   setIsOpen,
 }: {
   canvasState: any;
   camera: any;
   activeLayers: string[];
-  layers: any[];
+  activeEdgeId: string[];
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  // Find active layer objects based on IDs
-  const activeLayerObjects = layers.filter((layer) => activeLayers.includes(layer.id));
-
   const toggleOpen = () => {
     setIsOpen(!isOpen);
   };
@@ -61,34 +58,16 @@ export const DebugPanel = ({
           <div className="mb-3">
             <h3 className="font-bold mb-1">Active Layers ({activeLayers.length})</h3>
             <pre className="bg-gray-50 dark:bg-gray-950 p-2 rounded overflow-auto">
-              {JSON.stringify(activeLayerObjects, null, 2)}
+              {JSON.stringify(activeLayers, null, 2)}
             </pre>
           </div>
 
-          {/* Show detailed layer information when translating */}
-          {canvasState.mode === CanvasMode.Translating && (
-            <div className="mb-3">
-              <h3 className="font-bold mb-1 text-green-600 dark:text-green-400">Moving Layer Details</h3>
-              <pre className="bg-gray-50 dark:bg-gray-950 p-2 rounded overflow-auto border-l-2 border-green-500">
-                <div>Initial Position: {JSON.stringify(canvasState.current)}</div>
-                <div>Initial Bounds: {JSON.stringify(canvasState.initialLayerBounds)}</div>
-                {activeLayerObjects.map((layer) => (
-                  <div key={layer.id} className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <div className="font-semibold">Layer ID: {layer.id}</div>
-                    <div>Type: {layer.type}</div>
-                    <div>
-                      Position: x={layer.x}, y={layer.y}
-                    </div>
-                    <div>
-                      Size: width={layer.width}, height={layer.height}
-                    </div>
-                    {layer.content && <div>Content: {JSON.stringify(layer.content)}</div>}
-                    {layer.style && <div>Style: {JSON.stringify(layer.style)}</div>}
-                  </div>
-                ))}
-              </pre>
-            </div>
-          )}
+          <div className="mb-3">
+            <h3 className="font-bold mb-1">Active Edge ({activeEdgeId.length})</h3>
+            <pre className="bg-gray-50 dark:bg-gray-950 p-2 rounded overflow-auto">
+              {JSON.stringify(activeEdgeId, null, 2)}
+            </pre>
+          </div>
         </div>
       )}
     </div>

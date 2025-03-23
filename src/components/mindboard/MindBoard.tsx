@@ -45,7 +45,7 @@ const MindBoard = () => {
   } = useLayerOperations();
 
   // Edge operations
-  const { addEdge, setEdges, findEdgeNearPoint } = useEdgeOperations();
+  const { addEdge, setEdges, activeEdgeId, setActiveEdgeId, findEdgeNearPoint } = useEdgeOperations();
 
   // Setup canvas on mount
   useEffect(() => {
@@ -62,10 +62,13 @@ const MindBoard = () => {
         case CanvasMode.None:
           // eslint-disable-next-line no-case-declarations
           const clickedLayerIds = findLayerIdsAtPoint(point);
+          // eslint-disable-next-line no-case-declarations
+          const clickedEdgeId = findEdgeNearPoint(point)?.id;
 
           // If no layer our edge is clicked set mode to selection net
           // And clear active layers
-          if (clickedLayerIds.length === 0) {
+          if (clickedLayerIds.length === 0 || !clickedEdgeId) {
+            setActiveEdgeId([]);
             setActiveLayers([]);
             setCanvasState({
               mode: CanvasMode.SelectionNet,
@@ -74,6 +77,12 @@ const MindBoard = () => {
             });
           }
 
+          // If an edge is clicked set the active edge id
+          if (clickedEdgeId) {
+            setActiveEdgeId([clickedEdgeId]);
+          }
+
+          // If a layer click is detected add it to activeLayers state
           if (clickedLayerIds.length > 0) {
             // If holding shift, toggle selection
             if (e.shiftKey) {
@@ -134,14 +143,16 @@ const MindBoard = () => {
     },
     [
       camera,
+      canvasRef,
       canvasState,
       findLayerIdsAtPoint,
-      addLayer,
+      findEdgeNearPoint,
       setCanvasState,
-      layers,
+      addLayer,
       setActiveLayers,
+      setActiveEdgeId,
       activeLayers,
-      canvasRef,
+      layers,
     ],
   );
 
@@ -382,7 +393,7 @@ const MindBoard = () => {
           canvasState={canvasState}
           camera={camera}
           activeLayers={activeLayers}
-          layers={layers}
+          activeEdgeId={activeEdgeId}
           isOpen={isDebugPanelOpen}
           setIsOpen={setIsDebugPanelOpen}
         />
