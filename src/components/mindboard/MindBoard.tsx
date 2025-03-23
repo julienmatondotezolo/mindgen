@@ -59,6 +59,46 @@ const MindBoard = () => {
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
       switch (canvasState.mode) {
+        case CanvasMode.None:
+          // eslint-disable-next-line no-case-declarations
+          const clickedLayerIds = findLayerIdsAtPoint(point);
+
+          // If no layer our edge is clicked set mode to selection net
+          // And clear active layers
+          if (clickedLayerIds.length === 0) {
+            setActiveLayers([]);
+            setCanvasState({
+              mode: CanvasMode.SelectionNet,
+              origin: point,
+              current: point,
+            });
+          }
+
+          if (clickedLayerIds.length > 0) {
+            // If holding shift, toggle selection
+            if (e.shiftKey) {
+              const layerId = clickedLayerIds[0];
+
+              setActiveLayers((prev) =>
+                prev.includes(layerId) ? prev.filter((id) => id !== layerId) : [...prev, layerId],
+              );
+            } else {
+              // Replace selection
+              const layerId = clickedLayerIds[0];
+
+              if (!activeLayers.includes(layerId)) {
+                setActiveLayers([layerId]);
+              }
+
+              // Start translating
+              setCanvasState({
+                mode: CanvasMode.Translating,
+                current: point,
+                initialLayerBounds: getLayerById({ layerId, layers }),
+              });
+            }
+          }
+          break;
         case CanvasMode.Grab:
           // Start panning the canvas
           setCanvasState({
@@ -90,43 +130,6 @@ const MindBoard = () => {
           return;
         default:
           break;
-      }
-
-      // Default behavior for selection mode
-      // Check if we clicked on a layer
-      const clickedLayerIds = findLayerIdsAtPoint(point);
-
-      if (clickedLayerIds.length > 0) {
-        // If holding shift, toggle selection
-        if (e.shiftKey) {
-          const layerId = clickedLayerIds[0];
-
-          setActiveLayers((prev) =>
-            prev.includes(layerId) ? prev.filter((id) => id !== layerId) : [...prev, layerId],
-          );
-        } else {
-          // Replace selection
-          const layerId = clickedLayerIds[0];
-
-          if (!activeLayers.includes(layerId)) {
-            setActiveLayers([layerId]);
-          }
-
-          // Start translating
-          setCanvasState({
-            mode: CanvasMode.Translating,
-            current: point,
-            initialLayerBounds: getLayerById({ layerId, layers }),
-          });
-        }
-      } else {
-        // Clear selection and start selection rectangle
-        setActiveLayers([]);
-        setCanvasState({
-          mode: CanvasMode.SelectionNet,
-          origin: point,
-          current: point,
-        });
       }
     },
     [
