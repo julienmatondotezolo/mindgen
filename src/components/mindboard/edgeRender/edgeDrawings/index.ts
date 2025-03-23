@@ -1,3 +1,4 @@
+export * from "./drawEdgeActiveSelection";
 export * from "./drawEdgeBasedOnType";
-export * from "./drawEdgeSelectionTool";
+export * from "./drawEdgeHandles";
 export * from "./drawShadowEdgeBasedOnType";
