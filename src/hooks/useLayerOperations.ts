@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
-import { Layer, Point } from "@/_types/canvas";
+import { Layer, LayerType, Point } from "@/_types/canvas";
 import { getHandlePosition } from "@/components/mindboard/layerUtils";
 import { activeLayersAtom, layerAtomState } from "@/state";
 
@@ -106,6 +106,7 @@ export const useLayerOperations = () => {
           isInHandle: false,
           handlePosition: handle.position,
           layerId: layer.id,
+          layerType: layer.type,
           coordinates: {
             x: handle.x,
             y: handle.y,
@@ -181,14 +182,14 @@ export const useLayerOperations = () => {
 
   // Add a new layer
   const addLayer = useCallback(
-    (type: string, point: Point) => {
+    (type: LayerType, point: Point) => {
       const newLayer: Layer = {
         id: nanoid(),
         type: type as any,
-        x: point.x - 100, // Center the layer on the click point
-        y: point.y - 30,
+        x: point.x, // Center the layer on the click point
+        y: point.y,
         width: 200,
-        height: type === "RECTANGLE" ? 60 : 200, // Make ellipses and diamonds square
+        height: type === LayerType.Rectangle ? 60 : 200, // Make ellipses and diamonds square
         fill: { r: 77, g: 106, b: 255 },
         value: whiteboardText("typeSomething"),
       };

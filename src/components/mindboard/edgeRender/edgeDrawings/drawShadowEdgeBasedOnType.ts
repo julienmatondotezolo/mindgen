@@ -27,7 +27,6 @@ export const drawShadowEdgeBasedOnType = ({
   });
 
   // Set the color of the shadow edge
-  // const edgeColor = theme === "dark" ? "rgb(180, 191, 204, 0.5)" : "rgb(71, 85, 105, 0.5)";
   const edgeColor = theme === "dark" ? { r: 180, g: 191, b: 204, a: 0.5 } : { r: 71, g: 85, b: 105, a: 0.5 };
 
   // Create a shadow edge with semi-transparent color for the preview

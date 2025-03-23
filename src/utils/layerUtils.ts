@@ -1,5 +1,8 @@
 import { Layer, Point } from "@/_types";
 
+export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Layer[] }): Layer =>
+  layers.filter((layer: Layer) => layer.id == layerId)[0];
+
 export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b: Point) {
   const rect = {
     x: Math.min(a.x, b.x),

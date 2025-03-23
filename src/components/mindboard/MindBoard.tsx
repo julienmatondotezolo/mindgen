@@ -11,6 +11,7 @@ import { getLayerById } from "@/utils/canvasUtils";
 import { Toolbar } from "../whiteboard";
 import { Controls, useCameraControls } from "./Controls";
 import { DebugPanel } from "./DebugPanel";
+import { getShadowsPositionBasedOnPointerPositionInHandle } from "./layerUtils";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
 
 const MindBoard = () => {
@@ -45,7 +46,7 @@ const MindBoard = () => {
   } = useLayerOperations();
 
   // Edge operations
-  const { setEdges } = useEdgeOperations();
+  const { addEdge, setEdges } = useEdgeOperations();
 
   // Setup canvas on mount
   useEffect(() => {
@@ -296,6 +297,18 @@ const MindBoard = () => {
   );
 
   const handleMouseUp = useCallback(() => {
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    const layerId = activeLayers.filter((id) => canvasState.handleInfo?.layerId === id)[0];
+    const layer = getLayerById({ layerId, layers });
+
+    // Return new layer position based on pointer position in handle
+    const { newLayerPosition, newEdgePosition } = getShadowsPositionBasedOnPointerPositionInHandle({
+      layer,
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      handlePosition: canvasState.handleInfo?.handlePosition,
+      canvasState,
+    });
+
     switch (canvasState.mode) {
       case CanvasMode.None:
         fitView(layers);
@@ -312,10 +325,16 @@ const MindBoard = () => {
         });
         break;
       case CanvasMode.EdgeDrawing:
+        if (canvasState.handleInfo) {
+          const addedLayerID = addLayer(canvasState.handleInfo?.layerType, newLayerPosition);
+
+          addEdge({ canvasState, newEdgePosition, toLayerId: addedLayerID });
+        }
+
         setCanvasState({ mode: CanvasMode.None });
         break;
     }
-  }, [canvasState.mode, fitView, layers, setCanvasState]);
+  }, [activeLayers, addEdge, addLayer, canvasState, fitView, layers, setCanvasState]);
 
   // Handle keyboard events
   useBoardKeyboardEvents({

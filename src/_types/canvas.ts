@@ -149,6 +149,7 @@ export type CanvasState =
         isInHandle: boolean;
         handlePosition: HandlePosition;
         layerId: string;
+        layerType: LayerType;
         coordinates: Point;
       };
     }
@@ -160,6 +161,7 @@ export type CanvasState =
         isInHandle: boolean;
         handlePosition: HandlePosition;
         layerId: string;
+        layerType: LayerType;
         coordinates: Point;
       };
     }
