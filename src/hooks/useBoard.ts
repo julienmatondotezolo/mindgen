@@ -2,7 +2,10 @@ import { useTheme } from "next-themes";
 import { useCallback, useRef } from "react";
 import { useRecoilValue } from "recoil";
 
-import { drawSelectionRectangle, drawShadowEdgeBasedOnType, edgeRender, layerRender } from "@/components/mindboard";
+import { drawSelectionRectangle } from "@/components/mindboard/boardRender";
+import { drawShadowEdgeBasedOnType, edgeRender } from "@/components/mindboard/edgeRender";
+import { layerRender } from "@/components/mindboard/layerRenders";
+import { drawShadowLayerFromInserting } from "@/components/mindboard/layerRenders/layerDrawings";
 import { activeLayersAtom, cameraStateAtom, canvasStateAtom, edgesAtomState, layerAtomState } from "@/state";
 
 export const useBoard = () => {
@@ -167,6 +170,9 @@ export const useBoard = () => {
     layers.forEach((layer) => {
       layerRender({ layer, context, camera, activeLayers, theme, canvasState, allLayers: layers });
     });
+
+    // Draw shadow layer from inserting
+    drawShadowLayerFromInserting({ context, theme, canvasState });
 
     // Draw selection rectangle if in selection mode
     drawSelectionRectangle({ context, canvasState });

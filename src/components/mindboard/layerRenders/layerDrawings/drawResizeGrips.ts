@@ -1,6 +1,5 @@
 import { Camera, CanvasMode, CanvasState, Layer } from "@/_types";
-
-import { calculateLayerBoundingBox } from "../../layerUtils";
+import { calculateLayerBoundingBox } from "@/utils/layerUtils";
 
 export const drawResizeGrips = ({
   layer,

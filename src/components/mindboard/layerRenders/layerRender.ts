@@ -30,7 +30,7 @@ export const layerRender = ({
   drawShadowLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
 
   // Draw shapes based on type
-  drawLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
+  drawLayerBasedOnType({ layer, context, theme });
 
   // Draw selection outline for active layers
   drawActiveLayerSelection({ layer, context, camera, activeLayers, canvasState });

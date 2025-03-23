@@ -185,6 +185,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.Inserting;
       layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Diamond | LayerType.Path;
+      current: Point;
     }
   | {
       mode: CanvasMode.LayerSelected;

@@ -1,6 +1,5 @@
 import { Camera, CanvasMode, CanvasState, HandlePosition, Layer } from "@/_types";
-
-import { getHandlePosition } from "../../layerUtils";
+import { getHandlePosition } from "@/utils/layerUtils";
 
 // Animation duration in milliseconds
 // const ANIMATION_DURATION = 50;

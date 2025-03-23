@@ -1,21 +1,17 @@
 /* eslint-disable no-unused-vars */
-import { CanvasState, Layer, LayerType } from "@/_types/canvas";
-import { colorToCss } from "@/utils";
-
-import { drawEllipse, drawRoundedRect } from "../../layerUtils";
+import { Layer, LayerType, Point } from "@/_types/canvas";
+import { colorToCss, drawDiamond, drawEllipse, drawRoundedRect } from "@/utils";
 
 export const drawLayerBasedOnType = ({
   layer,
   context,
   theme,
-  activeLayers,
-  canvasState,
+  newLayerPosition,
 }: {
   layer: Layer;
   context: CanvasRenderingContext2D;
   theme: string | undefined;
-  activeLayers: string[];
-  canvasState: CanvasState;
+  newLayerPosition?: Point;
 }): void => {
   context.fillStyle = `rgb(${layer.fill.r}, ${layer.fill.g}, ${layer.fill.b})`;
 
@@ -30,8 +26,8 @@ export const drawLayerBasedOnType = ({
       // Use cross-browser compatible rounded rectangle drawing
       drawRoundedRect({
         ctx: context,
-        x: layer.x,
-        y: layer.y,
+        x: newLayerPosition ? newLayerPosition.x : layer.x,
+        y: newLayerPosition ? newLayerPosition.y : layer.y,
         width: layer.width,
         height: layer.height,
         fill: layer.fill,
@@ -67,12 +63,15 @@ export const drawLayerBasedOnType = ({
       break;
 
     case LayerType.Diamond:
-      context.beginPath();
-      context.moveTo(layer.x + layer.width / 2, layer.y);
-      context.lineTo(layer.x + layer.width, layer.y + layer.height / 2);
-      context.lineTo(layer.x + layer.width / 2, layer.y + layer.height);
-      context.lineTo(layer.x, layer.y + layer.height / 2);
-      context.closePath();
+      // Draw diamond
+      drawDiamond({
+        ctx: context,
+        x: layer.x,
+        y: layer.y,
+        width: layer.width,
+        height: layer.height,
+        fill: layer.fill,
+      });
 
       // Draw border
       context.strokeStyle = newBorderColor;

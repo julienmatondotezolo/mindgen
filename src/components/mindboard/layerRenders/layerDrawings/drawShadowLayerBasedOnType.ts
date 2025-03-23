@@ -1,12 +1,7 @@
-import { CanvasMode, CanvasState, Layer, LayerType } from "@/_types/canvas";
-import { colorToCss } from "@/utils";
+import { CanvasMode, CanvasState, Layer } from "@/_types/canvas";
+import { getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils";
 
-import {
-  drawDiamond,
-  drawEllipse,
-  drawRoundedRect,
-  getShadowsPositionBasedOnPointerPositionInHandle,
-} from "../../layerUtils";
+import { drawLayerBasedOnType } from "./drawLayerBasedOnType";
 
 export const drawShadowLayerBasedOnType = ({
   layer,
@@ -21,6 +16,10 @@ export const drawShadowLayerBasedOnType = ({
   canvasState: CanvasState;
   activeLayers: string[];
 }): void => {
+  // ============================================================================= //
+  // ===================== SHOW SHADOW WEN HOVERING HANDLE ======================= //
+  // ============================================================================= //
+
   const isEdgeOurEdgeDrawingMode = canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing;
   // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
   const isHandleInActiveLayer = activeLayers.includes(canvasState.handleInfo?.layerId);
@@ -52,79 +51,9 @@ export const drawShadowLayerBasedOnType = ({
     canvasState,
   });
 
-  // Get new border color
-  const newBorderColor = layer.borderColor
-    ? colorToCss(layer.borderColor)
-    : theme === "dark"
-      ? "rgb(180, 191, 204)"
-      : "rgb(71, 85, 105)";
-
   context.globalAlpha = 0.5;
 
-  switch (layer.type) {
-    case LayerType.Rectangle:
-      // Use cross-browser compatible rounded rectangle drawing
-      drawRoundedRect({
-        ctx: context,
-        x: newLayerPosition.x - layer.width / 2,
-        y: newLayerPosition.y - layer.height / 2,
-        width: layer.width,
-        height: layer.height,
-        fill: layer.fill,
-      });
-
-      // Draw border
-      context.strokeStyle = newBorderColor;
-      if (layer.borderWidth) {
-        context.lineWidth = layer.borderWidth;
-        context.stroke();
-      }
-      break;
-
-    case LayerType.Ellipse:
-      // Draw Ellipse
-      drawEllipse({
-        ctx: context,
-        x: newLayerPosition.x,
-        y: newLayerPosition.y,
-        width: layer.width,
-        height: layer.height,
-        fill: layer.fill,
-      });
-
-      // Draw border
-      context.strokeStyle = newBorderColor;
-      if (layer.borderWidth) {
-        context.lineWidth = layer.borderWidth;
-        context.stroke();
-      }
-      break;
-
-    case LayerType.Diamond:
-      // Draw diamond
-      drawDiamond({
-        ctx: context,
-        x: newLayerPosition.x - layer.width / 2,
-        y: newLayerPosition.y - layer.height / 2,
-        width: layer.width,
-        height: layer.height,
-        fill: layer.fill,
-      });
-
-      // Draw border
-      context.strokeStyle = newBorderColor;
-      if (layer.borderWidth) {
-        context.lineWidth = layer.borderWidth;
-        context.stroke();
-      }
-
-      context.fill();
-      break;
-
-    default:
-      console.warn(`Unsupported layer type: ${layer.type}`);
-      break;
-  }
+  drawLayerBasedOnType({ layer, context, theme, newLayerPosition });
 
   context.globalAlpha = 1.0;
 };

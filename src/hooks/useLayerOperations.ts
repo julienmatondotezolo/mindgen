@@ -5,8 +5,8 @@ import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
 import { Layer, LayerType, Point } from "@/_types/canvas";
-import { getHandlePosition } from "@/components/mindboard/layerUtils";
 import { activeLayersAtom, layerAtomState } from "@/state";
+import { getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = () => {
   const [layers, setLayers] = useRecoilState(layerAtomState);

@@ -6,12 +6,11 @@ import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations } from "@
 import { useBoard } from "@/hooks/useBoard";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom } from "@/state";
-import { getLayerById } from "@/utils/canvasUtils";
+import { getLayerById, getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils/layerUtils";
 
 import { Toolbar } from "../whiteboard";
 import { Controls, useCameraControls } from "./Controls";
 import { DebugPanel } from "./DebugPanel";
-import { getShadowsPositionBasedOnPointerPositionInHandle } from "./layerUtils";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
 
 const MindBoard = () => {
@@ -214,6 +213,12 @@ const MindBoard = () => {
           current: isPointInHandle?.isInHandle ? undefined : point,
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           handleInfo: { ...prev.handleInfo, isInHandle: isPointInHandle?.isInHandle ?? false },
+        }));
+      } else if (canvasState.mode === CanvasMode.Inserting) {
+        // Add current point to canvasState.current
+        setCanvasState((prev) => ({
+          ...prev,
+          current: point,
         }));
       } else if (canvasState.mode === CanvasMode.SelectionNet) {
         setCanvasState((prev) => ({

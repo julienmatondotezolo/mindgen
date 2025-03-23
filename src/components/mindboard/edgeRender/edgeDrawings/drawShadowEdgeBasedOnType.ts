@@ -1,7 +1,6 @@
 import { CanvasMode, CanvasState, Edge, EdgeShape, EdgeType } from "@/_types/canvas";
 import { drawEdgeCurvedLine, getHandleEndPosition } from "@/utils/edgeUtils";
-
-import { getShadowsPositionBasedOnPointerPositionInHandle } from "../../layerUtils";
+import { getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils/layerUtils";
 
 export const drawShadowEdgeBasedOnType = ({
   context,
