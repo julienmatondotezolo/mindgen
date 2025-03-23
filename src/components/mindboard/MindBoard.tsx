@@ -234,11 +234,28 @@ const MindBoard = () => {
           return;
         }
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+        // If the point is not in the handle, set the mode to None
         if (!edgeHandleInfo) {
           setCanvasState({
             mode: CanvasMode.None,
           });
           return;
+        }
+
+        const edgeHandlePosition = canvasState.edgeHandleInfo?.handlePosition;
+
+        // If inside the handle and left click is down update the edge
+        if (e.buttons === 1) {
+          // Update the edge start or end based on the handle position
+          // If the handle is on the start, remove the fromLayerId
+          // If the handle is on the end, remove the toLayerId
+          const updatedEdge =
+            edgeHandlePosition === "START"
+              ? { ...edgeHandleInfo.edge, start: point, fromLayerId: undefined }
+              : { ...edgeHandleInfo.edge, end: point, toLayerId: undefined };
+
+          // Update the edge state
+          setEdges((prev) => prev.map((edge) => (edge.id === edgeHandleInfo.edge.id ? updatedEdge : edge)));
         }
       } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
         // If the point is in the handle, set the isInHandle to true else set it to false

@@ -156,7 +156,7 @@ export const useEdgeOperations = () => {
         const dy = point.y - edgeHandle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance <= handleSize) {
+        if (distance <= handleSize + 50) {
           return {
             isInHandle: true,
             handlePosition: edgeHandle.handlePosition as "START" | "END",
