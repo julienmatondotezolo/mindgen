@@ -5,16 +5,12 @@ import { drawEdgeCurvedLine, drawEdgeStepLine, getControlWithCurvature } from "@
 export const drawEdgeActiveSelection = ({
   edge,
   context,
-  canvasState,
   theme,
-  camera,
   activeEdgeId,
 }: {
   edge: Edge;
   context: CanvasRenderingContext2D;
-  canvasState: CanvasState;
   theme: string | undefined;
-  camera: Camera;
   activeEdgeId: string[];
 }) => {
   // If current edge is not in activeEdgeId, then don't draw it
@@ -54,7 +50,7 @@ export const drawEdgeActiveSelection = ({
   }
 
   context.strokeStyle = colorStyle;
-  context.lineWidth = edge.thickness / 2;
+  context.lineWidth = edge.thickness / (theme === "light" ? 3 : 2);
   context.lineCap = "round";
   context.stroke();
 };

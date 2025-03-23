@@ -1,4 +1,4 @@
-import { Edge, HandlePosition, Point } from "@/_types";
+import { Camera, Edge, HandlePosition, Point } from "@/_types";
 
 // EDGE TYPES
 export type GetControlWithCurvatureParams = {
@@ -8,6 +8,38 @@ export type GetControlWithCurvatureParams = {
   x2: number;
   y2: number;
   c: number;
+};
+
+// Draw edge Handles
+// Draw handle
+export const drawHandle = ({
+  context,
+  theme,
+  camera,
+  position,
+  isInHandle,
+}: {
+  context: CanvasRenderingContext2D;
+  theme: string | undefined;
+  camera: Camera;
+  position: Point;
+  isInHandle: boolean;
+}) => {
+  // Handle size
+  const handleSize = 8 / camera.scale;
+
+  // Handle styling
+  const handleFillColor = theme === "light" ? "#a7c0f8" : "#041642";
+
+  // Draw blue inside circle
+  context.beginPath();
+  context.arc(position.x, position.y, handleSize, 0, Math.PI * 2);
+  context.fillStyle = isInHandle ? "#2563eb" : handleFillColor; // Lighter blue background when hovered
+  context.fill();
+  context.strokeStyle = "#2563eb"; // Brighter blue stroke when hovered
+  context.lineWidth = 2 / camera.scale;
+  context.stroke();
+  context.closePath();
 };
 
 // ============================================================================= //

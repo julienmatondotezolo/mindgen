@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Camera, CanvasState, Edge } from "@/_types";
 
-import { drawEdgeBasedOnType, drawEdgeSelectionTool } from "./edgeDrawings";
+import { drawEdgeActiveSelection, drawEdgeBasedOnType, drawEdgeHandles } from "./edgeDrawings";
 
 export const edgeRender = ({
   edge,
@@ -20,5 +20,6 @@ export const edgeRender = ({
 }): void => {
   // Draw shapes based on type
   drawEdgeBasedOnType({ edge, context, canvasState, activeEdgeId });
-  drawEdgeSelectionTool({ edge, context, canvasState, camera, theme, activeEdgeId });
+  drawEdgeActiveSelection({ edge, context, canvasState, camera, theme, activeEdgeId });
+  drawEdgeHandles({ edge, context, canvasState, theme, camera, activeEdgeId });
 };
