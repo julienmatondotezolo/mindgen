@@ -23,7 +23,11 @@ export const drawLayerHandles = ({
   if (activeLayers.includes(layer.id) && canvasState.mode === CanvasMode.SelectionNet) return;
 
   // Only draw handles for active/selected layers && if is not in Translating mode
-  if (activeLayers.includes(layer.id) && activeLayers.length === 1 && canvasState.mode !== CanvasMode.Translating) {
+  // Our Only draw Handles if mode is EdgeEditing && If layer is active inside HandleInfo
+  if (
+    (activeLayers.includes(layer.id) && activeLayers.length === 1 && canvasState.mode !== CanvasMode.Translating) ||
+    (canvasState.mode === CanvasMode.EdgeEditing && canvasState.handleInfo?.layerId === layer.id)
+  ) {
     // Get handle position
     const { handlePositions, handleSize: baseHandleSize } = getHandlePosition(layer);
 
@@ -34,13 +38,17 @@ export const drawLayerHandles = ({
 
       // Check if this handle is being hovered (in Edge mode)
       const isHovered =
-        (canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing) &&
+        (canvasState.mode === CanvasMode.Edge ||
+          canvasState.mode === CanvasMode.EdgeDrawing ||
+          canvasState.mode === CanvasMode.EdgeEditing) &&
         canvasState.handleInfo?.layerId === layer.id &&
         canvasState.handleInfo?.handlePosition === handle.position;
 
       // Check if point is inside handle
       const isInHandle =
-        (canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing) &&
+        (canvasState.mode === CanvasMode.Edge ||
+          canvasState.mode === CanvasMode.EdgeDrawing ||
+          canvasState.mode === CanvasMode.EdgeEditing) &&
         canvasState.handleInfo?.layerId === layer.id &&
         canvasState.handleInfo?.handlePosition === handle.position &&
         canvasState.handleInfo?.isInHandle;
@@ -54,7 +62,14 @@ export const drawLayerHandles = ({
       const handleSize = baseHandleSize * currentScale;
 
       const handleStrokeColor = theme === "light" ? "#fdfdff" : "#050713";
-      const handleHoveredFillColor = theme === "light" ? "#cfdaf2" : "#030f2d";
+      const handleHoveredFillColor =
+        theme === "light"
+          ? canvasState.mode === CanvasMode.EdgeEditing
+            ? "#2564EB78"
+            : "#cfdaf2"
+          : canvasState.mode === CanvasMode.EdgeEditing
+            ? "#2564EB78"
+            : "#030f2d";
       const handleFillColor = theme === "light" ? "#a7c0f8" : "#041642";
 
       // Draw ellipse bigger then the arc with a the handleColor
@@ -79,8 +94,8 @@ export const drawLayerHandles = ({
       context.stroke();
       context.closePath();
 
-      // Only draw arrow if handle is hovered
-      if (isHovered) {
+      // Only draw arrow if handle is hovered and not in EdgeEditing mode
+      if (isHovered && canvasState.mode !== CanvasMode.EdgeEditing) {
         // Draw arrow based on direction
         context.fillStyle = isInHandle ? "#fdfdff" : "#2563eb";
 
