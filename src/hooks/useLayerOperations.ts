@@ -85,12 +85,7 @@ export const useLayerOperations = () => {
   }, []);
 
   // Check if point is near a handle
-  const isPointNearHandle = useCallback((point: Point, layer: Layer, activeLayers: string[]) => {
-    // Only check handles for active/selected layers
-    if (!activeLayers.includes(layer.id) || activeLayers.length !== 1) {
-      return;
-    }
-
+  const isPointNearHandle = useCallback((point: Point, layer: Layer) => {
     // Get handle position (same as in drawLayerHandles.ts)
     const { handlePositions } = getHandlePosition(layer);
 
@@ -133,7 +128,7 @@ export const useLayerOperations = () => {
     (point: Point) => {
       // Only check handles for active layers
       for (const layer of layers) {
-        const handleInfo = isPointNearHandle(point, layer, activeLayers);
+        const handleInfo = isPointNearHandle(point, layer);
 
         // If a handle was found, return its information
         if (handleInfo && handleInfo.layerId) return handleInfo;
@@ -141,7 +136,7 @@ export const useLayerOperations = () => {
 
       return null;
     },
-    [layers, activeLayers, isPointNearHandle],
+    [layers, isPointNearHandle],
   );
 
   // Find a handle at a specific point

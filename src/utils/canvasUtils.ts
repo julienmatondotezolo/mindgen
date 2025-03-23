@@ -57,8 +57,8 @@ export const isValidEdge = (edge: any): boolean =>
   edge.controlPoint1 &&
   edge.controlPoint2;
 
-export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Layer[] }): Layer =>
-  layers.filter((layer: Layer) => layer.id == layerId)[0];
+// export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Layer[] }): Layer =>
+//   layers.filter((layer: Layer) => layer.id == layerId)[0];
 
 export const connectionIdToColor = (connectionId: number) => COLORS[connectionId % COLORS.length];
 
@@ -491,22 +491,22 @@ export function calculateNonOverlappingLayerPosition({
 }
 
 // Helper function to get handle position in X and Y
-export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition | undefined): Point => {
-  const HANDLE_DISTANCE = 30;
+// export const getHandlePosition = (bounds: XYWH, handlePosition: HandlePosition | undefined): Point => {
+//   const HANDLE_DISTANCE = 30;
 
-  switch (handlePosition) {
-    case HandlePosition.Top:
-      return { x: bounds.x + bounds.width / 2, y: bounds.y - HANDLE_DISTANCE };
-    case HandlePosition.Right:
-      return { x: bounds.x + bounds.width + HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
-    case HandlePosition.Bottom:
-      return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height + HANDLE_DISTANCE };
-    case HandlePosition.Left:
-      return { x: bounds.x - HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
-    default:
-      return { x: bounds.x, y: bounds.y };
-  }
-};
+//   switch (handlePosition) {
+//     case HandlePosition.Top:
+//       return { x: bounds.x + bounds.width / 2, y: bounds.y - HANDLE_DISTANCE };
+//     case HandlePosition.Right:
+//       return { x: bounds.x + bounds.width + HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
+//     case HandlePosition.Bottom:
+//       return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height + HANDLE_DISTANCE };
+//     case HandlePosition.Left:
+//       return { x: bounds.x - HANDLE_DISTANCE, y: bounds.y + bounds.height / 2 };
+//     default:
+//       return { x: bounds.x, y: bounds.y };
+//   }
+// };
 
 // Define a utility function to get the opposite handle position
 export const getOppositeHandlePosition = (position: HandlePosition): HandlePosition => {
