@@ -20,6 +20,6 @@ export const edgeRender = ({
 }): void => {
   // Draw shapes based on type
   drawEdgeBasedOnType({ edge, context, canvasState, activeEdgeId });
-  drawEdgeActiveSelection({ edge, context, canvasState, camera, theme, activeEdgeId });
-  drawEdgeHandles({ edge, context, canvasState, theme, camera, activeEdgeId });
+  drawEdgeActiveSelection({ edge, context, theme, activeEdgeId });
+  drawEdgeHandles({ edge, context, theme, camera, activeEdgeId });
 };

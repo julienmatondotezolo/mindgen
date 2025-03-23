@@ -1,17 +1,15 @@
-import { Camera, CanvasState, Edge } from "@/_types";
+import { Camera, Edge } from "@/_types";
 import { drawHandle } from "@/utils/edgeUtils";
 
 export const drawEdgeHandles = ({
   edge,
   context,
-  canvasState,
   theme,
   camera,
   activeEdgeId,
 }: {
   edge: Edge;
   context: CanvasRenderingContext2D;
-  canvasState: CanvasState;
   theme: string | undefined;
   camera: Camera;
   activeEdgeId: string[];

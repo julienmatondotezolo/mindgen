@@ -158,6 +158,11 @@ export type CanvasState =
       mode: CanvasMode.EdgeDrawing;
       origin?: Point;
       current?: Point;
+      edgeHandleInfo?: {
+        handlePosition: "START" | "END";
+        edge: Edge;
+        coordinates: Point;
+      };
       handleInfo?: {
         isInHandle: boolean;
         handlePosition: HandlePosition;
@@ -173,7 +178,13 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.EdgeEditing;
-      editingEdge: { id: string; handlePosition: "START" | "MIDDLE" | "END"; startPoint: Point };
+      current: Point;
+      edgeHandleInfo?: {
+        handlePosition: "START" | "END";
+        edge: Edge;
+        coordinates: Point;
+      };
+      // editingEdge: { id: string; handlePosition: "START" | "MIDDLE" | "END"; startPoint: Point };
     }
   | {
       mode: CanvasMode.Pressing;

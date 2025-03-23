@@ -45,7 +45,8 @@ const MindBoard = () => {
   } = useLayerOperations();
 
   // Edge operations
-  const { addEdge, setEdges, activeEdgeId, setActiveEdgeId, findEdgeNearPoint } = useEdgeOperations();
+  const { addEdge, setEdges, activeEdgeId, setActiveEdgeId, findEdgeNearPoint, findEdgeHandleAtPoint } =
+    useEdgeOperations();
 
   // Setup canvas on mount
   useEffect(() => {
@@ -168,19 +169,28 @@ const MindBoard = () => {
 
       // Find edge at current mouse position
       const edgeNearPoint = findEdgeNearPoint(point);
+      // Find EDGE HANDLE at current mouse position
+      const edgeHandleInfo = findEdgeHandleAtPoint(point);
 
       if (canvasState.mode === CanvasMode.None) {
-        // If the layer is active, don't set the hoveredLayerId
-        if (layersAtPoint && activeLayers.includes(layersAtPoint.id)) {
-          return;
-        }
-
+        // If handle is active and layer is active, set the mode to Edge
         if (handleInfo && activeLayers.includes(handleInfo.layerId)) {
           setCanvasState({
             mode: CanvasMode.Edge,
             origin: handleInfo.coordinates,
             handleInfo,
           });
+          return;
+        }
+
+        // If current pointer is in handle, set mode to Edge drawing
+        if (edgeHandleInfo && activeEdgeId.includes(edgeHandleInfo.edge.id)) {
+          setCanvasState({
+            mode: CanvasMode.EdgeEditing,
+            current: point,
+            edgeHandleInfo,
+          });
+
           return;
         }
 
@@ -218,6 +228,13 @@ const MindBoard = () => {
 
         // If the point is not in the handle, set the mode to None
         if (!handleInfo) {
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+          return;
+        }
+      } else if (canvasState.mode === CanvasMode.EdgeEditing) {
+        if (!edgeHandleInfo) {
           setCanvasState({
             mode: CanvasMode.None,
           });
@@ -308,9 +325,11 @@ const MindBoard = () => {
       findHandleNearPoint,
       findHandleAtPoint,
       findEdgeNearPoint,
+      findEdgeHandleAtPoint,
       canvasState,
       renderCanvas,
       activeLayers,
+      activeEdgeId,
       setCanvasState,
       findLayersInSelection,
       setActiveLayers,

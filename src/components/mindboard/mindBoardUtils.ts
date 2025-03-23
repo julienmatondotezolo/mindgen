@@ -29,6 +29,8 @@ export const getCursorStyle = (mode: CanvasMode): string => {
       return "crosshair";
     case CanvasMode.EdgeDrawing:
       return "move";
+    case CanvasMode.EdgeEditing:
+      return "move";
     default:
       return "default";
   }

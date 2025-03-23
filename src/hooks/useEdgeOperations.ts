@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
 import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition } from "@/_types";
-import { activeEdgeIdAtom, edgesAtomState } from "@/state";
+import { activeEdgeIdAtom, cameraStateAtom, edgesAtomState } from "@/state";
 import {
   edgeSmoothStepPathString,
   getControlWithCurvature,
@@ -16,6 +16,7 @@ import {
 export const useEdgeOperations = () => {
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+  const [camera] = useRecoilState(cameraStateAtom);
   const { theme } = useTheme();
 
   const isPointOnCurvedEdge = useCallback(
@@ -132,6 +133,47 @@ export const useEdgeOperations = () => {
     [isPointOnCurvedEdge, isPointOnSmoothStepEdge],
   );
 
+  // Check if point is near start or end of edge
+  const isPointNearHandle = useCallback(
+    ({ point, edge }: { point: Point; edge: Edge }) => {
+      const startHandleEdge = {
+        ...edge,
+        ...edge.start,
+        handlePosition: "START",
+      };
+
+      const endHandleEdge = {
+        ...edge,
+        ...edge.end,
+        handlePosition: "END",
+      };
+
+      const edgeHandlePosition = [startHandleEdge, endHandleEdge];
+      const handleSize = 8 / camera.scale;
+
+      for (const edgeHandle of edgeHandlePosition) {
+        const dx = point.x - edgeHandle.x;
+        const dy = point.y - edgeHandle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance <= handleSize) {
+          return {
+            handlePosition: edgeHandle.handlePosition as "START" | "END",
+            edge,
+            coordinates: {
+              x: edgeHandle.x,
+              y: edgeHandle.y,
+            },
+          };
+        }
+      }
+
+      // Not near any handle
+      return null;
+    },
+    [camera.scale],
+  );
+
   // Find edge under a point
   const findEdgeAtPoint = useCallback(
     (point: Point): Edge | undefined => edges.find((edge) => isPointOnEdge({ point, edge })),
@@ -143,6 +185,14 @@ export const useEdgeOperations = () => {
     (point: Point): Edge | undefined =>
       edges.find((edge) => isPointOnEdge({ point, edge, proximityThreshold: 25 + edge.thickness })),
     [edges, isPointOnEdge],
+  );
+
+  // Find handle near a point
+  const findEdgeHandleAtPoint = useCallback(
+    (point: Point) =>
+      // Find first edge with a handle near the point
+      edges.map((edge) => isPointNearHandle({ point, edge })).find((handleInfo) => handleInfo !== null),
+    [edges, isPointNearHandle],
   );
 
   // Add a new layer
@@ -194,6 +244,7 @@ export const useEdgeOperations = () => {
   return {
     findEdgeAtPoint,
     findEdgeNearPoint,
+    findEdgeHandleAtPoint,
     edges,
     setEdges,
     activeEdgeId,
