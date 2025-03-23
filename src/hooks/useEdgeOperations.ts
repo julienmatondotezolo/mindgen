@@ -2,10 +2,10 @@ import { Point } from "framer-motion";
 import { nanoid } from "nanoid";
 import { useTheme } from "next-themes";
 import { useCallback } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition } from "@/_types";
-import { activeEdgeIdAtom, cameraStateAtom, edgesAtomState } from "@/state";
+import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition, LayerType } from "@/_types";
+import { activeEdgeIdAtom, cameraStateAtom, canvasStateAtom, edgesAtomState } from "@/state";
 import {
   edgeSmoothStepPathString,
   getControlWithCurvature,
@@ -13,9 +13,24 @@ import {
   lineSegmentFallback,
 } from "@/utils/edgeUtils";
 
+type handleInfo = {
+  isInHandle: boolean;
+  handlePosition: HandlePosition;
+  layerId: string;
+  layerType: LayerType;
+  coordinates: Point;
+} | null;
+
+// type edgeHandleInfo = {
+//   handlePosition: "START" | "END";
+//   edge: Edge;
+//   coordinates: Point;
+// };
+
 export const useEdgeOperations = () => {
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [camera] = useRecoilState(cameraStateAtom);
   const { theme } = useTheme();
 
@@ -136,43 +151,45 @@ export const useEdgeOperations = () => {
   // Check if point is near start or end of edge
   const isPointNearHandle = useCallback(
     ({ point, edge }: { point: Point; edge: Edge }) => {
-      const startHandleEdge = {
-        ...edge,
-        ...edge.start,
-        handlePosition: "START",
-      };
+      if (activeEdgeId.length > 0 && activeEdgeId.includes(edge.id)) {
+        const startHandleEdge = {
+          ...edge,
+          ...edge.start,
+          handlePosition: "START",
+        };
 
-      const endHandleEdge = {
-        ...edge,
-        ...edge.end,
-        handlePosition: "END",
-      };
+        const endHandleEdge = {
+          ...edge,
+          ...edge.end,
+          handlePosition: "END",
+        };
 
-      const edgeHandlePosition = [startHandleEdge, endHandleEdge];
-      const handleSize = 10 / camera.scale;
+        const edgeHandlePosition = [startHandleEdge, endHandleEdge];
+        const handleSize = 10 / camera.scale;
 
-      for (const edgeHandle of edgeHandlePosition) {
-        const dx = point.x - edgeHandle.x;
-        const dy = point.y - edgeHandle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        for (const edgeHandle of edgeHandlePosition) {
+          const dx = point.x - edgeHandle.x;
+          const dy = point.y - edgeHandle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance <= handleSize + 50) {
-          return {
-            isInHandle: true,
-            handlePosition: edgeHandle.handlePosition as "START" | "END",
-            edge,
-            coordinates: {
-              x: edgeHandle.x,
-              y: edgeHandle.y,
-            },
-          };
+          if (distance <= handleSize + 50) {
+            return {
+              isInHandle: true,
+              handlePosition: edgeHandle.handlePosition as "START" | "END",
+              edge,
+              coordinates: {
+                x: edgeHandle.x,
+                y: edgeHandle.y,
+              },
+            };
+          }
         }
       }
 
       // Not near any handle
       return null;
     },
-    [camera.scale],
+    [activeEdgeId, camera.scale],
   );
 
   // Find edge under a point
@@ -190,10 +207,28 @@ export const useEdgeOperations = () => {
 
   // Find handle near a point
   const findEdgeHandleAtPoint = useCallback(
-    (point: Point) =>
-      // Find first edge with a handle near the point
-      edges.map((edge) => isPointNearHandle({ point, edge })).find((handleInfo) => handleInfo !== null),
+    (point: Point) => edges.map((edge) => isPointNearHandle({ point, edge })).find((handleInfo) => handleInfo !== null),
     [edges, isPointNearHandle],
+  );
+
+  // When editing edge lock it to nearest handle
+  const lockEdgeToNearestLayerHandle = useCallback(
+    ({ current, edge, nearestHandle }: { current: Point; edge: Edge; nearestHandle?: handleInfo }): Point => {
+      // If not nearest handle, return current position
+      // If current edge fromLayerId is the same as toLayerId return current position
+      if (!nearestHandle || edge.fromLayerId === edge.toLayerId) {
+        return current;
+      }
+
+      // Update current canvas state and add handleInfo
+      setCanvasState((prev) => ({
+        ...prev,
+        handleInfo: nearestHandle,
+      }));
+      // Lock to nearest handle
+      return nearestHandle.coordinates;
+    },
+    [setCanvasState],
   );
 
   // Add a new layer
@@ -246,6 +281,7 @@ export const useEdgeOperations = () => {
     findEdgeAtPoint,
     findEdgeNearPoint,
     findEdgeHandleAtPoint,
+    lockEdgeToNearestLayerHandle,
     edges,
     setEdges,
     activeEdgeId,

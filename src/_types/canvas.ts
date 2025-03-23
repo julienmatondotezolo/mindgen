@@ -185,6 +185,13 @@ export type CanvasState =
         edge: Edge;
         coordinates: Point;
       };
+      handleInfo?: {
+        isInHandle: boolean;
+        handlePosition: HandlePosition;
+        layerId: string;
+        layerType: LayerType;
+        coordinates: Point;
+      };
       // editingEdge: { id: string; handlePosition: "START" | "MIDDLE" | "END"; startPoint: Point };
     }
   | {

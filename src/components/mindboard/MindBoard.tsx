@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
@@ -45,8 +46,15 @@ const MindBoard = () => {
   } = useLayerOperations();
 
   // Edge operations
-  const { addEdge, setEdges, activeEdgeId, setActiveEdgeId, findEdgeNearPoint, findEdgeHandleAtPoint } =
-    useEdgeOperations();
+  const {
+    addEdge,
+    setEdges,
+    activeEdgeId,
+    setActiveEdgeId,
+    findEdgeNearPoint,
+    findEdgeHandleAtPoint,
+    lockEdgeToNearestLayerHandle,
+  } = useEdgeOperations();
 
   // Setup canvas on mount
   useEffect(() => {
@@ -163,7 +171,8 @@ const MindBoard = () => {
       // Find layers at current mouse position
       const layersAtPoint = findLayerAtPoint(point);
       // Find nearest handle at current mouse position
-      const handleInfo = findHandleNearPoint(point);
+      const isPointNearHandle = findHandleNearPoint(point);
+
       // Find handle at current mouse position
       const isPointInHandle = findHandleAtPoint(point);
 
@@ -174,11 +183,11 @@ const MindBoard = () => {
 
       if (canvasState.mode === CanvasMode.None) {
         // If handle is active and layer is active, set the mode to Edge
-        if (handleInfo && activeLayers.includes(handleInfo.layerId)) {
+        if (isPointNearHandle && activeLayers.includes(isPointNearHandle.layerId)) {
           setCanvasState({
             mode: CanvasMode.Edge,
-            origin: handleInfo.coordinates,
-            handleInfo,
+            origin: isPointNearHandle.coordinates,
+            handleInfo: isPointNearHandle,
           });
           return;
         }
@@ -227,7 +236,7 @@ const MindBoard = () => {
         }
 
         // If the point is not in the handle, set the mode to None
-        if (!handleInfo) {
+        if (!isPointNearHandle) {
           setCanvasState({
             mode: CanvasMode.None,
           });
@@ -235,6 +244,7 @@ const MindBoard = () => {
         }
       } else if (canvasState.mode === CanvasMode.EdgeEditing) {
         // If the point is not in the handle, set the mode to None
+        // And not equal to active edge
         if (!edgeHandleInfo) {
           setCanvasState({
             mode: CanvasMode.None,
@@ -246,13 +256,30 @@ const MindBoard = () => {
 
         // If inside the handle and left click is down update the edge
         if (e.buttons === 1) {
+          // Lock the edge to the nearest handle
+          const lockedPoint = lockEdgeToNearestLayerHandle({
+            current: point,
+            edge: edgeHandleInfo.edge,
+            nearestHandle: isPointNearHandle,
+          });
           // Update the edge start or end based on the handle position
           // If the handle is on the start, remove the fromLayerId
           // If the handle is on the end, remove the toLayerId
+
           const updatedEdge =
             edgeHandlePosition === "START"
-              ? { ...edgeHandleInfo.edge, start: point, fromLayerId: undefined }
-              : { ...edgeHandleInfo.edge, end: point, toLayerId: undefined };
+              ? {
+                ...edgeHandleInfo.edge,
+                start: lockedPoint,
+                fromLayerId: isPointNearHandle?.layerId,
+                handleStart: isPointNearHandle?.handlePosition,
+              }
+              : {
+                ...edgeHandleInfo.edge,
+                end: lockedPoint,
+                toLayerId: isPointNearHandle?.layerId,
+                handleEnd: isPointNearHandle?.handlePosition,
+              };
 
           // Update the edge state
           setEdges((prev) => prev.map((edge) => (edge.id === edgeHandleInfo.edge.id ? updatedEdge : edge)));
@@ -348,10 +375,11 @@ const MindBoard = () => {
       activeLayers,
       activeEdgeId,
       setCanvasState,
+      lockEdgeToNearestLayerHandle,
+      setEdges,
       findLayersInSelection,
       setActiveLayers,
       setLayers,
-      setEdges,
       isDebugMode,
     ],
   );
