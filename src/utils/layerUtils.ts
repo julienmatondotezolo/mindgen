@@ -271,8 +271,8 @@ export const getShadowsPositionBasedOnPointerPositionInHandle = ({
 export const getLayerById = ({ layerId, layers }: { layerId: string; layers: Layer[] }): Layer =>
   layers.filter((layer: Layer) => layer.id == layerId)[0];
 
-// Find intersecting layers with a rectangle
-export function findIntersectingLayersWithRectangle(layers: Layer[], a: Point, b: Point) {
+// Find intersecting layers with a selection
+export function findIntersectingLayersWithSelection(layers: Layer[], a: Point, b: Point) {
   const rect = {
     x: Math.min(a.x, b.x),
     y: Math.min(a.y, b.y),

@@ -56,7 +56,7 @@ import {
   calculateNewLayerPositions,
   calculateNonOverlappingLayerPosition,
   checkPermission,
-  findIntersectingLayersWithRectangle,
+  findIntersectingLayersWithSelection,
   findNearestLayerHandle,
   getHandlePosition,
   getLayerById,
@@ -908,7 +908,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
         current,
       });
 
-      const ids = findIntersectingLayersWithRectangle(layers, origin, current);
+      const ids = findIntersectingLayersWithSelection(layers, origin, current);
 
       setAllActiveLayers(ids);
     },

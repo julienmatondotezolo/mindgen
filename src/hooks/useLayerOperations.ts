@@ -6,7 +6,7 @@ import { useRecoilState } from "recoil";
 
 import { Layer, LayerType, Point } from "@/_types/canvas";
 import { activeLayersAtom, layerAtomState } from "@/state";
-import { getHandlePosition } from "@/utils/layerUtils";
+import { findIntersectingLayersWithSelection, getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = () => {
   const [layers, setLayers] = useRecoilState(layerAtomState);
@@ -163,19 +163,9 @@ export const useLayerOperations = () => {
   // Find layers inside a selection rectangle
   const findLayersInSelection = useCallback(
     (origin: Point, current: Point) => {
-      const x = Math.min(origin.x, current.x);
-      const y = Math.min(origin.y, current.y);
-      const width = Math.abs(origin.x - current.x);
-      const height = Math.abs(origin.y - current.y);
+      const ids = findIntersectingLayersWithSelection(layers, origin, current);
 
-      return layers
-        .filter((layer) => {
-          const layerCenterX = layer.x + layer.width / 2;
-          const layerCenterY = layer.y + layer.height / 2;
-
-          return layerCenterX >= x && layerCenterX <= x + width && layerCenterY >= y && layerCenterY <= y + height;
-        })
-        .map((layer) => layer.id);
+      return ids;
     },
     [layers],
   );
