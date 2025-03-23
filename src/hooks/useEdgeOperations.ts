@@ -149,7 +149,7 @@ export const useEdgeOperations = () => {
       };
 
       const edgeHandlePosition = [startHandleEdge, endHandleEdge];
-      const handleSize = 8 / camera.scale;
+      const handleSize = 10 / camera.scale;
 
       for (const edgeHandle of edgeHandlePosition) {
         const dx = point.x - edgeHandle.x;
@@ -158,6 +158,7 @@ export const useEdgeOperations = () => {
 
         if (distance <= handleSize) {
           return {
+            isInHandle: true,
             handlePosition: edgeHandle.handlePosition as "START" | "END",
             edge,
             coordinates: {

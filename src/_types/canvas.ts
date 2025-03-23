@@ -180,6 +180,7 @@ export type CanvasState =
       mode: CanvasMode.EdgeEditing;
       current: Point;
       edgeHandleInfo?: {
+        isInHandle: boolean;
         handlePosition: "START" | "END";
         edge: Edge;
         coordinates: Point;

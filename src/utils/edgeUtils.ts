@@ -26,7 +26,7 @@ export const drawHandle = ({
   isInHandle: boolean;
 }) => {
   // Handle size
-  const handleSize = 8 / camera.scale;
+  const handleSize = 10 / camera.scale;
 
   // Handle styling
   const handleFillColor = theme === "light" ? "#a7c0f8" : "#041642";

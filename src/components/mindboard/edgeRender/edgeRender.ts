@@ -21,5 +21,5 @@ export const edgeRender = ({
   // Draw shapes based on type
   drawEdgeBasedOnType({ edge, context, canvasState, activeEdgeId });
   drawEdgeActiveSelection({ edge, context, theme, activeEdgeId });
-  drawEdgeHandles({ edge, context, theme, camera, activeEdgeId });
+  drawEdgeHandles({ edge, context, canvasState, theme, camera, activeEdgeId });
 };
