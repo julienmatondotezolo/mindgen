@@ -46,8 +46,8 @@ export const drawLayerBasedOnType = ({
       // Draw Ellipse
       drawEllipse({
         ctx: context,
-        x: layer.x + layer.width / 2,
-        y: layer.y + layer.height / 2,
+        x: newLayerPosition ? newLayerPosition.x + layer.width / 2 : layer.x + layer.width / 2,
+        y: newLayerPosition ? newLayerPosition.y + layer.height / 2 : layer.y + layer.height / 2,
         width: layer.width,
         height: layer.height,
         fill: layer.fill,
@@ -66,8 +66,8 @@ export const drawLayerBasedOnType = ({
       // Draw diamond
       drawDiamond({
         ctx: context,
-        x: layer.x,
-        y: layer.y,
+        x: newLayerPosition ? newLayerPosition.x : layer.x,
+        y: newLayerPosition ? newLayerPosition.y : layer.y,
         width: layer.width,
         height: layer.height,
         fill: layer.fill,
