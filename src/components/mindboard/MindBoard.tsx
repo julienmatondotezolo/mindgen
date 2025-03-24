@@ -259,7 +259,7 @@ const MindBoard = () => {
           // Lock the edge to the nearest handle
           const lockedPoint = lockEdgeToNearestLayerHandle({
             current: point,
-            edge: edgeHandleInfo.edge,
+            edgeHandleInfo,
             nearestHandle: isPointNearHandle,
           });
           // Update the edge start or end based on the handle position

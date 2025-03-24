@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { useCallback } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition, LayerType } from "@/_types";
+import { CanvasMode, CanvasState, Edge, EdgeShape, EdgeType, HandlePosition, LayerType } from "@/_types";
 import { activeEdgeIdAtom, cameraStateAtom, canvasStateAtom, edgesAtomState } from "@/state";
 import {
   edgeSmoothStepPathString,
@@ -21,11 +21,12 @@ type handleInfo = {
   coordinates: Point;
 } | null;
 
-// type edgeHandleInfo = {
-//   handlePosition: "START" | "END";
-//   edge: Edge;
-//   coordinates: Point;
-// };
+type edgeHandleInfo = {
+  isInHandle: boolean;
+  handlePosition: "START" | "END";
+  edge: Edge;
+  coordinates: Point;
+};
 
 export const useEdgeOperations = () => {
   const [edges, setEdges] = useRecoilState(edgesAtomState);
@@ -213,10 +214,25 @@ export const useEdgeOperations = () => {
 
   // When editing edge lock it to nearest handle
   const lockEdgeToNearestLayerHandle = useCallback(
-    ({ current, edge, nearestHandle }: { current: Point; edge: Edge; nearestHandle?: handleInfo }): Point => {
+    ({
+      current,
+      edgeHandleInfo,
+      nearestHandle,
+    }: {
+      current: Point;
+      edgeHandleInfo: edgeHandleInfo;
+      nearestHandle?: handleInfo;
+    }): Point => {
+      const edge = edgeHandleInfo.edge;
+
       // If not nearest handle, return current position
       // If current edge fromLayerId is the same as toLayerId return current position
       if (!nearestHandle || edge.fromLayerId === edge.toLayerId) {
+        setCanvasState({
+          mode: CanvasMode.EdgeEditing,
+          current,
+          edgeHandleInfo,
+        });
         return current;
       }
 
