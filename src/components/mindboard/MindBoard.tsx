@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
-import { CanvasMode } from "@/_types/canvas";
+import { CanvasMode, Edge } from "@/_types/canvas";
 import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
@@ -263,52 +263,54 @@ const MindBoard = () => {
 
         // If inside the handle and left click is down update the edge
         if (e.buttons === 1) {
-          // Lock the edge to the nearest handle
-          const lockedPoint = lockEdgeToNearestLayerHandle({
-            current: point,
-            edgeHandleInfo,
-            nearestHandle: isPointNearHandle,
-            fromLayerId: edgeHandleInfo.edge.fromLayerId,
-            toLayerId: edgeHandleInfo.edge.toLayerId,
-          });
           // Update the edge start or end based on the handle position
           // If the handle is on the start, remove the fromLayerId
           // If the handle is on the end, remove the toLayerId
+          let updatedEdge: Edge;
 
-          const updatedEdge =
-            edgeHandlePosition === "START"
-              ? {
-                ...edgeHandleInfo.edge,
-                start: lockedPoint,
-                fromLayerId: isPointNearHandle?.layerId,
-                handleStart: isPointNearHandle?.handlePosition,
-              }
-              : {
-                ...edgeHandleInfo.edge,
-                end: lockedPoint,
-                toLayerId: isPointNearHandle?.layerId,
-                handleEnd: isPointNearHandle?.handlePosition,
-              };
+          if (edgeHandlePosition === "START") {
+            updatedEdge = {
+              ...edgeHandleInfo.edge,
+              start: isPointNearHandle?.coordinates ?? point,
+              fromLayerId: isPointNearHandle?.layerId,
+              handleStart: isPointNearHandle?.handlePosition,
+            };
+          }
+
+          if (edgeHandlePosition === "END") {
+            updatedEdge = {
+              ...edgeHandleInfo.edge,
+              end: isPointNearHandle?.coordinates ?? point,
+              toLayerId: isPointNearHandle?.layerId,
+              handleEnd: isPointNearHandle?.handlePosition,
+            };
+          }
 
           // Update the edge state
           setEdges((prev) => prev.map((edge) => (edge.id === edgeHandleInfo.edge.id ? updatedEdge : edge)));
         }
       } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
         // Lock the edge to the nearest handle
-        const lockedPoint = lockEdgeToNearestLayerHandle({
+        const lockedEdge = lockEdgeToNearestLayerHandle({
           current: point,
           nearestHandle: isPointNearHandle,
           fromLayerId: activeLayers[0],
-          toLayerId: isPointInHandle?.layerId,
+          toLayerId: "",
         });
-          
+        
+
         // If the point is in the handle, set the isInHandle to true else set it to false
         setCanvasState((prev) => ({
           ...prev,
           mode: CanvasMode.EdgeDrawing,
-          current: lockedPoint ?? point,
-          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-          handleInfo: { ...prev.handleInfo, isInHandle: isPointInHandle?.isInHandle ?? false },
+          current: lockedEdge.point ?? point,
+          handleInfo: { 
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            ...prev.handleInfo,
+            isInHandle: lockedEdge.layerId ? true : false,
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            layerId: lockedEdge.layerId !== "" ? lockedEdge.layerId : activeLayers[0],
+          },
         }));
       } else if (canvasState.mode === CanvasMode.Inserting) {
         // Add current point to canvasState.current
@@ -430,10 +432,19 @@ const MindBoard = () => {
         });
         break;
       case CanvasMode.EdgeDrawing:
-        if (canvasState.handleInfo) {
+        // If the handle is not in the handle, add a new layer
+        if (
+          canvasState.handleInfo?.isInHandle === false ||
+          (canvasState.handleInfo?.layerId === activeLayers[0] && canvasState.handleInfo?.isInHandle === true)
+        ) {
           const addedLayerID = addLayer(canvasState.handleInfo?.layerType, newLayerPosition);
 
           addEdge({ canvasState, newEdgePosition, toLayerId: addedLayerID });
+        }
+
+        // If the handle is in the handle, add an edge to the current layer
+        if (canvasState.handleInfo?.isInHandle === true && canvasState.handleInfo?.layerId !== activeLayers[0]) {
+          addEdge({ canvasState, newEdgePosition, toLayerId: canvasState.handleInfo.layerId });
         }
 
         setCanvasState({ mode: CanvasMode.None });

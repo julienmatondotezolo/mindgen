@@ -2,10 +2,10 @@ import { Point } from "framer-motion";
 import { nanoid } from "nanoid";
 import { useTheme } from "next-themes";
 import { useCallback } from "react";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition, LayerType } from "@/_types";
-import { activeEdgeIdAtom, cameraStateAtom, canvasStateAtom, edgesAtomState } from "@/state";
+import { activeEdgeIdAtom, activeLayersAtom, cameraStateAtom, canvasStateAtom, edgesAtomState } from "@/state";
 import {
   edgeSmoothStepPathString,
   getControlWithCurvature,
@@ -31,6 +31,7 @@ type edgeHandleInfo = {
 export const useEdgeOperations = () => {
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+  const activeLayers = useRecoilValue(activeLayersAtom);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [camera] = useRecoilState(cameraStateAtom);
   const { theme } = useTheme();
@@ -226,10 +227,11 @@ export const useEdgeOperations = () => {
       nearestHandle?: handleInfo;
       fromLayerId: string | undefined;
       toLayerId: string | undefined;
-    }): Point => {
+    }): { point: Point; layerId: string } => {
       // If not nearest handle, return current position
       // If current edge fromLayerId is the same as toLayerId return current position
-      if (!nearestHandle || fromLayerId === toLayerId) {
+      // If nearest handle is on the same layer as the current edge, return current position
+      if (!nearestHandle || nearestHandle.layerId === fromLayerId || fromLayerId === toLayerId) {
         if (edgeHandleInfo)
           setCanvasState((prev) => ({
             ...prev,
@@ -237,7 +239,7 @@ export const useEdgeOperations = () => {
             handleInfo: undefined,
           }));
 
-        return current;
+        return { point: current, layerId: "" };
       }
 
       // Update current canvas state and add handleInfo
@@ -247,7 +249,10 @@ export const useEdgeOperations = () => {
           handleInfo: nearestHandle,
         }));
       // Lock to nearest handle
-      return nearestHandle.coordinates;
+      const lockedPoint = nearestHandle.coordinates;
+      const lockedLayerId = nearestHandle.layerId;
+
+      return { point: lockedPoint, layerId: lockedLayerId };
     },
     [setCanvasState],
   );
@@ -270,7 +275,7 @@ export const useEdgeOperations = () => {
       const newEdge: Edge = {
         id: nanoid(),
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        fromLayerId: canvasState.handleInfo?.layerId,
+        fromLayerId: activeLayers[0],
         toLayerId,
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
         start: canvasState.origin,
@@ -295,7 +300,7 @@ export const useEdgeOperations = () => {
 
       return newEdge.id;
     },
-    [setEdges, theme],
+    [activeLayers, setEdges, theme],
   );
 
   return {
