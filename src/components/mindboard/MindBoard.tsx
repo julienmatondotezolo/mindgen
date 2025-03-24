@@ -76,9 +76,16 @@ const MindBoard = () => {
 
           // If no layer our edge is clicked set mode to selection net
           // And clear active layers
-          if (clickedLayerIds.length === 0 || !clickedEdgeId) {
-            setActiveEdgeId([]);
+          if (clickedLayerIds.length === 0) {
             setActiveLayers([]);
+            setCanvasState({
+              mode: CanvasMode.SelectionNet,
+              origin: point,
+              current: point,
+            });
+          }
+          if (!clickedEdgeId) {
+            setActiveEdgeId([]);
             setCanvasState({
               mode: CanvasMode.SelectionNet,
               origin: point,
