@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
 import { CanvasMode, Edge } from "@/_types/canvas";
-import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations } from "@/hooks";
+import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom } from "@/state";
@@ -27,6 +27,13 @@ const MindBoard = () => {
 
   // Camera controls
   const { fitView } = useCameraControls();
+
+  // CONSTANTS FOR COLLABORATION
+  const channelName = `mindmap-mindboard`;
+  const COLABORATION_ENABLED = true;
+
+  // Use live value for collaborative features
+  useLiveValue({ boardId: channelName, enabled: COLABORATION_ENABLED });
 
   // Initialize canvas navigation with D3 (this handles all zoom and pan operations)
   useCanvasNavigation({ canvasRef });
