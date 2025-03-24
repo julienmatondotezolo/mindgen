@@ -261,6 +261,8 @@ const MindBoard = () => {
             current: point,
             edgeHandleInfo,
             nearestHandle: isPointNearHandle,
+            fromLayerId: edgeHandleInfo.edge.fromLayerId,
+            toLayerId: edgeHandleInfo.edge.toLayerId,
           });
           // Update the edge start or end based on the handle position
           // If the handle is on the start, remove the fromLayerId
@@ -285,11 +287,19 @@ const MindBoard = () => {
           setEdges((prev) => prev.map((edge) => (edge.id === edgeHandleInfo.edge.id ? updatedEdge : edge)));
         }
       } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
+        // Lock the edge to the nearest handle
+        const lockedPoint = lockEdgeToNearestLayerHandle({
+          current: point,
+          nearestHandle: isPointNearHandle,
+          fromLayerId: activeLayers[0],
+          toLayerId: isPointInHandle?.layerId,
+        });
+          
         // If the point is in the handle, set the isInHandle to true else set it to false
         setCanvasState((prev) => ({
           ...prev,
           mode: CanvasMode.EdgeDrawing,
-          current: isPointInHandle?.isInHandle ? undefined : point,
+          current: lockedPoint ?? point,
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           handleInfo: { ...prev.handleInfo, isInHandle: isPointInHandle?.isInHandle ?? false },
         }));
