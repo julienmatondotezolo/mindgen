@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
+import { BoardDataProps } from "@/_types/boardDataProps";
 import { CanvasMode, Edge } from "@/_types/canvas";
 import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
@@ -14,7 +15,8 @@ import { Controls, useCameraControls } from "./Controls";
 import { DebugPanel } from "./DebugPanel";
 import { canvasPointFromEvent, getCursorStyle } from "./mindBoardUtils";
 
-const MindBoard = () => {
+const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
+  const boardId = boardData.id;
   const [camera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
 
@@ -61,7 +63,10 @@ const MindBoard = () => {
 
   // Setup canvas on mount
   useEffect(() => {
+    setLayers(boardData.layers);
+    setEdges(boardData.edges);
     setupCanvas();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setupCanvas]);
 
   // Update mouse event handlers to handle different modes
