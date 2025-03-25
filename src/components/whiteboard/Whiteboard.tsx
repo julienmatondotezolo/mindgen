@@ -217,7 +217,7 @@ const Whiteboard = ({ userMindmapDetails }: { userMindmapDetails: MindMapDetails
 
   const selectEdge = useSelectEdgeElement({ roomId: boardId });
   const unSelectEdge = useUnSelectEdgeElement({ roomId: boardId });
-  const addEdge = useAddEdgeElement({ roomId: boardId });
+  const addEdge = useAddEdge({ roomId: boardId });
   const updateEdge = useUpdateEdge({ roomId: boardId });
   const removeEdge = useRemoveEdge({ roomId: boardId });
 
