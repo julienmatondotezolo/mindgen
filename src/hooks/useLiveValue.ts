@@ -10,7 +10,7 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
   const setLayers = useSetRecoilState(layerAtomState);
   const setEdges = useSetRecoilState(edgesAtomState);
   const { self } = useMembers();
-  const channelName = `${boardId}`;
+  const channelName = `mindmap-${boardId}`;
 
   useChannel(channelName, (message: Message) => {
     if (message.connectionId === self?.connectionId) return;
@@ -22,11 +22,24 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "update") {
-      const updatedLayer: Layer = message.data.updatedLayer;
+      const updatedLayers: Layer[] = message.data.updatedLayer;
 
-      setLayers((prevLayers: Layer[]) =>
-        prevLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)),
-      );
+      setLayers((prevLayers: Layer[]) => {
+        // Create a map of the updated layers for faster lookup
+        const updatedLayersMap = new Map(updatedLayers.map((layer) => [layer.id, layer]));
+
+        // Return a new array with updated layers
+        return prevLayers.map((layer) => {
+          // If this layer has an update, return the updated version
+          const updatedLayer = updatedLayersMap.get(layer.id);
+
+          if (updatedLayer) {
+            return updatedLayer;
+          }
+          // Otherwise keep the original layer
+          return layer;
+        });
+      });
     }
 
     if (message.name === "remove") {
@@ -42,9 +55,24 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "updatedEdge") {
-      const updatedEdge: Edge = message.data.updatedEdge;
+      const updatedEdges: Edge[] = message.data.updatedEdge;
 
-      setEdges((prevEdges: Edge[]) => prevEdges.map((edge) => (edge.id === updatedEdge.id ? updatedEdge : edge)));
+      setEdges((prevEdges: Edge[]) => {
+        // Create a map of the updated edges for faster lookup
+        const updatedEdgesMap = new Map(updatedEdges.map((edge) => [edge.id, edge]));
+
+        // Return a new array with updated edges
+        return prevEdges.map((edge) => {
+          // If this edge has an update, return the updated version
+          const updatedEdge = updatedEdgesMap.get(edge.id);
+
+          if (updatedEdge) {
+            return updatedEdge;
+          }
+          // Otherwise keep the original edge
+          return edge;
+        });
+      });
     }
 
     if (message.name === "removeEdge") {
