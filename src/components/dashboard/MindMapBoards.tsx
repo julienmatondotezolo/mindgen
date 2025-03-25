@@ -216,7 +216,7 @@ function MindMapBoards() {
                 onHoverEnd={() => setHoveredId(null)}
                 className="group relative"
               >
-                <Link href={`/board/${mindmap.id}`}>
+                <Link href={`/mindboard/${mindmap.id}`}>
                   <motion.div
                     className="relative h-full rounded-2xl overflow-hidden bg-white dark:bg-slate-800 shadow-lg transition-all duration-500 group-hover:shadow-2xl"
                     initial={false}

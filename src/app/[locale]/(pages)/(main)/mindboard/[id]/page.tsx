@@ -11,9 +11,10 @@ import { CustomSession } from "@/_types";
 import { NavLeft } from "@/components/header";
 import { MindBoard } from "@/components/mindboard/MindBoard";
 import { Skeleton, Spinner } from "@/components/ui";
+import { uppercaseFirstLetter } from "@/utils";
 
-const MindBoardPage = () => {
-  const boardId = "46cfe746-0754-473d-ab89-ddfbca7e4281";
+const MindBoardPage = ({ params }: { params: { id: string } }) => {
+  const boardId = params.id;
   const session = useSession();
   const safeSession = session ? (session as unknown as CustomSession) : null;
 
@@ -38,7 +39,7 @@ const MindBoardPage = () => {
         <Skeleton className="bg-primary-opaque dark:bg-gray-700 w-full h-full" />
         <Spinner
           className="absolute inset-0 flex items-center justify-center"
-          loadingText={`${text("loading")} board`}
+          loadingText={`${uppercaseFirstLetter(text("loading"))}...`}
         />
       </div>
     );

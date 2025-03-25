@@ -16,7 +16,7 @@ export default async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   // Define protected paths
-  const protectedPaths = ["/dashboard", "/board", "/profile"];
+  const protectedPaths = ["/dashboard", "/board", "/mindboard", "/profile"];
 
   // Handle internationalized paths by removing the locale prefix
   const sanitizedPath = pathname.replace(/^\/(en|fr|nl)\//, "/");
