@@ -382,9 +382,18 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           }),
         );
 
+        // Update initialLayerBounds
         setCanvasState((prev) => ({
           ...prev,
           current: point,
+          initialLayerBounds: {
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            ...prev.initialLayerBounds,
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            x: prev.initialLayerBounds.x + dx,
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            y: prev.initialLayerBounds.y + dy,
+          },
         }));
 
         // Force re-render if in debug mode to update the debug panel
