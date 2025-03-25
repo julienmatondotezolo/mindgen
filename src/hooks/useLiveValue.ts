@@ -13,6 +13,8 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
   const channelName = `mindmap-${boardId}`;
 
   useChannel(channelName, (message: Message) => {
+    // eslint-disable-next-line no-console
+    console.log("message:", message);
     if (message.connectionId === self?.connectionId) return;
 
     if (message.name === "add") {
