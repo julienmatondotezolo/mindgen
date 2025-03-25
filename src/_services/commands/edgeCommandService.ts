@@ -84,7 +84,7 @@ export async function updateEdgeCommand({
   if (!responseUpdateEdge.ok) {
     // Create a structured error object
     const errorData: ApiError = {
-      name: "Add edge",
+      name: "Update edge",
       statusCode: responseUpdateEdge.status,
       message: await responseUpdateEdge.text(),
     };
@@ -127,7 +127,7 @@ export async function deleteEdgeCommand({
   if (!responseDeleteEdge.ok) {
     // Create a structured error object
     const errorData: ApiError = {
-      name: "Add edge",
+      name: "Delete edge",
       statusCode: responseDeleteEdge.status,
       message: await responseDeleteEdge.text(),
     };
@@ -135,5 +135,5 @@ export async function deleteEdgeCommand({
     throw errorData;
   }
 
-  return responseDeleteEdge.json();
+  return responseDeleteEdge.ok;
 }

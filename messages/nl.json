@@ -241,6 +241,9 @@
     "INCORRECT_CURRENT_PASSWORD": "Huidig wachtwoord is incorrect",
     "ERROR_ADD_LAYER_COMMAND": "Fout bij het toevoegen van de layer",
     "ERROR_UPDATE_LAYER_COMMAND": "Fout bij het bijwerken van de layer",
-    "ERROR_DELETE_LAYER_COMMAND": "Fout bij het verwijderen van de layer"
+    "ERROR_DELETE_LAYER_COMMAND": "Fout bij het verwijderen van de layer",
+    "ERROR_ADD_EDGE_COMMAND": "Fout bij het toevoegen van de edge",
+    "ERROR_UPDATE_EDGE_COMMAND": "Fout bij het bijwerken van de edge",
+    "ERROR_DELETE_EDGE_COMMAND": "Fout bij het verwijderen van de edge"
   }
 }

@@ -1,11 +1,11 @@
 import { useSpace } from "@ably/spaces/react";
 import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "react-query";
-import { useRecoilCallback, useRecoilValue } from "recoil";
+import { useRecoilCallback } from "recoil";
 
+import { addEdgeCommand, deleteEdgeCommand, updateEdgeCommand } from "@/_services/commands/edgeCommandService";
 import { addLayerCommand, deleteLayerCommand, updateLayerCommand } from "@/_services/commands/layerCommandService";
 import { CustomSession, Edge, Layer } from "@/_types";
-import { ablyClient } from "@/app/providers";
 import { useMessage } from "@/components/ui/message-provider";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
@@ -86,10 +86,10 @@ export const useAddElement = () => {
   const { showMessage } = useMessage();
 
   const addLayerCommandMutation = useMutation(addLayerCommand, {
-    onError: (error, variables) => {
+    onError: () => {
       showMessage("error", "ERROR_ADD_LAYER_COMMAND");
       // Invalidate the board query to refetch the latest data
-      queryClient.invalidateQueries(["board", variables.boardId]);
+      queryClient.invalidateQueries("board");
     },
   });
 
@@ -276,13 +276,24 @@ export const useUnSelectEdgeElement = ({ roomId }: { roomId: string }) => {
   );
 };
 
-export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
-  const channelName = `${roomId}`;
-  const channel = ablyClient.channels.get(channelName);
+export const useAddEdge = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
+
+  const { showMessage } = useMessage();
+
+  const addEdgeCommandMutation = useMutation(addEdgeCommand, {
+    onError: () => {
+      showMessage("error", "ERROR_ADD_EDGE_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries("board");
+    },
+  });
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ edge }: { edge: Edge }) => {
+      async ({ edge, boardId }: { edge: Edge; boardId: string }) => {
         set(edgesAtomState, (currentEdges: Edge[]) => {
           const addedEdge = [...currentEdges, edge];
 
@@ -290,34 +301,45 @@ export const useAddEdgeElement = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          await channel.publish("addEdge", { newEdge: edge });
+          // await channel.publish("add", { newLayer: layer });
+          addEdgeCommandMutation.mutate({
+            edge,
+            boardId,
+            session: safeSession,
+          });
         } catch (error) {
-          console.error("can't add to channel:", error);
+          showMessage("error", "ERROR_ADD_EDGE_COMMAND");
+          // Invalidate the board query with correct boardId to refetch the latest data
+          queryClient.invalidateQueries("board");
         }
       },
-    [channel],
+    [addEdgeCommandMutation, queryClient, safeSession, showMessage],
   );
 };
 
-export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
-  const edges = useRecoilValue(edgesAtomState);
-  const channelName = `${roomId}`;
-  const channel = ablyClient.channels.get(channelName);
+export const useUpdateEdge = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
+
+  const { showMessage } = useMessage();
+
+  const updateEdgeCommandMutation = useMutation(updateEdgeCommand, {
+    onError: () => {
+      showMessage("error", "ERROR_UPDATE_EDGE_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries("board");
+    },
+  });
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ id, updatedElementEdge }: { id: string; updatedElementEdge: any }) => {
-        set(edgesAtomState, (currentEdges: Edge[]) => {
-          // Create a new array with the updated edge
-          const updatedEdges = currentEdges.map((edge) => {
-            if (edge.id === id) {
-              // If we find a matching id, merge the current edge with the updates
-              const mergedEdge = {
-                ...edge,
-                ...updatedElementEdge,
-              };
-
-              return mergedEdge;
+      async ({ updatedEdge, boardId }: { updatedEdge: Edge; boardId: string }) => {
+        set(edgesAtomState, (currentEdge: Edge[]) => {
+          // Update the layer in the array
+          const updatedEdges = currentEdge.map((edge) => {
+            if (edge.id === updatedEdge.id) {
+              return updatedEdge;
             }
             return edge;
           });
@@ -325,31 +347,40 @@ export const useUpdateEdge = ({ roomId }: { roomId: string }) => {
           return updatedEdges;
         });
 
-        // Publish to channel
         try {
-          const edge = edges.filter((edge: Edge) => edge.id === id);
-
-          const updatedEdge = mergeDeep({
-            target: edge,
-            source: edge,
+          updateEdgeCommandMutation.mutate({
+            edge: updatedEdge,
+            boardId,
+            session: safeSession,
           });
-
-          await channel.publish("updatedEdge", { updatedEdge });
         } catch (error) {
-          // Return original state if publish fails
+          showMessage("error", "ERROR_UPDATE_EDGE_COMMAND");
+          // Invalidate the board query with correct boardId to refetch the latest data
+          queryClient.invalidateQueries("board");
         }
       },
-    [channel, edges],
+    [queryClient, safeSession, showMessage, updateEdgeCommandMutation],
   );
 };
 
-export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
-  const channelName = `${roomId}`;
-  const channel = ablyClient.channels.get(channelName);
+export const useRemoveEdge = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
+
+  const { showMessage } = useMessage();
+
+  const deleteEdgeCommandMutation = useMutation(deleteEdgeCommand, {
+    onError: () => {
+      showMessage("error", "ERROR_DELETE_EDGE_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries("board");
+    },
+  });
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ edgeIdsToDelete }: { edgeIdsToDelete: string[] }) => {
+      async ({ edgeIdsToDelete, boardId }: { edgeIdsToDelete: string[]; boardId: string }) => {
         set(edgesAtomState, (currentEdges: Edge[]) => {
           // Filter out the edges with IDs that should be deleted
           const updatedEdges = currentEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id));
@@ -358,32 +389,39 @@ export const useRemoveEdge = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          await channel.publish("removeEdge", { edgeIdsToDelete });
+          // await channel.publish("add", { newLayer: layer });
+          deleteEdgeCommandMutation.mutate({
+            edgeId: edgeIdsToDelete[0],
+            boardId: "",
+            session: safeSession,
+          });
         } catch (error) {
-          console.error("can't publish to channel:", error);
+          showMessage("error", "ERROR_DELETE_EDGE_COMMAND");
+          // Also invalidate the query here in case the mutation doesn't reach the onError callback
+          queryClient.invalidateQueries("board");
         }
       },
-    [channel],
+    [deleteEdgeCommandMutation, queryClient, safeSession, showMessage],
   );
 };
 
-// Helper function for deep merging objects
-function mergeDeep({ target, source }: { target: any; source: any }) {
-  const output = Object.assign({}, target);
+// // Helper function for deep merging objects
+// function mergeDeep({ target, source }: { target: any; source: any }) {
+//   const output = Object.assign({}, target);
 
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach((key) => {
-      if (isObject(source[key])) {
-        if (!(key in target)) Object.assign(output, { [key]: source[key] });
-        else output[key] = mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(output, { [key]: source[key] });
-      }
-    });
-  }
-  return output[0];
-}
+//   if (isObject(target) && isObject(source)) {
+//     Object.keys(source).forEach((key) => {
+//       if (isObject(source[key])) {
+//         if (!(key in target)) Object.assign(output, { [key]: source[key] });
+//         else output[key] = mergeDeep(target[key], source[key]);
+//       } else {
+//         Object.assign(output, { [key]: source[key] });
+//       }
+//     });
+//   }
+//   return output[0];
+// }
 
-function isObject(item: any) {
-  return item && typeof item === "object" && !Array.isArray(item);
-}
+// function isObject(item: any) {
+//   return item && typeof item === "object" && !Array.isArray(item);
+// }

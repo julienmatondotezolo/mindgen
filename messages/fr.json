@@ -243,6 +243,9 @@
     "INCORRECT_CURRENT_PASSWORD": "Mot de passe actuel incorrect",
     "ERROR_ADD_LAYER_COMMAND": "Erreur lors de l'ajout du layer",
     "ERROR_UPDATE_LAYER_COMMAND": "Erreur lors de la mise à jour du layer",
-    "ERROR_DELETE_LAYER_COMMAND": "Erreur lors de la suppression du layer"
+    "ERROR_DELETE_LAYER_COMMAND": "Erreur lors de la suppression du layer",
+    "ERROR_ADD_EDGE_COMMAND": "Erreur lors de l'ajout de l'edge",
+    "ERROR_UPDATE_EDGE_COMMAND": "Erreur lors de la mise à jour de l'edge",
+    "ERROR_DELETE_EDGE_COMMAND": "Erreur lors de la suppression de l'edge"
   }
 }

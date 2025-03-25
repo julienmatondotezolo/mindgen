@@ -243,6 +243,9 @@
     "INCORRECT_CURRENT_PASSWORD": "Incorrect current password",
     "ERROR_ADD_LAYER_COMMAND": "Error adding layer",
     "ERROR_UPDATE_LAYER_COMMAND": "Error updating layer",
-    "ERROR_DELETE_LAYER_COMMAND": "Error deleting layer"
+    "ERROR_DELETE_LAYER_COMMAND": "Error deleting layer",
+    "ERROR_ADD_EDGE_COMMAND": "Error adding edge",
+    "ERROR_UPDATE_EDGE_COMMAND": "Error updating edge",
+    "ERROR_DELETE_EDGE_COMMAND": "Error deleting edge"
   }
 }

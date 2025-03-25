@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useRecoilState } from "recoil";
 
-import { CanvasMode } from "@/_types/canvas";
+import { CanvasMode, Edge } from "@/_types/canvas";
 import { useCameraControls } from "@/components/mindboard/Controls";
 import { canvasStateAtom } from "@/state";
 
@@ -22,7 +22,7 @@ export const useBoardKeyboardEvents = ({
 
   const { layers, setLayers, activeLayers, setActiveLayers, deleteLayer } = useLayerOperations({ boardId });
 
-  const { setEdges, activeEdgeId, setActiveEdgeId } = useEdgeOperations();
+  const { edges, setEdges, activeEdgeId, setActiveEdgeId, deleteEdge } = useEdgeOperations({ boardId });
 
   const { fitView } = useCameraControls();
 
@@ -45,24 +45,27 @@ export const useBoardKeyboardEvents = ({
 
       // Delete selected layers
       if ((e.key === "Delete" || e.key === "Backspace") && activeLayers.length > 0) {
-        // Delete connected edges
-        setEdges((prev) =>
-          prev.filter(
-            (edge) =>
-              !(edge.fromLayerId && activeLayers.includes(edge.fromLayerId)) &&
-              !(edge.toLayerId && activeLayers.includes(edge.toLayerId)),
-          ),
+        // Find all connected edges to layer
+        const edgesIdsToDelete = edges.filter(
+          (edge: Edge) =>
+            (edge.fromLayerId && activeLayers.includes(edge.fromLayerId)) ||
+            (edge.toLayerId && activeLayers.includes(edge.toLayerId)),
         );
 
+        // Delete edges
+        edgesIdsToDelete.forEach((edgeId: any) => {
+          deleteEdge({ edgeIdsToDelete: [edgeId] });
+        });
+
         // Delete layers
-        deleteLayer({ layerId: activeLayers[0], boardId });
+        deleteLayer({ layerId: activeLayers[0] });
         setActiveLayers([]);
         fitView(layers);
       }
 
       // Delete selected edges
       if (e.key === "Delete" || (e.key === "Backspace" && activeEdgeId.length > 0)) {
-        setEdges((prev) => prev.filter((edge) => !activeEdgeId.includes(edge.id)));
+        deleteEdge({ edgeIdsToDelete: activeEdgeId });
         setActiveEdgeId([]);
       }
 
@@ -107,5 +110,7 @@ export const useBoardKeyboardEvents = ({
     setActiveEdgeId,
     deleteLayer,
     boardId,
+    deleteEdge,
+    edges,
   ]);
 };

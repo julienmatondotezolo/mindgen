@@ -64,7 +64,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     findEdgeNearPoint,
     findEdgeHandleAtPoint,
     lockEdgeToNearestLayerHandle,
-  } = useEdgeOperations();
+  } = useEdgeOperations({ boardId });
 
   // Setup canvas on mount
   useEffect(() => {
@@ -473,14 +473,14 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         break;
       case CanvasMode.Translating:
         // Update the layer
-        updateLayer({ updatedLayer, boardId });
+        updateLayer({ updatedLayer });
         
         setCanvasState({
           mode: CanvasMode.None,
         });
         break;
     }
-  }, [activeLayers, addEdge, addLayer, boardId, canvasState, fitView, layers, setCanvasState, updateLayer]);
+  }, [activeLayers, addEdge, addLayer, canvasState, fitView, layers, setCanvasState, updateLayer]);
 
   // Handle keyboard events
   useBoardKeyboardEvents({

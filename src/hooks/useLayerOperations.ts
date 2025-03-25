@@ -17,6 +17,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   const addLayerCommand = useAddElement();
   const deleteLayerCommand = useRemoveElement();
   const updateLayerCommand = useUpdateElement();
+
   // Check if point is inside layer
   const isPointInLayer = useCallback((point: Point, layer: Layer) => {
     switch (layer.type) {
@@ -183,6 +184,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
         value: whiteboardText("typeSomething"),
       };
 
+      // Add the new layer
       addLayerCommand({ layer: newLayer, boardId });
       // setLayers((prev) => [...prev, newLayer]);
       setActiveLayers([newLayer.id]);
@@ -194,18 +196,18 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
   // Update a layer
   const updateLayer = useCallback(
-    ({ updatedLayer, boardId }: { updatedLayer: Layer; boardId: string }) => {
+    ({ updatedLayer }: { updatedLayer: Layer }) => {
       updateLayerCommand({ updatedLayer, boardId });
     },
-    [updateLayerCommand],
+    [boardId, updateLayerCommand],
   );
 
   // Delete a layer
   const deleteLayer = useCallback(
-    ({ layerId, boardId }: { layerId: string; boardId: string }) => {
+    ({ layerId }: { layerId: string }) => {
       deleteLayerCommand({ layerIdsToDelete: [layerId], boardId });
     },
-    [deleteLayerCommand],
+    [boardId, deleteLayerCommand],
   );
 
   return {

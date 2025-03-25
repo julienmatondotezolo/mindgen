@@ -5,7 +5,16 @@ import { useCallback } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition, LayerType } from "@/_types";
-import { activeEdgeIdAtom, activeLayersAtom, cameraStateAtom, canvasStateAtom, edgesAtomState } from "@/state";
+import {
+  activeEdgeIdAtom,
+  activeLayersAtom,
+  cameraStateAtom,
+  canvasStateAtom,
+  edgesAtomState,
+  useAddEdge,
+  useRemoveEdge,
+  useUpdateEdge,
+} from "@/state";
 import {
   edgeSmoothStepPathString,
   getControlWithCurvature,
@@ -28,13 +37,18 @@ type edgeHandleInfo = {
   coordinates: Point;
 };
 
-export const useEdgeOperations = () => {
+export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
   const activeLayers = useRecoilValue(activeLayersAtom);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [camera] = useRecoilState(cameraStateAtom);
   const { theme } = useTheme();
+
+  // Edge commands
+  const addEdgeCommand = useAddEdge();
+  const updateEdgeCommand = useUpdateEdge();
+  const deleteEdgeCommand = useRemoveEdge();
 
   const isPointOnCurvedEdge = useCallback(
     ({ point, edge, proximityThreshold }: { point: Point; edge: Edge; proximityThreshold?: number }) => {
@@ -296,11 +310,28 @@ export const useEdgeOperations = () => {
           getHandleEndPosition({ handleStartPosition: canvasState.handleInfo?.handlePosition }),
       };
 
-      setEdges((prev) => [...prev, newEdge]);
+      // Add the new edge
+      addEdgeCommand({ edge: newEdge, boardId });
 
       return newEdge.id;
     },
-    [activeLayers, setEdges, theme],
+    [activeLayers, addEdgeCommand, boardId, theme],
+  );
+
+  // Update an edge
+  const updateEdge = useCallback(
+    ({ updatedEdge }: { updatedEdge: Edge }) => {
+      updateEdgeCommand({ updatedEdge, boardId });
+    },
+    [boardId, updateEdgeCommand],
+  );
+
+  // Delete an edge
+  const deleteEdge = useCallback(
+    ({ edgeIdsToDelete }: { edgeIdsToDelete: string[] }) => {
+      deleteEdgeCommand({ edgeIdsToDelete, boardId });
+    },
+    [boardId, deleteEdgeCommand],
   );
 
   return {
@@ -313,5 +344,7 @@ export const useEdgeOperations = () => {
     activeEdgeId,
     setActiveEdgeId,
     addEdge,
+    updateEdge,
+    deleteEdge,
   };
 };
