@@ -6,6 +6,7 @@ import { BoardDataProps } from "@/_types/boardDataProps";
 import { CanvasMode, Edge } from "@/_types/canvas";
 import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
+import { useBoardRefresh } from "@/hooks/useBoardRefresh";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom } from "@/state";
 import { getLayerById, getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils/layerUtils";
@@ -32,6 +33,9 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
   // Use live value for collaborative features
   useLiveValue({ boardId });
+
+  // Subscribe to board query cache changes
+  useBoardRefresh({ boardId });
 
   // Initialize canvas navigation with D3 (this handles all zoom and pan operations)
   useCanvasNavigation({ canvasRef });
