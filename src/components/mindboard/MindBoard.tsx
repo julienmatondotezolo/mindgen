@@ -48,6 +48,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     findLayerIdsAtPoint,
     findLayersInSelection,
     addLayer,
+    updateLayer,
     layers,
     setLayers,
     activeLayers,
@@ -351,6 +352,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         const dx = point.x - canvasState.current!.x;
         const dy = point.y - canvasState.current!.y;
 
+        // Update layers
         setLayers((prev) =>
           prev.map((layer) => {
             if (activeLayers.includes(layer.id)) {
@@ -428,20 +430,16 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       canvasState,
     });
 
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    // get the initialLayerBounds
+    const updatedLayer = canvasState.initialLayerBounds;
+
     switch (canvasState.mode) {
       case CanvasMode.None:
         fitView(layers);
         break;
       case CanvasMode.Grab:
         setCanvasState({ mode: CanvasMode.Grab });
-        break;
-      case CanvasMode.SelectionNet:
-        setCanvasState({ mode: CanvasMode.None });
-        break;
-      case CanvasMode.Translating:
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
         break;
       case CanvasMode.EdgeDrawing:
         // If the handle is not in the handle, add a new layer
@@ -461,8 +459,19 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
         setCanvasState({ mode: CanvasMode.None });
         break;
+      case CanvasMode.SelectionNet:
+        setCanvasState({ mode: CanvasMode.None });
+        break;
+      case CanvasMode.Translating:
+        // Update the layer
+        updateLayer({ updatedLayer, boardId });
+        
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+        break;
     }
-  }, [activeLayers, addEdge, addLayer, canvasState, fitView, layers, setCanvasState]);
+  }, [activeLayers, addEdge, addLayer, boardId, canvasState, fitView, layers, setCanvasState, updateLayer]);
 
   // Handle keyboard events
   useBoardKeyboardEvents({

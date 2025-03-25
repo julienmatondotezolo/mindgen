@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
 import { Layer, LayerType, Point } from "@/_types/canvas";
-import { activeLayersAtom, layerAtomState, useAddElement, useRemoveElement } from "@/state";
+import { activeLayersAtom, layerAtomState, useAddElement, useRemoveElement, useUpdateElement } from "@/state";
 import { findIntersectingLayersWithSelection, getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = ({ boardId }: { boardId: string }) => {
@@ -16,7 +16,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   // Layer commands
   const addLayerCommand = useAddElement();
   const deleteLayerCommand = useRemoveElement();
-
+  const updateLayerCommand = useUpdateElement();
   // Check if point is inside layer
   const isPointInLayer = useCallback((point: Point, layer: Layer) => {
     switch (layer.type) {
@@ -192,6 +192,14 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     [whiteboardText, addLayerCommand, boardId, setActiveLayers],
   );
 
+  // Update a layer
+  const updateLayer = useCallback(
+    ({ updatedLayer, boardId }: { updatedLayer: Layer; boardId: string }) => {
+      updateLayerCommand({ updatedLayer, boardId });
+    },
+    [updateLayerCommand],
+  );
+
   // Delete a layer
   const deleteLayer = useCallback(
     ({ layerId, boardId }: { layerId: string; boardId: string }) => {
@@ -209,6 +217,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     findHandleAtPoint,
     findLayersInSelection,
     addLayer,
+    updateLayer,
     deleteLayer,
     layers,
     setLayers,

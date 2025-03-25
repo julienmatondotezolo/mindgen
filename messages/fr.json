@@ -242,6 +242,7 @@
     "ERROR_PASSWORD_CHANGE": "Erreur lors de la modification du mot de passe",
     "INCORRECT_CURRENT_PASSWORD": "Mot de passe actuel incorrect",
     "ERROR_ADD_LAYER_COMMAND": "Erreur lors de l'ajout du layer",
+    "ERROR_UPDATE_LAYER_COMMAND": "Erreur lors de la mise à jour du layer",
     "ERROR_DELETE_LAYER_COMMAND": "Erreur lors de la suppression du layer"
   }
 }

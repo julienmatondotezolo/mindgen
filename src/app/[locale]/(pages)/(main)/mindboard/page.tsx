@@ -21,7 +21,7 @@ const MindBoardPage = () => {
 
   // Fetch mindmap data only on initial page load
   const { data: boardData, isLoading } = useQuery(
-    ["mindmap", boardId],
+    ["board", boardId],
     () => getMindmapById({ session: safeSession, mindmapId: boardId }),
     {
       refetchOnWindowFocus: false,

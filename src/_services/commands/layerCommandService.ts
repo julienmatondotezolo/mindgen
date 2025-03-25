@@ -84,7 +84,7 @@ export async function updateLayerCommand({
   if (!responseUpdateLayer.ok) {
     // Create a structured error object
     const errorData: ApiError = {
-      name: "Add layer",
+      name: "Update layer",
       statusCode: responseUpdateLayer.status,
       message: await responseUpdateLayer.text(),
     };
@@ -127,7 +127,7 @@ export async function deleteLayerCommand({
   if (!responseDeleteLayer.ok) {
     // Create a structured error object
     const errorData: ApiError = {
-      name: "Add layer",
+      name: "Delete layer",
       statusCode: responseDeleteLayer.status,
       message: await responseDeleteLayer.text(),
     };
@@ -135,5 +135,5 @@ export async function deleteLayerCommand({
     throw errorData;
   }
 
-  return responseDeleteLayer.json();
+  return responseDeleteLayer.ok;
 }

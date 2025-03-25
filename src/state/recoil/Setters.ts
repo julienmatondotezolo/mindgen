@@ -1,7 +1,6 @@
 import { useSpace } from "@ably/spaces/react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { useRecoilCallback, useRecoilValue } from "recoil";
 
 import { addLayerCommand, deleteLayerCommand, updateLayerCommand } from "@/_services/commands/layerCommandService";
@@ -82,14 +81,15 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
 export const useAddElement = () => {
   const session = useSession();
   const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
 
   const { showMessage } = useMessage();
 
-  const responsText = useTranslations("ResponseMesssagesCode");
-
   const addLayerCommandMutation = useMutation(addLayerCommand, {
-    onError: () => {
-      showMessage("error", responsText("ERROR_ADD_LAYER_COMMAND"));
+    onError: (error, variables) => {
+      showMessage("error", "ERROR_ADD_LAYER_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries(["board", variables.boardId]);
     },
   });
 
@@ -110,30 +110,33 @@ export const useAddElement = () => {
             session: safeSession,
           });
         } catch (error) {
-          showMessage("error", responsText("ERROR_ADD_LAYER_COMMAND"));
+          showMessage("error", "ERROR_ADD_LAYER_COMMAND");
+          // Invalidate the board query with correct boardId to refetch the latest data
+          queryClient.invalidateQueries("board");
         }
       },
-    [addLayerCommandMutation, responsText, safeSession, showMessage],
+    [addLayerCommandMutation, safeSession, showMessage, queryClient],
   );
 };
 
 export const useUpdateElement = () => {
   const session = useSession();
   const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
 
   const { showMessage } = useMessage();
 
-  const responsText = useTranslations("ResponseMesssagesCode");
-
   const updateLayerCommandMutation = useMutation(updateLayerCommand, {
     onError: () => {
-      showMessage("error", responsText("ERROR_UPDATE_LAYER_COMMAND"));
+      showMessage("error", "ERROR_UPDATE_LAYER_COMMAND");
+      // Invalidate the board query with correct boardId to refetch the latest data
+      queryClient.invalidateQueries("board");
     },
   });
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ updatedLayer, boardId }: { id: string; updatedLayer: Layer; boardId: string }) => {
+      async ({ updatedLayer, boardId }: { updatedLayer: Layer; boardId: string }) => {
         set(layerAtomState, (currentLayers: Layer[]) => {
           // Update the layer in the array
           const updatedLayers = currentLayers.map((layer) => {
@@ -149,28 +152,32 @@ export const useUpdateElement = () => {
         try {
           // await channel.publish("add", { newLayer: layer });
           updateLayerCommandMutation.mutate({
+            layer: updatedLayer,
             boardId,
             session: safeSession,
           });
         } catch (error) {
-          showMessage("error", responsText("ERROR_UPDATE_LAYER_COMMAND"));
+          showMessage("error", "ERROR_UPDATE_LAYER_COMMAND");
+          // Invalidate the board query with correct boardId to refetch the latest data
+          queryClient.invalidateQueries("board");
         }
       },
-    [responsText, safeSession, showMessage, updateLayerCommandMutation],
+    [safeSession, showMessage, updateLayerCommandMutation, queryClient],
   );
 };
 
 export const useRemoveElement = () => {
   const session = useSession();
   const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
 
   const { showMessage } = useMessage();
 
-  const responsText = useTranslations("ResponseMesssagesCode");
-
   const deleteLayerCommandMutation = useMutation(deleteLayerCommand, {
     onError: () => {
-      showMessage("error", responsText("ERROR_DELETE_LAYER_COMMAND"));
+      showMessage("error", "ERROR_DELETE_LAYER_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries("board");
     },
   });
 
@@ -192,10 +199,12 @@ export const useRemoveElement = () => {
             session: safeSession,
           });
         } catch (error) {
-          showMessage("error", responsText("ERROR_DELETE_LAYER_COMMAND"));
+          showMessage("error", "ERROR_DELETE_LAYER_COMMAND");
+          // Also invalidate the query here in case the mutation doesn't reach the onError callback
+          queryClient.invalidateQueries("board");
         }
       },
-    [deleteLayerCommandMutation, responsText, safeSession, showMessage],
+    [deleteLayerCommandMutation, safeSession, showMessage, queryClient],
   );
 };
 

@@ -242,6 +242,7 @@
     "ERROR_PASSWORD_CHANGE": "Error changing password",
     "INCORRECT_CURRENT_PASSWORD": "Incorrect current password",
     "ERROR_ADD_LAYER_COMMAND": "Error adding layer",
+    "ERROR_UPDATE_LAYER_COMMAND": "Error updating layer",
     "ERROR_DELETE_LAYER_COMMAND": "Error deleting layer"
   }
 }
