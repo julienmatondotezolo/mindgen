@@ -1,4 +1,4 @@
-export * from "./boardDataProps";
+export * from "./BoardDataProps";
 export * from "./canvas";
 export * from "./ChatMessageProps";
 export * from "./CustomNodeProps";
