@@ -392,7 +392,7 @@ export const useRemoveEdge = () => {
           // await channel.publish("add", { newLayer: layer });
           deleteEdgeCommandMutation.mutate({
             edgeId: edgeIdsToDelete[0],
-            boardId: "",
+            boardId,
             session: safeSession,
           });
         } catch (error) {
