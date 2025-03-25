@@ -204,8 +204,8 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
   // Delete a layer
   const deleteLayer = useCallback(
-    ({ layerId }: { layerId: string }) => {
-      deleteLayerCommand({ layerIdsToDelete: [layerId], boardId });
+    ({ layerIdsToDelete }: { layerIdsToDelete: string[] }) => {
+      deleteLayerCommand({ layerIdsToDelete, boardId });
     },
     [boardId, deleteLayerCommand],
   );

@@ -53,12 +53,10 @@ export const useBoardKeyboardEvents = ({
         );
 
         // Delete edges
-        edgesIdsToDelete.forEach((edgeId: any) => {
-          deleteEdge({ edgeIdsToDelete: [edgeId] });
-        });
+        deleteEdge({ edgeIdsToDelete: edgesIdsToDelete.map((edge) => edge.id) });
 
         // Delete layers
-        deleteLayer({ layerId: activeLayers[0] });
+        deleteLayer({ layerIdsToDelete: activeLayers });
         setActiveLayers([]);
         fitView(layers);
       }
