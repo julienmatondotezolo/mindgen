@@ -473,7 +473,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         break;
       case CanvasMode.Translating:
         // Update the layer
-        updateLayer({ updatedLayer });
+        updateLayer({ updatedLayers: [updatedLayer] });
         
         setCanvasState({
           mode: CanvasMode.None,

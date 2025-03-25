@@ -320,8 +320,8 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
 
   // Update an edge
   const updateEdge = useCallback(
-    ({ updatedEdge }: { updatedEdge: Edge }) => {
-      updateEdgeCommand({ updatedEdge, boardId });
+    ({ updatedEdges }: { updatedEdges: Edge[] }) => {
+      updateEdgeCommand({ updatedEdges, boardId });
     },
     [boardId, updateEdgeCommand],
   );

@@ -196,8 +196,8 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
   // Update a layer
   const updateLayer = useCallback(
-    ({ updatedLayer }: { updatedLayer: Layer }) => {
-      updateLayerCommand({ updatedLayer, boardId });
+    ({ updatedLayers }: { updatedLayers: Layer[] }) => {
+      updateLayerCommand({ updatedLayers, boardId });
     },
     [boardId, updateLayerCommand],
   );

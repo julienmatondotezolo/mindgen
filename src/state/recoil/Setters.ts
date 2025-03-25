@@ -136,23 +136,28 @@ export const useUpdateElement = () => {
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ updatedLayer, boardId }: { updatedLayer: Layer; boardId: string }) => {
+      async ({ updatedLayers, boardId }: { updatedLayers: Layer[]; boardId: string }) => {
         set(layerAtomState, (currentLayers: Layer[]) => {
-          // Update the layer in the array
-          const updatedLayers = currentLayers.map((layer) => {
-            if (layer.id === updatedLayer.id) {
+          // Create a map of the updated layers for faster lookup
+          const updatedLayersMap = new Map(updatedLayers.map((layer) => [layer.id, layer]));
+
+          // Return a new array with updated layers
+          return currentLayers.map((layer) => {
+            // If this layer has an update, return the updated version
+            const updatedLayer = updatedLayersMap.get(layer.id);
+
+            if (updatedLayer) {
               return updatedLayer;
             }
+            // Otherwise keep the original layer
             return layer;
           });
-
-          return updatedLayers;
         });
 
         try {
           // await channel.publish("add", { newLayer: layer });
           updateLayerCommandMutation.mutate({
-            layer: updatedLayer,
+            layers: updatedLayers,
             boardId,
             session: safeSession,
           });
@@ -194,7 +199,7 @@ export const useRemoveElement = () => {
         try {
           // await channel.publish("add", { newLayer: layer });
           deleteLayerCommandMutation.mutate({
-            layerId: layerIdsToDelete[0],
+            layerIdsToDelete,
             boardId,
             session: safeSession,
           });
@@ -334,22 +339,27 @@ export const useUpdateEdge = () => {
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ updatedEdge, boardId }: { updatedEdge: Edge; boardId: string }) => {
-        set(edgesAtomState, (currentEdge: Edge[]) => {
-          // Update the layer in the array
-          const updatedEdges = currentEdge.map((edge) => {
-            if (edge.id === updatedEdge.id) {
+      async ({ updatedEdges, boardId }: { updatedEdges: Edge[]; boardId: string }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          // Create a map of the updated edges for faster lookup
+          const updatedEdgesMap = new Map(updatedEdges.map((edge) => [edge.id, edge]));
+
+          // Return a new array with updated edges
+          return currentEdges.map((edge) => {
+            // If this edge has an update, return the updated version
+            const updatedEdge = updatedEdgesMap.get(edge.id);
+
+            if (updatedEdge) {
               return updatedEdge;
             }
+            // Otherwise keep the original edge
             return edge;
           });
-
-          return updatedEdges;
         });
 
         try {
           updateEdgeCommandMutation.mutate({
-            edge: updatedEdge,
+            edges: updatedEdges,
             boardId,
             session: safeSession,
           });
@@ -391,7 +401,7 @@ export const useRemoveEdge = () => {
         try {
           // await channel.publish("add", { newLayer: layer });
           deleteEdgeCommandMutation.mutate({
-            edgeId: edgeIdsToDelete[0],
+            edgeIdsToDelete,
             boardId,
             session: safeSession,
           });

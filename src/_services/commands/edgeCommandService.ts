@@ -54,11 +54,11 @@ export async function addEdgeCommand({
 export async function updateEdgeCommand({
   session,
   boardId,
-  edge,
+  edges,
 }: {
   session: CustomSession | null;
   boardId: string;
-  edge: Edge;
+  edges: Edge[];
 }): Promise<any> {
   if (!session?.data.session) {
     const noSession: ApiError = {
@@ -70,7 +70,7 @@ export async function updateEdgeCommand({
     throw noSession;
   }
 
-  const responseUpdateEdge: Response = await fetch(baseUrl + `/mindmap/${boardId}/edge/${edge.id}`, {
+  const responseUpdateEdge: Response = await fetch(baseUrl + `/mindmap/${boardId}/edge`, {
     method: "PUT",
     cache: "no-store",
     headers: {
@@ -78,7 +78,7 @@ export async function updateEdgeCommand({
       Authorization: `Bearer ${session.data.session.user.token}}`,
       "ngrok-skip-browser-warning": "1",
     },
-    body: JSON.stringify(edge),
+    body: JSON.stringify(edges),
   });
 
   if (!responseUpdateEdge.ok) {
@@ -98,11 +98,11 @@ export async function updateEdgeCommand({
 export async function deleteEdgeCommand({
   session,
   boardId,
-  edgeId,
+  edgeIdsToDelete,
 }: {
   session: CustomSession | null;
   boardId: string;
-  edgeId: string;
+  edgeIdsToDelete: string[];
 }): Promise<any> {
   if (!session?.data.session) {
     const noSession: ApiError = {
@@ -114,7 +114,7 @@ export async function deleteEdgeCommand({
     throw noSession;
   }
 
-  const responseDeleteEdge: Response = await fetch(baseUrl + `/mindmap/${boardId}/edge/${edgeId}`, {
+  const responseDeleteEdge: Response = await fetch(baseUrl + `/mindmap/${boardId}/edge`, {
     method: "DELETE",
     cache: "no-store",
     headers: {
@@ -122,6 +122,7 @@ export async function deleteEdgeCommand({
       Authorization: `Bearer ${session.data.session.user.token}}`,
       "ngrok-skip-browser-warning": "1",
     },
+    body: JSON.stringify(edgeIdsToDelete),
   });
 
   if (!responseDeleteEdge.ok) {

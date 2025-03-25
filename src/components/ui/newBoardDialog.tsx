@@ -184,7 +184,7 @@ const NewBoardDialog: FC<MindMapDialogProps> = ({ open, setIsOpen }) => {
       const response = await data;
 
       if (response.id !== "") {
-        router.push(`/board/${data.id}`);
+        router.push(`/mindboard/${data.id}`);
         // Invalidate the query to cause a re-fetch
         queryClient.invalidateQueries("userMindmap");
       }

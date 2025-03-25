@@ -54,11 +54,11 @@ export async function addLayerCommand({
 export async function updateLayerCommand({
   session,
   boardId,
-  layer,
+  layers,
 }: {
   session: CustomSession | null;
   boardId: string;
-  layer: Layer;
+  layers: Layer[];
 }): Promise<any> {
   if (!session?.data.session) {
     const noSession: ApiError = {
@@ -70,7 +70,7 @@ export async function updateLayerCommand({
     throw noSession;
   }
 
-  const responseUpdateLayer: Response = await fetch(baseUrl + `/mindmap/${boardId}/layer/${layer.id}`, {
+  const responseUpdateLayer: Response = await fetch(baseUrl + `/mindmap/${boardId}/layer`, {
     method: "PUT",
     cache: "no-store",
     headers: {
@@ -78,7 +78,7 @@ export async function updateLayerCommand({
       Authorization: `Bearer ${session.data.session.user.token}}`,
       "ngrok-skip-browser-warning": "1",
     },
-    body: JSON.stringify(layer),
+    body: JSON.stringify(layers),
   });
 
   if (!responseUpdateLayer.ok) {
@@ -98,11 +98,11 @@ export async function updateLayerCommand({
 export async function deleteLayerCommand({
   session,
   boardId,
-  layerId,
+  layerIdsToDelete,
 }: {
   session: CustomSession | null;
   boardId: string;
-  layerId: string;
+  layerIdsToDelete: string[];
 }): Promise<any> {
   if (!session?.data.session) {
     const noSession: ApiError = {
@@ -114,7 +114,7 @@ export async function deleteLayerCommand({
     throw noSession;
   }
 
-  const responseDeleteLayer: Response = await fetch(baseUrl + `/mindmap/${boardId}/layer/${layerId}`, {
+  const responseDeleteLayer: Response = await fetch(baseUrl + `/mindmap/${boardId}/layer`, {
     method: "DELETE",
     cache: "no-store",
     headers: {
@@ -122,6 +122,7 @@ export async function deleteLayerCommand({
       Authorization: `Bearer ${session.data.session.user.token}}`,
       "ngrok-skip-browser-warning": "1",
     },
+    body: JSON.stringify(layerIdsToDelete),
   });
 
   if (!responseDeleteLayer.ok) {

@@ -53,7 +53,9 @@ export const useBoardKeyboardEvents = ({
         );
 
         // Delete edges
-        deleteEdge({ edgeIdsToDelete: edgesIdsToDelete.map((edge) => edge.id) });
+        if (edgesIdsToDelete.length > 0) {
+          deleteEdge({ edgeIdsToDelete: edgesIdsToDelete.map((edge) => edge.id) });
+        }
 
         // Delete layers
         deleteLayer({ layerIdsToDelete: activeLayers });

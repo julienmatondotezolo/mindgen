@@ -40,7 +40,7 @@ import {
   isEdgeNearLayerAtom,
   layerAtomState,
   nearestLayerAtom,
-  useAddEdgeElement,
+  useAddEdge,
   useAddElement,
   useRemoveEdge,
   useRemoveElement,
