@@ -17,13 +17,13 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     console.log("message:", message);
     if (message.connectionId === self?.connectionId) return;
 
-    if (message.name === "add") {
+    if (message.name === "ADD_LAYER") {
       const newLayer: Layer = message.data.newLayer;
 
       setLayers((prevLayers: Layer[]) => [...prevLayers, newLayer]);
     }
 
-    if (message.name === "update") {
+    if (message.name === "UPDATE_LAYER") {
       const updatedLayers: Layer[] = message.data.updatedLayer;
 
       setLayers((prevLayers: Layer[]) => {
@@ -44,19 +44,19 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
       });
     }
 
-    if (message.name === "remove") {
+    if (message.name === "REMOVE_LAYER") {
       const layerIdsToDelete: string[] = message.data.layerIdsToDelete;
 
       setLayers((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
     }
 
-    if (message.name === "addEdge") {
+    if (message.name === "ADD_EDGE") {
       const newEdge: Edge = message.data.newEdge;
 
       setEdges((prevEdges: Edge[]) => [...prevEdges, newEdge]);
     }
 
-    if (message.name === "updatedEdge") {
+    if (message.name === "UPDATE_EDGE") {
       const updatedEdges: Edge[] = message.data.updatedEdge;
 
       setEdges((prevEdges: Edge[]) => {
@@ -77,7 +77,7 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
       });
     }
 
-    if (message.name === "removeEdge") {
+    if (message.name === "REMOVE_EDGE") {
       const edgeIdsToDelete: string[] = message.data.edgeIdsToDelete;
 
       setEdges((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
