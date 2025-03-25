@@ -240,6 +240,8 @@
     "ERROR_FAVORITE_BOARD": "Error favoriting board",
     "SUCCESSFUL_PASSWORD_CHANGE": "Successfully changed password",
     "ERROR_PASSWORD_CHANGE": "Error changing password",
-    "INCORRECT_CURRENT_PASSWORD": "Incorrect current password"
+    "INCORRECT_CURRENT_PASSWORD": "Incorrect current password",
+    "ERROR_ADD_LAYER_COMMAND": "Error adding layer",
+    "ERROR_DELETE_LAYER_COMMAND": "Error deleting layer"
   }
 }

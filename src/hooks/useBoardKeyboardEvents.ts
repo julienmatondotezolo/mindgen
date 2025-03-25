@@ -12,13 +12,15 @@ import { useLayerOperations } from "./useLayerOperations";
  * Custom hook to handle keyboard events for the mindboard
  */
 export const useBoardKeyboardEvents = ({
+  boardId,
   setIsDebugMode,
 }: {
+  boardId: string;
   setIsDebugMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [, setCanvasState] = useRecoilState(canvasStateAtom);
 
-  const { layers, setLayers, activeLayers, setActiveLayers } = useLayerOperations();
+  const { layers, setLayers, activeLayers, setActiveLayers, deleteLayer } = useLayerOperations({ boardId });
 
   const { setEdges, activeEdgeId, setActiveEdgeId } = useEdgeOperations();
 
@@ -53,7 +55,7 @@ export const useBoardKeyboardEvents = ({
         );
 
         // Delete layers
-        setLayers((prev) => prev.filter((layer) => !activeLayers.includes(layer.id)));
+        deleteLayer({ layerId: activeLayers[0], boardId });
         setActiveLayers([]);
         fitView(layers);
       }
@@ -103,5 +105,7 @@ export const useBoardKeyboardEvents = ({
     fitView,
     activeEdgeId,
     setActiveEdgeId,
+    deleteLayer,
+    boardId,
   ]);
 };

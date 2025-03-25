@@ -1,11 +1,17 @@
 import { useSpace } from "@ably/spaces/react";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { useMutation } from "react-query";
 import { useRecoilCallback, useRecoilValue } from "recoil";
 
-import { Edge, Layer } from "@/_types";
+import { addLayerCommand, deleteLayerCommand, updateLayerCommand } from "@/_services/commands/layerCommandService";
+import { CustomSession, Edge, Layer } from "@/_types";
 import { ablyClient } from "@/app/providers";
-import { getLayerById } from "@/utils";
+import { useMessage } from "@/components/ui/message-provider";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
+
+/* ----------------- LAYERS ----------------- */
 
 export const useSelectElement = ({ roomId }: { roomId: string }) => {
   const { space } = useSpace();
@@ -73,13 +79,23 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
   );
 };
 
-export const useAddElement = ({ roomId }: { roomId: string }) => {
-  const channelName = `${roomId}`;
-  const channel = ablyClient.channels.get(channelName);
+export const useAddElement = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+
+  const { showMessage } = useMessage();
+
+  const responsText = useTranslations("ResponseMesssagesCode");
+
+  const addLayerCommandMutation = useMutation(addLayerCommand, {
+    onError: () => {
+      showMessage("error", responsText("ERROR_ADD_LAYER_COMMAND"));
+    },
+  });
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ layer }: { layer: Layer }) => {
+      async ({ layer, boardId }: { layer: Layer; boardId: string }) => {
         set(layerAtomState, (currentLayers: Layer[]) => {
           const addedLayers = [...currentLayers, layer];
 
@@ -87,34 +103,42 @@ export const useAddElement = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          await channel.publish("add", { newLayer: layer });
+          // await channel.publish("add", { newLayer: layer });
+          addLayerCommandMutation.mutate({
+            layer,
+            boardId,
+            session: safeSession,
+          });
         } catch (error) {
-          console.error("can't add to channel:", error);
+          showMessage("error", responsText("ERROR_ADD_LAYER_COMMAND"));
         }
       },
-    [channel],
+    [addLayerCommandMutation, responsText, safeSession, showMessage],
   );
 };
 
-export const useUpdateElement = ({ roomId }: { roomId: string }) => {
-  const layers = useRecoilValue(layerAtomState);
-  const channelName = `${roomId}`;
-  const channel = ablyClient.channels.get(channelName);
+export const useUpdateElement = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+
+  const { showMessage } = useMessage();
+
+  const responsText = useTranslations("ResponseMesssagesCode");
+
+  const updateLayerCommandMutation = useMutation(updateLayerCommand, {
+    onError: () => {
+      showMessage("error", responsText("ERROR_UPDATE_LAYER_COMMAND"));
+    },
+  });
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ id, updatedElementLayer }: { id: string; updatedElementLayer: any }) => {
+      async ({ updatedLayer, boardId }: { id: string; updatedLayer: Layer; boardId: string }) => {
         set(layerAtomState, (currentLayers: Layer[]) => {
-          // Create a new array with the updated layer
+          // Update the layer in the array
           const updatedLayers = currentLayers.map((layer) => {
-            if (layer.id === id) {
-              // If we find a matching id, merge the current layer with the updates
-              const mergedLayer = {
-                ...layer,
-                ...updatedElementLayer,
-              };
-
-              return mergedLayer;
+            if (layer.id === updatedLayer.id) {
+              return updatedLayer;
             }
             return layer;
           });
@@ -122,31 +146,37 @@ export const useUpdateElement = ({ roomId }: { roomId: string }) => {
           return updatedLayers;
         });
 
-        // Publish to channel
         try {
-          const layer = getLayerById({ layerId: id, layers });
-
-          const updatedLayer = {
-            ...layer,
-            ...updatedElementLayer,
-          };
-
-          await channel.publish("update", { updatedLayer });
+          // await channel.publish("add", { newLayer: layer });
+          updateLayerCommandMutation.mutate({
+            boardId,
+            session: safeSession,
+          });
         } catch (error) {
-          // Return original state if publish fails
+          showMessage("error", responsText("ERROR_UPDATE_LAYER_COMMAND"));
         }
       },
-    [channel, layers],
+    [responsText, safeSession, showMessage, updateLayerCommandMutation],
   );
 };
 
-export const useRemoveElement = ({ roomId }: { roomId: string }) => {
-  const channelName = `${roomId}`;
-  const channel = ablyClient.channels.get(channelName);
+export const useRemoveElement = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+
+  const { showMessage } = useMessage();
+
+  const responsText = useTranslations("ResponseMesssagesCode");
+
+  const deleteLayerCommandMutation = useMutation(deleteLayerCommand, {
+    onError: () => {
+      showMessage("error", responsText("ERROR_DELETE_LAYER_COMMAND"));
+    },
+  });
 
   return useRecoilCallback(
     ({ set }) =>
-      async ({ layerIdsToDelete }: { layerIdsToDelete: string[] }) => {
+      async ({ layerIdsToDelete, boardId }: { layerIdsToDelete: string[]; boardId: string }) => {
         set(layerAtomState, (currentLayers: Layer[]) => {
           // Filter out the layers with IDs that should be deleted
           const updatedLayers = currentLayers.filter((layer) => !layerIdsToDelete.includes(layer.id));
@@ -155,12 +185,17 @@ export const useRemoveElement = ({ roomId }: { roomId: string }) => {
         });
 
         try {
-          await channel.publish("remove", { layerIdsToDelete });
+          // await channel.publish("add", { newLayer: layer });
+          deleteLayerCommandMutation.mutate({
+            layerId: layerIdsToDelete[0],
+            boardId,
+            session: safeSession,
+          });
         } catch (error) {
-          console.error("can't publish to channel:", error);
+          showMessage("error", responsText("ERROR_DELETE_LAYER_COMMAND"));
         }
       },
-    [channel],
+    [deleteLayerCommandMutation, responsText, safeSession, showMessage],
   );
 };
 

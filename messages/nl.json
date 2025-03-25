@@ -238,6 +238,8 @@
     "ERROR_FAVORITE_BOARD": "Fout bij het favoriseren van het board",
     "SUCCESSFUL_PASSWORD_CHANGE": "Wachtwoord succesvol gewijzigd",
     "ERROR_PASSWORD_CHANGE": "Fout bij het wijzigen van het wachtwoord",
-    "INCORRECT_CURRENT_PASSWORD": "Huidig wachtwoord is incorrect"
+    "INCORRECT_CURRENT_PASSWORD": "Huidig wachtwoord is incorrect",
+    "ERROR_ADD_LAYER_COMMAND": "Fout bij het toevoegen van de layer",
+    "ERROR_DELETE_LAYER_COMMAND": "Fout bij het verwijderen van de layer"
   }
 }

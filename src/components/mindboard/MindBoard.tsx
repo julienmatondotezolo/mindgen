@@ -28,12 +28,8 @@ const MindBoard = () => {
   // Camera controls
   const { fitView } = useCameraControls();
 
-  // CONSTANTS FOR COLLABORATION
-  const channelName = `mindmap-mindboard`;
-  const COLABORATION_ENABLED = true;
-
   // Use live value for collaborative features
-  useLiveValue({ boardId: channelName, enabled: COLABORATION_ENABLED });
+  useLiveValue({ boardId });
 
   // Initialize canvas navigation with D3 (this handles all zoom and pan operations)
   useCanvasNavigation({ canvasRef });
@@ -50,7 +46,7 @@ const MindBoard = () => {
     setLayers,
     activeLayers,
     setActiveLayers,
-  } = useLayerOperations();
+  } = useLayerOperations({ boardId });
 
   // Edge operations
   const {
@@ -139,7 +135,7 @@ const MindBoard = () => {
           return;
         case CanvasMode.Inserting:
           // Add a new shape at the click point
-          addLayer(canvasState.layerType, point);
+          addLayer({ type: canvasState.layerType, point });
           // After adding, switch back to select mode
           setCanvasState({
             mode: CanvasMode.None,
@@ -444,7 +440,7 @@ const MindBoard = () => {
           canvasState.handleInfo?.isInHandle === false ||
           (canvasState.handleInfo?.layerId === activeLayers[0] && canvasState.handleInfo?.isInHandle === true)
         ) {
-          const addedLayerID = addLayer(canvasState.handleInfo?.layerType, newLayerPosition);
+          const addedLayerID = addLayer({ type: canvasState.handleInfo?.layerType, point: newLayerPosition });
 
           addEdge({ canvasState, newEdgePosition, toLayerId: addedLayerID });
         }
@@ -461,6 +457,7 @@ const MindBoard = () => {
 
   // Handle keyboard events
   useBoardKeyboardEvents({
+    boardId,
     setIsDebugMode,
   });
 

@@ -5,13 +5,17 @@ import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
 import { Layer, LayerType, Point } from "@/_types/canvas";
-import { activeLayersAtom, layerAtomState } from "@/state";
+import { activeLayersAtom, layerAtomState, useAddElement, useRemoveElement } from "@/state";
 import { findIntersectingLayersWithSelection, getHandlePosition } from "@/utils/layerUtils";
 
-export const useLayerOperations = () => {
+export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   const [layers, setLayers] = useRecoilState(layerAtomState);
   const [activeLayers, setActiveLayers] = useRecoilState(activeLayersAtom);
   const whiteboardText = useTranslations("Whiteboard");
+
+  // Layer commands
+  const addLayerCommand = useAddElement();
+  const deleteLayerCommand = useRemoveElement();
 
   // Check if point is inside layer
   const isPointInLayer = useCallback((point: Point, layer: Layer) => {
@@ -167,7 +171,7 @@ export const useLayerOperations = () => {
 
   // Add a new layer
   const addLayer = useCallback(
-    (type: LayerType, point: Point) => {
+    ({ type, point }: { type: LayerType; point: Point }) => {
       const newLayer: Layer = {
         id: nanoid(),
         type: type as any,
@@ -179,12 +183,21 @@ export const useLayerOperations = () => {
         value: whiteboardText("typeSomething"),
       };
 
-      setLayers((prev) => [...prev, newLayer]);
+      addLayerCommand({ layer: newLayer, boardId });
+      // setLayers((prev) => [...prev, newLayer]);
       setActiveLayers([newLayer.id]);
 
       return newLayer.id;
     },
-    [whiteboardText, setLayers, setActiveLayers],
+    [whiteboardText, addLayerCommand, boardId, setActiveLayers],
+  );
+
+  // Delete a layer
+  const deleteLayer = useCallback(
+    ({ layerId, boardId }: { layerId: string; boardId: string }) => {
+      deleteLayerCommand({ layerIdsToDelete: [layerId], boardId });
+    },
+    [deleteLayerCommand],
   );
 
   return {
@@ -196,6 +209,7 @@ export const useLayerOperations = () => {
     findHandleAtPoint,
     findLayersInSelection,
     addLayer,
+    deleteLayer,
     layers,
     setLayers,
     activeLayers,

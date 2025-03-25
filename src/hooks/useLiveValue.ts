@@ -6,15 +6,13 @@ import { useSetRecoilState } from "recoil";
 import { Edge, Layer } from "@/_types";
 import { edgesAtomState, layerAtomState } from "@/state";
 
-export const useLiveValue = ({ boardId, enabled }: { boardId: string; enabled: boolean }) => {
+export const useLiveValue = ({ boardId }: { boardId: string }) => {
   const setLayers = useSetRecoilState(layerAtomState);
   const setEdges = useSetRecoilState(edgesAtomState);
   const { self } = useMembers();
   const channelName = `${boardId}`;
 
   useChannel(channelName, (message: Message) => {
-    if (!enabled) return;
-
     if (message.connectionId === self?.connectionId) return;
 
     if (message.name === "add") {
