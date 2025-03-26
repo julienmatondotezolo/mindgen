@@ -1,4 +1,4 @@
-import { useMembers } from "@ably/spaces/react";
+import { useLocks, useMembers, useSpace } from "@ably/spaces/react";
 import { Message } from "ably";
 import { useChannel } from "ably/react";
 import { useSetRecoilState } from "recoil";
@@ -6,25 +6,26 @@ import { useSetRecoilState } from "recoil";
 import { Edge, Layer } from "@/_types";
 import { edgesAtomState, layerAtomState } from "@/state";
 
-export const useLiveValue = ({ boardId }: { boardId: string }) => {
+export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   const setLayers = useSetRecoilState(layerAtomState);
   const setEdges = useSetRecoilState(edgesAtomState);
+  const { space } = useSpace();
   const { self } = useMembers();
   const channelName = `mindmap-${boardId}`;
 
+  // Listen for messages from the channel
   useChannel(channelName, (message: Message) => {
     // eslint-disable-next-line no-console
-    console.log("message:", message);
     if (message.connectionId === self?.connectionId) return;
 
     if (message.name === "ADD_LAYER") {
-      const newLayer: Layer = message.data.newLayer;
+      const newLayer: Layer = JSON.parse(message.data).newLayer;
 
       setLayers((prevLayers: Layer[]) => [...prevLayers, newLayer]);
     }
 
     if (message.name === "UPDATE_LAYER") {
-      const updatedLayers: Layer[] = message.data.updatedLayers;
+      const updatedLayers: Layer[] = JSON.parse(message.data).updatedLayers;
 
       setLayers((prevLayers: Layer[]) => {
         // Create a map of the updated layers for faster lookup
@@ -45,19 +46,19 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "REMOVE_LAYER") {
-      const layerIdsToDelete: string[] = message.data.layerIds;
+      const layerIdsToDelete: string[] = JSON.parse(message.data).layerIds;
 
       setLayers((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
     }
 
     if (message.name === "ADD_EDGE") {
-      const newEdge: Edge = message.data.newEdge;
+      const newEdge: Edge = JSON.parse(message.data).newEdge;
 
       setEdges((prevEdges: Edge[]) => [...prevEdges, newEdge]);
     }
 
     if (message.name === "UPDATE_EDGE") {
-      const updatedEdges: Edge[] = message.data.updatedEdges;
+      const updatedEdges: Edge[] = JSON.parse(message.data).updatedEdges;
 
       setEdges((prevEdges: Edge[]) => {
         // Create a map of the updated edges for faster lookup
@@ -78,9 +79,19 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "REMOVE_EDGE") {
-      const edgeIdsToDelete: string[] = message.data.edgeIds;
+      const edgeIdsToDelete: string[] = JSON.parse(message.data).edgeIds;
 
       setEdges((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
     }
   });
+
+  if (space) {
+    space.locks.subscribe("update", (lock) => {
+      console.log("lock:", lock);
+    });
+
+    const getAllLocks = await space.members.getAll();
+
+    console.log("getAllLocks:", getAllLocks);
+  }
 };
