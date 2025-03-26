@@ -350,6 +350,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           // setActiveLayers(selectedLayerIds);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
+        if (activeLayers.length === 0 || activeLayers.length === 0) return;
+
         // Move selected layers
         const dx = point.x - canvasState.current!.x;
         const dy = point.y - canvasState.current!.y;
