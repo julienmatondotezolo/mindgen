@@ -1,8 +1,7 @@
-/* eslint-disable prettier/prettier */
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
-import { BoardDataProps } from "@/_types/boardDataProps";
+import { BoardDataProps } from "@/_types/BoardDataProps";
 import { CanvasMode, Edge } from "@/_types/canvas";
 import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
@@ -53,6 +52,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     setLayers,
     activeLayers,
     setActiveLayers,
+    selectLayer,
+    unSelectLayer,
   } = useLayerOperations({ boardId });
 
   // Edge operations
@@ -71,7 +72,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     setLayers(boardData.layers);
     setEdges(boardData.edges);
     setupCanvas();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setupCanvas]);
 
   // Update mouse event handlers to handle different modes
@@ -90,7 +91,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           // If no layer our edge is clicked set mode to selection net
           // And clear active layers
           if (clickedLayerIds.length === 0) {
-            setActiveLayers([]);
+            unSelectLayer();
+            unSelectLayer();
             setCanvasState({
               mode: CanvasMode.SelectionNet,
               origin: point,
@@ -125,7 +127,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
               const layerId = clickedLayerIds[0];
 
               if (!activeLayers.includes(layerId)) {
-                setActiveLayers([layerId]);
+                // setActiveLayers([layerId]);
+                selectLayer({ layerIds: [layerId] });
               }
 
               // Start translating
@@ -178,10 +181,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       findEdgeNearPoint,
       setCanvasState,
       addLayer,
-      setActiveLayers,
+      unSelectLayer,
       setActiveEdgeId,
+      setActiveLayers,
       activeLayers,
       layers,
+      selectLayer,
     ],
   );
 
@@ -310,14 +315,13 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           fromLayerId: activeLayers[0],
           toLayerId: "",
         });
-        
 
         // If the point is in the handle, set the isInHandle to true else set it to false
         setCanvasState((prev) => ({
           ...prev,
           mode: CanvasMode.EdgeDrawing,
           current: lockedEdge.point ?? point,
-          handleInfo: { 
+          handleInfo: {
             // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
             ...prev.handleInfo,
             isInHandle: lockedEdge.layerId ? true : false,
@@ -474,7 +478,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       case CanvasMode.Translating:
         // Update the layer
         updateLayer({ updatedLayers: [updatedLayer] });
-        
+
         setCanvasState({
           mode: CanvasMode.None,
         });

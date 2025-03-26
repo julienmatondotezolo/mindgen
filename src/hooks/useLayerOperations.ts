@@ -5,7 +5,15 @@ import { useCallback } from "react";
 import { useRecoilState } from "recoil";
 
 import { Layer, LayerType, Point } from "@/_types/canvas";
-import { activeLayersAtom, layerAtomState, useAddElement, useRemoveElement, useUpdateElement } from "@/state";
+import {
+  activeLayersAtom,
+  layerAtomState,
+  useAddElement,
+  useRemoveElement,
+  useSelectElement,
+  useUnSelectElement,
+  useUpdateElement,
+} from "@/state";
 import { findIntersectingLayersWithSelection, getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = ({ boardId }: { boardId: string }) => {
@@ -14,6 +22,8 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   const whiteboardText = useTranslations("Whiteboard");
 
   // Layer commands
+  const selectLayer = useSelectElement({ roomId: boardId });
+  const unSelectLayer = useUnSelectElement({ roomId: boardId });
   const addLayerCommand = useAddElement();
   const deleteLayerCommand = useRemoveElement();
   const updateLayerCommand = useUpdateElement();
@@ -225,5 +235,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     setLayers,
     activeLayers,
     setActiveLayers,
+    selectLayer,
+    unSelectLayer,
   };
 };

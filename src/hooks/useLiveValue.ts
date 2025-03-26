@@ -1,10 +1,13 @@
-import { useLocks, useMembers, useSpace } from "@ably/spaces/react";
+import { useMembers, useSpace } from "@ably/spaces/react";
 import { Message } from "ably";
 import { useChannel } from "ably/react";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
 
 import { Edge, Layer } from "@/_types";
 import { edgesAtomState, layerAtomState } from "@/state";
+import { randomUserColor } from "@/utils";
 
 export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   const setLayers = useSetRecoilState(layerAtomState);
@@ -12,6 +15,16 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   const { space } = useSpace();
   const { self } = useMembers();
   const channelName = `mindmap-${boardId}`;
+
+  const session: any = useSession();
+  const currentUserName = session.data?.session?.user?.username;
+  const currentUserId = session.data?.session?.user?.id;
+
+  // ================  ENTERING SPACE & CHANNEL ================== //
+
+  useEffect(() => {
+    space?.enter({ username: currentUserName, userId: currentUserId, userColor: randomUserColor() });
+  }, [currentUserId, currentUserName, space]);
 
   // Listen for messages from the channel
   useChannel(channelName, (message: Message) => {
@@ -84,14 +97,4 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
       setEdges((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
     }
   });
-
-  if (space) {
-    space.locks.subscribe("update", (lock) => {
-      console.log("lock:", lock);
-    });
-
-    const getAllLocks = await space.members.getAll();
-
-    console.log("getAllLocks:", getAllLocks);
-  }
 };

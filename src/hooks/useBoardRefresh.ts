@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "react-query";
 import { useSetRecoilState } from "recoil";
 
-import { BoardDataProps } from "@/_types/boardDataProps";
+import { BoardDataProps } from "@/_types/BoardDataProps";
 import { edgesAtomState, layerAtomState } from "@/state";
 
 /**

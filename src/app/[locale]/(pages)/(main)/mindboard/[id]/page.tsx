@@ -1,5 +1,6 @@
 "use client";
 
+import { SpaceProvider, SpacesProvider } from "@ably/spaces/react";
 import { ChannelProvider } from "ably/react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -8,6 +9,7 @@ import { useQuery } from "react-query";
 
 import { getMindmapById } from "@/_services/mindgen/mindgenService";
 import { CustomSession } from "@/_types";
+import { spaces } from "@/app/providers";
 import { NavLeft } from "@/components/header";
 import { MindBoard } from "@/components/mindboard/MindBoard";
 import { Skeleton, Spinner } from "@/components/ui";
@@ -49,9 +51,13 @@ const MindBoardPage = ({ params }: { params: { id: string } }) => {
       <div className="flex justify-between w-[96%] fixed left-2/4 -translate-x-2/4 top-5 z-50">
         <NavLeft userMindmapDetails={boardData} />
       </div>
-      <ChannelProvider channelName={`mindmap-${boardId}`}>
-        <MindBoard boardData={boardData} />
-      </ChannelProvider>
+      <SpacesProvider client={spaces}>
+        <SpaceProvider name={boardId}>
+          <ChannelProvider channelName={`mindmap-${boardId}`}>
+            <MindBoard boardData={boardData} />
+          </ChannelProvider>
+        </SpaceProvider>
+      </SpacesProvider>
     </div>
   );
 };
