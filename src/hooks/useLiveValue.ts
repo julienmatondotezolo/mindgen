@@ -24,7 +24,7 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "UPDATE_LAYER") {
-      const updatedLayers: Layer[] = message.data.updatedLayer;
+      const updatedLayers: Layer[] = message.data.updatedLayers;
 
       setLayers((prevLayers: Layer[]) => {
         // Create a map of the updated layers for faster lookup
@@ -45,7 +45,7 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "REMOVE_LAYER") {
-      const layerIdsToDelete: string[] = message.data.layerIdsToDelete;
+      const layerIdsToDelete: string[] = message.data.layerIds;
 
       setLayers((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
     }
@@ -57,7 +57,7 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "UPDATE_EDGE") {
-      const updatedEdges: Edge[] = message.data.updatedEdge;
+      const updatedEdges: Edge[] = message.data.updatedEdges;
 
       setEdges((prevEdges: Edge[]) => {
         // Create a map of the updated edges for faster lookup
@@ -78,7 +78,7 @@ export const useLiveValue = ({ boardId }: { boardId: string }) => {
     }
 
     if (message.name === "REMOVE_EDGE") {
-      const edgeIdsToDelete: string[] = message.data.edgeIdsToDelete;
+      const edgeIdsToDelete: string[] = message.data.edgeIds;
 
       setEdges((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
     }
