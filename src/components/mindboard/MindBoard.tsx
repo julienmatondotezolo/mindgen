@@ -25,7 +25,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(true);
 
   // Setup board & rendering
-  const { canvasRef, setupCanvas, renderCanvas } = useBoard({ boardId });
+  const { canvasRef, setupCanvas, renderCanvas } = useBoard();
 
   // Camera controls
   const { fitView } = useCameraControls();

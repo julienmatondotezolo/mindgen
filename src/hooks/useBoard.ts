@@ -19,7 +19,7 @@ import {
   layerAtomState,
 } from "@/state";
 
-export const useBoard = ({ boardId }: { boardId: string }) => {
+export const useBoard = () => {
   const layers = useRecoilValue(layerAtomState);
   const edges = useRecoilValue(edgesAtomState);
   const camera = useRecoilValue(cameraStateAtom);
@@ -59,15 +59,11 @@ export const useBoard = ({ boardId }: { boardId: string }) => {
       };
       const layerIds = lockAttributes?.layerIds as string[] | undefined;
 
-      setOtherLocks(({
+      setOtherLocks({
         username,
         color: userColor,
         lockedLayers: layerIds,
-      }));
-
-      console.log('username:', username)
-      console.log('layerIds:', layerIds)
-      console.log('locked:', locked)
+      });
     }
   });
 
@@ -232,15 +228,22 @@ export const useBoard = ({ boardId }: { boardId: string }) => {
     if (otherLocks.lockedLayers) {
       otherLocks.lockedLayers.forEach((layerId) => {
         const layer = layers.find((layer) => layer.id === layerId);
+
         if (layer) {
-          drawLockedLayerSelection({ layer, lockedBy: otherLocks.username, lockedByColor: otherLocks.color, context, camera });
+          drawLockedLayerSelection({
+            layer,
+            lockedBy: otherLocks.username,
+            lockedByColor: otherLocks.color,
+            context,
+            camera,
+          });
         }
       });
     }
 
     // Restore context to clear transformations
     restoreContext(context);
-  }, [theme, applyCamera, edges, canvasState, layers, camera, restoreContext, activeEdgeId, activeLayers]);
+  }, [theme, applyCamera, edges, canvasState, layers, camera, restoreContext, activeEdgeId, activeLayers, otherLocks]);
 
   return {
     canvasRef,

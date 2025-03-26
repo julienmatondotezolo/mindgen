@@ -17,9 +17,6 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
   return useRecoilCallback(
     ({ set }) =>
       async ({ layerIds }: { layerIds: string[] }) => {
-        // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, () => layerIds);
-
         if (!space) return;
 
         // checking whether a lock identifier is currently locked
@@ -45,6 +42,9 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
             return;
           }
 
+          // Update the activeLayersAtom with the provided layer IDs
+          set(activeLayersAtom, () => layerIds);
+
           await space.locks.acquire(roomId, {
             attributes: { layerIds },
           });
@@ -67,18 +67,18 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
         set(activeLayersAtom, () => []);
 
         if (!space) return;
+        // checking whether a lock identifier is currently locked
+        const isLocked = space.locks.get(roomId) !== undefined;
+
+        if (isLocked) {
+          await space.locks.release(roomId);
+        }
 
         // Acquire lock with the updated layer IDs
         try {
-          const getAllLocks = await space.locks.getAll();
-
-          if (getAllLocks.length === 0) return;
-
-          await space.locks.release(roomId);
-
-          // await space.locks.acquire(roomId, {
-          //   attributes: { layerIds: [] },
-          // });
+          await space.locks.acquire(roomId, {
+            attributes: { layerIds: [] },
+          });
         } catch (error) {
           console.error("Failed to release lock:", error);
           // Optionally revert the state change if lock release fails
