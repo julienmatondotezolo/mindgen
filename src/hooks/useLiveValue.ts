@@ -20,10 +20,19 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
   const currentUserName = session.data?.session?.user?.username;
   const currentUserId = session.data?.session?.user?.id;
 
-  // ================  ENTERING SPACE & CHANNEL ================== //
-
+  // ================  ENTERING SPACE ================== //
   useEffect(() => {
-    space?.enter({ username: currentUserName, userId: currentUserId, userColor: randomUserColor() });
+    async function enterSpace() {
+      await space?.enter({
+        username: currentUserName,
+        userId: currentUserId,
+        userColor: randomUserColor(),
+      });
+    }
+
+    if (space && currentUserId && currentUserName) {
+      enterSpace();
+    }
   }, [currentUserId, currentUserName, space]);
 
   // Listen for messages from the channel

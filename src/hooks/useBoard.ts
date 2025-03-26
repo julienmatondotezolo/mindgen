@@ -1,11 +1,15 @@
+import { useLocks, useMembers } from "@ably/spaces/react";
 import { useTheme } from "next-themes";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
 
 import { drawSelectionRectangle } from "@/components/mindboard/boardRender";
 import { drawShadowEdgeBasedOnType, edgeRender } from "@/components/mindboard/edgeRender";
 import { layerRender } from "@/components/mindboard/layerRenders";
-import { drawShadowLayerFromInserting } from "@/components/mindboard/layerRenders/layerDrawings";
+import {
+  drawLockedLayerSelection,
+  drawShadowLayerFromInserting,
+} from "@/components/mindboard/layerRenders/layerDrawings";
 import {
   activeEdgeIdAtom,
   activeLayersAtom,
@@ -15,7 +19,7 @@ import {
   layerAtomState,
 } from "@/state";
 
-export const useBoard = () => {
+export const useBoard = ({ boardId }: { boardId: string }) => {
   const layers = useRecoilValue(layerAtomState);
   const edges = useRecoilValue(edgesAtomState);
   const camera = useRecoilValue(cameraStateAtom);
@@ -26,6 +30,46 @@ export const useBoard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const { theme } = useTheme();
+
+  // Lock states by other users
+  const [otherLocks, setOtherLocks] = useState<{
+    username: string;
+    color: string;
+    lockedLayers?: string[] | undefined;
+    lockedEdges?: string[] | undefined;
+  }>({
+    username: "",
+    color: "",
+    lockedLayers: [],
+    lockedEdges: [],
+  });
+
+  const { self } = useMembers();
+
+  useLocks((lockUpdate) => {
+    const locked = lockUpdate.status === "locked";
+    const lockAttributes = lockUpdate.attributes;
+    const lockHolder = lockUpdate.member;
+    const lockedByOther = locked && lockAttributes && lockHolder.connectionId !== self?.connectionId;
+
+    if (lockedByOther) {
+      const { username, userColor } = lockHolder.profileData as {
+        username: string;
+        userColor: string;
+      };
+      const layerIds = lockAttributes?.layerIds as string[] | undefined;
+
+      setOtherLocks(({
+        username,
+        color: userColor,
+        lockedLayers: layerIds,
+      }));
+
+      console.log('username:', username)
+      console.log('layerIds:', layerIds)
+      console.log('locked:', locked)
+    }
+  });
 
   // Setup canvas
   const setupCanvas = useCallback(() => {
@@ -151,7 +195,7 @@ export const useBoard = () => {
   );
 
   // Render canvas
-  const renderCanvas = useCallback(() => {
+  const renderCanvas = useCallback(async () => {
     const context = contextRef.current;
 
     if (!context) return;
@@ -185,9 +229,18 @@ export const useBoard = () => {
     // Draw selection rectangle if in selection mode
     drawSelectionRectangle({ context, canvasState });
 
+    if (otherLocks.lockedLayers) {
+      otherLocks.lockedLayers.forEach((layerId) => {
+        const layer = layers.find((layer) => layer.id === layerId);
+        if (layer) {
+          drawLockedLayerSelection({ layer, lockedBy: otherLocks.username, lockedByColor: otherLocks.color, context, camera });
+        }
+      });
+    }
+
     // Restore context to clear transformations
     restoreContext(context);
-  }, [theme, applyCamera, edges, canvasState, layers, restoreContext, camera, activeEdgeId, activeLayers]);
+  }, [theme, applyCamera, edges, canvasState, layers, camera, restoreContext, activeEdgeId, activeLayers]);
 
   return {
     canvasRef,

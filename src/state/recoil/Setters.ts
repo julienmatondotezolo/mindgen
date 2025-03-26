@@ -11,7 +11,6 @@ import { useMessage } from "@/components/ui/message-provider";
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
 
 /* ----------------- LAYERS ----------------- */
-
 export const useSelectElement = ({ roomId }: { roomId: string }) => {
   const { space } = useSpace();
 
@@ -32,9 +31,19 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
 
         // Acquire lock with the updated layer IDs
         try {
-          const getAllLocks = await space.locks.getAll();
+          const getOtherLocks: any[] = await space.locks.getOthers();
 
-          if (getAllLocks.length === 0) return;
+          // Check if any of the other locks contain our layerIds
+          const isLayerLockedByOthers = getOtherLocks.some(
+            (lock) =>
+              lock.attributes &&
+              lock.attributes.layerIds &&
+              layerIds.some((id) => lock.attributes.layerIds.includes(id)),
+          );
+
+          if (isLayerLockedByOthers) {
+            return;
+          }
 
           await space.locks.acquire(roomId, {
             attributes: { layerIds },
@@ -66,6 +75,7 @@ export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
           if (getAllLocks.length === 0) return;
 
           await space.locks.release(roomId);
+
           // await space.locks.acquire(roomId, {
           //   attributes: { layerIds: [] },
           // });

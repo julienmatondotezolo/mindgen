@@ -25,7 +25,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(true);
 
   // Setup board & rendering
-  const { canvasRef, setupCanvas, renderCanvas } = useBoard();
+  const { canvasRef, setupCanvas, renderCanvas } = useBoard({ boardId });
 
   // Camera controls
   const { fitView } = useCameraControls();
@@ -92,7 +92,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           // And clear active layers
           if (clickedLayerIds.length === 0) {
             unSelectLayer();
-            unSelectLayer();
             setCanvasState({
               mode: CanvasMode.SelectionNet,
               origin: point,
@@ -119,9 +118,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             if (e.shiftKey) {
               const layerId = clickedLayerIds[0];
 
-              setActiveLayers((prev) =>
-                prev.includes(layerId) ? prev.filter((id) => id !== layerId) : [...prev, layerId],
-              );
+              selectLayer({ layerIds: [...activeLayers, layerId] });
             } else {
               // Replace selection
               const layerId = clickedLayerIds[0];
@@ -349,7 +346,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         if (dx > 5 || dy > 5) {
           const selectedLayerIds = findLayersInSelection(origin, point);
 
-          setActiveLayers(selectedLayerIds);
+          selectLayer({ layerIds: selectedLayerIds });
+          // setActiveLayers(selectedLayerIds);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
         // Move selected layers
@@ -421,10 +419,10 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       activeLayers,
       activeEdgeId,
       setCanvasState,
-      lockEdgeToNearestLayerHandle,
       setEdges,
+      lockEdgeToNearestLayerHandle,
       findLayersInSelection,
-      setActiveLayers,
+      selectLayer,
       setLayers,
       isDebugMode,
     ],
