@@ -1,7 +1,7 @@
 import { useSpace } from "@ably/spaces/react";
 import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "react-query";
-import { useRecoilCallback } from "recoil";
+import { useRecoilCallback, useRecoilValue } from "recoil";
 
 import { addEdgeCommand, deleteEdgeCommand, updateEdgeCommand } from "@/_services/commands/edgeCommandService";
 import { addLayerCommand, deleteLayerCommand, updateLayerCommand } from "@/_services/commands/layerCommandService";
@@ -11,20 +11,14 @@ import { useMessage } from "@/components/ui/message-provider";
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
 
 /* ----------------- LAYERS ----------------- */
-export const useSelectElement = ({ roomId }: { roomId: string }) => {
+export const useSelectElement = () => {
   const { space } = useSpace();
+  const activeLayers = useRecoilValue(activeLayersAtom);
 
   return useRecoilCallback(
     ({ set }) =>
       async ({ layerIds }: { layerIds: string[] }) => {
         if (!space) return;
-
-        // checking whether a layer lock identifier is currently locked
-        const isLocked = space.locks.get(roomId) !== undefined;
-
-        if (isLocked) {
-          await space.locks.release(roomId);
-        }
 
         // Acquire lock with the updated layer IDs
         try {
@@ -33,17 +27,33 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
           // Check if any of the other locks contain our layerIds
           const isLayerLockedByOthers = getOtherLocks.some(
             (lock) =>
-              lock.attributes &&
-              lock.attributes.layerIds &&
-              layerIds.some((id) => lock.attributes.layerIds.includes(id)),
+              lock.attributes && lock.attributes.layerId && layerIds.some((id) => lock.attributes.layerId === id),
           );
 
           if (isLayerLockedByOthers) {
             return;
           }
 
-          await space.locks.acquire(roomId, {
-            attributes: { layerIds },
+          // If layerIds length is bigger than 1 verify if the layers are already active
+          // and release the lock for the layers that are already active
+          if (layerIds.length > 1) {
+            const layersToRelease = layerIds.filter((layerId) => activeLayers.includes(layerId));
+
+            layersToRelease.map(async (layerId) => {
+              await space.locks.release(layerId);
+            });
+          }
+
+          // Acquire lock for the layers that are not already active
+          layerIds.map(async (layerId) => {
+            // checking whether a layer lock identifier is currently locked
+            const isLocked = space.locks.get(layerId) !== undefined;
+
+            if (isLocked) return;
+
+            await space.locks.acquire(layerId, {
+              attributes: { layerId },
+            });
           });
 
           // Update the activeLayersAtom with the provided layer IDs
@@ -53,38 +63,53 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
           // Optionally revert the state change if lock acquisition fails
         }
       },
-    [roomId, space],
+    [activeLayers, space],
   );
 };
 
-export const useUnSelectElement = ({ roomId }: { roomId: string }) => {
+export const useUnSelectElement = () => {
   const { space } = useSpace();
+
+  const activeLayerIds = useRecoilValue(activeLayersAtom);
 
   return useRecoilCallback(
     ({ set }) =>
-      async () => {
-        // Update the activeLayersAtom with the provided layer IDs
-        set(activeLayersAtom, () => []);
-
+      async ({ layerIdToDelete }: { layerIdToDelete?: string } = {}) => {
         if (!space) return;
-        // checking whether a lock identifier is currently locked
-        const isLocked = space.locks.get(roomId) !== undefined;
-
-        if (isLocked) {
-          await space.locks.release(roomId);
-        }
 
         // Acquire lock with the updated layer IDs
         try {
-          await space.locks.acquire(roomId, {
-            attributes: { layerIds: [] },
+          // If layerIdToDelete is provided, release the lock for the given layer
+          // Otherwise release all locks
+          if (layerIdToDelete) {
+            await space.locks.release(layerIdToDelete);
+          } else {
+            activeLayerIds.map(async (layerId) => {
+              // checking whether a layer lock identifier is currently locked
+              const isLocked = space.locks.get(layerId) !== undefined;
+
+              if (isLocked) {
+                await space.locks.release(layerId);
+              }
+            });
+          }
+
+          // Update the activeLayersAtom with the provided layer IDs
+          set(activeLayersAtom, (currentActiveLayers) => {
+            if (layerIdToDelete) {
+              // Only remove the specific layer ID if it was provided
+              return currentActiveLayers.filter((id) => id !== layerIdToDelete);
+            } else {
+              // Clear all active layers if no specific ID was provided
+              return [];
+            }
           });
         } catch (error) {
           console.error("Failed to release lock:", error);
           // Optionally revert the state change if lock release fails
         }
       },
-    [roomId, space],
+    [activeLayerIds, space],
   );
 };
 
