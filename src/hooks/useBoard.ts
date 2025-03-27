@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import { useLocks, useMembers } from "@ably/spaces/react";
 import { useTheme } from "next-themes";
 import { useCallback, useRef, useState } from "react";
@@ -35,8 +36,8 @@ export const useBoard = () => {
   const [otherLocks, setOtherLocks] = useState<{
     username: string;
     color: string;
-    lockedLayers?: string[] | undefined;
-    lockedEdges?: string[] | undefined;
+    lockedLayers?: (string | undefined)[] | undefined;
+    lockedEdges?: (string | undefined)[] | undefined;
   }>({
     username: "",
     color: "",
@@ -46,26 +47,39 @@ export const useBoard = () => {
 
   const { self } = useMembers();
 
+  // Lock states by other users
   useLocks((lockUpdate) => {
     const locked = lockUpdate.status === "locked";
     const lockAttributes = lockUpdate.attributes;
+
     const lockHolder = lockUpdate.member;
     const lockedByOther = locked && lockAttributes && lockHolder.connectionId !== self?.connectionId;
+    const unLockedByOther = !locked && lockAttributes && lockHolder.connectionId !== self?.connectionId;
+
+    const layerId = lockAttributes?.layerId as string | undefined;
+    const edgeId = lockAttributes?.edgeId as string | undefined;
 
     if (lockedByOther) {
       const { username, userColor } = lockHolder.profileData as {
         username: string;
         userColor: string;
       };
-      const layerIds = lockAttributes?.layerIds as string[] | undefined;
-      const edgeIds = lockAttributes?.edgeIds as string[] | undefined;
 
       setOtherLocks({
         username,
         color: userColor,
-        lockedLayers: layerIds,
-        lockedEdges: edgeIds,
+        lockedLayers: otherLocks.lockedLayers ? [...otherLocks.lockedLayers, layerId] : [layerId],
+        lockedEdges: otherLocks.lockedEdges ? [...otherLocks.lockedEdges, edgeId] : [edgeId],
       });
+    }
+
+    if (unLockedByOther) {
+      setOtherLocks((prev) => ({
+        ...prev,
+        // Only remove the specific layer ID if it was provided
+        lockedLayers: prev.lockedLayers ? prev.lockedLayers.filter((id) => id !== layerId) : [],
+        lockedEdges: prev.lockedEdges ? prev.lockedEdges.filter((id) => id !== edgeId) : [],
+      }));
     }
   });
 

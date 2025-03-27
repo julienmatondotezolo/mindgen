@@ -2,11 +2,12 @@
 import { nanoid } from "nanoid";
 import { useTranslations } from "next-intl";
 import { useCallback } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
 import { Layer, LayerType, Point } from "@/_types/canvas";
 import {
   activeLayersAtom,
+  canvasStateAtom,
   layerAtomState,
   useAddElement,
   useRemoveElement,
@@ -17,6 +18,7 @@ import {
 import { getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = ({ boardId }: { boardId: string }) => {
+  const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [layers, setLayers] = useRecoilState(layerAtomState);
   const [activeLayers, setActiveLayers] = useRecoilState(activeLayersAtom);
   const whiteboardText = useTranslations("Whiteboard");
@@ -181,9 +183,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       };
 
       // Track which layers should be active
-      const layersToKeepActive: any[] = [];
-      // Track which layers should be unselected
-      const layersToUnselect: any[] = [];
+      const layersToKeepActive = [...activeLayers];
 
       for (const layer of layers) {
         if (layer == null) {
@@ -194,30 +194,29 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
         const intersectsWithSelection =
           rect.x + rect.width > x && rect.x < x + width && rect.y + rect.height > y && rect.y < y + height;
 
-        // If layer intersects with selection and is not already active add it to active layers
+        // If layer intersects with selection and not already active, add it
         if (intersectsWithSelection && !activeLayers.includes(layer.id)) {
           layersToKeepActive.push(layer.id);
         }
+        // If layer doesn't intersect with selection but is active, remove it
+        else if (!intersectsWithSelection && activeLayers.includes(layer.id)) {
+          const index = layersToKeepActive.indexOf(layer.id);
 
-        if (!intersectsWithSelection && activeLayers.includes(layer.id)) {
-          // If layer is currently active but doesn't intersect with selection, add it to unselect list
-          layersToUnselect.push(layer.id);
+          if (index !== -1) {
+            layersToKeepActive.splice(index, 1);
+          }
         }
       }
 
-      layersToKeepActive.length > 0;
-
-      // Update if layersToKeepActive is not in activeLayers
-      if (layersToKeepActive.length > 0) {
-        selectLayer({ layerIds: [...activeLayers, ...layersToKeepActive] });
-      }
-
-      // Unselect layers that don't intersect with selection
-      if (layersToUnselect.length > 0) {
-        unSelectLayer({ layerIdToDelete: layersToUnselect[0] });
+      // Update active layers in canvasState
+      if (layersToKeepActive) {
+        setCanvasState((prev) => ({
+          ...prev,
+          selectedLayersIds: layersToKeepActive,
+        }));
       }
     },
-    [activeLayers, layers, selectLayer, unSelectLayer],
+    [activeLayers, layers, setCanvasState],
   );
 
   // Add a new layer

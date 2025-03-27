@@ -134,15 +134,6 @@ export enum Side {
 
 export type CanvasState =
   | {
-      mode: CanvasMode.None;
-      current?: Point;
-      hoveredEdgeId?: string;
-      hoveredLayerId?: string;
-    }
-  | {
-      mode: CanvasMode.Grab;
-    }
-  | {
       mode: CanvasMode.Edge;
       origin?: Point;
       current?: Point;
@@ -153,6 +144,11 @@ export type CanvasState =
         layerType: LayerType;
         coordinates: Point;
       };
+    }
+  | {
+      mode: CanvasMode.EdgeActive;
+      origin?: Point;
+      edgeId?: string;
     }
   | {
       mode: CanvasMode.EdgeDrawing;
@@ -170,11 +166,6 @@ export type CanvasState =
         layerType: LayerType;
         coordinates: Point;
       };
-    }
-  | {
-      mode: CanvasMode.EdgeActive;
-      origin?: Point;
-      edgeId?: string;
     }
   | {
       mode: CanvasMode.EdgeEditing;
@@ -195,13 +186,16 @@ export type CanvasState =
       // editingEdge: { id: string; handlePosition: "START" | "MIDDLE" | "END"; startPoint: Point };
     }
   | {
-      mode: CanvasMode.Pressing;
-      origin: Point;
+      mode: CanvasMode.EdgeSelected;
     }
   | {
-      mode: CanvasMode.SelectionNet;
-      origin: Point;
-      current?: Point;
+      mode: CanvasMode.Exporting; // New mode for exporting
+    }
+  | {
+      mode: CanvasMode.Grab;
+    }
+  | {
+      mode: CanvasMode.Importing; // New mode for importing
     }
   | {
       mode: CanvasMode.Inserting;
@@ -212,12 +206,17 @@ export type CanvasState =
       mode: CanvasMode.LayerSelected;
     }
   | {
-      mode: CanvasMode.EdgeSelected;
+      mode: CanvasMode.None;
+      current?: Point;
+      hoveredEdgeId?: string;
+      hoveredLayerId?: string;
     }
   | {
-      mode: CanvasMode.Translating;
-      current: Point;
-      initialLayerBounds: Layer[];
+      mode: CanvasMode.Pencil;
+    }
+  | {
+      mode: CanvasMode.Pressing;
+      origin: Point;
     }
   | {
       mode: CanvasMode.Resizing;
@@ -225,20 +224,22 @@ export type CanvasState =
       corner: Side;
     }
   | {
-      mode: CanvasMode.Pencil;
-    }
-  | {
-      mode: CanvasMode.Typing;
-      selectedLayerId?: string;
+      mode: CanvasMode.SelectionNet;
+      origin: Point;
+      current?: Point;
+      selectedLayersIds?: string[];
     }
   | {
       mode: CanvasMode.Tooling;
     }
   | {
-      mode: CanvasMode.Exporting; // New mode for exporting
+      mode: CanvasMode.Translating;
+      current: Point;
+      initialLayerBounds: Layer[];
     }
   | {
-      mode: CanvasMode.Importing; // New mode for exporting
+      mode: CanvasMode.Typing;
+      selectedLayerId?: string;
     };
 
 export enum CanvasMode {

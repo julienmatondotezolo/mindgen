@@ -120,6 +120,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
               selectLayer({ layerIds: [...activeLayers, layerId] });
             } else {
+              unSelectLayer();
               // Replace selection
               const layerId = clickedLayerIds[0];
 
@@ -477,6 +478,13 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         setCanvasState({ mode: CanvasMode.None });
         break;
       case CanvasMode.SelectionNet:
+        // eslint-disable-next-line no-case-declarations
+        const selectedLayers = canvasState.selectedLayersIds;
+
+        if (selectedLayers) {
+          selectLayer({ layerIds: selectedLayers });
+        }
+
         setCanvasState({ mode: CanvasMode.None });
         break;
       case CanvasMode.Translating: {
@@ -493,7 +501,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         break;
       }
     }
-  }, [activeLayers, addEdge, addLayer, canvasState, fitView, layers, setCanvasState, updateLayer]);
+  }, [activeLayers, addEdge, addLayer, canvasState, fitView, layers, selectLayer, setCanvasState, updateLayer]);
 
   // Handle keyboard events
   useBoardKeyboardEvents({
