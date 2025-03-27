@@ -9,6 +9,7 @@ import {
   Edge,
   Filter,
   Layer,
+  LockedState,
   Member,
   MindmapObject,
   QuestionAnswersProps,
@@ -73,6 +74,19 @@ export const boardIdState = atom<string>({
 export const boardsLengthState = atom<number>({
   key: "boardsLengthState",
   default: 1,
+});
+
+// ================   LOCK STATE   ================== //
+
+export const lockedAtomState = atom<LockedState>({
+  key: "lockedAtomState",
+  default: {
+    lockedBy: "",
+    lockedColor: "",
+    lockedLayers: [],
+    lockedEdges: [],
+    status: "unlocked",
+  },
 });
 
 // ================   LAYER STATES   ================== //

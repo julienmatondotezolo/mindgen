@@ -2,7 +2,7 @@
 import { nanoid } from "nanoid";
 import { useTranslations } from "next-intl";
 import { useCallback } from "react";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { Layer, LayerType, Point } from "@/_types/canvas";
 import {
@@ -20,12 +20,12 @@ import { getHandlePosition } from "@/utils/layerUtils";
 export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [layers, setLayers] = useRecoilState(layerAtomState);
-  const [activeLayers, setActiveLayers] = useRecoilState(activeLayersAtom);
+  const activeLayers = useRecoilValue(activeLayersAtom);
   const whiteboardText = useTranslations("Whiteboard");
 
   // Layer commands
-  const selectLayer = useSelectElement();
-  const unSelectLayer = useUnSelectElement();
+  const selectLayer = useSelectElement({ boardId });
+  const unSelectLayer = useUnSelectElement({ boardId });
   const addLayerCommand = useAddElement();
   const deleteLayerCommand = useRemoveElement();
   const updateLayerCommand = useUpdateElement();
@@ -272,7 +272,6 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     layers,
     setLayers,
     activeLayers,
-    setActiveLayers,
     selectLayer,
     unSelectLayer,
   };

@@ -51,7 +51,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     layers,
     setLayers,
     activeLayers,
-    setActiveLayers,
     selectLayer,
     unSelectLayer,
   } = useLayerOperations({ boardId });
@@ -125,7 +124,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
               const layerId = clickedLayerIds[0];
 
               if (!activeLayers.includes(layerId)) {
-                // setActiveLayers([layerId]);
                 selectLayer({ layerIds: [layerId] });
               }
 
@@ -161,7 +159,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
               mode: CanvasMode.EdgeDrawing,
             }));
           } else {
-            setActiveLayers([]);
+            unSelectLayer();
             setCanvasState({
               mode: CanvasMode.None,
             });
@@ -181,7 +179,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       addLayer,
       unSelectLayer,
       setActiveEdgeId,
-      setActiveLayers,
       activeLayers,
       layers,
       selectLayer,
@@ -529,7 +526,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         }}
       />
 
-      <Toolbar />
+      <Toolbar boardId={boardId} />
 
       {/* Debug Panel */}
       {isDebugMode && (

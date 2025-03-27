@@ -5,17 +5,20 @@ import React from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 import { CanvasMode, LayerType } from "@/_types";
+import { useLayerOperations } from "@/hooks";
 import { activeEdgeIdAtom, activeLayersAtom, canvasStateAtom, useUndoRedo } from "@/state";
 
 import { ToolButton } from "./ToolButton";
 
-const Toolbar = () => {
+const Toolbar = ({ boardId }: { boardId: string }) => {
   const session: any = useSession();
   const currentUserId = session.data?.session?.user?.id;
 
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const { undo, redo } = useUndoRedo();
-  const setActiveLayerIDs = useSetRecoilState(activeLayersAtom);
+
+  // Layer operations
+  const { unSelectLayer } = useLayerOperations({ boardId });
 
   const allActiveEdges: any = useRecoilValue(activeEdgeIdAtom);
   const activeEdgeId = allActiveEdges
@@ -35,7 +38,7 @@ const Toolbar = () => {
             icon={Hand}
             onClick={() => {
               setCanvasState({ mode: CanvasMode.Grab });
-              setActiveLayerIDs([]);
+              unSelectLayer();
             }}
             isActive={canvasState.mode === CanvasMode.Grab}
           />
@@ -57,8 +60,8 @@ const Toolbar = () => {
               setCanvasState({
                 mode: CanvasMode.Inserting,
                 layerType: LayerType.Rectangle,
+                current: { x: 0, y: 0 },
               });
-              setActiveLayerIDs([]);
             }}
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Rectangle}
           />
@@ -68,8 +71,8 @@ const Toolbar = () => {
               setCanvasState({
                 mode: CanvasMode.Inserting,
                 layerType: LayerType.Ellipse,
+                current: { x: 0, y: 0 },
               });
-              setActiveLayerIDs([]);
             }}
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Ellipse}
           />
@@ -79,8 +82,8 @@ const Toolbar = () => {
               setCanvasState({
                 mode: CanvasMode.Inserting,
                 layerType: LayerType.Diamond,
+                current: { x: 0, y: 0 },
               });
-              setActiveLayerIDs([]);
             }}
             isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Diamond}
           />

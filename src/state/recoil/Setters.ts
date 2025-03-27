@@ -6,14 +6,18 @@ import { useRecoilCallback, useRecoilValue } from "recoil";
 import { addEdgeCommand, deleteEdgeCommand, updateEdgeCommand } from "@/_services/commands/edgeCommandService";
 import { addLayerCommand, deleteLayerCommand, updateLayerCommand } from "@/_services/commands/layerCommandService";
 import { CustomSession, Edge, Layer } from "@/_types";
+import { ablyClient } from "@/app/providers";
 import { useMessage } from "@/components/ui/message-provider";
 
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
 
 /* ----------------- LAYERS ----------------- */
-export const useSelectElement = () => {
+export const useSelectElement = ({ boardId }: { boardId: string }) => {
   const { space } = useSpace();
   const activeLayers = useRecoilValue(activeLayersAtom);
+
+  const channelName = `mindmap-${boardId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   return useRecoilCallback(
     ({ set }) =>
@@ -67,7 +71,7 @@ export const useSelectElement = () => {
   );
 };
 
-export const useUnSelectElement = () => {
+export const useUnSelectElement = ({ boardId }: { boardId: string }) => {
   const { space } = useSpace();
 
   const activeLayerIds = useRecoilValue(activeLayersAtom);

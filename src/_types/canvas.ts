@@ -132,6 +132,14 @@ export enum Side {
   Right = 8,
 }
 
+export type LockedState = {
+  lockedBy: string;
+  lockedColor: string;
+  lockedLayers?: string[];
+  lockedEdges?: string[];
+  status: "locked" | "unlocked";
+};
+
 export type CanvasState =
   | {
       mode: CanvasMode.Edge;
