@@ -58,11 +58,13 @@ export const useBoard = () => {
         userColor: string;
       };
       const layerIds = lockAttributes?.layerIds as string[] | undefined;
+      const edgeIds = lockAttributes?.edgeIds as string[] | undefined;
 
       setOtherLocks({
         username,
         color: userColor,
         lockedLayers: layerIds,
+        lockedEdges: edgeIds,
       });
     }
   });

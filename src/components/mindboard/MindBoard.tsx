@@ -188,7 +188,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   );
 
   const handleMouseMove = useCallback(
-    (e: React.PointerEvent<HTMLCanvasElement>) => {
+    async (e: React.PointerEvent<HTMLCanvasElement>) => {
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
       // Find layers at current mouse position
       const layersAtPoint = findLayerAtPoint(point);
@@ -344,10 +344,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         const dy = Math.abs(point.y - origin.y);
 
         if (dx > 5 || dy > 5) {
-          const selectedLayerIds = findLayersInSelection(origin, point);
-
-          selectLayer({ layerIds: selectedLayerIds });
-          // setActiveLayers(selectedLayerIds);
+          findLayersInSelection(origin, point);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
         if (activeLayers.length === 0 || activeLayers.length === 0) return;
@@ -424,7 +421,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       setEdges,
       lockEdgeToNearestLayerHandle,
       findLayersInSelection,
-      selectLayer,
       setLayers,
       isDebugMode,
     ],

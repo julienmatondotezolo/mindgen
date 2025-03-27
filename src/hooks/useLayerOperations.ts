@@ -14,7 +14,7 @@ import {
   useUnSelectElement,
   useUpdateElement,
 } from "@/state";
-import { findIntersectingLayersWithSelection, getHandlePosition } from "@/utils/layerUtils";
+import { getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   const [layers, setLayers] = useRecoilState(layerAtomState);
@@ -173,11 +173,45 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   // Find layers inside a selection rectangle
   const findLayersInSelection = useCallback(
     (origin: Point, current: Point) => {
-      const ids = findIntersectingLayersWithSelection(layers, origin, current);
+      const rect = {
+        x: Math.min(origin.x, current.x),
+        y: Math.min(origin.y, current.y),
+        width: Math.abs(origin.x - current.x),
+        height: Math.abs(origin.y - current.y),
+      };
 
-      return ids;
+      // Track which layers should be active
+      const layersToKeepActive = [...activeLayers];
+
+      for (const layer of layers) {
+        if (layer == null) {
+          continue;
+        }
+
+        const { x, y, height, width } = layer;
+        const intersectsWithSelection =
+          rect.x + rect.width > x && rect.x < x + width && rect.y + rect.height > y && rect.y < y + height;
+
+        // If layer intersects with selection and not already active, add it
+        if (intersectsWithSelection && !activeLayers.includes(layer.id)) {
+          layersToKeepActive.push(layer.id);
+        }
+        // If layer doesn't intersect with selection but is active, remove it
+        else if (!intersectsWithSelection && activeLayers.includes(layer.id)) {
+          const index = layersToKeepActive.indexOf(layer.id);
+
+          if (index !== -1) {
+            layersToKeepActive.splice(index, 1);
+          }
+        }
+      }
+
+      // Update active layers if there are changes
+      if (JSON.stringify(layersToKeepActive) !== JSON.stringify(activeLayers)) {
+        selectLayer({ layerIds: layersToKeepActive });
+      }
     },
-    [layers],
+    [activeLayers, layers, selectLayer],
   );
 
   // Add a new layer
