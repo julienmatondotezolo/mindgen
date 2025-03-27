@@ -217,7 +217,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.Translating;
       current: Point;
-      initialLayerBounds: Layer;
+      initialLayerBounds: Layer[];
     }
   | {
       mode: CanvasMode.Resizing;

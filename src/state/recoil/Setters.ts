@@ -19,7 +19,7 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
       async ({ layerIds }: { layerIds: string[] }) => {
         if (!space) return;
 
-        // checking whether a lock identifier is currently locked
+        // checking whether a layer lock identifier is currently locked
         const isLocked = space.locks.get(roomId) !== undefined;
 
         if (isLocked) {
@@ -42,12 +42,12 @@ export const useSelectElement = ({ roomId }: { roomId: string }) => {
             return;
           }
 
-          // Update the activeLayersAtom with the provided layer IDs
-          set(activeLayersAtom, () => layerIds);
-
           await space.locks.acquire(roomId, {
             attributes: { layerIds },
           });
+
+          // Update the activeLayersAtom with the provided layer IDs
+          set(activeLayersAtom, () => layerIds);
         } catch (error) {
           console.error("Failed to acquire lock:", error);
           // Optionally revert the state change if lock acquisition fails

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
 import { BoardDataProps } from "@/_types/BoardDataProps";
-import { CanvasMode, Edge } from "@/_types/canvas";
+import { CanvasMode, Edge, Layer } from "@/_types/canvas";
 import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
 import { useBoardRefresh } from "@/hooks/useBoardRefresh";
@@ -132,7 +132,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
               setCanvasState({
                 mode: CanvasMode.Translating,
                 current: point,
-                initialLayerBounds: getLayerById({ layerId, layers }),
+                initialLayerBounds: [getLayerById({ layerId, layers })],
               });
             }
           }
@@ -384,18 +384,29 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         );
 
         // Update initialLayerBounds
-        setCanvasState((prev) => ({
-          ...prev,
-          current: point,
-          initialLayerBounds: {
-            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-            ...prev.initialLayerBounds,
-            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-            x: prev.initialLayerBounds.x + dx,
-            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-            y: prev.initialLayerBounds.y + dy,
-          },
-        }));
+        setCanvasState((prev) => {
+          // Create an array with all active layers with their updated positions
+          const updatedActiveLayers = activeLayers
+            .map((layerId) => {
+              const layer = layers.find((l) => l.id === layerId);
+
+              if (layer) {
+                return {
+                  ...layer,
+                  x: layer.x + dx,
+                  y: layer.y + dy,
+                };
+              }
+              return null;
+            })
+            .filter((layer) => layer !== null) as Layer[];
+
+          return {
+            ...prev,
+            current: point,
+            initialLayerBounds: updatedActiveLayers,
+          };
+        });
 
         // Force re-render if in debug mode to update the debug panel
         if (isDebugMode) {
@@ -423,6 +434,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       findLayersInSelection,
       setLayers,
       isDebugMode,
+      layers,
     ],
   );
 
@@ -438,10 +450,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       handlePosition: canvasState.handleInfo?.handlePosition,
       canvasState,
     });
-
-    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-    // get the initialLayerBounds
-    const updatedLayer = canvasState.initialLayerBounds;
 
     switch (canvasState.mode) {
       case CanvasMode.None:
@@ -471,14 +479,19 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       case CanvasMode.SelectionNet:
         setCanvasState({ mode: CanvasMode.None });
         break;
-      case CanvasMode.Translating:
-        // Update the layer
-        updateLayer({ updatedLayers: [updatedLayer] });
+      case CanvasMode.Translating: {
+        // Update the layer if initialLayerBounds is valid
+        const translatingState = canvasState as { initialLayerBounds?: Layer[] };
+
+        if (translatingState.initialLayerBounds && translatingState.initialLayerBounds.length > 0) {
+          updateLayer({ updatedLayers: translatingState.initialLayerBounds });
+        }
 
         setCanvasState({
           mode: CanvasMode.None,
         });
         break;
+      }
     }
   }, [activeLayers, addEdge, addLayer, canvasState, fitView, layers, setCanvasState, updateLayer]);
 
