@@ -22,8 +22,8 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   const whiteboardText = useTranslations("Whiteboard");
 
   // Layer commands
-  const selectLayer = useSelectElement({ roomId: boardId });
-  const unSelectLayer = useUnSelectElement({ roomId: boardId });
+  const selectLayer = useSelectElement();
+  const unSelectLayer = useUnSelectElement();
   const addLayerCommand = useAddElement();
   const deleteLayerCommand = useRemoveElement();
   const updateLayerCommand = useUpdateElement();
@@ -181,7 +181,9 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       };
 
       // Track which layers should be active
-      const layersToKeepActive = [...activeLayers];
+      const layersToKeepActive: any[] = [];
+      // Track which layers should be unselected
+      const layersToUnselect: any[] = [];
 
       for (const layer of layers) {
         if (layer == null) {
@@ -192,26 +194,30 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
         const intersectsWithSelection =
           rect.x + rect.width > x && rect.x < x + width && rect.y + rect.height > y && rect.y < y + height;
 
-        // If layer intersects with selection and not already active, add it
+        // If layer intersects with selection and is not already active add it to active layers
         if (intersectsWithSelection && !activeLayers.includes(layer.id)) {
           layersToKeepActive.push(layer.id);
         }
-        // If layer doesn't intersect with selection but is active, remove it
-        else if (!intersectsWithSelection && activeLayers.includes(layer.id)) {
-          const index = layersToKeepActive.indexOf(layer.id);
 
-          if (index !== -1) {
-            layersToKeepActive.splice(index, 1);
-          }
+        if (!intersectsWithSelection && activeLayers.includes(layer.id)) {
+          // If layer is currently active but doesn't intersect with selection, add it to unselect list
+          layersToUnselect.push(layer.id);
         }
       }
 
-      // Update active layers if there are changes
-      if (JSON.stringify(layersToKeepActive) !== JSON.stringify(activeLayers)) {
-        selectLayer({ layerIds: layersToKeepActive });
+      layersToKeepActive.length > 0;
+
+      // Update if layersToKeepActive is not in activeLayers
+      if (layersToKeepActive.length > 0) {
+        selectLayer({ layerIds: [...activeLayers, ...layersToKeepActive] });
+      }
+
+      // Unselect layers that don't intersect with selection
+      if (layersToUnselect.length > 0) {
+        unSelectLayer({ layerIdToDelete: layersToUnselect[0] });
       }
     },
-    [activeLayers, layers, selectLayer],
+    [activeLayers, layers, selectLayer, unSelectLayer],
   );
 
   // Add a new layer
@@ -230,12 +236,11 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
       // Add the new layer
       addLayerCommand({ layer: newLayer, boardId });
-      // setLayers((prev) => [...prev, newLayer]);
-      setActiveLayers([newLayer.id]);
+      selectLayer({ layerIds: [newLayer.id] });
 
       return newLayer.id;
     },
-    [whiteboardText, addLayerCommand, boardId, setActiveLayers],
+    [whiteboardText, addLayerCommand, boardId, selectLayer],
   );
 
   // Update a layer

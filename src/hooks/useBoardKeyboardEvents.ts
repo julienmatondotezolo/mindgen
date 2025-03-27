@@ -20,7 +20,9 @@ export const useBoardKeyboardEvents = ({
 }) => {
   const [, setCanvasState] = useRecoilState(canvasStateAtom);
 
-  const { layers, setLayers, activeLayers, setActiveLayers, deleteLayer } = useLayerOperations({ boardId });
+  const { layers, setLayers, activeLayers, deleteLayer, unSelectLayer } = useLayerOperations({
+    boardId,
+  });
 
   const { edges, setEdges, activeEdgeId, setActiveEdgeId, deleteEdge } = useEdgeOperations({ boardId });
 
@@ -59,7 +61,7 @@ export const useBoardKeyboardEvents = ({
 
         // Delete layers
         deleteLayer({ layerIdsToDelete: activeLayers });
-        setActiveLayers([]);
+        unSelectLayer();
         fitView(layers);
       }
 
@@ -71,7 +73,7 @@ export const useBoardKeyboardEvents = ({
 
       // Deselect all with Escape
       if (e.key === "Escape") {
-        setActiveLayers([]);
+        unSelectLayer();
 
         // Reset canvas state
         setCanvasState({
@@ -99,7 +101,6 @@ export const useBoardKeyboardEvents = ({
     };
   }, [
     activeLayers,
-    setActiveLayers,
     setLayers,
     setEdges,
     setCanvasState,
@@ -112,5 +113,6 @@ export const useBoardKeyboardEvents = ({
     boardId,
     deleteEdge,
     edges,
+    unSelectLayer,
   ]);
 };
