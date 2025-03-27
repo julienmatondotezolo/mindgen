@@ -7,6 +7,7 @@ export * from "./useEdgeOperations";
 export * from "./useHistory";
 export * from "./useLayerOperations";
 export * from "./useLiveValue";
+export * from "./useLocks";
 export * from "./useMindMapChangeListener";
 export * from "./usePageBottom";
 export * from "./useScrollPosition";

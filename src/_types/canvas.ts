@@ -133,10 +133,11 @@ export enum Side {
 }
 
 export type LockedState = {
+  connectionId: string;
   lockedBy: string;
   lockedColor: string;
-  lockedLayers?: string[];
-  lockedEdges?: string[];
+  lockedLayers: string[];
+  lockedEdges: string[];
   status: "locked" | "unlocked";
 };
 

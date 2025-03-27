@@ -1,7 +1,6 @@
-/* eslint-disable indent */
-import { useLocks, useMembers } from "@ably/spaces/react";
+import { useMembers } from "@ably/spaces/react";
 import { useTheme } from "next-themes";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { useRecoilValue } from "recoil";
 
 import { drawSelectionRectangle } from "@/components/mindboard/boardRender";
@@ -18,9 +17,11 @@ import {
   canvasStateAtom,
   edgesAtomState,
   layerAtomState,
+  lockedAtomState,
 } from "@/state";
 
 export const useBoard = () => {
+  const lockedElements = useRecoilValue(lockedAtomState);
   const layers = useRecoilValue(layerAtomState);
   const edges = useRecoilValue(edgesAtomState);
   const camera = useRecoilValue(cameraStateAtom);
@@ -32,56 +33,8 @@ export const useBoard = () => {
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const { theme } = useTheme();
 
-  // Lock states by other users
-  const [otherLocks, setOtherLocks] = useState<{
-    username: string;
-    color: string;
-    lockedLayers?: (string | undefined)[] | undefined;
-    lockedEdges?: (string | undefined)[] | undefined;
-  }>({
-    username: "",
-    color: "",
-    lockedLayers: [],
-    lockedEdges: [],
-  });
-
+  // Get the current user
   const { self } = useMembers();
-
-  // Lock states by other users
-  useLocks((lockUpdate) => {
-    const locked = lockUpdate.status === "locked";
-    const lockAttributes = lockUpdate.attributes;
-
-    const lockHolder = lockUpdate.member;
-    const lockedByOther = locked && lockAttributes && lockHolder.connectionId !== self?.connectionId;
-    const unLockedByOther = !locked && lockAttributes && lockHolder.connectionId !== self?.connectionId;
-
-    const layerId = lockAttributes?.layerId as string | undefined;
-    const edgeId = lockAttributes?.edgeId as string | undefined;
-
-    if (lockedByOther) {
-      const { username, userColor } = lockHolder.profileData as {
-        username: string;
-        userColor: string;
-      };
-
-      setOtherLocks({
-        username,
-        color: userColor,
-        lockedLayers: otherLocks.lockedLayers ? [...otherLocks.lockedLayers, layerId] : [layerId],
-        lockedEdges: otherLocks.lockedEdges ? [...otherLocks.lockedEdges, edgeId] : [edgeId],
-      });
-    }
-
-    if (unLockedByOther) {
-      setOtherLocks((prev) => ({
-        ...prev,
-        // Only remove the specific layer ID if it was provided
-        lockedLayers: prev.lockedLayers ? prev.lockedLayers.filter((id) => id !== layerId) : [],
-        lockedEdges: prev.lockedEdges ? prev.lockedEdges.filter((id) => id !== edgeId) : [],
-      }));
-    }
-  });
 
   // Setup canvas
   const setupCanvas = useCallback(() => {
@@ -241,25 +194,42 @@ export const useBoard = () => {
     // Draw selection rectangle if in selection mode
     drawSelectionRectangle({ context, canvasState });
 
-    if (otherLocks.lockedLayers) {
-      otherLocks.lockedLayers.forEach((layerId) => {
-        const layer = layers.find((layer) => layer.id === layerId);
+    // Draw locked layers
+    lockedElements.map((lockedElement) => {
+      const { lockedBy, lockedColor, connectionId } = lockedElement;
 
-        if (layer) {
-          drawLockedLayerSelection({
-            layer,
-            lockedBy: otherLocks.username,
-            lockedByColor: otherLocks.color,
-            context,
-            camera,
-          });
-        }
-      });
-    }
+      if (lockedElement.status === "locked" && connectionId !== self?.connectionId) {
+        lockedElement.lockedLayers.forEach((layerId) => {
+          const layer = layers.find((layer) => layer.id === layerId);
+
+          if (layer) {
+            drawLockedLayerSelection({
+              layer,
+              lockedBy,
+              lockedByColor: lockedColor,
+              context,
+              camera,
+            });
+          }
+        });
+      }
+    });
 
     // Restore context to clear transformations
     restoreContext(context);
-  }, [theme, applyCamera, edges, canvasState, layers, camera, restoreContext, activeEdgeId, activeLayers, otherLocks]);
+  }, [
+    theme,
+    applyCamera,
+    edges,
+    canvasState,
+    layers,
+    lockedElements,
+    restoreContext,
+    camera,
+    activeEdgeId,
+    activeLayers,
+    self?.connectionId,
+  ]);
 
   return {
     canvasRef,

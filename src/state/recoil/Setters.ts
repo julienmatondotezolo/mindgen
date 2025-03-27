@@ -1,11 +1,11 @@
-import { useSpace } from "@ably/spaces/react";
+import { useMembers, useSpace } from "@ably/spaces/react";
 import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilCallback, useRecoilValue } from "recoil";
 
 import { addEdgeCommand, deleteEdgeCommand, updateEdgeCommand } from "@/_services/commands/edgeCommandService";
 import { addLayerCommand, deleteLayerCommand, updateLayerCommand } from "@/_services/commands/layerCommandService";
-import { CustomSession, Edge, Layer } from "@/_types";
+import { CustomSession, Edge, Layer, LockedState } from "@/_types";
 import { ablyClient } from "@/app/providers";
 import { useMessage } from "@/components/ui/message-provider";
 
@@ -13,8 +13,7 @@ import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } fr
 
 /* ----------------- LAYERS ----------------- */
 export const useSelectElement = ({ boardId }: { boardId: string }) => {
-  const { space } = useSpace();
-  const activeLayers = useRecoilValue(activeLayersAtom);
+  const { self } = useMembers();
 
   const channelName = `mindmap-${boardId}`;
   const channel = ablyClient.channels.get(channelName);
@@ -22,81 +21,73 @@ export const useSelectElement = ({ boardId }: { boardId: string }) => {
   return useRecoilCallback(
     ({ set }) =>
       async ({ layerIds }: { layerIds: string[] }) => {
-        if (!space) return;
+        if (!self) return;
 
-        // Acquire lock with the updated layer IDs
+        const { username, userColor } = self.profileData as {
+          username: string;
+          userColor: string;
+        };
+
         try {
-          const getOtherLocks: any[] = await space.locks.getOthers();
+          const lockedElement: LockedState = {
+            connectionId: self.connectionId,
+            lockedBy: username,
+            lockedColor: userColor,
+            lockedLayers: layerIds,
+            lockedEdges: [],
+            status: "locked",
+          };
 
-          // Check if any of the other locks contain our layerIds
-          const isLayerLockedByOthers = getOtherLocks.some(
-            (lock) =>
-              lock.attributes && lock.attributes.layerId && layerIds.some((id) => lock.attributes.layerId === id),
-          );
-
-          if (isLayerLockedByOthers) {
-            return;
-          }
-
-          // If layerIds length is bigger than 1 verify if the layers are already active
-          // and release the lock for the layers that are already active
-          if (layerIds.length > 1) {
-            const layersToRelease = layerIds.filter((layerId) => activeLayers.includes(layerId));
-
-            layersToRelease.map(async (layerId) => {
-              await space.locks.release(layerId);
-            });
-          }
-
-          // Acquire lock for the layers that are not already active
-          layerIds.map(async (layerId) => {
-            // checking whether a layer lock identifier is currently locked
-            const isLocked = space.locks.get(layerId) !== undefined;
-
-            if (isLocked) return;
-
-            await space.locks.acquire(layerId, {
-              attributes: { layerId },
-            });
-          });
+          // Publish to channel
+          await channel.publish("LOCK", { lockedElement });
 
           // Update the activeLayersAtom with the provided layer IDs
           set(activeLayersAtom, () => layerIds);
         } catch (error) {
-          console.error("Failed to acquire lock:", error);
+          console.error("Failed to lock elements:", error);
           // Optionally revert the state change if lock acquisition fails
         }
       },
-    [activeLayers, space],
+    [channel, self],
   );
 };
 
 export const useUnSelectElement = ({ boardId }: { boardId: string }) => {
-  const { space } = useSpace();
+  const { self } = useMembers();
+
+  const channelName = `mindmap-${boardId}`;
+  const channel = ablyClient.channels.get(channelName);
 
   const activeLayerIds = useRecoilValue(activeLayersAtom);
 
   return useRecoilCallback(
     ({ set }) =>
       async ({ layerIdToDelete }: { layerIdToDelete?: string } = {}) => {
-        if (!space) return;
+        if (!self) return;
 
-        // Acquire lock with the updated layer IDs
+        const { username, userColor } = self.profileData as {
+          username: string;
+          userColor: string;
+        };
+
         try {
-          // If layerIdToDelete is provided, release the lock for the given layer
-          // Otherwise release all locks
-          if (layerIdToDelete) {
-            await space.locks.release(layerIdToDelete);
-          } else {
-            activeLayerIds.map(async (layerId) => {
-              // checking whether a layer lock identifier is currently locked
-              const isLocked = space.locks.get(layerId) !== undefined;
+          const lockedElement: LockedState = {
+            connectionId: self.connectionId,
+            lockedBy: username,
+            lockedColor: userColor,
+            lockedLayers: [],
+            lockedEdges: [],
+            status: "unlocked",
+          };
 
-              if (isLocked) {
-                await space.locks.release(layerId);
-              }
-            });
+          if (layerIdToDelete) {
+            lockedElement.lockedLayers.push(layerIdToDelete);
+          } else {
+            lockedElement.lockedLayers = activeLayerIds;
           }
+
+          // Publish to channel
+          await channel.publish("UNLOCK", { lockedElement });
 
           // Update the activeLayersAtom with the provided layer IDs
           set(activeLayersAtom, (currentActiveLayers) => {
@@ -113,7 +104,7 @@ export const useUnSelectElement = ({ boardId }: { boardId: string }) => {
           // Optionally revert the state change if lock release fails
         }
       },
-    [activeLayerIds, space],
+    [activeLayerIds, channel, self],
   );
 };
 

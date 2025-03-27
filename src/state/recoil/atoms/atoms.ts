@@ -78,15 +78,9 @@ export const boardsLengthState = atom<number>({
 
 // ================   LOCK STATE   ================== //
 
-export const lockedAtomState = atom<LockedState>({
+export const lockedAtomState = atom<LockedState[]>({
   key: "lockedAtomState",
-  default: {
-    lockedBy: "",
-    lockedColor: "",
-    lockedLayers: [],
-    lockedEdges: [],
-    status: "unlocked",
-  },
+  default: [],
 });
 
 // ================   LAYER STATES   ================== //

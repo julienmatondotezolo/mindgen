@@ -3,13 +3,14 @@ import { Message } from "ably";
 import { useChannel } from "ably/react";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { Edge, Layer } from "@/_types";
-import { edgesAtomState, layerAtomState } from "@/state";
+import { Edge, Layer, LockedState } from "@/_types";
+import { edgesAtomState, layerAtomState, lockedAtomState } from "@/state";
 import { randomUserColor } from "@/utils";
 
 export const useLiveValue = async ({ boardId }: { boardId: string }) => {
+  const [lockedElementState, setLockedElementState] = useRecoilState(lockedAtomState);
   const setLayers = useSetRecoilState(layerAtomState);
   const setEdges = useSetRecoilState(edgesAtomState);
   const { space } = useSpace();
@@ -35,11 +36,14 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
     }
   }, [currentUserId, currentUserName, space]);
 
-  // Listen for messages from the channel
+  // ========================================================================== //
+  // ================  LISTEN FOR MESSAGES FROM THE CHANNEL  ================== //
+  // ========================================================================== //
   useChannel(channelName, (message: Message) => {
-    // eslint-disable-next-line no-console
+    // Ignore messages from the current user
     if (message.connectionId === self?.connectionId) return;
 
+    // ================  LISTEN FOR LAYER MESSAGES  ================== //
     if (message.name === "ADD_LAYER") {
       const newLayer: Layer = JSON.parse(message.data).newLayer;
 
@@ -73,6 +77,7 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
       setLayers((prevLayers: Layer[]) => prevLayers.filter((layer) => !layerIdsToDelete.includes(layer.id)));
     }
 
+    // ================  LISTEN FOR LAYER MESSAGES  ================== //
     if (message.name === "ADD_EDGE") {
       const newEdge: Edge = JSON.parse(message.data).newEdge;
 
@@ -104,6 +109,56 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
       const edgeIdsToDelete: string[] = JSON.parse(message.data).edgeIds;
 
       setEdges((prevEdges: Edge[]) => prevEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id)));
+    }
+
+    // ================  LISTEN FOR LOCK MESSAGES  ================== //
+    if (message.name === "LOCK") {
+      const lockedElement: LockedState = message.data.lockedElement;
+
+      const { connectionId } = lockedElement;
+
+      // If there are no locked elements, set the locked element state to the locked element
+      if (lockedElementState.length === 0) {
+        setLockedElementState([lockedElement]);
+        return;
+      }
+
+      // If there are locked elements, update the locked element state to the locked element
+      setLockedElementState((prevLockedElements: LockedState[]) =>
+        prevLockedElements.map((prevLockedElement) => {
+          if (prevLockedElement.connectionId === connectionId) {
+            return lockedElement;
+          }
+          return prevLockedElement;
+        }),
+      );
+    }
+
+    if (message.name === "UNLOCK") {
+      const lockedElement: LockedState = message.data.lockedElement;
+
+      const { connectionId, lockedLayers, lockedEdges } = lockedElement;
+
+      setLockedElementState((prevLockedElements: LockedState[]) =>
+        prevLockedElements.map((prevLockedElement) => {
+          if (prevLockedElement.connectionId === connectionId) {
+            const filteredLockedLayers = prevLockedElement.lockedLayers.filter(
+              (layerId) => !lockedLayers.includes(layerId),
+            );
+            const filteredLockedEdges = prevLockedElement.lockedEdges.filter((edgeId) => !lockedEdges.includes(edgeId));
+
+            const newLockedElement: LockedState = {
+              ...prevLockedElement,
+              lockedLayers: filteredLockedLayers,
+              lockedEdges: filteredLockedEdges,
+              status: "unlocked",
+            };
+
+            return newLockedElement;
+          }
+          return prevLockedElement;
+        }),
+      );
     }
   });
 };

@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import { BoardDataProps } from "@/_types/BoardDataProps";
 import { CanvasMode, Edge, Layer } from "@/_types/canvas";
-import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue } from "@/hooks";
+import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue, useLocks } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
 import { useBoardRefresh } from "@/hooks/useBoardRefresh";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
-import { cameraStateAtom, canvasStateAtom } from "@/state";
+import { cameraStateAtom, canvasStateAtom, lockedAtomState } from "@/state";
 import { getLayerById, getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils/layerUtils";
 
 import { Toolbar } from "../whiteboard";
@@ -19,6 +19,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   const boardId = boardData.id;
   const [camera] = useRecoilState(cameraStateAtom);
   const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
+  const lockedElements = useRecoilValue(lockedAtomState);
 
   // Debug mode state
   const [isDebugMode, setIsDebugMode] = useState(false);
@@ -38,6 +39,9 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
   // Initialize canvas navigation with D3 (this handles all zoom and pan operations)
   useCanvasNavigation({ canvasRef });
+
+  // Locks
+  const { checkIfLayerIsLocked, checkIfEdgeIsLocked } = useLocks();
 
   // Layer operations
   const {
@@ -86,6 +90,16 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           const clickedLayerIds = findLayerIdsAtPoint(point);
           // eslint-disable-next-line no-case-declarations
           const clickedEdgeId = findEdgeNearPoint(point)?.id;
+
+          // If a layer is locked, don't allow it to be selected
+          if (clickedLayerIds.some((layerId) => checkIfLayerIsLocked(layerId))) {
+            return;
+          }
+
+          // If an edge is locked, don't allow it to be selected
+          if (clickedEdgeId && checkIfEdgeIsLocked(clickedEdgeId)) {
+            return;
+          }
 
           // If no layer our edge is clicked set mode to selection net
           // And clear active layers
@@ -175,13 +189,15 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       canvasState,
       findLayerIdsAtPoint,
       findEdgeNearPoint,
+      checkIfEdgeIsLocked,
       setCanvasState,
       addLayer,
+      checkIfLayerIsLocked,
       unSelectLayer,
       setActiveEdgeId,
+      selectLayer,
       activeLayers,
       layers,
-      selectLayer,
     ],
   );
 
@@ -479,7 +495,10 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         const selectedLayers = canvasState.selectedLayersIds;
 
         if (selectedLayers) {
-          selectLayer({ layerIds: selectedLayers });
+          // If a layer is locked remove it from the selected layers
+          const filteredSelectedLayers = selectedLayers.filter((layerId) => !checkIfLayerIsLocked(layerId));
+
+          selectLayer({ layerIds: filteredSelectedLayers });
         }
 
         setCanvasState({ mode: CanvasMode.None });
@@ -498,7 +517,18 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         break;
       }
     }
-  }, [activeLayers, addEdge, addLayer, canvasState, fitView, layers, selectLayer, setCanvasState, updateLayer]);
+  }, [
+    activeLayers,
+    addEdge,
+    addLayer,
+    canvasState,
+    checkIfLayerIsLocked,
+    fitView,
+    layers,
+    selectLayer,
+    setCanvasState,
+    updateLayer,
+  ]);
 
   // Handle keyboard events
   useBoardKeyboardEvents({
@@ -535,6 +565,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           camera={camera}
           activeLayers={activeLayers}
           activeEdgeId={activeEdgeId}
+          lockedElements={lockedElements}
           isOpen={isDebugPanelOpen}
           setIsOpen={setIsDebugPanelOpen}
         />

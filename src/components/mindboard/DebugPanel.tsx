@@ -1,6 +1,6 @@
 import React from "react";
 
-import { CanvasMode } from "@/_types/canvas";
+import { CanvasMode, LockedState } from "@/_types/canvas";
 
 // Debug Panel Component
 export const DebugPanel = ({
@@ -8,6 +8,7 @@ export const DebugPanel = ({
   camera,
   activeLayers,
   activeEdgeId,
+  lockedElements,
   isOpen,
   setIsOpen,
 }: {
@@ -15,6 +16,7 @@ export const DebugPanel = ({
   camera: any;
   activeLayers: string[];
   activeEdgeId: string[];
+  lockedElements: LockedState[];
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
@@ -66,6 +68,13 @@ export const DebugPanel = ({
             <h3 className="font-bold mb-1">Active Edge ({activeEdgeId.length})</h3>
             <pre className="bg-gray-50 dark:bg-gray-950 p-2 rounded overflow-auto">
               {JSON.stringify(activeEdgeId, null, 2)}
+            </pre>
+          </div>
+
+          <div className="mb-3">
+            <h3 className="font-bold mb-1">Locked Elements ({lockedElements.length})</h3>
+            <pre className="bg-gray-50 dark:bg-gray-950 p-2 rounded overflow-auto">
+              {JSON.stringify(lockedElements, null, 2)}
             </pre>
           </div>
         </div>
