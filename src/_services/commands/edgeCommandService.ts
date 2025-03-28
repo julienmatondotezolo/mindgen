@@ -145,12 +145,12 @@ export async function updateEdgeLayerCommand({
   session,
   boardId,
   edges,
-  layer,
+  layers,
 }: {
   session: CustomSession | null;
   boardId: string;
   edges: Edge[];
-  layer: Layer[];
+  layers: Layer[];
 }): Promise<any> {
   if (!session?.data.session) {
     const noSession: ApiError = {
@@ -170,7 +170,7 @@ export async function updateEdgeLayerCommand({
       Authorization: `Bearer ${session.data.session.user.token}}`,
       "ngrok-skip-browser-warning": "1",
     },
-    body: JSON.stringify({ edges, layer }),
+    body: JSON.stringify({ edges, layers }),
   });
 
   if (!responseUpdateEdgeLayer.ok) {

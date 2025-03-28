@@ -263,6 +263,7 @@ export type CanvasState =
       mode: CanvasMode.Translating;
       current: Point;
       initialLayerBounds: Layer[];
+      connectedEdges?: Edge[];
       alignments?: Alignment;
     }
   | {

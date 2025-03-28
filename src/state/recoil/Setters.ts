@@ -505,7 +505,7 @@ export const useUpdateEdgeLayer = () => {
         try {
           updateEdgeLayerCommandMutation.mutate({
             edges: updatedEdges,
-            layer: updatedLayers,
+            layers: updatedLayers,
             boardId,
             session: safeSession,
           });

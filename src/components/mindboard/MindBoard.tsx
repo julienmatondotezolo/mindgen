@@ -65,6 +65,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   const {
     addEdge,
     addEdgeLayer,
+    updateEdgeLayer,
+    edges,
     setEdges,
     activeEdgeId,
     setActiveEdgeId,
@@ -420,12 +422,28 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             })
             .filter((layer) => layer !== null) as Layer[];
 
+          // Create an array with all Edges that are connected to the active layers
+          const updatedConnectedEdges = edges.filter((edge: Edge) => (edge.fromLayerId && activeLayers.includes(edge.fromLayerId)) || (edge.toLayerId && activeLayers.includes(edge.toLayerId)));
+
+          // Convert alignments to the correct type if it exists
+          const transformedAlignments = alignments ? {
+            vertical: alignments.vertical.map(v => ({
+              ...v,
+              otherLayerCenterPosition: v.otherLayerCenterPosition ? { y: v.otherLayerCenterPosition.x } : undefined,
+            })),
+            horizontal: alignments.horizontal.map(h => ({
+              ...h,
+              otherLayerCenterPosition: h.otherLayerCenterPosition ? { x: h.otherLayerCenterPosition.y } : undefined,
+            })),
+            isPointNearCenterAlignment: alignments.isPointNearCenterAlignment,
+          } : undefined;
 
           return {
             ...prev,
             current: point,
-            alignments,
             initialLayerBounds: updatedActiveLayers,
+            connectedEdges: updatedConnectedEdges,
+            alignments: transformedAlignments,
           };
         });
 
@@ -437,7 +455,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
       renderCanvas();
     },
-    [camera, canvasRef, findLayerAtPoint, findHandleNearPoint, findHandleAtPoint, findAlignments, findEdgeNearPoint, findEdgeHandleAtPoint, canvasState, renderCanvas, activeLayers, activeEdgeId, setCanvasState, setEdges, lockEdgeToNearestLayerHandle, findLayersInSelection, setLayers, isDebugMode, updateEdgeIfConnectedLayerIsMoving, layers],
+    [camera, canvasRef, findLayerAtPoint, findHandleNearPoint, findHandleAtPoint, findAlignments, findEdgeNearPoint, findEdgeHandleAtPoint, canvasState, renderCanvas, activeLayers, activeEdgeId, setCanvasState, setEdges, lockEdgeToNearestLayerHandle, findLayersInSelection, setLayers, isDebugMode, updateEdgeIfConnectedLayerIsMoving, edges, layers],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -496,9 +514,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         break;
       case CanvasMode.Translating: {
         // Update the layer if initialLayerBounds is valid
-        const translatingState = canvasState as { initialLayerBounds?: Layer[] };
+        const translatingState = canvasState as { initialLayerBounds?: Layer[]; connectedEdges?: Edge[] };
 
-        if (translatingState.initialLayerBounds && translatingState.initialLayerBounds.length > 0) {
+
+        if ((translatingState.initialLayerBounds && translatingState.initialLayerBounds.length > 0) && (translatingState.connectedEdges && translatingState.connectedEdges.length > 0)) {
+          updateEdgeLayer({ updatedLayers: translatingState.initialLayerBounds, updatedEdges: translatingState.connectedEdges });
+        } else if (translatingState.initialLayerBounds && translatingState.initialLayerBounds.length > 0) {
           updateLayer({ updatedLayers: translatingState.initialLayerBounds });
         }
 
@@ -508,18 +529,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         break;
       }
     }
-  }, [
-    activeLayers,
-    addEdge,
-    addEdgeLayer,
-    canvasState,
-    checkIfLayerIsLocked,
-    fitView,
-    layers,
-    selectLayer,
-    setCanvasState,
-    updateLayer,
-  ]);
+  }, [activeLayers, addEdge, addEdgeLayer, canvasState, checkIfLayerIsLocked, fitView, layers, selectLayer, setCanvasState, updateEdgeLayer, updateLayer]);
 
   // Handle keyboard events
   useBoardKeyboardEvents({
