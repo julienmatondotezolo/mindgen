@@ -134,7 +134,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
               selectLayer({ layerIds: [...activeLayers, layerId] });
             } else {
-              unSelectLayer();
               // Replace selection
               const layerId = clickedLayerIds[0];
 
@@ -146,7 +145,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
               setCanvasState({
                 mode: CanvasMode.Translating,
                 current: point,
-                initialLayerBounds: [getLayerById({ layerId, layers })],
+                initialLayerBounds: activeLayers.map((layerId) => getLayerById({ layerId, layers })),
               });
             }
           }
@@ -220,7 +219,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
       if (canvasState.mode === CanvasMode.None) {
         // If handle is active and layer is active, set the mode to Edge
-        if (isPointNearHandle && activeLayers.includes(isPointNearHandle.layerId)) {
+        if (isPointNearHandle && activeLayers.includes(isPointNearHandle.layerId) && activeLayers.length < 2) {
           setCanvasState({
             mode: CanvasMode.Edge,
             origin: isPointNearHandle.coordinates,
@@ -362,8 +361,6 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           findLayersInSelection(origin, point);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
-        if (activeLayers.length === 0 || activeLayers.length === 0) return;
-
         // Move selected layers
         const dx = point.x - canvasState.current!.x;
         const dy = point.y - canvasState.current!.y;

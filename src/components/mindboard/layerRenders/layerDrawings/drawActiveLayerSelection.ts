@@ -5,15 +5,18 @@ export const drawActiveLayerSelection = ({
   context,
   camera,
   canvasState,
+  activeLayers,
 }: {
   layer: Layer;
   context: CanvasRenderingContext2D;
   camera: Camera;
   canvasState: CanvasState;
+  activeLayers: string[];
 }): void => {
   if (
     (canvasState.mode === CanvasMode.None && canvasState?.hoveredLayerId === layer.id) ||
-    (canvasState.mode === CanvasMode.SelectionNet && canvasState?.selectedLayersIds?.includes(layer.id))
+    (canvasState.mode === CanvasMode.SelectionNet && canvasState?.selectedLayersIds?.includes(layer.id)) ||
+    (activeLayers.length > 0 && activeLayers.includes(layer.id))
   ) {
     const radius = 5;
 

@@ -33,7 +33,7 @@ export const layerRender = ({
   drawLayerBasedOnType({ layer, context, theme });
 
   // Draw selection outline for active layers
-  drawActiveLayerSelection({ layer, context, camera, canvasState });
+  drawActiveLayerSelection({ layer, context, camera, canvasState, activeLayers });
 
   // Draw layer handles
   drawLayerHandles({ layer, context, camera, theme, activeLayers, canvasState });
