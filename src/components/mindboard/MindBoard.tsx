@@ -369,13 +369,13 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           findLayersInSelection(origin, point);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
-        // Get the snap positions
-        const lockToHorizontalAlignment = alignments && alignments.vertical[0]?.otherLayerCenterPosition?.x;
-        const lockToVerticalAlignment = alignments && alignments.horizontal[0]?.otherLayerCenterPosition?.y;
-
         // Move selected layers
         const dx = point.x - canvasState.current!.x;
         const dy = point.y - canvasState.current!.y;
+
+        // Get the snap positions
+        const lockToHorizontalAlignment = activeLayers.length > 1 ? undefined : alignments && alignments.vertical[0]?.otherLayerCenterPosition?.x;
+        const lockToVerticalAlignment = activeLayers.length > 1 ? undefined : alignments && alignments.horizontal[0]?.otherLayerCenterPosition?.y;
 
         // Update layers
         setLayers((prev) =>
