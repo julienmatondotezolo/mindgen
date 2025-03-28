@@ -24,7 +24,9 @@ export const useBoardKeyboardEvents = ({
     boardId,
   });
 
-  const { edges, setEdges, activeEdgeId, setActiveEdgeId, deleteEdge } = useEdgeOperations({ boardId });
+  const { edges, setEdges, activeEdgeId, setActiveEdgeId, deleteEdge, deleteEdgeLayer } = useEdgeOperations({
+    boardId,
+  });
 
   const { fitView } = useCameraControls();
 
@@ -54,13 +56,17 @@ export const useBoardKeyboardEvents = ({
             (edge.toLayerId && activeLayers.includes(edge.toLayerId)),
         );
 
-        // Delete edges
-        if (edgesIdsToDelete.length > 0) {
-          deleteEdge({ edgeIdsToDelete: edgesIdsToDelete.map((edge) => edge.id) });
-        }
+        // // Delete edges
+        // if (edgesIdsToDelete.length > 0) {
+        //   deleteEdge({ edgeIdsToDelete: edgesIdsToDelete.map((edge) => edge.id) });
+        // }
 
-        // Delete layers
-        deleteLayer({ layerIdsToDelete: activeLayers });
+        // // Delete layers
+        // deleteLayer({ layerIdsToDelete: activeLayers });
+
+        // Delete edge layers
+        deleteEdgeLayer({ edgeIdsToDelete: edgesIdsToDelete.map((edge) => edge.id), layerIdsToDelete: activeLayers });
+
         unSelectLayer();
         fitView(layers);
       }
@@ -114,5 +120,6 @@ export const useBoardKeyboardEvents = ({
     deleteEdge,
     edges,
     unSelectLayer,
+    deleteEdgeLayer,
   ]);
 };

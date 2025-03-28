@@ -62,6 +62,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   // Edge operations
   const {
     addEdge,
+    addEdgeLayer,
     setEdges,
     activeEdgeId,
     setActiveEdgeId,
@@ -478,9 +479,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           canvasState.handleInfo?.isInHandle === false ||
           (canvasState.handleInfo?.layerId === activeLayers[0] && canvasState.handleInfo?.isInHandle === true)
         ) {
-          const addedLayerID = addLayer({ type: canvasState.handleInfo?.layerType, point: newLayerPosition });
-
-          addEdge({ canvasState, newEdgePosition, toLayerId: addedLayerID });
+          addEdgeLayer({
+            canvasState,
+            newEdgePosition,
+            type: canvasState.handleInfo?.layerType,
+            point: newLayerPosition,
+          });
         }
 
         // If the handle is in the handle, add an edge to the current layer
@@ -520,7 +524,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   }, [
     activeLayers,
     addEdge,
-    addLayer,
+    addEdgeLayer,
     canvasState,
     checkIfLayerIsLocked,
     fitView,

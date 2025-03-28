@@ -1,6 +1,6 @@
 import { ApiError } from "next/dist/server/api-utils";
 
-import { CustomSession, Edge } from "@/_types";
+import { CustomSession, Edge, Layer } from "@/_types";
 
 /* eslint-disable prettier/prettier */
 // add url for DEV
@@ -51,6 +51,52 @@ export async function addEdgeCommand({
   return responseAddEdge.json();
 }
 
+export async function addEdgeLayerCommand({
+  session,
+  boardId,
+  edge,
+  layer,
+}: {
+  session: CustomSession | null;
+  boardId: string;
+  edge: Edge;
+  layer: Layer;
+}): Promise<any> {
+  if (!session?.data.session) {
+    const noSession: ApiError = {
+      name: "No session provided",
+      statusCode: 401,
+      message: "No session provided",
+    };
+
+    throw noSession;
+  }
+
+  const responseAddEdgeLayer: Response = await fetch(baseUrl + `/mindmap/${boardId}/edge/with-layer`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.data.session.user.token}}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify({ edge, layer }),
+  });
+
+  if (!responseAddEdgeLayer.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Add edge layer",
+      statusCode: responseAddEdgeLayer.status,
+      message: await responseAddEdgeLayer.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseAddEdgeLayer.json();
+}
+
 export async function updateEdgeCommand({
   session,
   boardId,
@@ -95,6 +141,52 @@ export async function updateEdgeCommand({
   return responseUpdateEdge.json();
 }
 
+export async function updateEdgeLayerCommand({
+  session,
+  boardId,
+  edges,
+  layer,
+}: {
+  session: CustomSession | null;
+  boardId: string;
+  edges: Edge[];
+  layer: Layer[];
+}): Promise<any> {
+  if (!session?.data.session) {
+    const noSession: ApiError = {
+      name: "No session provided",
+      statusCode: 401,
+      message: "No session provided",
+    };
+
+    throw noSession;
+  }
+
+  const responseUpdateEdgeLayer: Response = await fetch(baseUrl + `/mindmap/${boardId}/edge/with-layer`, {
+    method: "PUT",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.data.session.user.token}}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify({ edges, layer }),
+  });
+
+  if (!responseUpdateEdgeLayer.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Update edge layer",
+      statusCode: responseUpdateEdgeLayer.status,
+      message: await responseUpdateEdgeLayer.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseUpdateEdgeLayer.json();
+}
+
 export async function deleteEdgeCommand({
   session,
   boardId,
@@ -137,4 +229,50 @@ export async function deleteEdgeCommand({
   }
 
   return responseDeleteEdge.ok;
+}
+
+export async function deleteEdgeLayerCommand({
+  session,
+  boardId,
+  edgeIdsToDelete,
+  layerIdsToDelete,
+}: {
+  session: CustomSession | null;
+  boardId: string;
+  edgeIdsToDelete: string[];
+  layerIdsToDelete: string[];
+}): Promise<any> {
+  if (!session?.data.session) {
+    const noSession: ApiError = {
+      name: "No session provided",
+      statusCode: 401,
+      message: "No session provided",
+    };
+
+    throw noSession;
+  }
+
+  const responseDeleteEdgeLayer: Response = await fetch(baseUrl + `/mindmap/${boardId}/edge/with-layer`, {
+    method: "DELETE",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.data.session.user.token}}`,
+      "ngrok-skip-browser-warning": "1",
+    },
+    body: JSON.stringify({ edgeIdsToDelete, layerIdsToDelete }),
+  });
+
+  if (!responseDeleteEdgeLayer.ok) {
+    // Create a structured error object
+    const errorData: ApiError = {
+      name: "Delete edge layer",
+      statusCode: responseDeleteEdgeLayer.status,
+      message: await responseDeleteEdgeLayer.text(),
+    };
+
+    throw errorData;
+  }
+
+  return responseDeleteEdgeLayer.ok;
 }

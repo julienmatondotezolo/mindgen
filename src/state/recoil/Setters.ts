@@ -3,7 +3,14 @@ import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "react-query";
 import { useRecoilCallback, useRecoilValue } from "recoil";
 
-import { addEdgeCommand, deleteEdgeCommand, updateEdgeCommand } from "@/_services/commands/edgeCommandService";
+import {
+  addEdgeCommand,
+  addEdgeLayerCommand,
+  deleteEdgeCommand,
+  deleteEdgeLayerCommand,
+  updateEdgeCommand,
+  updateEdgeLayerCommand,
+} from "@/_services/commands/edgeCommandService";
 import { addLayerCommand, deleteLayerCommand, updateLayerCommand } from "@/_services/commands/layerCommandService";
 import { CustomSession, Edge, Layer, LockedState } from "@/_types";
 import { ablyClient } from "@/app/providers";
@@ -352,6 +359,54 @@ export const useAddEdge = () => {
   );
 };
 
+export const useAddEdgeLayer = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
+
+  const { showMessage } = useMessage();
+
+  const addEdgeLayerCommandMutation = useMutation(addEdgeLayerCommand, {
+    onError: () => {
+      showMessage("error", "ERROR_ADD_EDGE_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries("board");
+    },
+  });
+
+  return useRecoilCallback(
+    ({ set }) =>
+      async ({ edge, layer, boardId }: { edge: Edge; layer: Layer; boardId: string }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          const addedEdge = [...currentEdges, edge];
+
+          return addedEdge;
+        });
+
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          const addedLayers = [...currentLayers, layer];
+
+          return addedLayers;
+        });
+
+        try {
+          // await channel.publish("add", { newLayer: layer });
+          addEdgeLayerCommandMutation.mutate({
+            edge,
+            layer,
+            boardId,
+            session: safeSession,
+          });
+        } catch (error) {
+          showMessage("error", "ERROR_ADD_EDGE_COMMAND");
+          // Invalidate the board query with correct boardId to refetch the latest data
+          queryClient.invalidateQueries("board");
+        }
+      },
+    [addEdgeLayerCommandMutation, queryClient, safeSession, showMessage],
+  );
+};
+
 export const useUpdateEdge = () => {
   const session = useSession();
   const safeSession: any = session ? (session as unknown as CustomSession) : null;
@@ -403,6 +458,66 @@ export const useUpdateEdge = () => {
   );
 };
 
+export const useUpdateEdgeLayer = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
+
+  const { showMessage } = useMessage();
+
+  const updateEdgeLayerCommandMutation = useMutation(updateEdgeLayerCommand, {
+    onError: () => {
+      showMessage("error", "ERROR_UPDATE_EDGE_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries("board");
+    },
+  });
+
+  return useRecoilCallback(
+    ({ set }) =>
+      async ({
+        updatedEdges,
+        updatedLayers,
+        boardId,
+      }: {
+        updatedEdges: Edge[];
+        updatedLayers: Layer[];
+        boardId: string;
+      }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          // Create a map of the updated edges for faster lookup
+          const updatedEdgesMap = new Map(updatedEdges.map((edge) => [edge.id, edge]));
+
+          // Return a new array with updated edges
+          return currentEdges.map((edge) => {
+            // If this edge has an update, return the updated version
+            const updatedEdge = updatedEdgesMap.get(edge.id);
+
+            if (updatedEdge) {
+              return updatedEdge;
+            }
+            // Otherwise keep the original edge
+            return edge;
+          });
+        });
+
+        try {
+          updateEdgeLayerCommandMutation.mutate({
+            edges: updatedEdges,
+            layer: updatedLayers,
+            boardId,
+            session: safeSession,
+          });
+        } catch (error) {
+          showMessage("error", "ERROR_UPDATE_EDGE_COMMAND");
+          // Invalidate the board query with correct boardId to refetch the latest data
+          queryClient.invalidateQueries("board");
+        }
+      },
+    [queryClient, safeSession, showMessage, updateEdgeLayerCommandMutation],
+  );
+};
+
 export const useRemoveEdge = () => {
   const session = useSession();
   const safeSession: any = session ? (session as unknown as CustomSession) : null;
@@ -442,6 +557,64 @@ export const useRemoveEdge = () => {
         }
       },
     [deleteEdgeCommandMutation, queryClient, safeSession, showMessage],
+  );
+};
+
+export const useRemoveEdgeLayer = () => {
+  const session = useSession();
+  const safeSession: any = session ? (session as unknown as CustomSession) : null;
+  const queryClient = useQueryClient();
+
+  const { showMessage } = useMessage();
+
+  const deleteEdgeLayerCommandMutation = useMutation(deleteEdgeLayerCommand, {
+    onError: () => {
+      showMessage("error", "ERROR_DELETE_EDGE_COMMAND");
+      // Invalidate the board query to refetch the latest data
+      queryClient.invalidateQueries("board");
+    },
+  });
+
+  return useRecoilCallback(
+    ({ set }) =>
+      async ({
+        edgeIdsToDelete,
+        layerIdsToDelete,
+        boardId,
+      }: {
+        edgeIdsToDelete: string[];
+        layerIdsToDelete: string[];
+        boardId: string;
+      }) => {
+        set(edgesAtomState, (currentEdges: Edge[]) => {
+          // Filter out the edges with IDs that should be deleted
+          const updatedEdges = currentEdges.filter((edge) => !edgeIdsToDelete.includes(edge.id));
+
+          return updatedEdges;
+        });
+
+        set(layerAtomState, (currentLayers: Layer[]) => {
+          // Filter out the layers with IDs that should be deleted
+          const updatedLayers = currentLayers.filter((layer) => !layerIdsToDelete.includes(layer.id));
+
+          return updatedLayers;
+        });
+
+        try {
+          // await channel.publish("add", { newLayer: layer });
+          deleteEdgeLayerCommandMutation.mutate({
+            edgeIdsToDelete,
+            layerIdsToDelete,
+            boardId,
+            session: safeSession,
+          });
+        } catch (error) {
+          showMessage("error", "ERROR_DELETE_EDGE_COMMAND");
+          // Also invalidate the query here in case the mutation doesn't reach the onError callback
+          queryClient.invalidateQueries("board");
+        }
+      },
+    [deleteEdgeLayerCommandMutation, queryClient, safeSession, showMessage],
   );
 };
 

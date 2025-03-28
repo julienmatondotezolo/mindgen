@@ -1,10 +1,11 @@
 import { Point } from "framer-motion";
 import { nanoid } from "nanoid";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useCallback } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition, LayerType } from "@/_types";
+import { CanvasState, Edge, EdgeShape, EdgeType, HandlePosition, Layer, LayerType } from "@/_types";
 import {
   activeEdgeIdAtom,
   activeLayersAtom,
@@ -12,8 +13,11 @@ import {
   canvasStateAtom,
   edgesAtomState,
   useAddEdge,
+  useAddEdgeLayer,
   useRemoveEdge,
+  useRemoveEdgeLayer,
   useUpdateEdge,
+  useUpdateEdgeLayer,
 } from "@/state";
 import {
   edgeSmoothStepPathString,
@@ -44,11 +48,15 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [camera] = useRecoilState(cameraStateAtom);
   const { theme } = useTheme();
+  const whiteboardText = useTranslations("Whiteboard");
 
   // Edge commands
   const addEdgeCommand = useAddEdge();
+  const addEdgeLayerCommand = useAddEdgeLayer();
   const updateEdgeCommand = useUpdateEdge();
+  const updateEdgeLayerCommand = useUpdateEdgeLayer();
   const deleteEdgeCommand = useRemoveEdge();
+  const deleteEdgeLayerCommand = useRemoveEdgeLayer();
 
   const isPointOnCurvedEdge = useCallback(
     ({ point, edge, proximityThreshold }: { point: Point; edge: Edge; proximityThreshold?: number }) => {
@@ -271,7 +279,7 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
     [setCanvasState],
   );
 
-  // Add a new layer
+  // Add a new edge
   const addEdge = useCallback(
     ({
       canvasState,
@@ -318,6 +326,66 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
     [activeLayers, addEdgeCommand, boardId, theme],
   );
 
+  // Add a new edge layer
+  const addEdgeLayer = useCallback(
+    ({
+      canvasState,
+      newEdgePosition,
+      type,
+      point,
+    }: {
+      canvasState: CanvasState;
+      newEdgePosition: Point;
+      type: LayerType;
+      point: Point;
+    }) => {
+      const newLayer: Layer = {
+        id: nanoid(),
+        type: type as any,
+        x: point.x, // Center the layer on the click point
+        y: point.y,
+        width: 200,
+        height: type === LayerType.Rectangle ? 60 : 200, // Make ellipses and diamonds square
+        fill: { r: 77, g: 106, b: 255 },
+        value: whiteboardText("typeSomething"),
+      };
+
+      const toLayerId = newLayer.id;
+
+      // Set the color of the shadow edge
+      const edgeColor = theme === "dark" ? { r: 180, g: 191, b: 204, a: 0.5 } : { r: 71, g: 85, b: 105, a: 0.5 };
+
+      // Create a new edge
+      const newEdge: Edge = {
+        id: nanoid(),
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        fromLayerId: activeLayers[0],
+        toLayerId,
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        start: canvasState.origin,
+        end: newEdgePosition,
+        color: edgeColor,
+        hoverColor: { r: 77, g: 106, b: 255 },
+        thickness: 2,
+        orientation: "auto",
+        type: EdgeType.Solid,
+        label: "",
+        shape: EdgeShape.Curved,
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        handleStart: canvasState.handleInfo?.handlePosition,
+        handleEnd:
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.handleInfo &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          getHandleEndPosition({ handleStartPosition: canvasState.handleInfo?.handlePosition }),
+      };
+
+      // Add the new edge layer
+      addEdgeLayerCommand({ edge: newEdge, layer: newLayer, boardId });
+    },
+    [activeLayers, addEdgeLayerCommand, boardId, theme, whiteboardText],
+  );
+
   // Update an edge
   const updateEdge = useCallback(
     ({ updatedEdges }: { updatedEdges: Edge[] }) => {
@@ -326,12 +394,28 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
     [boardId, updateEdgeCommand],
   );
 
+  // Update a new edge layer
+  const updateEdgeLayer = useCallback(
+    ({ updatedEdges, updatedLayers }: { updatedEdges: Edge[]; updatedLayers: Layer[] }) => {
+      updateEdgeLayerCommand({ updatedEdges, updatedLayers, boardId });
+    },
+    [boardId, updateEdgeLayerCommand],
+  );
+
   // Delete an edge
   const deleteEdge = useCallback(
     ({ edgeIdsToDelete }: { edgeIdsToDelete: string[] }) => {
       deleteEdgeCommand({ edgeIdsToDelete, boardId });
     },
     [boardId, deleteEdgeCommand],
+  );
+
+  // Update a new edge layer
+  const deleteEdgeLayer = useCallback(
+    ({ edgeIdsToDelete, layerIdsToDelete }: { edgeIdsToDelete: string[]; layerIdsToDelete: string[] }) => {
+      deleteEdgeLayerCommand({ edgeIdsToDelete, layerIdsToDelete, boardId });
+    },
+    [boardId, deleteEdgeLayerCommand],
   );
 
   return {
@@ -344,7 +428,10 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
     activeEdgeId,
     setActiveEdgeId,
     addEdge,
+    addEdgeLayer,
     updateEdge,
+    updateEdgeLayer,
     deleteEdge,
+    deleteEdgeLayer,
   };
 };
