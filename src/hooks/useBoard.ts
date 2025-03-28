@@ -19,6 +19,7 @@ import {
   layerAtomState,
   lockedAtomState,
 } from "@/state";
+import { sortLayersBySelection } from "@/utils/layerUtils";
 
 export const useBoard = () => {
   const lockedElements = useRecoilValue(lockedAtomState);
@@ -183,8 +184,8 @@ export const useBoard = () => {
     // Draw shadow edges
     drawShadowEdgeBasedOnType({ context, theme, canvasState });
 
-    // Draw layers
-    layers.forEach((layer) => {
+    // Draw layers & sort them by selection clicked layers should be on top
+    sortLayersBySelection({ layersToSort: layers, allActiveLayers: activeLayers }).forEach((layer) => {
       layerRender({ layer, context, camera, activeLayers, theme, canvasState, allLayers: layers });
     });
 

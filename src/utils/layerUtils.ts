@@ -296,3 +296,23 @@ export function findIntersectingLayersWithSelection(layers: Layer[], a: Point, b
 
   return Array.from(ids);
 }
+
+export const sortLayersBySelection = (({ layersToSort, allActiveLayers }: {layersToSort: Layer[], allActiveLayers: string[]}) => {
+  if (!Array.isArray(layersToSort)) {
+    console.error("layersToSort is not an array:", layersToSort);
+    return [layersToSort];
+  }
+
+  return [...layersToSort].sort((a, b) => {
+    if (!a || !b) {
+      console.error("Invalid layer object:", { a, b });
+      return 0;
+    }
+
+    const aSelected = allActiveLayers?.includes(a.id) ? 1 : 0;
+    const bSelected = allActiveLayers?.includes(b.id) ? 1 : 0;
+
+    return aSelected - bSelected; // Changed to sort selected layers first
+  });
+}
+);
