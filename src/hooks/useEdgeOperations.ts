@@ -12,6 +12,7 @@ import {
   cameraStateAtom,
   canvasStateAtom,
   edgesAtomState,
+  layerAtomState,
   useAddEdge,
   useAddEdgeLayer,
   useRemoveEdge,
@@ -44,6 +45,7 @@ type edgeHandleInfo = {
 export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   const [edges, setEdges] = useRecoilState(edgesAtomState);
   const [activeEdgeId, setActiveEdgeId] = useRecoilState(activeEdgeIdAtom);
+  const layers = useRecoilValue(layerAtomState);
   const activeLayers = useRecoilValue(activeLayersAtom);
   const setCanvasState = useSetRecoilState(canvasStateAtom);
   const [camera] = useRecoilState(cameraStateAtom);
@@ -57,6 +59,108 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   const updateEdgeLayerCommand = useUpdateEdgeLayer();
   const deleteEdgeCommand = useRemoveEdge();
   const deleteEdgeLayerCommand = useRemoveEdgeLayer();
+
+  // Update edge position if connected layer is moving
+  const updateEdgeIfConnectedLayerIsMoving = useCallback(
+    ({ edge }: { edge: Edge }): { start: Point; end: Point } | undefined => {
+      const fromLayer = edge.fromLayerId ? layers.find((layer) => layer.id === edge.fromLayerId) : null;
+      const toLayer = edge.toLayerId ? layers.find((layer) => layer.id === edge.toLayerId) : null;
+
+      const isFromLayerMoving = fromLayer && activeLayers.includes(fromLayer.id);
+      const isToLayerMoving = toLayer && activeLayers.includes(toLayer.id);
+
+      if (!isFromLayerMoving && !isToLayerMoving) return edge;
+
+      // Calculate new positions based on connected layer positions
+      let newStart = edge.start;
+      let newEnd = edge.end;
+
+      // Handle size and distance factor
+      const handleSize = 12;
+      const HANDLE_DISTANCE_FACTOR = 2.5;
+
+      // If there's a fromLayer connection, update the start position based on its position
+      if (fromLayer && isFromLayerMoving) {
+        // Use handleStart if available to determine exact connection point
+        // For now, we use a basic calculation (can be refined based on handle positions)
+        if (edge.handleStart) {
+          // If handle position is defined, calculate based on that
+          switch (edge.handleStart) {
+            case "TOP":
+              newStart = { x: fromLayer.x + fromLayer.width / 2, y: fromLayer.y - handleSize * HANDLE_DISTANCE_FACTOR };
+              break;
+            case "RIGHT":
+              newStart = {
+                x: fromLayer.x + fromLayer.width + handleSize * HANDLE_DISTANCE_FACTOR,
+                y: fromLayer.y + fromLayer.height / 2,
+              };
+              break;
+            case "BOTTOM":
+              newStart = {
+                x: fromLayer.x + fromLayer.width / 2,
+                y: fromLayer.y + fromLayer.height + handleSize * HANDLE_DISTANCE_FACTOR,
+              };
+              break;
+            case "LEFT":
+              newStart = {
+                x: fromLayer.x - handleSize * HANDLE_DISTANCE_FACTOR,
+                y: fromLayer.y + fromLayer.height / 2,
+              };
+              break;
+            default:
+              // Center as fallback
+              newStart = { x: fromLayer.x + fromLayer.width / 2, y: fromLayer.y + fromLayer.height / 2 };
+          }
+        } else {
+          // Default to center connection
+          newStart = { x: fromLayer.x + fromLayer.width / 2, y: fromLayer.y + fromLayer.height / 2 };
+        }
+      }
+
+      // If there's a toLayer connection, update the end position based on its position
+      if (toLayer && isToLayerMoving) {
+        // Use handleEnd if available to determine exact connection point
+        if (edge.handleEnd) {
+          // If handle position is defined, calculate based on that
+          switch (edge.handleEnd) {
+            case "TOP":
+              newEnd = { x: toLayer.x + toLayer.width / 2, y: toLayer.y - handleSize * HANDLE_DISTANCE_FACTOR };
+              break;
+            case "RIGHT":
+              newEnd = {
+                x: toLayer.x + toLayer.width + handleSize * HANDLE_DISTANCE_FACTOR,
+                y: toLayer.y + toLayer.height / 2,
+              };
+              break;
+            case "BOTTOM":
+              newEnd = {
+                x: toLayer.x + toLayer.width / 2,
+                y: toLayer.y + toLayer.height + handleSize * HANDLE_DISTANCE_FACTOR,
+              };
+              break;
+            case "LEFT":
+              newEnd = {
+                x: toLayer.x - handleSize * HANDLE_DISTANCE_FACTOR,
+                y: toLayer.y + toLayer.height / 2,
+              };
+              break;
+            default:
+              // Center as fallback
+              newEnd = { x: toLayer.x + toLayer.width / 2, y: toLayer.y + toLayer.height / 2 };
+          }
+        } else {
+          // Default to center connection
+          newEnd = { x: toLayer.x + toLayer.width / 2, y: toLayer.y + toLayer.height / 2 };
+        }
+      }
+
+      return {
+        start: newStart,
+        end: newEnd,
+      };
+    },
+    [activeLayers, layers],
+  );
 
   const isPointOnCurvedEdge = useCallback(
     ({ point, edge, proximityThreshold }: { point: Point; edge: Edge; proximityThreshold?: number }) => {
@@ -433,5 +537,6 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
     updateEdgeLayer,
     deleteEdge,
     deleteEdgeLayer,
+    updateEdgeIfConnectedLayerIsMoving,
   };
 };
