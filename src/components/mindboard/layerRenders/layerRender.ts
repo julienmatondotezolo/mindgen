@@ -28,7 +28,7 @@ export const layerRender = ({
   allLayers: Layer[];
 }): void => {
   // Draw shadow layer
-  drawShadowLayerBasedOnType({ layer, context, theme, activeLayers, canvasState });
+  drawShadowLayerBasedOnType({ layer, context, canvasState, theme, activeLayers });
 
   // Draw shapes based on type
   drawLayerBasedOnType({ layer, context, theme });
@@ -37,14 +37,17 @@ export const layerRender = ({
   drawActiveLayerSelection({ layer, context, camera, canvasState, activeLayers });
 
   // Draw layer handles
-  drawLayerHandles({ layer, context, camera, theme, activeLayers, canvasState });
+  drawLayerHandles({ layer, context, camera, canvasState, theme, activeLayers });
 
   // Draw resize grips
-  drawResizeGrips({ layer, context, camera, activeLayers, canvasState, allLayers });
+  drawResizeGrips({ layer, context, camera, canvasState, activeLayers, allLayers });
 
   // Draw layer text
   drawLayerText({ layer, context, camera, theme });
 
   // Draw alignment guidelines if available and the layer is active
   drawAlignmentGuidelines({ context, camera, canvasState });
+
+  // Draw layer selection tool
+  // drawLayerSelectionTool({ layer, context, camera, canvasState, theme, activeLayers, allLayers });
 };
