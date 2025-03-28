@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
@@ -70,6 +71,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     findEdgeNearPoint,
     findEdgeHandleAtPoint,
     lockEdgeToNearestLayerHandle,
+    updateEdgeIfConnectedLayerIsMoving,
   } = useEdgeOperations({ boardId });
 
   // Setup canvas on mount
@@ -365,11 +367,13 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           findLayersInSelection(origin, point);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
+        // Get the snap positions
+        const lockToHorizontalAlignment = alignments && alignments.vertical[0]?.otherLayerCenterPosition?.x;
+        const lockToVerticalAlignment = alignments && alignments.horizontal[0]?.otherLayerCenterPosition?.y;
+
         // Move selected layers
         const dx = point.x - canvasState.current!.x;
         const dy = point.y - canvasState.current!.y;
-
-        console.log("alignments:", alignments);
 
         // Update layers
         setLayers((prev) =>
@@ -377,8 +381,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             if (activeLayers.includes(layer.id)) {
               return {
                 ...layer,
-                x: layer.x + dx,
-                y: layer.y + dy,
+                x: (layersAtPoint && lockToHorizontalAlignment) ?? layer.x + dx,
+                y: (layersAtPoint && lockToVerticalAlignment) ?? layer.y + dy,
               };
             }
             return layer;
@@ -388,19 +392,16 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         // Update connected edges
         setEdges((prev) =>
           prev.map((edge) => {
-            const updateStart = edge.fromLayerId && activeLayers.includes(edge.fromLayerId);
-            const updateEnd = edge.toLayerId && activeLayers.includes(edge.toLayerId);
-
-            if (!updateStart && !updateEnd) return edge;
+            const { start, end } = updateEdgeIfConnectedLayerIsMoving({ edge }) ?? { start: edge.start, end: edge.end };
 
             return {
               ...edge,
-              start: updateStart ? { x: edge.start.x + dx, y: edge.start.y + dy } : edge.start,
-              end: updateEnd ? { x: edge.end.x + dx, y: edge.end.y + dy } : edge.end,
+              start,
+              end,
             };
           }),
         );
-
+        
         // Update initialLayerBounds
         setCanvasState((prev) => {
           // Create an array with all active layers with their updated positions
@@ -419,6 +420,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             })
             .filter((layer) => layer !== null) as Layer[];
 
+
           return {
             ...prev,
             current: point,
@@ -435,27 +437,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
       renderCanvas();
     },
-    [
-      camera,
-      canvasRef,
-      findLayerAtPoint,
-      findHandleNearPoint,
-      findHandleAtPoint,
-      findAlignments,
-      findEdgeNearPoint,
-      findEdgeHandleAtPoint,
-      canvasState,
-      renderCanvas,
-      activeLayers,
-      activeEdgeId,
-      setCanvasState,
-      setEdges,
-      lockEdgeToNearestLayerHandle,
-      findLayersInSelection,
-      setLayers,
-      isDebugMode,
-      layers,
-    ],
+    [camera, canvasRef, findLayerAtPoint, findHandleNearPoint, findHandleAtPoint, findAlignments, findEdgeNearPoint, findEdgeHandleAtPoint, canvasState, renderCanvas, activeLayers, activeEdgeId, setCanvasState, setEdges, lockEdgeToNearestLayerHandle, findLayersInSelection, setLayers, isDebugMode, updateEdgeIfConnectedLayerIsMoving, layers],
   );
 
   const handleMouseUp = useCallback(() => {
