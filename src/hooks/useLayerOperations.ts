@@ -219,6 +219,104 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     [activeLayers, layers, setCanvasState],
   );
 
+  // Find if current selected layers is aligning vertically our horizontally to any other layer bounding box
+  // Return the positions of the founded layers it is aligning with
+  const findAlignments = useCallback(() => {
+    if (!activeLayers.length) return null;
+
+    const selectedLayers = layers.filter((layer) => activeLayers.includes(layer.id));
+    const nonSelectedLayers = layers.filter((layer) => !activeLayers.includes(layer.id));
+
+    if (!selectedLayers.length || !nonSelectedLayers.length) return null;
+
+    const alignments = {
+      vertical: [] as { position: number; isCenter?: boolean; isLeft?: boolean; isRight?: boolean }[],
+      horizontal: [] as { position: number; isCenter?: boolean; isTop?: boolean; isBottom?: boolean }[],
+    };
+
+    // For each selected layer, check alignment with non-selected layers
+    selectedLayers.forEach((selectedLayer) => {
+      const selectedLeft = selectedLayer.x;
+      const selectedRight = selectedLayer.x + selectedLayer.width;
+      const selectedCenterX = selectedLayer.x + selectedLayer.width / 2;
+      const selectedTop = selectedLayer.y;
+      const selectedBottom = selectedLayer.y + selectedLayer.height;
+      const selectedCenterY = selectedLayer.y + selectedLayer.height / 2;
+
+      // Tolerance for alignment detection (within 2 pixels)
+      const tolerance = 2;
+
+      nonSelectedLayers.forEach((otherLayer) => {
+        const otherLeft = otherLayer.x;
+        const otherRight = otherLayer.x + otherLayer.width;
+        const otherCenterX = otherLayer.x + otherLayer.width / 2;
+        const otherTop = otherLayer.y;
+        const otherBottom = otherLayer.y + otherLayer.height;
+        const otherCenterY = otherLayer.y + otherLayer.height / 2;
+
+        // Check vertical alignments
+        if (Math.abs(selectedLeft - otherLeft) <= tolerance) {
+          const exists = alignments.vertical.some((a) => Math.abs(a.position - selectedLeft) <= tolerance && a.isLeft);
+
+          if (!exists) {
+            alignments.vertical.push({ position: selectedLeft, isLeft: true });
+          }
+        }
+
+        if (Math.abs(selectedCenterX - otherCenterX) <= tolerance) {
+          const exists = alignments.vertical.some(
+            (a) => Math.abs(a.position - selectedCenterX) <= tolerance && a.isCenter,
+          );
+
+          if (!exists) {
+            alignments.vertical.push({ position: selectedCenterX, isCenter: true });
+          }
+        }
+
+        if (Math.abs(selectedRight - otherRight) <= tolerance) {
+          const exists = alignments.vertical.some(
+            (a) => Math.abs(a.position - selectedRight) <= tolerance && a.isRight,
+          );
+
+          if (!exists) {
+            alignments.vertical.push({ position: selectedRight, isRight: true });
+          }
+        }
+
+        // Check horizontal alignments
+        if (Math.abs(selectedTop - otherTop) <= tolerance) {
+          const exists = alignments.horizontal.some((a) => Math.abs(a.position - selectedTop) <= tolerance && a.isTop);
+
+          if (!exists) {
+            alignments.horizontal.push({ position: selectedTop, isTop: true });
+          }
+        }
+
+        if (Math.abs(selectedCenterY - otherCenterY) <= tolerance) {
+          const exists = alignments.horizontal.some(
+            (a) => Math.abs(a.position - selectedCenterY) <= tolerance && a.isCenter,
+          );
+
+          if (!exists) {
+            alignments.horizontal.push({ position: selectedCenterY, isCenter: true });
+          }
+        }
+
+        if (Math.abs(selectedBottom - otherBottom) <= tolerance) {
+          const exists = alignments.horizontal.some(
+            (a) => Math.abs(a.position - selectedBottom) <= tolerance && a.isBottom,
+          );
+
+          if (!exists) {
+            alignments.horizontal.push({ position: selectedBottom, isBottom: true });
+          }
+        }
+      });
+    });
+
+    return alignments;
+  }, [activeLayers, layers]);
+
   // Add a new layer
   const addLayer = useCallback(
     ({ type, point }: { type: LayerType; point: Point }) => {
@@ -266,6 +364,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     findHandleNearPoint,
     findHandleAtPoint,
     findLayersInSelection,
+    findAlignments,
     addLayer,
     updateLayer,
     deleteLayer,

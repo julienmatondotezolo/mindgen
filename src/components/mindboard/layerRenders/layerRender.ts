@@ -2,6 +2,7 @@ import { Camera, CanvasState, Layer } from "@/_types";
 
 import {
   drawActiveLayerSelection,
+  drawAlignmentGuidelines,
   drawLayerBasedOnType,
   drawLayerHandles,
   drawLayerText,
@@ -43,4 +44,7 @@ export const layerRender = ({
 
   // Draw layer text
   drawLayerText({ layer, context, camera, theme });
+
+  // Draw alignment guidelines if available and the layer is active
+  drawAlignmentGuidelines({ context, camera, canvasState });
 };

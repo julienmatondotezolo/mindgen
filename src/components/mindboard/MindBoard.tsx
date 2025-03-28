@@ -50,6 +50,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     findLayerAtPoint,
     findLayerIdsAtPoint,
     findLayersInSelection,
+    findAlignments,
     addLayer,
     updateLayer,
     layers,
@@ -212,6 +213,9 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       // Find handle at current mouse position
       const isPointInHandle = findHandleAtPoint(point);
 
+      // Get alignments data when a layer is being moved/resized
+      const alignments = findAlignments();
+
       // Find edge at current mouse position
       const edgeNearPoint = findEdgeNearPoint(point);
       // Find EDGE HANDLE at current mouse position
@@ -365,6 +369,8 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         const dx = point.x - canvasState.current!.x;
         const dy = point.y - canvasState.current!.y;
 
+        console.log("alignments:", alignments);
+
         // Update layers
         setLayers((prev) =>
           prev.map((layer) => {
@@ -416,6 +422,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           return {
             ...prev,
             current: point,
+            alignments,
             initialLayerBounds: updatedActiveLayers,
           };
         });
@@ -434,6 +441,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       findLayerAtPoint,
       findHandleNearPoint,
       findHandleAtPoint,
+      findAlignments,
       findEdgeNearPoint,
       findEdgeHandleAtPoint,
       canvasState,

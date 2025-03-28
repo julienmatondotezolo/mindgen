@@ -5,6 +5,11 @@ export type Camera = {
   scale: number;
 };
 
+export type Alignment = {
+  vertical: { position: number; isCenter?: boolean; isLeft?: boolean; isRight?: boolean }[];
+  horizontal: { position: number; isCenter?: boolean; isTop?: boolean; isBottom?: boolean }[];
+} | null;
+
 export type Color = {
   r: number;
   g: number;
@@ -245,6 +250,7 @@ export type CanvasState =
       mode: CanvasMode.Translating;
       current: Point;
       initialLayerBounds: Layer[];
+      alignments?: Alignment;
     }
   | {
       mode: CanvasMode.Typing;

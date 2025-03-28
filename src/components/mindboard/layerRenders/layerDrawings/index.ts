@@ -1,4 +1,5 @@
 export * from "./drawActiveLayerSelection";
+export * from "./drawAlignmentGuidelines";
 export * from "./drawLayerBasedOnType";
 export * from "./drawLayerHandles";
 export * from "./drawLayerText";
