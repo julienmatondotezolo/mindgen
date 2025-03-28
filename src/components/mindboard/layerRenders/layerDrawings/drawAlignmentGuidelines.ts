@@ -20,7 +20,7 @@ export const drawAlignmentGuidelines = ({
 
   // Set guideline style
   context.strokeStyle = "#2D9CDB"; // Blue color for guidelines
-  context.lineWidth = 2 / camera.scale;
+  context.lineWidth = 1 / camera.scale;
   context.setLineDash([4, 4]); // Dashed line
 
   // Get canvas dimensions
@@ -29,6 +29,8 @@ export const drawAlignmentGuidelines = ({
 
   // Draw vertical guidelines
   alignments.vertical.forEach((alignment) => {
+    if (alignment.isCenter) return;
+
     const x = alignment.position;
 
     context.beginPath();
@@ -39,6 +41,8 @@ export const drawAlignmentGuidelines = ({
 
   // Draw horizontal guidelines
   alignments.horizontal.forEach((alignment) => {
+    if (alignment.isCenter) return;
+
     const y = alignment.position;
 
     context.beginPath();

@@ -230,12 +230,25 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     if (!selectedLayers.length || !nonSelectedLayers.length) return null;
 
     const alignments = {
-      vertical: [] as { position: number; isCenter?: boolean; isLeft?: boolean; isRight?: boolean }[],
-      horizontal: [] as { position: number; isCenter?: boolean; isTop?: boolean; isBottom?: boolean }[],
+      vertical: [] as {
+        position: number;
+        isCenter?: boolean;
+        isLeft?: boolean;
+        isRight?: boolean;
+        otherLayerCenterPosition?: { x: number };
+      }[],
+      horizontal: [] as {
+        position: number;
+        isCenter?: boolean;
+        isTop?: boolean;
+        isBottom?: boolean;
+        otherLayerCenterPosition?: { y: number };
+      }[],
+      isPointNearCenterAlignment: false,
     };
 
     // For each selected layer, check alignment with non-selected layers
-    selectedLayers.forEach((selectedLayer) => {
+    selectedLayers.forEach((selectedLayer: Layer) => {
       const selectedLeft = selectedLayer.x;
       const selectedRight = selectedLayer.x + selectedLayer.width;
       const selectedCenterX = selectedLayer.x + selectedLayer.width / 2;
@@ -243,8 +256,8 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       const selectedBottom = selectedLayer.y + selectedLayer.height;
       const selectedCenterY = selectedLayer.y + selectedLayer.height / 2;
 
-      // Tolerance for alignment detection (within 2 pixels)
-      const tolerance = 2;
+      // Tolerance for alignment detection (within 10 pixels)
+      const tolerance = 3;
 
       nonSelectedLayers.forEach((otherLayer) => {
         const otherLeft = otherLayer.x;
@@ -259,7 +272,11 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
           const exists = alignments.vertical.some((a) => Math.abs(a.position - selectedLeft) <= tolerance && a.isLeft);
 
           if (!exists) {
-            alignments.vertical.push({ position: selectedLeft, isLeft: true });
+            alignments.vertical.push({
+              position: selectedLeft,
+              isLeft: true,
+              otherLayerCenterPosition: { x: otherLayer.x },
+            });
           }
         }
 
@@ -269,7 +286,11 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
           );
 
           if (!exists) {
-            alignments.vertical.push({ position: selectedCenterX, isCenter: true });
+            alignments.vertical.push({
+              position: selectedCenterX,
+              isCenter: true,
+              otherLayerCenterPosition: { x: otherLayer.x },
+            });
           }
         }
 
@@ -279,7 +300,11 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
           );
 
           if (!exists) {
-            alignments.vertical.push({ position: selectedRight, isRight: true });
+            alignments.vertical.push({
+              position: selectedRight,
+              isRight: true,
+              otherLayerCenterPosition: { x: otherLayer.x },
+            });
           }
         }
 
@@ -288,7 +313,11 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
           const exists = alignments.horizontal.some((a) => Math.abs(a.position - selectedTop) <= tolerance && a.isTop);
 
           if (!exists) {
-            alignments.horizontal.push({ position: selectedTop, isTop: true });
+            alignments.horizontal.push({
+              position: selectedTop,
+              isTop: true,
+              otherLayerCenterPosition: { y: selectedTop },
+            });
           }
         }
 
@@ -298,7 +327,11 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
           );
 
           if (!exists) {
-            alignments.horizontal.push({ position: selectedCenterY, isCenter: true });
+            alignments.horizontal.push({
+              position: selectedCenterY,
+              isCenter: true,
+              otherLayerCenterPosition: { y: undefined },
+            });
           }
         }
 
@@ -308,7 +341,11 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
           );
 
           if (!exists) {
-            alignments.horizontal.push({ position: selectedBottom, isBottom: true });
+            alignments.horizontal.push({
+              position: selectedBottom,
+              isBottom: true,
+              otherLayerCenterPosition: { y: selectedTop },
+            });
           }
         }
       });

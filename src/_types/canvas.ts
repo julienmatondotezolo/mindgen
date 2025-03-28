@@ -6,8 +6,21 @@ export type Camera = {
 };
 
 export type Alignment = {
-  vertical: { position: number; isCenter?: boolean; isLeft?: boolean; isRight?: boolean }[];
-  horizontal: { position: number; isCenter?: boolean; isTop?: boolean; isBottom?: boolean }[];
+  vertical: {
+    position: number;
+    isCenter?: boolean;
+    isLeft?: boolean;
+    isRight?: boolean;
+    otherLayerCenterPosition?: { y: number };
+  }[];
+  horizontal: {
+    position: number;
+    isCenter?: boolean;
+    isTop?: boolean;
+    isBottom?: boolean;
+    otherLayerCenterPosition?: { x: number };
+  }[];
+  isPointNearCenterAlignment: boolean;
 } | null;
 
 export type Color = {

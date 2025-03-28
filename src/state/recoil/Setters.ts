@@ -19,6 +19,7 @@ import { useMessage } from "@/components/ui/message-provider";
 import { activeEdgeIdAtom, activeLayersAtom, edgesAtomState, layerAtomState } from "./atoms";
 
 /* ----------------- LAYERS ----------------- */
+
 export const useSelectElement = ({ boardId }: { boardId: string }) => {
   const { self } = useMembers();
 
