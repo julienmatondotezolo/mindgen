@@ -17,7 +17,8 @@ export const drawResizeGrips = ({
   allLayers?: Layer[];
 }): void => {
   // Handle size is 8px
-  let handleSize = 8 / camera.scale;
+  let hoveredHandleSize = 15;
+  let handleSize = 10 / camera.scale;
 
   // If layer is active and canvas state is None, Grab, or Inserting, then draw the resize grips
   if (
@@ -81,10 +82,12 @@ export const drawResizeGrips = ({
 
           // Draw the bounding box resize handles
           handles.forEach((handle) => {
+            const activeHandleSize = currentCorner === handle.corner ? hoveredHandleSize / camera.scale : handleSize;
+
             context.fillStyle = currentCorner === handle.corner ? "#2563eb" : "#ffffff";
-            context.fillRect(handle.x, handle.y, handleSize, handleSize);
+            context.fillRect(handle.x, handle.y, activeHandleSize, activeHandleSize);
             context.strokeStyle = currentCorner === handle.corner ? "#2563eb" : "#2563eb";
-            context.strokeRect(handle.x, handle.y, handleSize, handleSize);
+            context.strokeRect(handle.x, handle.y, activeHandleSize, activeHandleSize);
           });
         }
       }
@@ -120,12 +123,12 @@ export const drawResizeGrips = ({
       ];
 
       handles.forEach((handle) => {
-        const handleSize = currentCorner === handle.corner ? 12 / camera.scale : 8 / camera.scale;
+        const activeHandleSize = currentCorner === handle.corner ? hoveredHandleSize / camera.scale : handleSize;
 
         context.fillStyle = currentCorner === handle.corner ? "#2563eb" : "#ffffff";
-        context.fillRect(handle.x, handle.y, handleSize, handleSize);
+        context.fillRect(handle.x, handle.y, activeHandleSize, activeHandleSize);
         context.strokeStyle = currentCorner === handle.corner ? "#2563eb" : "#2563eb";
-        context.strokeRect(handle.x, handle.y, handleSize, handleSize);
+        context.strokeRect(handle.x, handle.y, activeHandleSize, activeHandleSize);
       });
     }
   }

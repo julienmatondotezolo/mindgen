@@ -2,9 +2,9 @@
 import { nanoid } from "nanoid";
 import { useTranslations } from "next-intl";
 import { useCallback } from "react";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-import { Corner, Layer, LayerType, Point, XYWH } from "@/_types/canvas";
+import { CanvasMode, Corner, Layer, LayerType, Point, XYWH } from "@/_types/canvas";
 import {
   activeLayersAtom,
   canvasStateAtom,
@@ -18,7 +18,7 @@ import {
 import { calculateLayerBoundingBox, getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = ({ boardId }: { boardId: string }) => {
-  const setCanvasState = useSetRecoilState(canvasStateAtom);
+  const [canvasState, setCanvasState] = useRecoilState(canvasStateAtom);
   const [layers, setLayers] = useRecoilState(layerAtomState);
   const activeLayers = useRecoilValue(activeLayersAtom);
   const whiteboardText = useTranslations("Whiteboard");
@@ -214,8 +214,8 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
         };
       }
 
-      // Handle size is 8px (same as in drawResizeGrips)
-      const handleSize = 8;
+      // Handle size is 12px (same as in drawResizeGrips)
+      const handleSize = canvasState.mode === CanvasMode.Resizing ? 50 : 20;
 
       // Define the grip areas (same positions as in drawResizeGrips)
       const gripAreas = [
@@ -255,6 +255,189 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       return null;
     },
     [activeLayers, layers],
+  );
+
+  // Resizing a layer ou multiple layers using state corner position
+  const resizeSelectedLayer = useCallback(
+    ({
+      point,
+      layer,
+      isMouseDown,
+      isShiftPressed,
+      initialBounds,
+      corner,
+    }: {
+      point: Point;
+      layer: Layer;
+      isMouseDown: boolean;
+      isShiftPressed: boolean;
+      initialBounds: XYWH;
+      corner: Corner;
+    }) => {
+      if (!isMouseDown) return;
+
+      // Minimum width & height in pixels
+      const MIN_WIDTH = layer.type === LayerType.Rectangle ? 100 : 160;
+      const MIN_HEIGHT = layer.type === LayerType.Rectangle ? 50 : 160;
+
+      // Clone the layer to avoid direct mutation
+      const newLayer = { ...layer };
+
+      // Calculate aspect ratio if shift is pressed
+      const aspectRatio = isShiftPressed ? initialBounds.width / initialBounds.height : null;
+
+      // Initialize new width and height
+      let newWidth, newHeight;
+
+      // Apply different calculations based on which corner is being dragged
+      switch (corner) {
+        case Corner.TopLeft:
+          // Calculate new dimensions
+          newWidth = initialBounds.x + initialBounds.width - point.x;
+          newHeight = initialBounds.y + initialBounds.height - point.y;
+
+          // Apply aspect ratio constraint if shift is pressed
+          if (aspectRatio !== null) {
+            // Determine which dimension to prioritize based on mouse movement
+            const widthChange = Math.abs(newWidth - initialBounds.width);
+            const heightChange = Math.abs(newHeight - initialBounds.height);
+
+            if (widthChange >= heightChange) {
+              newHeight = newWidth / aspectRatio;
+            } else {
+              newWidth = newHeight * aspectRatio;
+            }
+          }
+
+          // Ensure minimum dimensions
+          newWidth = Math.max(newWidth, MIN_WIDTH);
+          newHeight = Math.max(newHeight, MIN_HEIGHT);
+
+          // Update layer properties
+          newLayer.width = newWidth;
+          newLayer.height = newHeight;
+          newLayer.x = initialBounds.x + initialBounds.width - newWidth;
+          newLayer.y = initialBounds.y + initialBounds.height - newHeight;
+          break;
+
+        case Corner.TopCenter:
+          // Only adjust height and y position
+          newHeight = initialBounds.y + initialBounds.height - point.y;
+          newHeight = Math.max(newHeight, MIN_HEIGHT);
+
+          newLayer.height = newHeight;
+          newLayer.y = initialBounds.y + initialBounds.height - newHeight;
+          break;
+
+        case Corner.TopRight:
+          // Calculate new dimensions
+          newWidth = point.x - initialBounds.x;
+          newHeight = initialBounds.y + initialBounds.height - point.y;
+
+          // Apply aspect ratio constraint if shift is pressed
+          if (aspectRatio !== null) {
+            const widthChange = Math.abs(newWidth - initialBounds.width);
+            const heightChange = Math.abs(newHeight - initialBounds.height);
+
+            if (widthChange >= heightChange) {
+              newHeight = newWidth / aspectRatio;
+            } else {
+              newWidth = newHeight * aspectRatio;
+            }
+          }
+
+          // Ensure minimum dimensions
+          newWidth = Math.max(newWidth, MIN_WIDTH);
+          newHeight = Math.max(newHeight, MIN_HEIGHT);
+
+          // Update layer properties
+          newLayer.width = newWidth;
+          newLayer.height = newHeight;
+          newLayer.y = initialBounds.y + initialBounds.height - newHeight;
+          break;
+
+        case Corner.MiddleRight:
+          // Only adjust width
+          newWidth = point.x - initialBounds.x;
+          newWidth = Math.max(newWidth, MIN_WIDTH);
+
+          newLayer.width = newWidth;
+          break;
+
+        case Corner.BottomRight:
+          // Calculate new dimensions
+          newWidth = point.x - initialBounds.x;
+          newHeight = point.y - initialBounds.y;
+
+          // Apply aspect ratio constraint if shift is pressed
+          if (aspectRatio !== null) {
+            const widthChange = Math.abs(newWidth - initialBounds.width);
+            const heightChange = Math.abs(newHeight - initialBounds.height);
+
+            if (widthChange >= heightChange) {
+              newHeight = newWidth / aspectRatio;
+            } else {
+              newWidth = newHeight * aspectRatio;
+            }
+          }
+
+          // Ensure minimum dimensions
+          newWidth = Math.max(newWidth, MIN_WIDTH);
+          newHeight = Math.max(newHeight, MIN_HEIGHT);
+
+          // Update layer properties
+          newLayer.width = newWidth;
+          newLayer.height = newHeight;
+          break;
+
+        case Corner.BottomCenter:
+          // Only adjust height
+          newHeight = point.y - initialBounds.y;
+          newHeight = Math.max(newHeight, MIN_HEIGHT);
+
+          newLayer.height = newHeight;
+          break;
+
+        case Corner.BottomLeft:
+          // Calculate new dimensions
+          newWidth = initialBounds.x + initialBounds.width - point.x;
+          newHeight = point.y - initialBounds.y;
+
+          // Apply aspect ratio constraint if shift is pressed
+          if (aspectRatio !== null) {
+            const widthChange = Math.abs(newWidth - initialBounds.width);
+            const heightChange = Math.abs(newHeight - initialBounds.height);
+
+            if (widthChange >= heightChange) {
+              newHeight = newWidth / aspectRatio;
+            } else {
+              newWidth = newHeight * aspectRatio;
+            }
+          }
+
+          // Ensure minimum dimensions
+          newWidth = Math.max(newWidth, MIN_WIDTH);
+          newHeight = Math.max(newHeight, MIN_HEIGHT);
+
+          // Update layer properties
+          newLayer.width = newWidth;
+          newLayer.height = newHeight;
+          newLayer.x = initialBounds.x + initialBounds.width - newWidth;
+          break;
+
+        case Corner.MiddleLeft:
+          // Only adjust width and x position
+          newWidth = initialBounds.x + initialBounds.width - point.x;
+          newWidth = Math.max(newWidth, MIN_WIDTH);
+
+          newLayer.width = newWidth;
+          newLayer.x = initialBounds.x + initialBounds.width - newWidth;
+          break;
+      }
+
+      return newLayer;
+    },
+    [],
   );
 
   // Find layers inside a selection rectangle
@@ -488,6 +671,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     findResizeGripAtPoint,
     findLayersInSelection,
     findAlignments,
+    resizeSelectedLayer,
     addLayer,
     updateLayer,
     deleteLayer,
