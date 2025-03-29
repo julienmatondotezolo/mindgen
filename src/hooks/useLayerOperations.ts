@@ -279,17 +279,18 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
       // For multiple layers, only grab them once and only when needed
       const isMultiSelect = activeLayers.length > 1;
-      
+
       // Handle multiple layers case
       if (isMultiSelect) {
         // Performance optimization: Filter only once and reuse result
         const selectedLayers = layers.filter((l) => activeLayers.includes(l.id));
+
         if (!selectedLayers.length) return [];
-        
+
         // Pre-calculate constants
         const MIN_WIDTH = 100;
         const MIN_HEIGHT = 50;
-        
+
         // Use let for values that will change
         let scaleX = 1;
         let scaleY = 1;
@@ -299,159 +300,159 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
         let newBoundingHeight = initialBounds.height;
         let newBoundingX = initialBounds.x;
         let newBoundingY = initialBounds.y;
-        
+
         // Calculate aspect ratio outside of switch for better performance
         const aspectRatio = isShiftPressed ? initialBounds.width / initialBounds.height : null;
-        
+
         // Optimize resize calculations
         switch (corner) {
           case Corner.TopLeft: {
             newBoundingWidth = initialBounds.x + initialBounds.width - point.x;
             newBoundingHeight = initialBounds.y + initialBounds.height - point.y;
-            
+
             if (aspectRatio !== null) {
               const widthChange = Math.abs(newBoundingWidth - initialBounds.width);
               const heightChange = Math.abs(newBoundingHeight - initialBounds.height);
-              
+
               if (widthChange >= heightChange) {
                 newBoundingHeight = newBoundingWidth / aspectRatio;
               } else {
                 newBoundingWidth = newBoundingHeight * aspectRatio;
               }
             }
-            
+
             newBoundingWidth = Math.max(newBoundingWidth, MIN_WIDTH);
             newBoundingHeight = Math.max(newBoundingHeight, MIN_HEIGHT);
             newBoundingX = initialBounds.x + initialBounds.width - newBoundingWidth;
             newBoundingY = initialBounds.y + initialBounds.height - newBoundingHeight;
-            
+
             scaleX = newBoundingWidth / initialBounds.width;
             scaleY = newBoundingHeight / initialBounds.height;
             translateX = newBoundingX - initialBounds.x;
             translateY = newBoundingY - initialBounds.y;
             break;
           }
-          
+
           case Corner.TopCenter: {
             newBoundingHeight = initialBounds.y + initialBounds.height - point.y;
             newBoundingHeight = Math.max(newBoundingHeight, MIN_HEIGHT);
             newBoundingY = initialBounds.y + initialBounds.height - newBoundingHeight;
-            
+
             scaleY = newBoundingHeight / initialBounds.height;
             translateY = newBoundingY - initialBounds.y;
             break;
           }
-          
+
           case Corner.TopRight: {
             newBoundingWidth = point.x - initialBounds.x;
             newBoundingHeight = initialBounds.y + initialBounds.height - point.y;
-            
+
             if (aspectRatio !== null) {
               const widthChange = Math.abs(newBoundingWidth - initialBounds.width);
               const heightChange = Math.abs(newBoundingHeight - initialBounds.height);
-              
+
               if (widthChange >= heightChange) {
                 newBoundingHeight = newBoundingWidth / aspectRatio;
               } else {
                 newBoundingWidth = newBoundingHeight * aspectRatio;
               }
             }
-            
+
             newBoundingWidth = Math.max(newBoundingWidth, MIN_WIDTH);
             newBoundingHeight = Math.max(newBoundingHeight, MIN_HEIGHT);
             newBoundingY = initialBounds.y + initialBounds.height - newBoundingHeight;
-            
+
             scaleX = newBoundingWidth / initialBounds.width;
             scaleY = newBoundingHeight / initialBounds.height;
             translateY = newBoundingY - initialBounds.y;
             break;
           }
-          
+
           case Corner.MiddleRight: {
             newBoundingWidth = point.x - initialBounds.x;
             newBoundingWidth = Math.max(newBoundingWidth, MIN_WIDTH);
-            
+
             scaleX = newBoundingWidth / initialBounds.width;
             break;
           }
-          
+
           case Corner.BottomRight: {
             newBoundingWidth = point.x - initialBounds.x;
             newBoundingHeight = point.y - initialBounds.y;
-            
+
             if (aspectRatio !== null) {
               const widthChange = Math.abs(newBoundingWidth - initialBounds.width);
               const heightChange = Math.abs(newBoundingHeight - initialBounds.height);
-              
+
               if (widthChange >= heightChange) {
                 newBoundingHeight = newBoundingWidth / aspectRatio;
               } else {
                 newBoundingWidth = newBoundingHeight * aspectRatio;
               }
             }
-            
+
             newBoundingWidth = Math.max(newBoundingWidth, MIN_WIDTH);
             newBoundingHeight = Math.max(newBoundingHeight, MIN_HEIGHT);
-            
+
             scaleX = newBoundingWidth / initialBounds.width;
             scaleY = newBoundingHeight / initialBounds.height;
             break;
           }
-          
+
           case Corner.BottomCenter: {
             newBoundingHeight = point.y - initialBounds.y;
             newBoundingHeight = Math.max(newBoundingHeight, MIN_HEIGHT);
-            
+
             scaleY = newBoundingHeight / initialBounds.height;
             break;
           }
-          
+
           case Corner.BottomLeft: {
             newBoundingWidth = initialBounds.x + initialBounds.width - point.x;
             newBoundingHeight = point.y - initialBounds.y;
-            
+
             if (aspectRatio !== null) {
               const widthChange = Math.abs(newBoundingWidth - initialBounds.width);
               const heightChange = Math.abs(newBoundingHeight - initialBounds.height);
-              
+
               if (widthChange >= heightChange) {
                 newBoundingHeight = newBoundingWidth / aspectRatio;
               } else {
                 newBoundingWidth = newBoundingHeight * aspectRatio;
               }
             }
-            
+
             newBoundingWidth = Math.max(newBoundingWidth, MIN_WIDTH);
             newBoundingHeight = Math.max(newBoundingHeight, MIN_HEIGHT);
             newBoundingX = initialBounds.x + initialBounds.width - newBoundingWidth;
-            
+
             scaleX = newBoundingWidth / initialBounds.width;
             scaleY = newBoundingHeight / initialBounds.height;
             translateX = newBoundingX - initialBounds.x;
             break;
           }
-          
+
           case Corner.MiddleLeft: {
             newBoundingWidth = initialBounds.x + initialBounds.width - point.x;
             newBoundingWidth = Math.max(newBoundingWidth, MIN_WIDTH);
             newBoundingX = initialBounds.x + initialBounds.width - newBoundingWidth;
-            
+
             scaleX = newBoundingWidth / initialBounds.width;
             translateX = newBoundingX - initialBounds.x;
             break;
           }
         }
-        
+
         // Performance optimization: Pre-calculate initial bounds offset
         const initialX = initialBounds.x;
         const initialY = initialBounds.y;
-        
+
         // Map all selected layers once with optimized transform calculation
-        return selectedLayers.map(selectedLayer => {
+        return selectedLayers.map((selectedLayer) => {
           // Calculate relative positions only once per layer
           const layerRelativeX = selectedLayer.x - initialX;
           const layerRelativeY = selectedLayer.y - initialY;
-          
+
           // Return the transformed layer (creating only one new object)
           return {
             ...selectedLayer,
@@ -462,7 +463,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
           };
         });
       }
-      
+
       // Handle single layer case (original logic)
       // Minimum width & height in pixels
       const MIN_WIDTH = layer.type === LayerType.Rectangle ? 100 : 160;
@@ -470,12 +471,15 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
       // Pre-calculate aspect ratio outside the switch
       const aspectRatio = isShiftPressed ? initialBounds.width / initialBounds.height : null;
-      
+
       // Use destructuring for easier access to initialBounds properties
       const { x: initialX, y: initialY, width: initialWidth, height: initialHeight } = initialBounds;
-      
+
       // Initialize variables to track changes
-      let newWidth, newHeight, newX = layer.x, newY = layer.y;
+      let newWidth,
+        newHeight,
+        newX = layer.x,
+        newY = layer.y;
 
       // Apply different calculations based on which corner is being dragged
       switch (corner) {
@@ -595,13 +599,15 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       }
 
       // Return a single optimized layer update
-      return [{
-        ...layer,
-        x: newX,
-        y: newY,
-        width: newWidth,
-        height: newHeight
-      }];
+      return [
+        {
+          ...layer,
+          x: newX,
+          y: newY,
+          width: newWidth,
+          height: newHeight,
+        },
+      ];
     },
     [activeLayers, layers],
   );

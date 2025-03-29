@@ -420,19 +420,20 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             corner: canvasState.corner,
           });
 
-          if (updatedLayers &&updatedLayers.length > 0) {
+          if (updatedLayers && updatedLayers.length > 0) {
             // Update the layer
             setLayers((prevLayers) => {
               // Create a map of updated layers for quick lookup
-              const updatedLayersMap = updatedLayers.reduce((map, layer) => {
-                map[layer.id] = layer;
-                return map;
-              }, {} as Record<string, Layer>);
-              
-              // Update each layer if it's in the updatedLayers array
-              return prevLayers.map(layer => 
-                updatedLayersMap[layer.id] ? updatedLayersMap[layer.id] : layer
+              const updatedLayersMap = updatedLayers.reduce(
+                (map, layer) => {
+                  map[layer.id] = layer;
+                  return map;
+                },
+                {} as Record<string, Layer>,
               );
+
+              // Update each layer if it's in the updatedLayers array
+              return prevLayers.map((layer) => (updatedLayersMap[layer.id] ? updatedLayersMap[layer.id] : layer));
             });
 
             // Update connected edges
