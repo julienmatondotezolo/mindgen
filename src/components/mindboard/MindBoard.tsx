@@ -411,7 +411,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
         // If inside a resize grip, start resizing the layer
         if (resizeGripInfo) {
-          const updatedLayer = resizeSelectedLayer({
+          const updatedLayers = resizeSelectedLayer({
             point,
             layer: layers.find((l) => l.id === activeLayers[0])!,
             isMouseDown: e.buttons === 1 || e.pointerType === "touch" || e.pointerType === "pen",
@@ -420,11 +420,24 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             corner: canvasState.corner,
           });
 
-          if (updatedLayer) {
-            setLayers((prev) => prev.map((layer) => (layer.id === activeLayers[0] ? updatedLayer : layer)));
+          if (updatedLayers &&updatedLayers.length > 0) {
+            // Update the layer
+            setLayers((prevLayers) => {
+              // Create a map of updated layers for quick lookup
+              const updatedLayersMap = updatedLayers.reduce((map, layer) => {
+                map[layer.id] = layer;
+                return map;
+              }, {} as Record<string, Layer>);
+              
+              // Update each layer if it's in the updatedLayers array
+              return prevLayers.map(layer => 
+                updatedLayersMap[layer.id] ? updatedLayersMap[layer.id] : layer
+              );
+            });
+
             // Update connected edges
-            setEdges((prev) =>
-              prev.map((edge) => {
+            setEdges((prevEdges) =>
+              prevEdges.map((edge) => {
                 const { start, end } = updateEdgeIfConnectedLayerIsMoving({ edge }) ?? {
                   start: edge.start,
                   end: edge.end,
@@ -440,8 +453,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
             // Update initialLayerBounds
             setCanvasState((prev: any) => {
+              // Calculate the bounding box across all selected layers
+              const selectedLayers = layers.filter((l) => activeLayers.includes(l.id));
+              const box = calculateLayerBoundingBox(selectedLayers);
+
               // Create an array with all active layers with their updated positions
-              const updatedActiveLayers = [updatedLayer];
+              const updatedActiveLayers = updatedLayers;
 
               // Create an array with all Edges that are connected to the active layers
               const updatedConnectedEdges = edges.filter(
@@ -452,12 +469,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
               return {
                 ...prev,
-                initialBounds: {
-                  x: updatedLayer.x,
-                  y: updatedLayer.y,
-                  width: updatedLayer.width,
-                  height: updatedLayer.height,
-                },
+                initialBounds: box,
                 initialLayerBounds: updatedActiveLayers,
                 connectedEdges: updatedConnectedEdges,
               };
