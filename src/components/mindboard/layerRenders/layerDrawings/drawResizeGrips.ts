@@ -1,4 +1,4 @@
-import { Camera, CanvasMode, CanvasState, Layer } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Corner, Layer } from "@/_types";
 import { calculateLayerBoundingBox } from "@/utils/layerUtils";
 
 export const drawResizeGrips = ({
@@ -17,7 +17,7 @@ export const drawResizeGrips = ({
   allLayers?: Layer[];
 }): void => {
   // Handle size is 8px
-  const handleSize = 8 / camera.scale;
+  let handleSize = 8 / camera.scale;
 
   // If layer is active and canvas state is None, Grab, or Inserting, then draw the resize grips
   if (
@@ -26,9 +26,13 @@ export const drawResizeGrips = ({
       canvasState.mode == CanvasMode.Edge ||
       canvasState.mode == CanvasMode.Grab ||
       canvasState.mode == CanvasMode.Inserting ||
+      canvasState.mode == CanvasMode.Resizing ||
       canvasState.mode == CanvasMode.Tooling ||
       canvasState.mode == CanvasMode.Translating)
   ) {
+    // get the current corner from the canvas state
+    const currentCorner = canvasState.mode === CanvasMode.Resizing ? canvasState.corner : undefined;
+
     // If multiple layers are selected, we need to draw a bounding box that encompasses all of them
     if (activeLayers.length > 1) {
       // Only draw the group bounding box for the first active layer we render
@@ -53,21 +57,33 @@ export const drawResizeGrips = ({
 
           // Draw resize handles
           const handles = [
-            { x: box.x - handleSize / 2, y: box.y - handleSize / 2 }, // top-left
-            { x: box.x + box.width / 2 - handleSize / 2, y: box.y - handleSize / 2 }, // top-center
-            { x: box.x + box.width - handleSize / 2, y: box.y - handleSize / 2 }, // top-right
-            { x: box.x + box.width - handleSize / 2, y: box.y + box.height / 2 - handleSize / 2 }, // middle-right
-            { x: box.x + box.width - handleSize / 2, y: box.y + box.height - handleSize / 2 }, // bottom-right
-            { x: box.x + box.width / 2 - handleSize / 2, y: box.y + box.height - handleSize / 2 }, // bottom-center
-            { x: box.x - handleSize / 2, y: box.y + box.height - handleSize / 2 }, // bottom-left
-            { x: box.x - handleSize / 2, y: box.y + box.height / 2 - handleSize / 2 }, // middle-left
+            { x: box.x - handleSize / 2, y: box.y - handleSize / 2, corner: Corner.TopLeft }, // top-left
+            { x: box.x + box.width / 2 - handleSize / 2, y: box.y - handleSize / 2, corner: Corner.TopCenter }, // top-center
+            { x: box.x + box.width - handleSize / 2, y: box.y - handleSize / 2, corner: Corner.TopRight }, // top-right
+            {
+              x: box.x + box.width - handleSize / 2,
+              y: box.y + box.height / 2 - handleSize / 2,
+              corner: Corner.MiddleRight,
+            }, // middle-right
+            {
+              x: box.x + box.width - handleSize / 2,
+              y: box.y + box.height - handleSize / 2,
+              corner: Corner.BottomRight,
+            }, // bottom-right
+            {
+              x: box.x + box.width / 2 - handleSize / 2,
+              y: box.y + box.height - handleSize / 2,
+              corner: Corner.BottomCenter,
+            }, // bottom-center
+            { x: box.x - handleSize / 2, y: box.y + box.height - handleSize / 2, corner: Corner.BottomLeft }, // bottom-left
+            { x: box.x - handleSize / 2, y: box.y + box.height / 2 - handleSize / 2, corner: Corner.MiddleLeft }, // middle-left
           ];
 
           // Draw the bounding box resize handles
           handles.forEach((handle) => {
-            context.fillStyle = "#ffffff";
+            context.fillStyle = currentCorner === handle.corner ? "#2563eb" : "#ffffff";
             context.fillRect(handle.x, handle.y, handleSize, handleSize);
-            context.strokeStyle = "#4f46e5";
+            context.strokeStyle = currentCorner === handle.corner ? "#2563eb" : "#2563eb";
             context.strokeRect(handle.x, handle.y, handleSize, handleSize);
           });
         }
@@ -81,20 +97,34 @@ export const drawResizeGrips = ({
 
       // Draw resize handles
       const handles = [
-        { x: layer.x - handleSize / 2, y: layer.y - handleSize / 2 }, // top-left
-        { x: layer.x + layer.width / 2 - handleSize / 2, y: layer.y - handleSize / 2 }, // top-center
-        { x: layer.x + layer.width - handleSize / 2, y: layer.y - handleSize / 2 }, // top-right
-        { x: layer.x + layer.width - handleSize / 2, y: layer.y + layer.height / 2 - handleSize / 2 }, // middle-right
-        { x: layer.x + layer.width - handleSize / 2, y: layer.y + layer.height - handleSize / 2 }, // bottom-right
-        { x: layer.x + layer.width / 2 - handleSize / 2, y: layer.y + layer.height - handleSize / 2 }, // bottom-center
-        { x: layer.x - handleSize / 2, y: layer.y + layer.height - handleSize / 2 }, // bottom-left
-        { x: layer.x - handleSize / 2, y: layer.y + layer.height / 2 - handleSize / 2 }, // middle-left
+        { x: layer.x - handleSize / 2, y: layer.y - handleSize / 2, corner: Corner.TopLeft }, // top-left
+        { x: layer.x + layer.width / 2 - handleSize / 2, y: layer.y - handleSize / 2, corner: Corner.TopCenter }, // top-center
+        { x: layer.x + layer.width - handleSize / 2, y: layer.y - handleSize / 2, corner: Corner.TopRight }, // top-right
+        {
+          x: layer.x + layer.width - handleSize / 2,
+          y: layer.y + layer.height / 2 - handleSize / 2,
+          corner: Corner.MiddleRight,
+        }, // middle-right
+        {
+          x: layer.x + layer.width - handleSize / 2,
+          y: layer.y + layer.height - handleSize / 2,
+          corner: Corner.BottomRight,
+        }, // bottom-right
+        {
+          x: layer.x + layer.width / 2 - handleSize / 2,
+          y: layer.y + layer.height - handleSize / 2,
+          corner: Corner.BottomCenter,
+        }, // bottom-center
+        { x: layer.x - handleSize / 2, y: layer.y + layer.height - handleSize / 2, corner: Corner.BottomLeft }, // bottom-left
+        { x: layer.x - handleSize / 2, y: layer.y + layer.height / 2 - handleSize / 2, corner: Corner.MiddleLeft }, // middle-left
       ];
 
       handles.forEach((handle) => {
-        context.fillStyle = "#ffffff";
+        const handleSize = currentCorner === handle.corner ? 12 / camera.scale : 8 / camera.scale;
+
+        context.fillStyle = currentCorner === handle.corner ? "#2563eb" : "#ffffff";
         context.fillRect(handle.x, handle.y, handleSize, handleSize);
-        context.strokeStyle = "#2563eb";
+        context.strokeStyle = currentCorner === handle.corner ? "#2563eb" : "#2563eb";
         context.strokeRect(handle.x, handle.y, handleSize, handleSize);
       });
     }

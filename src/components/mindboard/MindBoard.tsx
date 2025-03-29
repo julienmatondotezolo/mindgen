@@ -3,13 +3,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { BoardDataProps } from "@/_types/BoardDataProps";
-import { CanvasMode, Edge, Layer } from "@/_types/canvas";
+import { CanvasMode, Edge, Layer, XYWH } from "@/_types/canvas";
 import { useBoardKeyboardEvents, useEdgeOperations, useLayerOperations, useLiveValue, useLocks } from "@/hooks";
 import { useBoard } from "@/hooks/useBoard";
 import { useBoardRefresh } from "@/hooks/useBoardRefresh";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom, lockedAtomState } from "@/state";
-import { getLayerById, getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils/layerUtils";
+import { calculateLayerBoundingBox, getLayerById, getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils/layerUtils";
 
 import { Toolbar } from "../whiteboard";
 import { Controls, useCameraControls } from "./Controls";
@@ -46,12 +46,13 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
   // Layer operations
   const {
-    findHandleNearPoint,
     findHandleAtPoint,
     findLayerAtPoint,
     findLayerIdsAtPoint,
     findLayersInSelection,
     findAlignments,
+    findResizeGripAtPoint,
+    findHandleNearPoint,
     addLayer,
     updateLayer,
     layers,
@@ -188,22 +189,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           break;
       }
     },
-    [
-      camera,
-      canvasRef,
-      canvasState,
-      findLayerIdsAtPoint,
-      findEdgeNearPoint,
-      checkIfEdgeIsLocked,
-      setCanvasState,
-      addLayer,
-      checkIfLayerIsLocked,
-      unSelectLayer,
-      setActiveEdgeId,
-      selectLayer,
-      activeLayers,
-      layers,
-    ],
+    [camera, canvasRef, canvasState, findLayerIdsAtPoint, findEdgeNearPoint, checkIfEdgeIsLocked, setCanvasState, addLayer, activeLayers, layers, checkIfLayerIsLocked, unSelectLayer, setActiveEdgeId, selectLayer],
   );
 
   const handleMouseMove = useCallback(
@@ -225,6 +211,10 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       // Find EDGE HANDLE at current mouse position
       const edgeHandleInfo = findEdgeHandleAtPoint(point);
 
+      // Check if the mouse is inside a resize grip
+      // eslint-disable-next-line no-case-declarations
+      const resizeGripInfo = findResizeGripAtPoint(point);
+
       if (canvasState.mode === CanvasMode.None) {
         // If handle is active and layer is active, set the mode to Edge
         if (isPointNearHandle && activeLayers.includes(isPointNearHandle.layerId) && activeLayers.length < 2) {
@@ -244,6 +234,44 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             edgeHandleInfo,
           });
 
+          return;
+        }
+
+        if (resizeGripInfo) {
+          // Variables used in case blocks
+          let initialBounds: XYWH | undefined;
+
+          // Get the initial bounds of the layer or layer group
+          if (activeLayers.length > 1) {
+            // For multiple layers, get the bounding box
+            const selectedLayers = layers.filter(layer => activeLayers.includes(layer.id));
+            const box = calculateLayerBoundingBox(selectedLayers);
+
+            if (box) {
+              initialBounds = box;
+            } else {
+              return; // Can't resize without valid bounds
+            }
+          } else {
+            // For a single layer, use its bounds
+            const layer = layers.find(layer => layer.id === activeLayers[0]);
+
+            if (!layer) return;
+              
+            initialBounds = {
+              x: layer.x,
+              y: layer.y,
+              width: layer.width,
+              height: layer.height,
+            };
+          }
+            
+          // Set canvas state to Resizing
+          setCanvasState({
+            mode: CanvasMode.Resizing,
+            initialBounds,
+            corner: resizeGripInfo.corner,
+          });
           return;
         }
 
@@ -354,6 +382,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           ...prev,
           current: point,
         }));
+      } else if (canvasState.mode === CanvasMode.Resizing) {
+        if (!resizeGripInfo) {
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+        }
       } else if (canvasState.mode === CanvasMode.SelectionNet) {
         setCanvasState((prev) => ({
           ...prev,
@@ -455,7 +489,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
       renderCanvas();
     },
-    [camera, canvasRef, findLayerAtPoint, findHandleNearPoint, findHandleAtPoint, findAlignments, findEdgeNearPoint, findEdgeHandleAtPoint, canvasState, renderCanvas, activeLayers, activeEdgeId, setCanvasState, setEdges, lockEdgeToNearestLayerHandle, findLayersInSelection, setLayers, isDebugMode, updateEdgeIfConnectedLayerIsMoving, edges, layers],
+    [camera, canvasRef, findLayerAtPoint, findHandleNearPoint, findHandleAtPoint, findAlignments, findEdgeNearPoint, findEdgeHandleAtPoint, findResizeGripAtPoint, canvasState, renderCanvas, activeLayers, activeEdgeId, setCanvasState, layers, setEdges, lockEdgeToNearestLayerHandle, findLayersInSelection, setLayers, isDebugMode, updateEdgeIfConnectedLayerIsMoving, edges],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -512,6 +546,13 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
         setCanvasState({ mode: CanvasMode.None });
         break;
+      case CanvasMode.Resizing: {
+        // When resizing is done, update the layer(s)
+        setCanvasState({
+          mode: CanvasMode.None,
+        });
+        break;
+      }
       case CanvasMode.Translating: {
         // Update the layer if initialLayerBounds is valid
         const translatingState = canvasState as { initialLayerBounds?: Layer[]; connectedEdges?: Edge[] };
@@ -552,7 +593,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         style={{
           width: "100%",
           height: "100%",
-          cursor: getCursorStyle(canvasState.mode),
+          cursor: getCursorStyle(canvasState),
           touchAction: "none", // Prevents default touch behaviors for D3 handling
         }}
       />

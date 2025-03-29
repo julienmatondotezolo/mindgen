@@ -143,6 +143,17 @@ export type XYWH = {
   height: number;
 };
 
+export enum Corner {
+  TopCenter = "TOP_CENTER",
+  TopLeft = "TOP_LEFT",
+  TopRight = "TOP_RIGHT",
+  BottomCenter = "BOTTOM_CENTER",
+  BottomLeft = "BOTTOM_LEFT",
+  BottomRight = "BOTTOM_RIGHT",
+  MiddleLeft = "MIDDLE_LEFT",
+  MiddleRight = "MIDDLE_RIGHT",
+}
+
 export enum Side {
   Top = 1,
   Bottom = 2,
@@ -248,7 +259,7 @@ export type CanvasState =
   | {
       mode: CanvasMode.Resizing;
       initialBounds: XYWH;
-      corner: Side;
+      corner: Corner;
     }
   | {
       mode: CanvasMode.SelectionNet;

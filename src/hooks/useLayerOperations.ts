@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import { Layer, LayerType, Point } from "@/_types/canvas";
+import { Corner, Layer, LayerType, Point, XYWH } from "@/_types/canvas";
 import {
   activeLayersAtom,
   canvasStateAtom,
@@ -15,7 +15,7 @@ import {
   useUnSelectElement,
   useUpdateElement,
 } from "@/state";
-import { getHandlePosition } from "@/utils/layerUtils";
+import { calculateLayerBoundingBox, getHandlePosition } from "@/utils/layerUtils";
 
 export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   const setCanvasState = useSetRecoilState(canvasStateAtom);
@@ -113,7 +113,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       // Use a threshold of 45 pixels for better usability
-      if (distance <= 45) {
+      if (distance <= 25) {
         return {
           isInHandle: false,
           handlePosition: handle.position,
@@ -141,22 +141,6 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   );
 
   // Find a handle at a specific point
-  const findHandleNearPoint = useCallback(
-    (point: Point) => {
-      // Only check handles for active layers
-      for (const layer of layers) {
-        const handleInfo = isPointNearHandle(point, layer);
-
-        // If a handle was found, return its information
-        if (handleInfo && handleInfo.layerId) return handleInfo;
-      }
-
-      return null;
-    },
-    [layers, isPointNearHandle],
-  );
-
-  // Find a handle at a specific point
   const findHandleAtPoint = useCallback(
     (point: Point) => {
       // Only check handles for active layers
@@ -170,6 +154,107 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       return null;
     },
     [layers, isPointInHandle, activeLayers],
+  );
+
+  // Find a handle near a point
+  const findHandleNearPoint = useCallback(
+    (point: Point) => {
+      // Check handles for all layers
+      for (const layer of layers) {
+        const handleInfo = isPointNearHandle(point, layer);
+
+        // If a handle was found, return its information
+        if (handleInfo && handleInfo.layerId) return handleInfo;
+      }
+
+      return null;
+    },
+    [layers, isPointNearHandle],
+  );
+
+  // Find if point is inside a resize grip and return the corner type
+  const findResizeGripAtPoint = useCallback(
+    (point: Point): { layerId: string; corner: Corner } | null => {
+      // Only check resize grips for active layers
+      if (activeLayers.length === 0) return null;
+
+      // Get the layers to check (either a single layer or a group bounding box)
+      let layersToCheck: Layer[] = [];
+
+      if (activeLayers.length > 1) {
+        // For multiple layers, we use the bounding box of all selected layers
+        layersToCheck = layers.filter((layer) => activeLayers.includes(layer.id));
+      } else {
+        // For a single layer, just check that layer
+        const activeLayer = layers.find((layer) => layer.id === activeLayers[0]);
+
+        if (activeLayer) layersToCheck = [activeLayer];
+      }
+
+      if (layersToCheck.length === 0) return null;
+
+      // Calculate bounds for grip checking
+      let box: XYWH;
+
+      if (layersToCheck.length > 1) {
+        // Calculate group bounding box
+        const calculatedBox = calculateLayerBoundingBox(layersToCheck);
+
+        if (!calculatedBox) return null; // Return null if we couldn't calculate a bounding box
+        box = calculatedBox;
+      } else {
+        // Use single layer bounds
+        const layer = layersToCheck[0];
+
+        box = {
+          x: layer.x,
+          y: layer.y,
+          width: layer.width,
+          height: layer.height,
+        };
+      }
+
+      // Handle size is 8px (same as in drawResizeGrips)
+      const handleSize = 8;
+
+      // Define the grip areas (same positions as in drawResizeGrips)
+      const gripAreas = [
+        { corner: Corner.TopLeft, x: box.x - handleSize / 2, y: box.y - handleSize / 2 },
+        { corner: Corner.TopCenter, x: box.x + box.width / 2 - handleSize / 2, y: box.y - handleSize / 2 },
+        { corner: Corner.TopRight, x: box.x + box.width - handleSize / 2, y: box.y - handleSize / 2 },
+        {
+          corner: Corner.MiddleRight,
+          x: box.x + box.width - handleSize / 2,
+          y: box.y + box.height / 2 - handleSize / 2,
+        },
+        { corner: Corner.BottomRight, x: box.x + box.width - handleSize / 2, y: box.y + box.height - handleSize / 2 },
+        {
+          corner: Corner.BottomCenter,
+          x: box.x + box.width / 2 - handleSize / 2,
+          y: box.y + box.height - handleSize / 2,
+        },
+        { corner: Corner.BottomLeft, x: box.x - handleSize / 2, y: box.y + box.height - handleSize / 2 },
+        { corner: Corner.MiddleLeft, x: box.x - handleSize / 2, y: box.y + box.height / 2 - handleSize / 2 },
+      ];
+
+      // Check if point is inside any grip area
+      for (const grip of gripAreas) {
+        if (
+          point.x >= grip.x &&
+          point.x <= grip.x + handleSize &&
+          point.y >= grip.y &&
+          point.y <= grip.y + handleSize
+        ) {
+          return {
+            layerId: activeLayers[0], // Return the first active layer id (or the only one)
+            corner: grip.corner,
+          };
+        }
+      }
+
+      return null;
+    },
+    [activeLayers, layers],
   );
 
   // Find layers inside a selection rectangle
@@ -398,8 +483,9 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
     isPointNearHandle,
     findLayerAtPoint,
     findLayerIdsAtPoint,
-    findHandleNearPoint,
     findHandleAtPoint,
+    findHandleNearPoint,
+    findResizeGripAtPoint,
     findLayersInSelection,
     findAlignments,
     addLayer,
