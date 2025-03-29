@@ -259,6 +259,8 @@ export type CanvasState =
   | {
       mode: CanvasMode.Resizing;
       initialBounds: XYWH;
+      initialLayerBounds?: Layer[];
+      connectedEdges?: Edge[];
       corner: Corner;
     }
   | {

@@ -19,8 +19,12 @@ export const drawLayerHandles = ({
   activeLayers: string[];
   canvasState: CanvasState;
 }): void => {
-  // If the layer is active and the mode is SelectionNet, don't draw handles
-  if (activeLayers.includes(layer.id) && canvasState.mode === CanvasMode.SelectionNet) return;
+  // If the layer is active and the mode is SelectionNet our Resizing, don't draw handles
+  if (
+    activeLayers.includes(layer.id) &&
+    (canvasState.mode === CanvasMode.SelectionNet || canvasState.mode == CanvasMode.Resizing)
+  )
+    return;
 
   // Only draw handles for active/selected layers && if is not in Translating mode
   // Our Only draw Handles if mode is EdgeEditing && If layer is active inside HandleInfo

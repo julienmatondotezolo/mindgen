@@ -159,6 +159,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   // Find a handle near a point
   const findHandleNearPoint = useCallback(
     (point: Point) => {
+      if (canvasState.mode == CanvasMode.Resizing) return;
       // Check handles for all layers
       for (const layer of layers) {
         const handleInfo = isPointNearHandle(point, layer);
@@ -169,7 +170,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
       return null;
     },
-    [layers, isPointNearHandle],
+    [canvasState, layers, isPointNearHandle],
   );
 
   // Find if point is inside a resize grip and return the corner type
@@ -254,7 +255,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
 
       return null;
     },
-    [activeLayers, layers],
+    [activeLayers, canvasState, layers],
   );
 
   // Resizing a layer ou multiple layers using state corner position

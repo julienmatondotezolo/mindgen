@@ -437,6 +437,31 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
                 };
               }),
             );
+
+            // Update initialLayerBounds
+            setCanvasState((prev: any) => {
+              // Create an array with all active layers with their updated positions
+              const updatedActiveLayers = [updatedLayer];
+
+              // Create an array with all Edges that are connected to the active layers
+              const updatedConnectedEdges = edges.filter(
+                (edge: Edge) =>
+                  (edge.fromLayerId && activeLayers.includes(edge.fromLayerId)) ||
+                  (edge.toLayerId && activeLayers.includes(edge.toLayerId)),
+              );
+
+              return {
+                ...prev,
+                initialBounds: {
+                  x: updatedLayer.x,
+                  y: updatedLayer.y,
+                  width: updatedLayer.width,
+                  height: updatedLayer.height,
+                },
+                initialLayerBounds: updatedActiveLayers,
+                connectedEdges: updatedConnectedEdges,
+              };
+            });
           }
         }
       } else if (canvasState.mode === CanvasMode.SelectionNet) {
@@ -615,6 +640,23 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         setCanvasState({ mode: CanvasMode.None });
         break;
       case CanvasMode.Resizing: {
+        // Update the layer if initialLayerBounds is valid
+        const resizingState = canvasState as { initialLayerBounds?: Layer[]; connectedEdges?: Edge[] };
+
+        if (
+          resizingState.initialLayerBounds &&
+          resizingState.initialLayerBounds.length > 0 &&
+          resizingState.connectedEdges &&
+          resizingState.connectedEdges.length > 0
+        ) {
+          updateEdgeLayer({
+            updatedLayers: resizingState.initialLayerBounds,
+            updatedEdges: resizingState.connectedEdges,
+          });
+        } else if (resizingState.initialLayerBounds && resizingState.initialLayerBounds.length > 0) {
+          updateLayer({ updatedLayers: resizingState.initialLayerBounds });
+        }
+
         // When resizing is done, update the layer(s)
         setCanvasState({
           mode: CanvasMode.None,
