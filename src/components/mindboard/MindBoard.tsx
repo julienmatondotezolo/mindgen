@@ -30,7 +30,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(true);
 
   // Setup board & rendering
-  const { canvasRef, setupCanvas, renderCanvas } = useBoard();
+  const { canvasRef, setupCanvas, renderCanvas, isPointInSelectionToolBounds } = useBoard();
 
   // Camera controls
   const { fitView } = useCameraControls();
@@ -234,6 +234,9 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       // eslint-disable-next-line no-case-declarations
       const resizeGripInfo = findResizeGripAtPoint(point);
 
+      // Check if point is inside the selection tool
+      const isInSelectionTool = isPointInSelectionToolBounds(point);
+
       if (canvasState.mode === CanvasMode.None) {
         // If handle is active and layer is active, set the mode to Edge
         if (isPointNearHandle && activeLayers.includes(isPointNearHandle.layerId) && activeLayers.length < 2) {
@@ -253,6 +256,15 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             edgeHandleInfo,
           });
 
+          return;
+        }
+
+        // If pointer is inside selection tool and we have active layers, change mode to Tooling
+        if (isInSelectionTool && activeLayers.length > 0) {
+          setCanvasState({
+            mode: CanvasMode.Tooling,
+            isInSelectionTool: true,
+          });
           return;
         }
 
@@ -491,6 +503,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         if (dx > 5 || dy > 5) {
           findLayersInSelection(origin, point);
         }
+      } else if (canvasState.mode === CanvasMode.Tooling) {
+        if (!isInSelectionTool) {
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+        }
       } else if (canvasState.mode === CanvasMode.Translating) {
         // Move selected layers
         const dx = point.x - canvasState.current!.x;
@@ -498,9 +516,18 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
         // Get the snap positions
         const lockToHorizontalAlignment =
-          activeLayers.length > 1 ? undefined : alignments && alignments.vertical[0]?.otherLayerCenterPosition?.x;
+          activeLayers.length > 1
+            ? undefined
+            : alignments && typeof alignments === "object" && "vertical" in alignments
+              ? alignments.vertical[0]?.otherLayerCenterPosition?.x
+              : undefined;
+
         const lockToVerticalAlignment =
-          activeLayers.length > 1 ? undefined : alignments && alignments.horizontal[0]?.otherLayerCenterPosition?.y;
+          activeLayers.length > 1
+            ? undefined
+            : alignments && typeof alignments === "object" && "horizontal" in alignments
+              ? alignments.horizontal[0]?.otherLayerCenterPosition?.y
+              : undefined;
 
         // Update layers
         setLayers((prev) =>
@@ -600,6 +627,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       edges,
       findLayersInSelection,
       isDebugMode,
+      isPointInSelectionToolBounds,
     ],
   );
 

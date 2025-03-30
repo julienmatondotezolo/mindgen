@@ -3,6 +3,70 @@ import { colorToCss } from "@/utils/canvasUtils";
 import { calculateLayerBoundingBox } from "@/utils/layerUtils";
 
 /**
+ * Calculates the bounding box for the selection tool
+ */
+export const calculateSelectionToolBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  // Create an array of all selected layers to calculate the bounding box
+  let selectedLayers: Layer[] = allLayers.filter((l) => activeLayers.includes(l.id));
+
+  if (selectedLayers.length === 0) return null;
+
+  // Get the bounding box of selected layers
+  const box = calculateLayerBoundingBox(selectedLayers);
+
+  if (!box) return null;
+
+  // Calculate the position of the selection tool UI
+  // Center it horizontally and place it 30px above the bounding box
+  const toolbarWidth = Math.max(160, 160 / camera.scale); // Width of the selection toolbar
+  const toolbarHeight = Math.max(45, 45 / camera.scale); // Height of the selection toolbar
+  const toolbarX = box.x + box.width / 2 - toolbarWidth / 2;
+  const toolbarY = box.y - toolbarHeight - 80; // 30px above the bounding box
+
+  return {
+    x: toolbarX,
+    y: toolbarY,
+    width: toolbarWidth,
+    height: toolbarHeight,
+    radius: Math.max(20, 20 / camera.scale),
+  };
+};
+
+/**
+ * Checks if a point is inside the selection tool
+ */
+export const isPointInSelectionTool = ({
+  point,
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  point: { x: number; y: number };
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+
+  if (!bounds) return false;
+
+  return (
+    point.x >= bounds.x &&
+    point.x <= bounds.x + bounds.width &&
+    point.y >= bounds.y &&
+    point.y <= bounds.y + bounds.height
+  );
+};
+
+/**
  * Draws the layer selection tool UI above the selected layer's bounding box
  * The UI is centered horizontally and placed 30px above the bounding box
  */
@@ -33,25 +97,18 @@ export const drawSelectionTool = ({
 
   if (!box) return;
 
-  // Calculate the position of the selection tool UI
-  // Center it horizontally and place it 30px above the bounding box
-  const toolbarWidth = Math.max(160, 160 / camera.scale); // Width of the selection toolbar
-  const toolbarHeight = Math.max(45, 45 / camera.scale); // Height of the selection toolbar
-  const toolbarX = box.x + box.width / 2 - toolbarWidth / 2;
-  const toolbarY = box.y - toolbarHeight - 80; // 30px above the bounding box
+  // Get the toolbar bounds
+  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+
+  if (!bounds) return;
 
   // Draw the toolbar background with rounded corners
   context.save();
 
-  // // Apply camera transform
-  // // Using camera.scale instead of camera.zoom
-  // context.translate(camera.x, camera.y);
-  // context.scale(camera.scale, camera.scale);
-
   // Draw toolbar background
   context.fillStyle = theme === "dark" ? "#222" : "#333";
   context.beginPath();
-  roundRect(context, toolbarX, toolbarY, toolbarWidth, toolbarHeight, Math.max(20, 20 / camera.scale));
+  roundRect(context, bounds.x, bounds.y, bounds.width, bounds.height, bounds.radius);
   context.fill();
 
   // Add shadow effect
@@ -62,23 +119,23 @@ export const drawSelectionTool = ({
 
   // Draw divider lines between buttons
   context.fillStyle = theme === "dark" ? "#444" : "#555";
-  const firstDividerX = toolbarX + toolbarWidth / 3;
-  const secondDividerX = toolbarX + (toolbarWidth / 3) * 2;
+  const firstDividerX = bounds.x + bounds.width / 3;
+  const secondDividerX = bounds.x + (bounds.width / 3) * 2;
 
   // Draw shape button (first section)
-  drawShapeIcon(context, toolbarX + toolbarWidth / 6, toolbarY + toolbarHeight / 2, theme, camera);
+  drawShapeIcon(context, bounds.x + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera);
 
   // Draw the color button (middle section)
   drawColorButton(
     context,
-    firstDividerX + toolbarWidth / 6,
-    toolbarY + toolbarHeight / 2,
+    firstDividerX + bounds.width / 6,
+    bounds.y + bounds.height / 2,
     colorToCss(selectedLayers.length > 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
     camera,
   );
 
   // Draw menu button (last section)
-  drawMenuIcon(context, secondDividerX + toolbarWidth / 6, toolbarY + toolbarHeight / 2, theme, camera);
+  drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera);
 
   context.restore();
 };

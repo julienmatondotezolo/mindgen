@@ -4,7 +4,9 @@ import { useTheme } from "next-themes";
 import { useCallback, useRef } from "react";
 import { useRecoilValue } from "recoil";
 
+import { Point } from "@/_types";
 import { drawCursor, drawSelectionRectangle, drawSelectionTool } from "@/components/mindboard/boardRender";
+import { isPointInSelectionTool } from "@/components/mindboard/boardRender/drawSelectionTool";
 import { drawShadowEdgeBasedOnType, edgeRender } from "@/components/mindboard/edgeRender";
 import { layerRender } from "@/components/mindboard/layerRenders";
 import {
@@ -40,6 +42,22 @@ export const useBoard = () => {
 
   // Get the cursors
   const { cursors } = useCursors({ returnCursors: true });
+
+  // Check if a point is inside the selection tool
+  const isPointInSelectionToolBounds = useCallback(
+    (point: Point) => {
+      // If no active layers, there is no selection tool
+      if (activeLayers.length === 0) return false;
+
+      return isPointInSelectionTool({
+        point,
+        allLayers: layers,
+        activeLayers,
+        camera,
+      });
+    },
+    [activeLayers, layers, camera],
+  );
 
   // Setup canvas
   const setupCanvas = useCallback(() => {
@@ -265,5 +283,6 @@ export const useBoard = () => {
     drawGrid,
     restoreContext,
     renderCanvas,
+    isPointInSelectionToolBounds,
   };
 };
