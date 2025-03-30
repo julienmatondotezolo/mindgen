@@ -2,14 +2,14 @@ import { useMembers, useSpace } from "@ably/spaces/react";
 import { Message } from "ably";
 import { useChannel } from "ably/react";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
-import { Edge, Layer, LockedState } from "@/_types";
+import { Edge, Layer, LockedState, Point } from "@/_types";
 import { edgesAtomState, layerAtomState, lockedAtomState } from "@/state";
 import { randomUserColor } from "@/utils";
 
-export const useLiveValue = async ({ boardId }: { boardId: string }) => {
+export const useLiveValue = ({ boardId }: { boardId: string }) => {
   const [lockedElementState, setLockedElementState] = useRecoilState(lockedAtomState);
   const setLayers = useSetRecoilState(layerAtomState);
   const setEdges = useSetRecoilState(edgesAtomState);
@@ -35,6 +35,22 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
       enterSpace();
     }
   }, [currentUserId, currentUserName, space]);
+
+  // ========================================================================== //
+  // =======================  HANDLE CURSOR EMITING ===========================  //
+  // ========================================================================== //
+
+  const emitCursor = useCallback(
+    ({ point, state }: { point: Point; state: "move" | "leave" }) => {
+      if (!space) return;
+
+      space.cursors.set({
+        position: { ...point },
+        data: { state },
+      });
+    },
+    [space],
+  );
 
   // ========================================================================== //
   // ================  LISTEN FOR MESSAGES FROM THE CHANNEL  ================== //
@@ -161,4 +177,8 @@ export const useLiveValue = async ({ boardId }: { boardId: string }) => {
       );
     }
   });
+
+  return {
+    emitCursor,
+  };
 };

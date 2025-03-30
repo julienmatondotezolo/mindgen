@@ -1,9 +1,10 @@
-import { useMembers } from "@ably/spaces/react";
+import { CursorUpdate } from "@ably/spaces";
+import { useCursors, useMembers } from "@ably/spaces/react";
 import { useTheme } from "next-themes";
 import { useCallback, useRef } from "react";
 import { useRecoilValue } from "recoil";
 
-import { drawSelectionRectangle } from "@/components/mindboard/boardRender";
+import { drawCursor, drawSelectionRectangle } from "@/components/mindboard/boardRender";
 import { drawShadowEdgeBasedOnType, edgeRender } from "@/components/mindboard/edgeRender";
 import { layerRender } from "@/components/mindboard/layerRenders";
 import {
@@ -36,6 +37,9 @@ export const useBoard = () => {
 
   // Get the current user
   const { self } = useMembers();
+
+  // Get the cursors
+  const { cursors } = useCursors({ returnCursors: true });
 
   // Setup canvas
   const setupCanvas = useCallback(() => {
@@ -216,6 +220,23 @@ export const useBoard = () => {
       }
     });
 
+    // Draw other users cursors
+    Object.values(cursors).map((data) => {
+      if (!data) return;
+
+      if (!data.member) return;
+
+      const cursorUpdate = data.cursorUpdate as CursorUpdate;
+      const { username, userColor } = data.member.profileData as {
+        username: string;
+        userColor: string;
+      };
+
+      if (cursorUpdate.data && cursorUpdate.data.state === "leave") return;
+
+      return drawCursor({ context, username, userColor, position: cursorUpdate.position, cameraScale: camera.scale });
+    });
+
     // Restore context to clear transformations
     restoreContext(context);
   }, [
@@ -224,11 +245,12 @@ export const useBoard = () => {
     edges,
     canvasState,
     layers,
+    activeLayers,
     lockedElements,
+    cursors,
     restoreContext,
     camera,
     activeEdgeId,
-    activeLayers,
     self?.connectionId,
   ]);
 

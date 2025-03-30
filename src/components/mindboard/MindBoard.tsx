@@ -36,7 +36,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
   const { fitView } = useCameraControls();
 
   // Use live value for collaborative features
-  useLiveValue({ boardId });
+  const { emitCursor } = useLiveValue({ boardId });
 
   // Subscribe to board query cache changes
   useBoardRefresh({ boardId });
@@ -569,6 +569,10 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         }
       }
 
+      // Emit cursor position
+      emitCursor({ point, state: "move" });
+
+      // Render canvas
       renderCanvas();
     },
     [
@@ -582,6 +586,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       findEdgeHandleAtPoint,
       findResizeGripAtPoint,
       canvasState,
+      emitCursor,
       renderCanvas,
       activeLayers,
       activeEdgeId,
@@ -590,11 +595,11 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       setEdges,
       lockEdgeToNearestLayerHandle,
       resizeSelectedLayer,
-      findLayersInSelection,
       setLayers,
-      isDebugMode,
       updateEdgeIfConnectedLayerIsMoving,
       edges,
+      findLayersInSelection,
+      isDebugMode,
     ],
   );
 
