@@ -4,7 +4,6 @@ import { useTheme } from "next-themes";
 import { useCallback, useRef } from "react";
 import { useRecoilValue } from "recoil";
 
-import { Point } from "@/_types";
 import { drawCursor, drawSelectionRectangle, drawSelectionTool } from "@/components/mindboard/boardRender";
 import { isPointInSelectionTool } from "@/components/mindboard/boardRender/drawSelectionTool";
 import { drawShadowEdgeBasedOnType, edgeRender } from "@/components/mindboard/edgeRender";
@@ -45,9 +44,9 @@ export const useBoard = () => {
 
   // Check if a point is inside the selection tool
   const isPointInSelectionToolBounds = useCallback(
-    (point: Point) => {
+    (point: { x: number; y: number }) => {
       // If no active layers, there is no selection tool
-      if (activeLayers.length === 0) return false;
+      if (activeLayers.length === 0) return { isInSelectionTool: false };
 
       return isPointInSelectionTool({
         point,

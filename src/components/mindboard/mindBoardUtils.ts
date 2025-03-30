@@ -63,6 +63,8 @@ export const getCursorStyle = (canvasState: CanvasState): string => {
         return "nesw-resize";
       }
       return "default";
+    case CanvasMode.Tooling:
+      return "pointer";
     default:
       return "default";
   }

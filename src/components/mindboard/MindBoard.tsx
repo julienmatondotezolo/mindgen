@@ -235,7 +235,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       const resizeGripInfo = findResizeGripAtPoint(point);
 
       // Check if point is inside the selection tool
-      const isInSelectionTool = isPointInSelectionToolBounds(point);
+      const selectionToolInfo = isPointInSelectionToolBounds(point);
 
       if (canvasState.mode === CanvasMode.None) {
         // If handle is active and layer is active, set the mode to Edge
@@ -260,11 +260,18 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         }
 
         // If pointer is inside selection tool and we have active layers, change mode to Tooling
-        if (isInSelectionTool && activeLayers.length > 0) {
-          setCanvasState({
+        if (selectionToolInfo.isInSelectionTool && activeLayers.length > 0 && canvasState.mode === CanvasMode.None) {
+          const canvasStateUpdate: any = {
             mode: CanvasMode.Tooling,
             isInSelectionTool: true,
-          });
+          };
+
+          // Only add toolingMode if it exists in the selectionToolInfo
+          if ("toolingMode" in selectionToolInfo) {
+            canvasStateUpdate.toolingMode = selectionToolInfo.toolingMode;
+          }
+
+          setCanvasState(canvasStateUpdate);
           return;
         }
 
@@ -504,10 +511,18 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           findLayersInSelection(origin, point);
         }
       } else if (canvasState.mode === CanvasMode.Tooling) {
-        if (!isInSelectionTool) {
+        if (!selectionToolInfo.isInSelectionTool) {
           setCanvasState({
             mode: CanvasMode.None,
           });
+        }
+
+        if (selectionToolInfo.isInSelectionTool) {
+          setCanvasState((prev) => ({
+            ...prev,
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            toolingMode: selectionToolInfo.toolingMode,
+          }));
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
         // Move selected layers

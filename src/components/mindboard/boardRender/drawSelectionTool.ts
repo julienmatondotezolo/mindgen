@@ -1,4 +1,4 @@
-import { Camera, CanvasMode, CanvasState, Layer } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Layer, Point } from "@/_types";
 import { colorToCss } from "@/utils/canvasUtils";
 import { calculateLayerBoundingBox } from "@/utils/layerUtils";
 
@@ -41,7 +41,83 @@ export const calculateSelectionToolBounds = ({
 };
 
 /**
+ * Calculates the bounding box for the shape icon section
+ */
+export const calculateShapeIconBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+
+  if (!bounds) return null;
+
+  // First section of the toolbar (left third)
+  return {
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width / 3,
+    height: bounds.height,
+  };
+};
+
+/**
+ * Calculates the bounding box for the color button section
+ */
+export const calculateColorButtonBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+
+  if (!bounds) return null;
+
+  // Middle section of the toolbar (middle third)
+  return {
+    x: bounds.x + bounds.width / 3,
+    y: bounds.y,
+    width: bounds.width / 3,
+    height: bounds.height,
+  };
+};
+
+/**
+ * Calculates the bounding box for the menu icon section
+ */
+export const calculateMenuIconBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+
+  if (!bounds) return null;
+
+  // Last section of the toolbar (right third)
+  return {
+    x: bounds.x + (bounds.width / 3) * 2,
+    y: bounds.y,
+    width: bounds.width / 3,
+    height: bounds.height,
+  };
+};
+
+/**
  * Checks if a point is inside the selection tool
+ * Returns an object with isInSelectionTool and toolingMode based on which section the point is in
  */
 export const isPointInSelectionTool = ({
   point,
@@ -49,21 +125,70 @@ export const isPointInSelectionTool = ({
   activeLayers,
   camera,
 }: {
-  point: { x: number; y: number };
+  point: Point;
   allLayers: Layer[];
   activeLayers: string[];
   camera: Camera;
 }) => {
   const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
 
-  if (!bounds) return false;
+  if (!bounds) return { isInSelectionTool: false };
 
-  return (
+  // Check if point is in overall selection tool bounds
+  const isInBounds =
     point.x >= bounds.x &&
     point.x <= bounds.x + bounds.width &&
     point.y >= bounds.y &&
-    point.y <= bounds.y + bounds.height
-  );
+    point.y <= bounds.y + bounds.height;
+
+  if (!isInBounds) return { isInSelectionTool: false };
+
+  // Check which section the point is in
+  const shapeIconBounds = calculateShapeIconBounds({ allLayers, activeLayers, camera });
+  const colorButtonBounds = calculateColorButtonBounds({ allLayers, activeLayers, camera });
+  const menuIconBounds = calculateMenuIconBounds({ allLayers, activeLayers, camera });
+
+  if (
+    shapeIconBounds &&
+    point.x >= shapeIconBounds.x &&
+    point.x <= shapeIconBounds.x + shapeIconBounds.width &&
+    point.y >= shapeIconBounds.y &&
+    point.y <= shapeIconBounds.y + shapeIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "LAYER_SHAPE",
+    };
+  }
+
+  if (
+    colorButtonBounds &&
+    point.x >= colorButtonBounds.x &&
+    point.x <= colorButtonBounds.x + colorButtonBounds.width &&
+    point.y >= colorButtonBounds.y &&
+    point.y <= colorButtonBounds.y + colorButtonBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "LAYER_COLOR",
+    };
+  }
+
+  if (
+    menuIconBounds &&
+    point.x >= menuIconBounds.x &&
+    point.x <= menuIconBounds.x + menuIconBounds.width &&
+    point.y >= menuIconBounds.y &&
+    point.y <= menuIconBounds.y + menuIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "LAYER_BORDER",
+    };
+  }
+
+  // In the selection tool but not in any specific section
+  return { isInSelectionTool: true, toolingMode: undefined };
 };
 
 /**

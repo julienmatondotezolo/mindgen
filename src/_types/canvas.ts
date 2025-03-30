@@ -271,6 +271,13 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Tooling;
+      isInSelectionTool: boolean;
+      toolingMode?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER";
+      toolingModeColor?: Color;
+      toolingModeBorderColor?: Color;
+      toolingModeBorderWidth?: number;
+      toolingModeBorderType?: LayerBorderType;
+      toolingModeShape?: LayerType;
     }
   | {
       mode: CanvasMode.Translating;
