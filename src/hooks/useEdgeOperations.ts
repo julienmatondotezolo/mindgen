@@ -17,6 +17,7 @@ import {
   useAddEdgeLayer,
   useRemoveEdge,
   useRemoveEdgeLayer,
+  useSelectElement,
   useUpdateEdge,
   useUpdateEdgeLayer,
 } from "@/state";
@@ -53,6 +54,7 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   const whiteboardText = useTranslations("Whiteboard");
 
   // Edge commands
+  const selectLayer = useSelectElement({ boardId });
   const addEdgeCommand = useAddEdge();
   const addEdgeLayerCommand = useAddEdgeLayer();
   const updateEdgeCommand = useUpdateEdge();
@@ -483,8 +485,11 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
 
       // Add the new edge layer
       addEdgeLayerCommand({ edge: newEdge, layer: newLayer, boardId });
+
+      // Select the new layer
+      selectLayer({ layerIds: [newLayer.id] });
     },
-    [activeLayers, addEdgeLayerCommand, boardId, theme, whiteboardText],
+    [activeLayers, addEdgeLayerCommand, boardId, theme, whiteboardText, selectLayer],
   );
 
   // Update an edge
