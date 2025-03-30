@@ -632,7 +632,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           addEdgeLayer({
             canvasState,
             newEdgePosition,
-            type: canvasState.handleInfo?.layerType,
+            layer,
             point: newLayerPosition,
           });
         }

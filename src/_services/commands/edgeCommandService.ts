@@ -260,7 +260,7 @@ export async function deleteEdgeLayerCommand({
       Authorization: `Bearer ${session.data.session.user.token}}`,
       "ngrok-skip-browser-warning": "1",
     },
-    body: JSON.stringify({ edgeIdsToDelete, layerIdsToDelete }),
+    body: JSON.stringify({ edgeIds: edgeIdsToDelete, layerIds: layerIdsToDelete }),
   });
 
   if (!responseDeleteEdgeLayer.ok) {

@@ -435,22 +435,19 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
     ({
       canvasState,
       newEdgePosition,
-      type,
+      layer,
       point,
     }: {
       canvasState: CanvasState;
       newEdgePosition: Point;
-      type: LayerType;
+      layer: Layer;
       point: Point;
     }) => {
       const newLayer: Layer = {
+        ...layer,
         id: nanoid(),
-        type: type as any,
         x: point.x, // Center the layer on the click point
         y: point.y,
-        width: 200,
-        height: type === LayerType.Rectangle ? 60 : 200, // Make ellipses and diamonds square
-        fill: { r: 77, g: 106, b: 255 },
         value: whiteboardText("typeSomething"),
       };
 

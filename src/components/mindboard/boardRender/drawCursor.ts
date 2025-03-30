@@ -66,11 +66,20 @@ export const drawCursor = ({
   const labelY = cursorSize;
   const borderRadius = 6 / cameraScale; // Larger border radius for more rounded corners
 
+  // Add shadow effect
+  context.shadowColor = "rgba(0, 0, 0, 0.3)";
+  context.shadowBlur = 4 / cameraScale;
+  context.shadowOffsetX = 1 / cameraScale;
+  context.shadowOffsetY = 1 / cameraScale;
+
   // Draw label background
   context.fillStyle = userColor;
   context.beginPath();
   context.roundRect(labelX, labelY, labelWidth, labelHeight, borderRadius);
   context.fill();
+
+  // Reset shadow for text
+  context.shadowColor = "transparent";
 
   // Draw label text
   context.fillStyle = "white";
