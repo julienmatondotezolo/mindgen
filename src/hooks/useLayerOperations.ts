@@ -791,7 +791,7 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
       });
     });
 
-    return alignments;
+    return undefined;
   }, [activeLayers, layers]);
 
   // Add a new layer
