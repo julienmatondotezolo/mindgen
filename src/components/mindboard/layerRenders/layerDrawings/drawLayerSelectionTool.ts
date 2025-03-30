@@ -23,7 +23,7 @@ export const drawLayerSelectionTool = ({
   activeLayers: string[];
   theme: string | undefined;
 }): void => {
-  if (canvasState.mode === CanvasMode.Translating) return;
+  if (canvasState.mode === CanvasMode.EdgeDrawing || canvasState.mode === CanvasMode.Translating) return;
 
   // Create an array of all selected layers to calculate the bounding box
   let selectedLayers: Layer[] = [layer];
@@ -42,8 +42,8 @@ export const drawLayerSelectionTool = ({
 
   // Calculate the position of the selection tool UI
   // Center it horizontally and place it 30px above the bounding box
-  const toolbarWidth = 120 / camera.scale; // Width of the selection toolbar
-  const toolbarHeight = 40 / camera.scale; // Height of the selection toolbar
+  const toolbarWidth = Math.max(160, 160 / camera.scale); // Width of the selection toolbar
+  const toolbarHeight = Math.max(45, 45 / camera.scale); // Height of the selection toolbar
   const toolbarX = box.x + box.width / 2 - toolbarWidth / 2;
   const toolbarY = box.y - toolbarHeight - 80; // 30px above the bounding box
 
@@ -58,7 +58,7 @@ export const drawLayerSelectionTool = ({
   // Draw toolbar background
   context.fillStyle = theme === "dark" ? "#222" : "#333";
   context.beginPath();
-  roundRect(context, toolbarX, toolbarY, toolbarWidth, toolbarHeight, 8);
+  roundRect(context, toolbarX, toolbarY, toolbarWidth, toolbarHeight, Math.max(20, 20 / camera.scale));
   context.fill();
 
   // Add shadow effect
@@ -73,13 +73,19 @@ export const drawLayerSelectionTool = ({
   const secondDividerX = toolbarX + (toolbarWidth / 3) * 2;
 
   // Draw shape button (first section)
-  drawShapeIcon(context, toolbarX + toolbarWidth / 6, toolbarY + toolbarHeight / 2, theme);
+  drawShapeIcon(context, toolbarX + toolbarWidth / 6, toolbarY + toolbarHeight / 2, theme, camera);
 
   // Draw the color button (middle section)
-  drawColorButton(context, firstDividerX + toolbarWidth / 6, toolbarY + toolbarHeight / 2, colorToCss(layer.fill));
+  drawColorButton(
+    context,
+    firstDividerX + toolbarWidth / 6,
+    toolbarY + toolbarHeight / 2,
+    colorToCss(layer.fill),
+    camera,
+  );
 
   // Draw menu button (last section)
-  drawMenuIcon(context, secondDividerX + toolbarWidth / 6, toolbarY + toolbarHeight / 2, theme);
+  drawMenuIcon(context, secondDividerX + toolbarWidth / 6, toolbarY + toolbarHeight / 2, theme, camera);
 
   context.restore();
 };
@@ -111,11 +117,17 @@ const roundRect = (
 /**
  * Draws the shape icon in the selection toolbar
  */
-const drawShapeIcon = (context: CanvasRenderingContext2D, x: number, y: number, theme: string | undefined) => {
-  const size = 16;
+const drawShapeIcon = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  theme: string | undefined,
+  camera: Camera,
+) => {
+  const size = Math.max(16, 16 / camera.scale);
 
   context.strokeStyle = theme === "dark" ? "#fff" : "#fff";
-  context.lineWidth = 2;
+  context.lineWidth = Math.max(2, 2 / camera.scale);
 
   // Draw a small square icon
   context.beginPath();
@@ -126,8 +138,8 @@ const drawShapeIcon = (context: CanvasRenderingContext2D, x: number, y: number, 
 /**
  * Draws the color button in the selection toolbar
  */
-const drawColorButton = (context: CanvasRenderingContext2D, x: number, y: number, color: string) => {
-  const radius = 10;
+const drawColorButton = (context: CanvasRenderingContext2D, x: number, y: number, color: string, camera: Camera) => {
+  const radius = Math.max(10, 10 / camera.scale);
 
   // Draw color circle
   context.fillStyle = color;
@@ -139,12 +151,18 @@ const drawColorButton = (context: CanvasRenderingContext2D, x: number, y: number
 /**
  * Draws the menu icon (hamburger menu) in the selection toolbar
  */
-const drawMenuIcon = (context: CanvasRenderingContext2D, x: number, y: number, theme: string | undefined) => {
-  const width = 16;
-  let lineGap = 5;
+const drawMenuIcon = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  theme: string | undefined,
+  camera: Camera,
+) => {
+  const width = Math.max(16, 16 / camera.scale);
+  let lineGap = Math.max(5, 5 / camera.scale);
 
   context.strokeStyle = theme === "dark" ? "#fff" : "#fff";
-  context.lineWidth = 1;
+  context.lineWidth = Math.max(1, 1 / camera.scale);
 
   // Draw three horizontal lines for the hamburger menu
   // Top line
@@ -153,7 +171,7 @@ const drawMenuIcon = (context: CanvasRenderingContext2D, x: number, y: number, t
   context.lineTo(x + width / 2, y - lineGap);
   context.stroke();
 
-  context.lineWidth = 1.5;
+  context.lineWidth = Math.max(1.5, 1.5 / camera.scale);
 
   // Middle line
   context.beginPath();
@@ -161,8 +179,8 @@ const drawMenuIcon = (context: CanvasRenderingContext2D, x: number, y: number, t
   context.lineTo(x + width / 2, y);
   context.stroke();
 
-  context.lineWidth = 2;
-  lineGap = 5;
+  context.lineWidth = Math.max(2, 2 / camera.scale);
+  lineGap = Math.max(5, 5 / camera.scale);
 
   // Bottom line
   context.beginPath();
