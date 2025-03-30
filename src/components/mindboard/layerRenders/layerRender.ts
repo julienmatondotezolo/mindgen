@@ -5,7 +5,6 @@ import {
   drawAlignmentGuidelines,
   drawLayerBasedOnType,
   drawLayerHandles,
-  drawLayerSelectionTool,
   drawLayerText,
   drawResizeGrips,
   drawShadowLayerBasedOnType,
@@ -48,7 +47,4 @@ export const layerRender = ({
 
   // Draw alignment guidelines if available and the layer is active
   drawAlignmentGuidelines({ context, camera, canvasState });
-
-  // Draw layer selection tool
-  drawLayerSelectionTool({ layer, context, camera, canvasState, theme, activeLayers, allLayers });
 };

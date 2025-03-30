@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { useCallback, useRef } from "react";
 import { useRecoilValue } from "recoil";
 
-import { drawCursor, drawSelectionRectangle } from "@/components/mindboard/boardRender";
+import { drawCursor, drawSelectionRectangle, drawSelectionTool } from "@/components/mindboard/boardRender";
 import { drawShadowEdgeBasedOnType, edgeRender } from "@/components/mindboard/edgeRender";
 import { layerRender } from "@/components/mindboard/layerRenders";
 import {
@@ -219,6 +219,9 @@ export const useBoard = () => {
         });
       }
     });
+
+    // Draw layer selection tool
+    drawSelectionTool({ context, camera, canvasState, theme, activeLayers, allLayers: layers });
 
     // Draw other users cursors
     Object.values(cursors).map((data) => {

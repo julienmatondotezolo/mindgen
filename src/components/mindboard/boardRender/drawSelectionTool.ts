@@ -6,8 +6,7 @@ import { calculateLayerBoundingBox } from "@/utils/layerUtils";
  * Draws the layer selection tool UI above the selected layer's bounding box
  * The UI is centered horizontally and placed 30px above the bounding box
  */
-export const drawLayerSelectionTool = ({
-  layer,
+export const drawSelectionTool = ({
   context,
   camera,
   canvasState,
@@ -15,7 +14,6 @@ export const drawLayerSelectionTool = ({
   allLayers,
   activeLayers,
 }: {
-  layer: Layer;
   context: CanvasRenderingContext2D;
   camera: Camera;
   canvasState: CanvasState;
@@ -26,12 +24,7 @@ export const drawLayerSelectionTool = ({
   if (canvasState.mode === CanvasMode.EdgeDrawing || canvasState.mode === CanvasMode.Translating) return;
 
   // Create an array of all selected layers to calculate the bounding box
-  let selectedLayers: Layer[] = [layer];
-
-  // If allLayers is provided, use it to find all active layers
-  if (allLayers.length > 0) {
-    selectedLayers = allLayers.filter((l) => activeLayers.includes(l.id));
-  }
+  let selectedLayers: Layer[] = allLayers.filter((l) => activeLayers.includes(l.id));
 
   if (selectedLayers.length === 0) return;
 
@@ -80,7 +73,7 @@ export const drawLayerSelectionTool = ({
     context,
     firstDividerX + toolbarWidth / 6,
     toolbarY + toolbarHeight / 2,
-    colorToCss(layer.fill),
+    colorToCss(selectedLayers.length > 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
     camera,
   );
 

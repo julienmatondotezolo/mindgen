@@ -2,7 +2,6 @@ export * from "./drawActiveLayerSelection";
 export * from "./drawAlignmentGuidelines";
 export * from "./drawLayerBasedOnType";
 export * from "./drawLayerHandles";
-export * from "./drawLayerSelectionTool";
 export * from "./drawLayerText";
 export * from "./drawLockedLayerSelection";
 export * from "./drawResizeGrips";
