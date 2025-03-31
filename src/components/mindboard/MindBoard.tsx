@@ -646,121 +646,148 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     ],
   );
 
-  const handleMouseUp = useCallback(() => {
-    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-    const layerId = activeLayers.filter((id) => canvasState.handleInfo?.layerId === id)[0];
-    const layer = getLayerById({ layerId, layers });
+  const handleMouseUp = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const point = canvasPointFromEvent(e, camera, canvasRef.current);
 
-    // Return new layer position based on pointer position in handle
-    const { newLayerPosition, newEdgePosition } = getShadowsPositionBasedOnPointerPositionInHandle({
-      layer,
       // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-      handlePosition: canvasState.handleInfo?.handlePosition,
+      const layerId = activeLayers.filter((id) => canvasState.handleInfo?.layerId === id)[0];
+      const layer = getLayerById({ layerId, layers });
+
+      // Return new layer position based on pointer position in handle
+      const { newLayerPosition, newEdgePosition } = getShadowsPositionBasedOnPointerPositionInHandle({
+        layer,
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        handlePosition: canvasState.handleInfo?.handlePosition,
+        canvasState,
+      });
+
+      switch (canvasState.mode) {
+        case CanvasMode.None:
+          fitView(layers);
+          break;
+        case CanvasMode.Grab:
+          setCanvasState({ mode: CanvasMode.Grab });
+          break;
+        case CanvasMode.EdgeDrawing:
+          // If the handle is not in the handle, add a new layer
+          if (
+            canvasState.handleInfo?.isInHandle === false ||
+            (canvasState.handleInfo?.layerId === activeLayers[0] && canvasState.handleInfo?.isInHandle === true)
+          ) {
+            addEdgeLayer({
+              canvasState,
+              newEdgePosition,
+              layer,
+              point: newLayerPosition,
+            });
+          }
+
+          // If the handle is in the handle, add an edge to the current layer
+          if (canvasState.handleInfo?.isInHandle === true && canvasState.handleInfo?.layerId !== activeLayers[0]) {
+            addEdge({ canvasState, newEdgePosition, toLayerId: canvasState.handleInfo.layerId });
+          }
+
+          setCanvasState({ mode: CanvasMode.None });
+          break;
+        case CanvasMode.SelectionNet:
+          // eslint-disable-next-line no-case-declarations
+          const selectedLayers = canvasState.selectedLayersIds;
+
+          if (selectedLayers) {
+            // If a layer is locked remove it from the selected layers
+            const filteredSelectedLayers = selectedLayers.filter((layerId) => !checkIfLayerIsLocked(layerId));
+
+            selectLayer({ layerIds: filteredSelectedLayers });
+          }
+
+          setCanvasState({ mode: CanvasMode.None });
+          break;
+        case CanvasMode.Resizing: {
+          // Update the layer if initialLayerBounds is valid
+          const resizingState = canvasState as { initialLayerBounds?: Layer[]; connectedEdges?: Edge[] };
+
+          if (
+            resizingState.initialLayerBounds &&
+            resizingState.initialLayerBounds.length > 0 &&
+            resizingState.connectedEdges &&
+            resizingState.connectedEdges.length > 0
+          ) {
+            updateEdgeLayer({
+              updatedLayers: resizingState.initialLayerBounds,
+              updatedEdges: resizingState.connectedEdges,
+            });
+          } else if (resizingState.initialLayerBounds && resizingState.initialLayerBounds.length > 0) {
+            updateLayer({ updatedLayers: resizingState.initialLayerBounds });
+          }
+
+          // When resizing is done, update the layer(s)
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+          break;
+        }
+        case CanvasMode.Translating: {
+          // Update the layer if initialLayerBounds is valid
+          const translatingState = canvasState as { initialLayerBounds?: Layer[]; connectedEdges?: Edge[] };
+
+          if (
+            translatingState.initialLayerBounds &&
+            translatingState.initialLayerBounds.length > 0 &&
+            translatingState.connectedEdges &&
+            translatingState.connectedEdges.length > 0
+          ) {
+            updateEdgeLayer({
+              updatedLayers: translatingState.initialLayerBounds,
+              updatedEdges: translatingState.connectedEdges,
+            });
+          } else if (translatingState.initialLayerBounds && translatingState.initialLayerBounds.length > 0) {
+            updateLayer({ updatedLayers: translatingState.initialLayerBounds });
+          }
+
+          setCanvasState({
+            mode: CanvasMode.None,
+          });
+          break;
+        }
+        case CanvasMode.Tooling: {
+          // Check if point is inside the selection tool
+          const selectionToolInfo = isPointInSelectionToolBounds(point);
+
+          if (selectionToolInfo.isInSelectionTool) {
+            setCanvasState((prev) => {
+              // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+              const oldToolingModeState = prev.toolingModeState;
+
+              return {
+                ...prev,
+                toolingModeState:
+                  // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+                  oldToolingModeState === selectionToolInfo.toolingMode ? undefined : selectionToolInfo.toolingMode,
+              };
+            });
+          }
+          break;
+        }
+      }
+    },
+    [
+      activeLayers,
+      addEdge,
+      addEdgeLayer,
+      camera,
+      canvasRef,
       canvasState,
-    });
-
-    switch (canvasState.mode) {
-      case CanvasMode.None:
-        fitView(layers);
-        break;
-      case CanvasMode.Grab:
-        setCanvasState({ mode: CanvasMode.Grab });
-        break;
-      case CanvasMode.EdgeDrawing:
-        // If the handle is not in the handle, add a new layer
-        if (
-          canvasState.handleInfo?.isInHandle === false ||
-          (canvasState.handleInfo?.layerId === activeLayers[0] && canvasState.handleInfo?.isInHandle === true)
-        ) {
-          addEdgeLayer({
-            canvasState,
-            newEdgePosition,
-            layer,
-            point: newLayerPosition,
-          });
-        }
-
-        // If the handle is in the handle, add an edge to the current layer
-        if (canvasState.handleInfo?.isInHandle === true && canvasState.handleInfo?.layerId !== activeLayers[0]) {
-          addEdge({ canvasState, newEdgePosition, toLayerId: canvasState.handleInfo.layerId });
-        }
-
-        setCanvasState({ mode: CanvasMode.None });
-        break;
-      case CanvasMode.SelectionNet:
-        // eslint-disable-next-line no-case-declarations
-        const selectedLayers = canvasState.selectedLayersIds;
-
-        if (selectedLayers) {
-          // If a layer is locked remove it from the selected layers
-          const filteredSelectedLayers = selectedLayers.filter((layerId) => !checkIfLayerIsLocked(layerId));
-
-          selectLayer({ layerIds: filteredSelectedLayers });
-        }
-
-        setCanvasState({ mode: CanvasMode.None });
-        break;
-      case CanvasMode.Resizing: {
-        // Update the layer if initialLayerBounds is valid
-        const resizingState = canvasState as { initialLayerBounds?: Layer[]; connectedEdges?: Edge[] };
-
-        if (
-          resizingState.initialLayerBounds &&
-          resizingState.initialLayerBounds.length > 0 &&
-          resizingState.connectedEdges &&
-          resizingState.connectedEdges.length > 0
-        ) {
-          updateEdgeLayer({
-            updatedLayers: resizingState.initialLayerBounds,
-            updatedEdges: resizingState.connectedEdges,
-          });
-        } else if (resizingState.initialLayerBounds && resizingState.initialLayerBounds.length > 0) {
-          updateLayer({ updatedLayers: resizingState.initialLayerBounds });
-        }
-
-        // When resizing is done, update the layer(s)
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
-        break;
-      }
-      case CanvasMode.Translating: {
-        // Update the layer if initialLayerBounds is valid
-        const translatingState = canvasState as { initialLayerBounds?: Layer[]; connectedEdges?: Edge[] };
-
-        if (
-          translatingState.initialLayerBounds &&
-          translatingState.initialLayerBounds.length > 0 &&
-          translatingState.connectedEdges &&
-          translatingState.connectedEdges.length > 0
-        ) {
-          updateEdgeLayer({
-            updatedLayers: translatingState.initialLayerBounds,
-            updatedEdges: translatingState.connectedEdges,
-          });
-        } else if (translatingState.initialLayerBounds && translatingState.initialLayerBounds.length > 0) {
-          updateLayer({ updatedLayers: translatingState.initialLayerBounds });
-        }
-
-        setCanvasState({
-          mode: CanvasMode.None,
-        });
-        break;
-      }
-    }
-  }, [
-    activeLayers,
-    addEdge,
-    addEdgeLayer,
-    canvasState,
-    checkIfLayerIsLocked,
-    fitView,
-    layers,
-    selectLayer,
-    setCanvasState,
-    updateEdgeLayer,
-    updateLayer,
-  ]);
+      checkIfLayerIsLocked,
+      fitView,
+      isPointInSelectionToolBounds,
+      layers,
+      selectLayer,
+      setCanvasState,
+      updateEdgeLayer,
+      updateLayer,
+    ],
+  );
 
   // Handle keyboard events
   useBoardKeyboardEvents({
