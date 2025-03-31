@@ -248,6 +248,8 @@ export type CanvasState =
       current?: Point;
       hoveredEdgeId?: string;
       hoveredLayerId?: string;
+      toolingMode?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER";
+      toolingModeState?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER";
     }
   | {
       mode: CanvasMode.Pencil;

@@ -1,5 +1,5 @@
 import { Camera, CanvasMode, CanvasState, Layer, Point } from "@/_types";
-import { colorToCss } from "@/utils/canvasUtils";
+import { COLORS, colorToCss } from "@/utils/canvasUtils";
 import { calculateLayerBoundingBox } from "@/utils/layerUtils";
 
 /**
@@ -38,6 +38,79 @@ export const calculateSelectionToolBounds = ({
     height: toolbarHeight,
     radius: Math.max(20, 20 / camera.scale),
   };
+};
+
+/**
+ * Calculates the bounding box for the color palette that appears when toolingModeState is LAYER_COLOR
+ */
+export const calculateColorPaletteBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const toolbarBounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+
+  if (!toolbarBounds) return null;
+
+  const paletteWidth = toolbarBounds.width;
+  const paletteHeight = Math.max(80, 80 / camera.scale);
+  const paletteX = toolbarBounds.x;
+  const paletteY = toolbarBounds.y - toolbarBounds.height - Math.max(40, 40 / camera.scale); // 10px below toolbar
+
+  return {
+    x: paletteX,
+    y: paletteY,
+    width: paletteWidth,
+    height: paletteHeight,
+    radius: toolbarBounds.radius,
+  };
+};
+
+/**
+ * Calculates the positions and bounds for each color circle in the color palette
+ */
+export const calculateColorCirclesBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, camera });
+
+  if (!paletteBounds) return null;
+
+  const colorCircleRadius = Math.max(12, 12 / camera.scale);
+  const totalColors = COLORS.length;
+
+  // Calculate how many colors can fit in a row with proper spacing
+  const colorsPerRow = Math.min(totalColors, 5); // Maximum 5 colors per row
+  const rows = Math.ceil(totalColors / colorsPerRow);
+
+  // Calculate horizontal and vertical spacing
+  const horizontalSpacing = paletteBounds.width / (colorsPerRow + 1);
+  const verticalSpacing = paletteBounds.height / (rows + 1);
+
+  return COLORS.map((color, index) => {
+    const row = Math.floor(index / colorsPerRow);
+    const col = index % colorsPerRow;
+
+    const x = paletteBounds.x + horizontalSpacing * (col + 1);
+    const y = paletteBounds.y + verticalSpacing * (row + 1);
+
+    return {
+      color,
+      x,
+      y,
+      radius: colorCircleRadius,
+    };
+  });
 };
 
 /**
@@ -124,15 +197,53 @@ export const isPointInSelectionTool = ({
   allLayers,
   activeLayers,
   camera,
+  canvasState,
 }: {
   point: Point;
   allLayers: Layer[];
   activeLayers: string[];
   camera: Camera;
+  canvasState?: CanvasState;
 }) => {
   const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
 
   if (!bounds) return { isInSelectionTool: false };
+
+  // Check if we're in LAYER_COLOR mode and if the point is in the color palette
+  if (canvasState && "toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_COLOR") {
+    const colorCircles = calculateColorCirclesBounds({ allLayers, activeLayers, camera });
+
+    if (colorCircles) {
+      // Check if the point is inside any color circle
+      for (const circle of colorCircles) {
+        const distance = Math.sqrt(Math.pow(point.x - circle.x, 2) + Math.pow(point.y - circle.y, 2));
+
+        if (distance <= circle.radius) {
+          return {
+            isInSelectionTool: true,
+            toolingMode: "LAYER_COLOR" as const,
+            toolingModeColor: circle.color,
+          };
+        }
+      }
+
+      // Check if the point is in the color palette but not on any circle
+      const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, camera });
+
+      if (
+        paletteBounds &&
+        point.x >= paletteBounds.x &&
+        point.x <= paletteBounds.x + paletteBounds.width &&
+        point.y >= paletteBounds.y &&
+        point.y <= paletteBounds.y + paletteBounds.height
+      ) {
+        return {
+          isInSelectionTool: true,
+          toolingMode: "LAYER_COLOR" as const,
+        };
+      }
+    }
+  }
 
   // Check if point is in overall selection tool bounds
   const isInBounds =
@@ -157,7 +268,7 @@ export const isPointInSelectionTool = ({
   ) {
     return {
       isInSelectionTool: true,
-      toolingMode: "LAYER_SHAPE",
+      toolingMode: "LAYER_SHAPE" as const,
     };
   }
 
@@ -170,7 +281,7 @@ export const isPointInSelectionTool = ({
   ) {
     return {
       isInSelectionTool: true,
-      toolingMode: "LAYER_COLOR",
+      toolingMode: "LAYER_COLOR" as const,
     };
   }
 
@@ -183,7 +294,7 @@ export const isPointInSelectionTool = ({
   ) {
     return {
       isInSelectionTool: true,
-      toolingMode: "LAYER_BORDER",
+      toolingMode: "LAYER_BORDER" as const,
     };
   }
 
@@ -255,14 +366,73 @@ export const drawSelectionTool = ({
     context,
     firstDividerX + bounds.width / 6,
     bounds.y + bounds.height / 2,
-    colorToCss(selectedLayers.length > 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
+    colorToCss(selectedLayers.length === 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
     camera,
   );
 
   // Draw menu button (last section)
   drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera);
 
+  // Draw color palette if in LAYER_COLOR mode
+  if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_COLOR") {
+    drawColorPalette(context, { allLayers, activeLayers, camera, theme });
+  }
+
   context.restore();
+};
+
+/**
+ * Draws the color palette when in LAYER_COLOR mode
+ */
+const drawColorPalette = (
+  context: CanvasRenderingContext2D,
+  {
+    allLayers,
+    activeLayers,
+    camera,
+    theme,
+  }: {
+    allLayers: Layer[];
+    activeLayers: string[];
+    camera: Camera;
+    theme: string | undefined;
+  },
+) => {
+  const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, camera });
+
+  if (!paletteBounds) return;
+
+  // Draw the palette background
+  context.fillStyle = theme === "dark" ? "#222" : "#333";
+  context.beginPath();
+  roundRect(context, paletteBounds.x, paletteBounds.y, paletteBounds.width, paletteBounds.height, paletteBounds.radius);
+  context.fill();
+
+  // Add shadow effect
+  context.shadowColor = "rgba(0, 0, 0, 0.3)";
+  context.shadowBlur = 8;
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 2;
+
+  // Draw color circles
+  const colorCircles = calculateColorCirclesBounds({ allLayers, activeLayers, camera });
+
+  if (!colorCircles) return;
+
+  colorCircles.forEach((circle) => {
+    // Draw color circle
+    context.fillStyle = circle.color;
+    context.beginPath();
+    context.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+    context.fill();
+
+    // Draw a white border around the circle
+    context.strokeStyle = "#5D5D5DFF";
+    context.lineWidth = Math.max(1, 1 / camera.scale);
+    context.beginPath();
+    context.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+    context.stroke();
+  });
 };
 
 /**

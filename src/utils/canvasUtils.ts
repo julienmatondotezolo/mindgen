@@ -16,7 +16,7 @@ import {
   XYWH,
 } from "@/_types/canvas";
 
-const COLORS = [
+export const COLORS = [
   "#2563EB",
   "#FF5733",
   "#33CC33",
@@ -81,6 +81,14 @@ export function colorToCss(color: Color) {
   return `#${color?.r?.toString(16).padStart(2, "0")}${color?.g?.toString(16).padStart(2, "0")}${color?.b
     ?.toString(16)
     .padStart(2, "0")}`;
+}
+
+export function hexToRgba(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+  if (!result) return null;
+
+  return { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) };
 }
 
 export const fillRGBA = (fill: Color, theme: string | undefined) => {

@@ -53,9 +53,10 @@ export const useBoard = () => {
         allLayers: layers,
         activeLayers,
         camera,
+        canvasState,
       });
     },
-    [activeLayers, layers, camera],
+    [activeLayers, layers, camera, canvasState],
   );
 
   // Setup canvas

@@ -8,6 +8,7 @@ import { useBoard } from "@/hooks/useBoard";
 import { useBoardRefresh } from "@/hooks/useBoardRefresh";
 import { useCanvasNavigation } from "@/hooks/useCanvasNavigation";
 import { cameraStateAtom, canvasStateAtom, lockedAtomState } from "@/state";
+import { hexToRgba } from "@/utils";
 import {
   calculateLayerBoundingBox,
   getLayerById,
@@ -261,17 +262,18 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
         // If pointer is inside selection tool and we have active layers, change mode to Tooling
         if (selectionToolInfo.isInSelectionTool && activeLayers.length > 0 && canvasState.mode === CanvasMode.None) {
-          const canvasStateUpdate: any = {
+          const updatedState: any = {
+            ...canvasState,
             mode: CanvasMode.Tooling,
             isInSelectionTool: true,
           };
 
           // Only add toolingMode if it exists in the selectionToolInfo
           if ("toolingMode" in selectionToolInfo) {
-            canvasStateUpdate.toolingMode = selectionToolInfo.toolingMode;
+            updatedState.toolingMode = selectionToolInfo.toolingMode;
           }
 
-          setCanvasState(canvasStateUpdate);
+          setCanvasState(updatedState);
           return;
         }
 
@@ -314,11 +316,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         }
 
         // Only set to None mode if we didn't set to Edge mode
-        setCanvasState({
+        setCanvasState((prev) => ({
+          ...prev,
           mode: CanvasMode.None,
           hoveredLayerId: layersAtPoint?.id,
           hoveredEdgeId: edgeNearPoint?.id,
-        });
+        }));
       } else if (canvasState.mode === CanvasMode.Edge) {
         // If the point is in the handle, set the isInHandle to true else set it to false
         if (isPointInHandle) {
@@ -511,18 +514,35 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           findLayersInSelection(origin, point);
         }
       } else if (canvasState.mode === CanvasMode.Tooling) {
-        if (!selectionToolInfo.isInSelectionTool) {
-          setCanvasState({
+        if (selectionToolInfo.isInSelectionTool === false) {
+          setCanvasState((prev) => ({
+            ...prev,
             mode: CanvasMode.None,
-          });
+            isInSelectionTool: false,
+          }));
         }
 
         if (selectionToolInfo.isInSelectionTool) {
-          setCanvasState((prev) => ({
-            ...prev,
-            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-            toolingMode: selectionToolInfo.toolingMode,
-          }));
+          const updatedState: any = {
+            ...canvasState,
+          };
+
+          // Add toolingMode if it exists
+          if ("toolingMode" in selectionToolInfo) {
+            updatedState.toolingMode = selectionToolInfo.toolingMode;
+          }
+
+          // Add toolingModeState if it exists
+          if ("toolingModeState" in selectionToolInfo) {
+            updatedState.toolingModeState = selectionToolInfo.toolingModeState;
+          }
+
+          // Add toolingModeColor if it exists
+          if ("toolingModeColor" in selectionToolInfo) {
+            updatedState.toolingModeColor = selectionToolInfo.toolingModeColor;
+          }
+
+          setCanvasState(updatedState);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
         // Move selected layers
@@ -754,19 +774,46 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           // Check if point is inside the selection tool
           const selectionToolInfo = isPointInSelectionToolBounds(point);
 
-          if (selectionToolInfo.isInSelectionTool) {
-            setCanvasState((prev) => {
-              // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-              const oldToolingModeState = prev.toolingModeState;
+          if (!selectionToolInfo.isInSelectionTool) return;
 
-              return {
-                ...prev,
-                toolingModeState:
-                  // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-                  oldToolingModeState === selectionToolInfo.toolingMode ? undefined : selectionToolInfo.toolingMode,
-              };
-            });
+          // Add toolingModeColor if it exists
+          if ("toolingModeColor" in selectionToolInfo) {
+            const newFillColor = selectionToolInfo.toolingModeColor;
+
+            // Get all active layers and update them with the new fill color
+
+            if (newFillColor) {
+              // Create updated layers with the new fill color
+              const updatedLayers = activeLayers
+                .map((layerId) => {
+                  const layer = layers.find((l) => l.id === layerId);
+
+                  if (layer) {
+                    return {
+                      ...layer,
+                      fill: hexToRgba(newFillColor),
+                    };
+                  }
+                  return null;
+                })
+                .filter((layer) => layer !== null) as Layer[];
+
+              // Update the layers with the new fill color
+              updateLayer({ updatedLayers });
+            }
           }
+
+          setCanvasState((prev) => {
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            const oldToolingModeState = prev.toolingModeState;
+
+            return {
+              ...prev,
+              toolingModeState:
+                // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+                oldToolingModeState === selectionToolInfo.toolingMode ? undefined : selectionToolInfo.toolingMode,
+            };
+          });
           break;
         }
       }
