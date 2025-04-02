@@ -495,7 +495,30 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   // Update an edge
   const updateEdge = useCallback(
     ({ updatedEdges }: { updatedEdges: Edge[] }) => {
-      updateEdgeCommand({ updatedEdges, boardId });
+      // Create a new array without dbId property
+      const edgesWithoutDbId = updatedEdges.map((edge) => {
+        // Create a shallow copy of the edge
+        const newEdge = {
+          id: edge.id,
+          fromLayerId: edge.fromLayerId,
+          toLayerId: edge.toLayerId,
+          start: edge.start,
+          end: edge.end,
+          color: edge.color,
+          hoverColor: edge.hoverColor,
+          thickness: edge.thickness,
+          orientation: edge.orientation,
+          type: edge.type,
+          label: edge.label,
+          shape: edge.shape,
+          handleStart: edge.handleStart,
+          handleEnd: edge.handleEnd,
+        };
+
+        return newEdge;
+      });
+
+      updateEdgeCommand({ updatedEdges: edgesWithoutDbId, boardId });
     },
     [boardId, updateEdgeCommand],
   );
@@ -503,7 +526,50 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   // Update a new edge layer
   const updateEdgeLayer = useCallback(
     ({ updatedEdges, updatedLayers }: { updatedEdges: Edge[]; updatedLayers: Layer[] }) => {
-      updateEdgeLayerCommand({ updatedEdges, updatedLayers, boardId });
+      // Create a new array without dbId property
+      const edgesWithoutDbId = updatedEdges.map((edge) => {
+        // Create a shallow copy of the edge
+        const newEdge = {
+          id: edge.id,
+          fromLayerId: edge.fromLayerId,
+          toLayerId: edge.toLayerId,
+          start: edge.start,
+          end: edge.end,
+          color: edge.color,
+          hoverColor: edge.hoverColor,
+          thickness: edge.thickness,
+          orientation: edge.orientation,
+          type: edge.type,
+          label: edge.label,
+          shape: edge.shape,
+          handleStart: edge.handleStart,
+          handleEnd: edge.handleEnd,
+        };
+
+        return newEdge;
+      });
+
+      const layersWithoutDbId = updatedLayers.map((layer) => {
+        // Create a shallow copy of the layer
+        const newLayer = {
+          id: layer.id,
+          type: layer.type as any,
+          x: layer.x,
+          y: layer.y,
+          width: layer.width,
+          height: layer.height,
+          fill: layer.fill,
+          value: layer.value,
+          valueStyle: layer.valueStyle,
+          borderColor: layer.borderColor,
+          borderWidth: layer.borderWidth,
+          borderType: layer.borderType,
+        };
+
+        return newLayer;
+      });
+
+      updateEdgeLayerCommand({ updatedEdges: edgesWithoutDbId, updatedLayers: layersWithoutDbId, boardId });
     },
     [boardId, updateEdgeLayerCommand],
   );

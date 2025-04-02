@@ -72,6 +72,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     addEdge,
     addEdgeLayer,
     updateEdgeLayer,
+    updateEdge,
     edges,
     setEdges,
     activeEdgeId,
@@ -394,6 +395,17 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
           // Update the edge state
           setEdges((prev) => prev.map((edge) => (edge.id === edgeHandleInfo.edge.id ? updatedEdge : edge)));
+
+          // Update the canvas state
+          setCanvasState((prev) => ({
+            ...prev,
+            current: point,
+            edgeHandleInfo: {
+              // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+              ...prev.edgeHandleInfo,
+              edge: updatedEdge,
+            },
+          }));
         }
       } else if (canvasState.mode === CanvasMode.EdgeDrawing) {
         // Lock the edge to the nearest handle
@@ -689,6 +701,12 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         case CanvasMode.Grab:
           setCanvasState({ mode: CanvasMode.Grab });
           break;
+        case CanvasMode.EdgeEditing:
+          // Update the edge
+          if (canvasState.edgeHandleInfo) {
+            updateEdge({ updatedEdges: [canvasState.edgeHandleInfo.edge] });
+          }
+          break;
         case CanvasMode.EdgeDrawing:
           // If the handle is not in the handle, add a new layer
           if (
@@ -831,6 +849,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       layers,
       selectLayer,
       setCanvasState,
+      updateEdge,
       updateEdgeLayer,
       updateLayer,
     ],

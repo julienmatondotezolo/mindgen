@@ -820,7 +820,29 @@ export const useLayerOperations = ({ boardId }: { boardId: string }) => {
   // Update a layer
   const updateLayer = useCallback(
     ({ updatedLayers }: { updatedLayers: Layer[] }) => {
-      updateLayerCommand({ updatedLayers, boardId });
+      // Create a new array without dbId property
+      const layersWithoutDbId = updatedLayers.map((layer) => {
+        // Create a shallow copy of the layer
+        const newLayer = {
+          id: layer.id,
+          type: layer.type as any,
+          x: layer.x,
+          y: layer.y,
+          width: layer.width,
+          height: layer.height,
+          fill: layer.fill,
+          value: layer.value,
+          valueStyle: layer.valueStyle,
+          borderColor: layer.borderColor,
+          borderWidth: layer.borderWidth,
+          borderType: layer.borderType,
+        };
+
+        return newLayer;
+      });
+
+      // Pass the cleaned layers to updateLayerCommand
+      updateLayerCommand({ updatedLayers: layersWithoutDbId, boardId });
     },
     [boardId, updateLayerCommand],
   );
