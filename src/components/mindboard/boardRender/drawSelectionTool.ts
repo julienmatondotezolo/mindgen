@@ -71,6 +71,36 @@ export const calculateColorPaletteBounds = ({
 };
 
 /**
+ * Calculates the bounding box for the border style that appears when toolingModeState is LAYER_BORDER
+ */
+export const calculateBorderStyleBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const toolbarBounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+
+  if (!toolbarBounds) return null;
+
+  const borderToolbarWidth = toolbarBounds.width;
+  const borderToolbarHeight = Math.max(40, 40 / camera.scale);
+  const borderToolbarX = toolbarBounds.x;
+  const borderToolbarY = toolbarBounds.y - toolbarBounds.height - Math.max(1, 1 / camera.scale); // 10px below toolbar
+
+  return {
+    x: borderToolbarX,
+    y: borderToolbarY,
+    width: borderToolbarWidth,
+    height: borderToolbarHeight,
+    radius: toolbarBounds.radius,
+  };
+};
+
+/**
  * Calculates the positions and bounds for each color circle in the color palette
  */
 export const calculateColorCirclesBounds = ({
@@ -378,6 +408,11 @@ export const drawSelectionTool = ({
     drawColorPalette(context, { allLayers, activeLayers, camera, theme });
   }
 
+  // Draw border style if in LAYER_BORDER mode
+  if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_BORDER") {
+    drawBorderStyle(context, { allLayers, activeLayers, camera, theme });
+  }
+
   context.restore();
 };
 
@@ -433,6 +468,48 @@ const drawColorPalette = (
     context.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
     context.stroke();
   });
+};
+
+/**
+ * Draws the border style when in LAYER_BORDER mode
+ */
+
+const drawBorderStyle = (
+  context: CanvasRenderingContext2D,
+  {
+    allLayers,
+    activeLayers,
+    camera,
+    theme,
+  }: {
+    allLayers: Layer[];
+    activeLayers: string[];
+    camera: Camera;
+    theme: string | undefined;
+  },
+) => {
+  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+
+  if (!borderStyleBounds) return;
+
+  // Draw the palette background
+  context.fillStyle = theme === "dark" ? "#222" : "#333";
+  context.beginPath();
+  roundRect(
+    context,
+    borderStyleBounds.x,
+    borderStyleBounds.y,
+    borderStyleBounds.width,
+    borderStyleBounds.height,
+    borderStyleBounds.radius,
+  );
+  context.fill();
+
+  // Add shadow effect
+  context.shadowColor = "rgba(0, 0, 0, 0.3)";
+  context.shadowBlur = 8;
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 2;
 };
 
 /**
