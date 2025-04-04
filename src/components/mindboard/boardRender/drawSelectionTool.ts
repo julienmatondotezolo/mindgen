@@ -401,7 +401,7 @@ export const drawSelectionTool = ({
   );
 
   // Draw menu button (last section)
-  drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera);
+  drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera, canvasState);
 
   // Draw color palette if in LAYER_COLOR mode
   if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_COLOR") {
@@ -579,11 +579,13 @@ const drawMenuIcon = (
   y: number,
   theme: string | undefined,
   camera: Camera,
+  canvasState: CanvasState,
 ) => {
   const width = Math.max(16, 16 / camera.scale);
   let lineGap = Math.max(5, 5 / camera.scale);
 
-  context.strokeStyle = theme === "dark" ? "#fff" : "#fff";
+  // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+  context.strokeStyle = canvasState.toolingMode === "LAYER_BORDER" ? "#2563EB" : "#fff";
   context.lineWidth = Math.max(1, 1 / camera.scale);
 
   // Draw three horizontal lines for the hamburger menu

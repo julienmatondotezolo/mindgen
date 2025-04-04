@@ -445,12 +445,27 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
       layer: Layer;
       point: Point;
     }) => {
-      const newLayer: Layer = {
-        ...layer,
+      // const newLayer: Layer = {
+      //   ...layer,
+      //   id: nanoid(),
+      //   x: point.x, // Center the layer on the click point
+      //   y: point.y,
+      //   value: whiteboardText("typeSomething"),
+      // };
+
+      const newLayer = {
         id: nanoid(),
-        x: point.x, // Center the layer on the click point
+        type: layer.type as any,
+        x: point.x,
         y: point.y,
+        width: layer.width,
+        height: layer.height,
+        fill: layer.fill,
         value: whiteboardText("typeSomething"),
+        valueStyle: layer.valueStyle,
+        borderColor: layer.borderColor,
+        borderWidth: layer.borderWidth,
+        borderType: layer.borderType,
       };
 
       const toLayerId = newLayer.id;
