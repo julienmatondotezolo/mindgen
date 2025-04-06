@@ -146,7 +146,7 @@ export const calculateColorCirclesBounds = ({
 /**
  * Calculates the bounding box for the shape icon section
  */
-export const calculateShapeIconBounds = ({
+export const calculateTextIconBounds = ({
   allLayers,
   activeLayers,
   camera,
@@ -212,6 +212,31 @@ export const calculateMenuIconBounds = ({
   // Last section of the toolbar (right third)
   return {
     x: bounds.x + (bounds.width / 3) * 2,
+    y: bounds.y,
+    width: bounds.width / 3,
+    height: bounds.height,
+  };
+};
+
+/**
+ * Calculates the bounding box for the border icon section
+ */
+export const calculateBorderIconBounds = ({
+  allLayers,
+  activeLayers,
+  camera,
+}: {
+  allLayers: Layer[];
+  activeLayers: string[];
+  camera: Camera;
+}) => {
+  const bounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+
+  if (!bounds) return null;
+
+  // First section of the toolbar (left third)
+  return {
+    x: bounds.x,
     y: bounds.y,
     width: bounds.width / 3,
     height: bounds.height,
@@ -285,7 +310,7 @@ export const isPointInSelectionTool = ({
   if (!isInBounds) return { isInSelectionTool: false };
 
   // Check which section the point is in
-  const shapeIconBounds = calculateShapeIconBounds({ allLayers, activeLayers, camera });
+  const shapeIconBounds = calculateTextIconBounds({ allLayers, activeLayers, camera });
   const colorButtonBounds = calculateColorButtonBounds({ allLayers, activeLayers, camera });
   const menuIconBounds = calculateMenuIconBounds({ allLayers, activeLayers, camera });
 
@@ -365,6 +390,7 @@ export const drawSelectionTool = ({
 
   // Get the toolbar bounds
   const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
 
   if (!bounds) return;
 
@@ -388,8 +414,8 @@ export const drawSelectionTool = ({
   const firstDividerX = bounds.x + bounds.width / 3;
   const secondDividerX = bounds.x + (bounds.width / 3) * 2;
 
-  // Draw shape button (first section)
-  drawShapeIcon(context, bounds.x + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera);
+  // Draw Text button (first section)
+  drawTextIcon(context, bounds.x + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera, canvasState);
 
   // Draw the color button (middle section)
   drawColorButton(
@@ -398,10 +424,11 @@ export const drawSelectionTool = ({
     bounds.y + bounds.height / 2,
     colorToCss(selectedLayers.length === 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
     camera,
+    canvasState,
   );
 
   // Draw menu button (last section)
-  drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera, canvasState);
+  drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, camera, canvasState);
 
   // Draw color palette if in LAYER_COLOR mode
   if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_COLOR") {
@@ -409,8 +436,45 @@ export const drawSelectionTool = ({
   }
 
   // Draw border style if in LAYER_BORDER mode
-  if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_BORDER") {
+  if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_BORDER" && borderStyleBounds) {
     drawBorderStyle(context, { allLayers, activeLayers, camera, theme });
+    drawBorderIcon({
+      context,
+      x: borderStyleBounds.x + borderStyleBounds.width / 6,
+      y: borderStyleBounds.y + borderStyleBounds.height / 2,
+      camera,
+      lineSize: 2,
+      active:
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        canvasState.toolingModeState === "LAYER_BORDER",
+    });
+    drawBorderIcon({
+      context,
+      x: firstDividerX + borderStyleBounds.width / 6,
+      y: borderStyleBounds.y + borderStyleBounds.height / 2,
+      camera,
+      lineSize: 4,
+      active:
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        canvasState.toolingModeState === "LAYER_BORDER",
+    });
+    drawBorderIcon({
+      context,
+      x: secondDividerX + borderStyleBounds.width / 6,
+      y: borderStyleBounds.y + borderStyleBounds.height / 2,
+      camera,
+      lineSize: 2,
+      dashed: true,
+      active:
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        canvasState.toolingModeState === "LAYER_BORDER",
+    });
   }
 
   context.restore();
@@ -471,48 +535,6 @@ const drawColorPalette = (
 };
 
 /**
- * Draws the border style when in LAYER_BORDER mode
- */
-
-const drawBorderStyle = (
-  context: CanvasRenderingContext2D,
-  {
-    allLayers,
-    activeLayers,
-    camera,
-    theme,
-  }: {
-    allLayers: Layer[];
-    activeLayers: string[];
-    camera: Camera;
-    theme: string | undefined;
-  },
-) => {
-  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
-
-  if (!borderStyleBounds) return;
-
-  // Draw the palette background
-  context.fillStyle = theme === "dark" ? "#222" : "#333";
-  context.beginPath();
-  roundRect(
-    context,
-    borderStyleBounds.x,
-    borderStyleBounds.y,
-    borderStyleBounds.width,
-    borderStyleBounds.height,
-    borderStyleBounds.radius,
-  );
-  context.fill();
-
-  // Add shadow effect
-  context.shadowColor = "rgba(0, 0, 0, 0.3)";
-  context.shadowBlur = 8;
-  context.shadowOffsetX = 0;
-  context.shadowOffsetY = 2;
-};
-
-/**
  * Helper function to draw rounded rectangles
  */
 const roundRect = (
@@ -537,30 +559,86 @@ const roundRect = (
 };
 
 /**
- * Draws the shape icon in the selection toolbar
+ * Draws the text icon in the selection toolbar
  */
-const drawShapeIcon = (
+const drawTextIcon = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   theme: string | undefined,
   camera: Camera,
+  canvasState: CanvasState,
 ) => {
-  const size = Math.max(16, 16 / camera.scale);
+  // Draw the active background
+  drawActiveBg(
+    context,
+    x,
+    y,
+    camera,
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    (canvasState.toolingMode === "LAYER_SHAPE" && canvasState.isInSelectionTool === true) ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "LAYER_SHAPE",
+  );
 
+  const scale = Math.max(1, 1 / camera.scale);
+  const size = 24 * scale * 0.7; // Scale the icon slightly to fit better
+
+  // Calculate offset to center the icon correctly
+  const offsetX = x - size / 2;
+  const offsetY = y - size / 2;
+
+  // Set stroke style
   context.strokeStyle = theme === "dark" ? "#fff" : "#fff";
   context.lineWidth = Math.max(2, 2 / camera.scale);
+  context.lineCap = "round";
+  context.lineJoin = "round";
 
-  // Draw a small square icon
+  // Draw SVG paths
+  // 1. Draw polyline: <polyline points="4 7 4 4 20 4 20 7"/>
   context.beginPath();
-  context.rect(x - size / 2, y - size / 2, size, size);
+  context.moveTo(offsetX + (4 / 24) * size, offsetY + (7 / 24) * size);
+  context.lineTo(offsetX + (4 / 24) * size, offsetY + (4 / 24) * size);
+  context.lineTo(offsetX + (20 / 24) * size, offsetY + (4 / 24) * size);
+  context.lineTo(offsetX + (20 / 24) * size, offsetY + (7 / 24) * size);
+  context.stroke();
+
+  // 2. Draw line: <line x1="9" x2="15" y1="20" y2="20"/>
+  context.beginPath();
+  context.moveTo(offsetX + (9 / 24) * size, offsetY + (20 / 24) * size);
+  context.lineTo(offsetX + (15 / 24) * size, offsetY + (20 / 24) * size);
+  context.stroke();
+
+  // 3. Draw line: <line x1="12" x2="12" y1="4" y2="20"/>
+  context.beginPath();
+  context.moveTo(offsetX + (12 / 24) * size, offsetY + (4 / 24) * size);
+  context.lineTo(offsetX + (12 / 24) * size, offsetY + (20 / 24) * size);
   context.stroke();
 };
 
 /**
  * Draws the color button in the selection toolbar
  */
-const drawColorButton = (context: CanvasRenderingContext2D, x: number, y: number, color: string, camera: Camera) => {
+const drawColorButton = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  color: string,
+  camera: Camera,
+  canvasState: CanvasState,
+) => {
+  // Draw the active background
+  drawActiveBg(
+    context,
+    x,
+    y,
+    camera,
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    (canvasState.toolingMode === "LAYER_COLOR" && canvasState.isInSelectionTool === true) ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "LAYER_COLOR",
+  );
+
   const radius = Math.max(10, 10 / camera.scale);
 
   // Draw color circle
@@ -577,15 +655,25 @@ const drawMenuIcon = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
-  theme: string | undefined,
   camera: Camera,
   canvasState: CanvasState,
 ) => {
+  // Draw the active background
+  drawActiveBg(
+    context,
+    x,
+    y,
+    camera,
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "LAYER_BORDER",
+  );
+
   const width = Math.max(16, 16 / camera.scale);
   let lineGap = Math.max(5, 5 / camera.scale);
 
-  // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-  context.strokeStyle = canvasState.toolingMode === "LAYER_BORDER" ? "#2563EB" : "#fff";
+  context.strokeStyle = "#fff";
   context.lineWidth = Math.max(1, 1 / camera.scale);
 
   // Draw three horizontal lines for the hamburger menu
@@ -611,4 +699,109 @@ const drawMenuIcon = (
   context.moveTo(x - width / 2, y + lineGap);
   context.lineTo(x + width / 2, y + lineGap);
   context.stroke();
+  context.closePath();
+};
+
+/**
+ * Draws the border style when in LAYER_BORDER mode
+ */
+
+const drawBorderStyle = (
+  context: CanvasRenderingContext2D,
+  {
+    allLayers,
+    activeLayers,
+    camera,
+    theme,
+  }: {
+    allLayers: Layer[];
+    activeLayers: string[];
+    camera: Camera;
+    theme: string | undefined;
+  },
+) => {
+  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+
+  if (!borderStyleBounds) return;
+
+  // Draw the palette background
+  context.save();
+  context.beginPath();
+  context.fillStyle = theme === "dark" ? "#222" : "#333";
+  context.beginPath();
+  roundRect(
+    context,
+    borderStyleBounds.x,
+    borderStyleBounds.y,
+    borderStyleBounds.width,
+    borderStyleBounds.height,
+    borderStyleBounds.radius,
+  );
+  context.fill();
+
+  // Add shadow effect
+  context.shadowColor = "rgba(0, 0, 0, 0.3)";
+  context.shadowBlur = 8;
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 2;
+  context.closePath();
+
+  // Restore context state
+  context.restore();
+};
+
+/**
+ * Draws the menu icon (hamburger menu) in the selection toolbar
+ */
+const drawBorderIcon = ({
+  context,
+  x,
+  y,
+  camera,
+  lineSize,
+  active,
+  dashed,
+}: {
+  context: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  camera: Camera;
+  lineSize: number;
+  active: boolean;
+  dashed?: boolean;
+}) => {
+  // Draw the active background
+  drawActiveBg(context, x, y, camera, active);
+
+  const width = Math.max(12, 12 / camera.scale);
+
+  // Set stroke style first
+  context.strokeStyle = "#fff";
+  context.lineWidth = Math.max(lineSize, lineSize / camera.scale);
+
+  // Set dash pattern if needed
+  if (dashed) {
+    context.setLineDash([1, 4]); // Dashed line
+  } else {
+    context.setLineDash([]); // Solid line (reset any previous dash pattern)
+  }
+
+  // Draw the diagonal line
+  context.beginPath();
+  context.moveTo(x - width / 2, y - width / 2);
+  context.lineTo(x + width / 2, y + width / 2);
+  context.stroke();
+  context.closePath();
+};
+
+// Draw the active background
+const drawActiveBg = (context: CanvasRenderingContext2D, x: number, y: number, camera: Camera, active: boolean) => {
+  if (!active) return;
+
+  const activeBgRadius = Math.max(5, 5 / camera.scale);
+  const activeBgSize = Math.max(30, 30 / camera.scale);
+
+  context.fillStyle = "#444";
+  roundRect(context, x - activeBgSize / 2, y - activeBgSize / 2, activeBgSize, activeBgSize, activeBgRadius);
+  context.fill();
 };

@@ -796,29 +796,25 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
           // Add toolingModeColor if it exists
           if ("toolingModeColor" in selectionToolInfo) {
-            const newFillColor = selectionToolInfo.toolingModeColor;
+            const newFillColor = selectionToolInfo.toolingModeColor ?? "";
 
-            // Get all active layers and update them with the new fill color
+            // Create updated layers with the new fill color
+            const updatedLayers = activeLayers
+              .map((layerId) => {
+                const layer = layers.find((l) => l.id === layerId);
 
-            if (newFillColor) {
-              // Create updated layers with the new fill color
-              const updatedLayers = activeLayers
-                .map((layerId) => {
-                  const layer = layers.find((l) => l.id === layerId);
+                if (layer) {
+                  return {
+                    ...layer,
+                    fill: hexToRgba(newFillColor),
+                  };
+                }
+                return null;
+              })
+              .filter((layer) => layer !== null) as Layer[];
 
-                  if (layer) {
-                    return {
-                      ...layer,
-                      fill: hexToRgba(newFillColor),
-                    };
-                  }
-                  return null;
-                })
-                .filter((layer) => layer !== null) as Layer[];
-
-              // Update the layers with the new fill color
-              updateLayer({ updatedLayers });
-            }
+            // Update the layers with the new fill color
+            updateLayer({ updatedLayers });
           }
 
           setCanvasState((prev) => {
