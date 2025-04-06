@@ -435,7 +435,6 @@ export const isPointInSelectionTool = ({
     return {
       isInSelectionTool: true,
       toolingMode: "LAYER_BORDER" as const,
-      toolingModeBorderWidth: 2,
       toolingModeBorderType: "DASHED" as LayerBorderType,
       toolingModeColor: undefined,
     };
@@ -564,8 +563,6 @@ export const drawSelectionTool = ({
       active:
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
         canvasState.toolingMode === "LAYER_BORDER" &&
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeBorderWidth === 2 &&
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
         canvasState.toolingModeBorderType === "DASHED",
     });
