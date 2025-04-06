@@ -1,4 +1,4 @@
-import { Camera, CanvasMode, CanvasState, Layer, Point } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Layer, LayerBorderType, Point } from "@/_types";
 import { COLORS, colorToCss } from "@/utils/canvasUtils";
 import { calculateLayerBoundingBox } from "@/utils/layerUtils";
 
@@ -225,18 +225,36 @@ export const calculateBorderIconBounds = ({
   allLayers,
   activeLayers,
   camera,
+  section,
 }: {
   allLayers: Layer[];
   activeLayers: string[];
   camera: Camera;
+  section: "left" | "middle" | "right";
 }) => {
   const bounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
 
   if (!bounds) return null;
 
+  let boundsXPosition = bounds.x;
+
+  switch (section) {
+    case "left":
+      boundsXPosition = bounds.x;
+      break;
+    case "middle":
+      boundsXPosition = bounds.x + bounds.width / 3;
+      break;
+    case "right":
+      boundsXPosition = bounds.x + (bounds.width / 3) * 2;
+      break;
+    default:
+      break;
+  }
+
   // First section of the toolbar (left third)
   return {
-    x: bounds.x,
+    x: boundsXPosition,
     y: bounds.y,
     width: bounds.width / 3,
     height: bounds.height,
@@ -261,6 +279,7 @@ export const isPointInSelectionTool = ({
   canvasState?: CanvasState;
 }) => {
   const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
 
   if (!bounds) return { isInSelectionTool: false };
 
@@ -278,6 +297,8 @@ export const isPointInSelectionTool = ({
             isInSelectionTool: true,
             toolingMode: "LAYER_COLOR" as const,
             toolingModeColor: circle.color,
+            toolingModeBorderWidth: undefined,
+            toolingModeBorderType: undefined,
           };
         }
       }
@@ -295,6 +316,8 @@ export const isPointInSelectionTool = ({
         return {
           isInSelectionTool: true,
           toolingMode: "LAYER_COLOR" as const,
+          toolingModeBorderWidth: undefined,
+          toolingModeBorderType: undefined,
         };
       }
     }
@@ -307,12 +330,23 @@ export const isPointInSelectionTool = ({
     point.y >= bounds.y &&
     point.y <= bounds.y + bounds.height;
 
-  if (!isInBounds) return { isInSelectionTool: false };
+  const isInBorderStyleBounds =
+    borderStyleBounds &&
+    point.x >= borderStyleBounds.x &&
+    point.x <= borderStyleBounds.x + borderStyleBounds.width &&
+    point.y >= borderStyleBounds.y &&
+    point.y <= borderStyleBounds.y + borderStyleBounds.height;
+
+  if (!isInBounds && !isInBorderStyleBounds) return { isInSelectionTool: false };
 
   // Check which section the point is in
   const shapeIconBounds = calculateTextIconBounds({ allLayers, activeLayers, camera });
   const colorButtonBounds = calculateColorButtonBounds({ allLayers, activeLayers, camera });
   const menuIconBounds = calculateMenuIconBounds({ allLayers, activeLayers, camera });
+
+  const leftBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "left" });
+  const middleBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "middle" });
+  const rightBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "right" });
 
   if (
     shapeIconBounds &&
@@ -324,6 +358,8 @@ export const isPointInSelectionTool = ({
     return {
       isInSelectionTool: true,
       toolingMode: "LAYER_SHAPE" as const,
+      toolingModeBorderWidth: undefined,
+      toolingModeBorderType: undefined,
     };
   }
 
@@ -337,6 +373,8 @@ export const isPointInSelectionTool = ({
     return {
       isInSelectionTool: true,
       toolingMode: "LAYER_COLOR" as const,
+      toolingModeBorderWidth: undefined,
+      toolingModeBorderType: undefined,
     };
   }
 
@@ -350,6 +388,56 @@ export const isPointInSelectionTool = ({
     return {
       isInSelectionTool: true,
       toolingMode: "LAYER_BORDER" as const,
+      toolingModeBorderWidth: undefined,
+      toolingModeBorderType: undefined,
+    };
+  }
+
+  if (
+    leftBorderIconBounds &&
+    point.x >= leftBorderIconBounds.x &&
+    point.x <= leftBorderIconBounds.x + leftBorderIconBounds.width &&
+    point.y >= leftBorderIconBounds.y &&
+    point.y <= leftBorderIconBounds.y + leftBorderIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "LAYER_BORDER" as const,
+      toolingModeBorderWidth: 2,
+      toolingModeBorderType: undefined,
+      toolingModeColor: undefined,
+    };
+  }
+
+  if (
+    middleBorderIconBounds &&
+    point.x >= middleBorderIconBounds.x &&
+    point.x <= middleBorderIconBounds.x + middleBorderIconBounds.width &&
+    point.y >= middleBorderIconBounds.y &&
+    point.y <= middleBorderIconBounds.y + middleBorderIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "LAYER_BORDER" as const,
+      toolingModeBorderWidth: 4,
+      toolingModeBorderType: undefined,
+      toolingModeColor: undefined,
+    };
+  }
+
+  if (
+    rightBorderIconBounds &&
+    point.x >= rightBorderIconBounds.x &&
+    point.x <= rightBorderIconBounds.x + rightBorderIconBounds.width &&
+    point.y >= rightBorderIconBounds.y &&
+    point.y <= rightBorderIconBounds.y + rightBorderIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "LAYER_BORDER" as const,
+      toolingModeBorderWidth: 2,
+      toolingModeBorderType: "DASHED" as LayerBorderType,
+      toolingModeColor: undefined,
     };
   }
 
@@ -446,9 +534,11 @@ export const drawSelectionTool = ({
       lineSize: 2,
       active:
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+        canvasState.toolingMode === "LAYER_BORDER" &&
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeState === "LAYER_BORDER",
+        canvasState.toolingModeBorderWidth === 2 &&
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        !canvasState.toolingModeBorderType,
     });
     drawBorderIcon({
       context,
@@ -458,9 +548,11 @@ export const drawSelectionTool = ({
       lineSize: 4,
       active:
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+        canvasState.toolingMode === "LAYER_BORDER" &&
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeState === "LAYER_BORDER",
+        canvasState.toolingModeBorderWidth === 4 &&
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        !canvasState.toolingModeBorderType,
     });
     drawBorderIcon({
       context,
@@ -471,9 +563,11 @@ export const drawSelectionTool = ({
       dashed: true,
       active:
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+        canvasState.toolingMode === "LAYER_BORDER" &&
         // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeState === "LAYER_BORDER",
+        canvasState.toolingModeBorderWidth === 2 &&
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        canvasState.toolingModeBorderType === "DASHED",
     });
   }
 

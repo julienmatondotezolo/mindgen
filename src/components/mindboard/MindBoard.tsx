@@ -554,6 +554,16 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             updatedState.toolingModeColor = selectionToolInfo.toolingModeColor;
           }
 
+          // Add toolingModeBorderWidth if it exists
+          if ("toolingModeBorderWidth" in selectionToolInfo) {
+            updatedState.toolingModeBorderWidth = selectionToolInfo.toolingModeBorderWidth;
+          }
+
+          // Add toolingModeBorderType if it exists
+          if ("toolingModeBorderType" in selectionToolInfo) {
+            updatedState.toolingModeBorderType = selectionToolInfo.toolingModeBorderType;
+          }
+
           setCanvasState(updatedState);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
@@ -795,26 +805,29 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
           if (!selectionToolInfo.isInSelectionTool) return;
 
           // Add toolingModeColor if it exists
-          if ("toolingModeColor" in selectionToolInfo) {
-            const newFillColor = selectionToolInfo.toolingModeColor ?? "";
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          if ("toolingModeColor" in selectionToolInfo && selectionToolInfo.toolingModeState === "LAYER_COLOR") {
+            const newFillColor = selectionToolInfo.toolingModeColor;
 
             // Create updated layers with the new fill color
-            const updatedLayers = activeLayers
-              .map((layerId) => {
-                const layer = layers.find((l) => l.id === layerId);
+            if (newFillColor) {
+              const updatedLayers = activeLayers
+                .map((layerId) => {
+                  const layer = layers.find((l) => l.id === layerId);
 
-                if (layer) {
-                  return {
-                    ...layer,
-                    fill: hexToRgba(newFillColor),
-                  };
-                }
-                return null;
-              })
-              .filter((layer) => layer !== null) as Layer[];
+                  if (layer) {
+                    return {
+                      ...layer,
+                      fill: hexToRgba(newFillColor),
+                    };
+                  }
+                  return null;
+                })
+                .filter((layer) => layer !== null) as Layer[];
 
-            // Update the layers with the new fill color
-            updateLayer({ updatedLayers });
+              // Update the layers with the new fill color
+              updateLayer({ updatedLayers });
+            }
           }
 
           setCanvasState((prev) => {
