@@ -872,7 +872,7 @@ const drawBorderIcon = ({
 
   // Set dash pattern if needed
   if (dashed) {
-    context.setLineDash([1, 4]); // Dashed line
+    context.setLineDash([1, Math.max(4, 4 / camera.scale)]); // Dashed line
   } else {
     context.setLineDash([]); // Solid line (reset any previous dash pattern)
   }
