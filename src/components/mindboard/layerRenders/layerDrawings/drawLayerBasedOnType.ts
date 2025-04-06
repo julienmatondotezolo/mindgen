@@ -13,7 +13,8 @@ export const drawLayerBasedOnType = ({
   theme: string | undefined;
   newLayerPosition?: Point;
 }): void => {
-  context.fillStyle = `rgb(${layer.fill.r}, ${layer.fill.g}, ${layer.fill.b})`;
+  context.fillStyle =
+    layer.fill !== null ? `rgb(${layer?.fill?.r}, ${layer?.fill?.g}, ${layer?.fill?.b})` : "rgb(77, 106, 255)";
 
   const newBorderColor = layer.borderColor
     ? colorToCss(layer.borderColor)

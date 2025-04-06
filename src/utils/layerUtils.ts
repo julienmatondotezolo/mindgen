@@ -19,7 +19,7 @@ export const drawRoundedRect = ({
 }) => {
   let radius = 100;
 
-  ctx.fillStyle = `rgba(${fill.r}, ${fill.g}, ${fill.b}, ${fill.a})`;
+  ctx.fillStyle = fill !== null ? `rgba(${fill?.r}, ${fill?.g}, ${fill?.b}, ${fill?.a})` : "rgb(77, 106, 255)";
 
   if (width < 2 * radius) radius = width / 2;
   if (height < 2 * radius) radius = height / 2;
@@ -51,7 +51,7 @@ export const drawEllipse = ({
   height: number;
   fill: Color;
 }) => {
-  ctx.fillStyle = `rgba(${fill.r}, ${fill.g}, ${fill.b}, ${fill.a})`;
+  ctx.fillStyle = fill !== null ? `rgba(${fill?.r}, ${fill?.g}, ${fill?.b}, ${fill?.a})` : "rgb(77, 106, 255)";
 
   ctx.beginPath();
   ctx.ellipse(x, y, width / 2, height / 2, 0, 0, Math.PI * 2);
@@ -76,7 +76,7 @@ export const drawDiamond = ({
   height: number;
   fill: Color;
 }) => {
-  ctx.fillStyle = `rgba(${fill.r}, ${fill.g}, ${fill.b}, ${fill.a})`;
+  ctx.fillStyle = fill !== null ? `rgba(${fill?.r}, ${fill?.g}, ${fill?.b}, ${fill?.a})` : "rgb(77, 106, 255)";
 
   ctx.beginPath();
   ctx.moveTo(x + width / 2, y);
