@@ -1,6 +1,6 @@
-import { Camera, CanvasMode, CanvasState, Layer, LayerBorderType, Point } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Edge, Layer, LayerBorderType, Point } from "@/_types";
 import { COLORS, colorToCss } from "@/utils/canvasUtils";
-import { calculateLayerBoundingBox } from "@/utils/layerUtils";
+import { calculateEdgeBoundingBox, calculateLayerBoundingBox } from "@/utils/layerUtils";
 
 /**
  * Calculates the bounding box for the selection tool
@@ -8,25 +8,42 @@ import { calculateLayerBoundingBox } from "@/utils/layerUtils";
 export const calculateSelectionToolBounds = ({
   allLayers,
   activeLayers,
+  allEdges,
+  activeEdges,
   camera,
 }: {
   allLayers: Layer[];
   activeLayers: string[];
+  allEdges?: Edge[];
+  activeEdges?: string[];
   camera: Camera;
 }) => {
   // Create an array of all selected layers to calculate the bounding box
   let selectedLayers: Layer[] = allLayers.filter((l) => activeLayers.includes(l.id));
+  // Create an array of all selected edges to calculate the bounding box
+  let selectedEdges: Edge[] = allEdges?.filter((e) => activeEdges?.includes(e.id)) ?? [];
 
-  if (selectedLayers.length === 0) return null;
+  if (selectedLayers.length === 0 && selectedEdges.length === 0) return null;
 
   // Get the bounding box of selected layers
-  const box = calculateLayerBoundingBox(selectedLayers);
+  let box;
+  let width = 160;
+
+  if (selectedLayers.length > 0) {
+    box = calculateLayerBoundingBox(selectedLayers);
+    width = 160;
+  }
+
+  if (selectedEdges.length > 0) {
+    box = calculateEdgeBoundingBox(selectedEdges);
+    width = 214;
+  }
 
   if (!box) return null;
 
   // Calculate the position of the selection tool UI
-  // Center it horizontally and place it 30px above the bounding box
-  const toolbarWidth = Math.max(160, 160 / camera.scale); // Width of the selection toolbar
+  // Center it horizontally and place it 45px above the bounding box
+  const toolbarWidth = Math.max(width, width / camera.scale); // Width of the selection toolbar
   const toolbarHeight = Math.max(45, 45 / camera.scale); // Height of the selection toolbar
   const toolbarX = box.x + box.width / 2 - toolbarWidth / 2;
   const toolbarY = box.y - toolbarHeight - 80; // 30px above the bounding box
@@ -269,16 +286,20 @@ export const isPointInSelectionTool = ({
   point,
   allLayers,
   activeLayers,
+  allEdges,
+  activeEdges,
   camera,
   canvasState,
 }: {
   point: Point;
   allLayers: Layer[];
   activeLayers: string[];
+  allEdges?: Edge[];
+  activeEdges?: string[];
   camera: Camera;
   canvasState?: CanvasState;
 }) => {
-  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
   const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
 
   if (!bounds) return { isInSelectionTool: false };
@@ -455,28 +476,42 @@ export const drawSelectionTool = ({
   theme,
   allLayers,
   activeLayers,
+  allEdges,
+  activeEdges,
 }: {
   context: CanvasRenderingContext2D;
   camera: Camera;
   canvasState: CanvasState;
   allLayers: Layer[];
   activeLayers: string[];
+  allEdges: Edge[];
+  activeEdges: string[];
   theme: string | undefined;
 }): void => {
   if (canvasState.mode === CanvasMode.EdgeDrawing || canvasState.mode === CanvasMode.Translating) return;
 
   // Create an array of all selected layers to calculate the bounding box
   let selectedLayers: Layer[] = allLayers.filter((l) => activeLayers.includes(l.id));
+  // Create an array of all selected edges to calculate the bounding box
+  let selectedEdges: Edge[] = allEdges.filter((e) => activeEdges.includes(e.id));
 
-  if (selectedLayers.length === 0) return;
+  if (selectedLayers.length === 0 && selectedEdges.length === 0) return;
 
   // Get the bounding box of selected layers
-  const box = calculateLayerBoundingBox(selectedLayers);
+  let box;
+
+  if (selectedLayers.length > 0) {
+    box = calculateLayerBoundingBox(selectedLayers);
+  }
+
+  if (selectedEdges.length > 0) {
+    box = calculateEdgeBoundingBox(selectedEdges);
+  }
 
   if (!box) return;
 
   // Get the toolbar bounds
-  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+  const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
   const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
 
   if (!bounds) return;
@@ -501,71 +536,73 @@ export const drawSelectionTool = ({
   const firstDividerX = bounds.x + bounds.width / 3;
   const secondDividerX = bounds.x + (bounds.width / 3) * 2;
 
-  // Draw Text button (first section)
-  drawTextIcon(context, bounds.x + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera, canvasState);
+  // If layers are selected, draw the layer icons
+  if (selectedLayers.length > 0) {
+    // Draw Text button (first section)
+    drawTextIcon(context, bounds.x + bounds.width / 6, bounds.y + bounds.height / 2, theme, camera, canvasState);
 
-  // Draw the color button (middle section)
-  drawColorButton(
-    context,
-    firstDividerX + bounds.width / 6,
-    bounds.y + bounds.height / 2,
-    colorToCss(selectedLayers.length === 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
-    camera,
-    canvasState,
-  );
-
-  // Draw menu button (last section)
-  drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, camera, canvasState);
-
-  // Draw color palette if in LAYER_COLOR mode
-  if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_COLOR") {
-    drawColorPalette(context, { allLayers, activeLayers, camera, theme });
-  }
-
-  // Draw border style if in LAYER_BORDER mode
-  if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_BORDER" && borderStyleBounds) {
-    drawBorderStyle(context, { allLayers, activeLayers, camera, theme });
-    drawBorderIcon({
+    // Draw the color button (middle section)
+    drawColorButton(
       context,
-      x: borderStyleBounds.x + borderStyleBounds.width / 6,
-      y: borderStyleBounds.y + borderStyleBounds.height / 2,
+      firstDividerX + bounds.width / 6,
+      bounds.y + bounds.height / 2,
+      colorToCss(selectedLayers.length === 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
       camera,
-      lineSize: 2,
-      active:
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingMode === "LAYER_BORDER" &&
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeBorderWidth === 2 &&
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        !canvasState.toolingModeBorderType,
-    });
-    drawBorderIcon({
-      context,
-      x: firstDividerX + borderStyleBounds.width / 6,
-      y: borderStyleBounds.y + borderStyleBounds.height / 2,
-      camera,
-      lineSize: 4,
-      active:
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingMode === "LAYER_BORDER" &&
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeBorderWidth === 4 &&
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        !canvasState.toolingModeBorderType,
-    });
-    drawBorderIcon({
-      context,
-      x: secondDividerX + borderStyleBounds.width / 6,
-      y: borderStyleBounds.y + borderStyleBounds.height / 2,
-      camera,
-      lineSize: 2,
-      dashed: true,
-      active:
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingMode === "LAYER_BORDER" &&
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeBorderType === "DASHED",
-    });
+      canvasState,
+    );
+
+    // Draw menu button (last section)
+    drawMenuIcon(context, secondDividerX + bounds.width / 6, bounds.y + bounds.height / 2, camera, canvasState);
+    // Draw color palette if in LAYER_COLOR mode
+    if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_COLOR") {
+      drawColorPalette(context, { allLayers, activeLayers, camera, theme });
+    }
+
+    // Draw border style if in LAYER_BORDER mode
+    if ("toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_BORDER" && borderStyleBounds) {
+      drawBorderStyle(context, { allLayers, activeLayers, camera, theme });
+      drawBorderIcon({
+        context,
+        x: borderStyleBounds.x + borderStyleBounds.width / 6,
+        y: borderStyleBounds.y + borderStyleBounds.height / 2,
+        camera,
+        lineSize: 2,
+        active:
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingMode === "LAYER_BORDER" &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingModeBorderWidth === 2 &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          !canvasState.toolingModeBorderType,
+      });
+      drawBorderIcon({
+        context,
+        x: firstDividerX + borderStyleBounds.width / 6,
+        y: borderStyleBounds.y + borderStyleBounds.height / 2,
+        camera,
+        lineSize: 4,
+        active:
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingMode === "LAYER_BORDER" &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingModeBorderWidth === 4 &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          !canvasState.toolingModeBorderType,
+      });
+      drawBorderIcon({
+        context,
+        x: secondDividerX + borderStyleBounds.width / 6,
+        y: borderStyleBounds.y + borderStyleBounds.height / 2,
+        camera,
+        lineSize: 2,
+        dashed: true,
+        active:
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingMode === "LAYER_BORDER" &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingModeBorderType === "DASHED",
+      });
+    }
   }
 
   context.restore();

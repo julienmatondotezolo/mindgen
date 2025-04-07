@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { CanvasMode, CanvasState, Color, HandlePosition, Layer, Point } from "@/_types/canvas";
+import { CanvasMode, CanvasState, Color, Edge, HandlePosition, Layer, Point } from "@/_types/canvas";
 
 // Draw a Rounded Rectangle
 export const drawRoundedRect = ({
@@ -155,6 +155,57 @@ export const calculateLayerBoundingBox = (layers: Layer[]) => {
     }
   }
 
+  return {
+    x: left,
+    y: top,
+    width: right - left,
+    height: bottom - top,
+  };
+};
+
+// Calculate the bounding box for an array of edges
+export const calculateEdgeBoundingBox = (edges: Edge[]) => {
+  if (!edges.length) return null;
+
+  const first = edges[0];
+  
+  let left = Math.min(first.start.x, first.end.x);
+  let right = Math.max(first.start.x, first.end.x);
+  let top = Math.min(first.start.y, first.end.y);
+  let bottom = Math.max(first.start.y, first.end.y);
+  
+  for (let i = 1; i < edges.length; i++) {
+    const edge = edges[i];
+    
+    // Check start point
+    if (left > edge.start.x) {
+      left = edge.start.x;
+    }
+    if (right < edge.start.x) {
+      right = edge.start.x;
+    }
+    if (top > edge.start.y) {
+      top = edge.start.y;
+    }
+    if (bottom < edge.start.y) {
+      bottom = edge.start.y;
+    }
+    
+    // Check end point
+    if (left > edge.end.x) {
+      left = edge.end.x;
+    }
+    if (right < edge.end.x) {
+      right = edge.end.x;
+    }
+    if (top > edge.end.y) {
+      top = edge.end.y;
+    }
+    if (bottom < edge.end.y) {
+      bottom = edge.end.y;
+    }
+  }
+  
   return {
     x: left,
     y: top,

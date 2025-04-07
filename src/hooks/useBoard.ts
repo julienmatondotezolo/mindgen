@@ -30,7 +30,7 @@ export const useBoard = () => {
   const camera = useRecoilValue(cameraStateAtom);
   const canvasState = useRecoilValue(canvasStateAtom);
   const activeLayers = useRecoilValue(activeLayersAtom);
-  const activeEdgeId = useRecoilValue(activeEdgeIdAtom);
+  const activeEdges = useRecoilValue(activeEdgeIdAtom);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -200,7 +200,7 @@ export const useBoard = () => {
 
     // Draw edges
     edges.forEach((edge) => {
-      edgeRender({ edge, context, camera, theme, canvasState, activeEdgeId });
+      edgeRender({ edge, context, camera, theme, canvasState, activeEdgeId: activeEdges });
     });
 
     // Draw shadow edges
@@ -239,7 +239,16 @@ export const useBoard = () => {
     });
 
     // Draw layer selection tool
-    drawSelectionTool({ context, camera, canvasState, theme, activeLayers, allLayers: layers });
+    drawSelectionTool({
+      context,
+      camera,
+      canvasState,
+      theme,
+      activeLayers,
+      allLayers: layers,
+      activeEdges,
+      allEdges: edges,
+    });
 
     // Draw other users cursors
     Object.values(cursors).map((data) => {
@@ -271,7 +280,7 @@ export const useBoard = () => {
     cursors,
     restoreContext,
     camera,
-    activeEdgeId,
+    activeEdges,
     self?.connectionId,
   ]);
 
