@@ -43,7 +43,7 @@ export const layerRender = ({
   drawResizeGrips({ layer, context, camera, canvasState, activeLayers, allLayers });
 
   // Draw layer text
-  drawLayerText({ layer, context, camera, theme });
+  drawLayerText({ layer, context });
 
   // Draw alignment guidelines if available and the layer is active
   drawAlignmentGuidelines({ context, camera, canvasState });

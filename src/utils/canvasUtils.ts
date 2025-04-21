@@ -22,7 +22,7 @@ export const COLORS = [
   "#33CC33",
   "#7C3AED",
   "#FF66CC",
-  "#5470A0FF",
+  "#ECECEC",
   "#059669",
   "#F59E0B",
   "#00BFFF",
@@ -223,7 +223,7 @@ export function findNearestLayerHandle(point: Point, layers: Layer[], threshold:
 }
 
 export function getContrastingTextColor(color: Color) {
-  const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
+  const luminance = 0.299 * color?.r + 0.587 * color?.g + 0.114 * color?.b;
 
   return luminance > 182 ? "black" : "white";
 }

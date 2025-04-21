@@ -806,7 +806,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
           // Add toolingModeColor if it exists
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-          if ("toolingModeColor" in selectionToolInfo && selectionToolInfo.toolingModeState === "LAYER_COLOR") {
+          if ("toolingModeColor" in selectionToolInfo && selectionToolInfo.toolingMode === "LAYER_COLOR") {
             const newFillColor = selectionToolInfo.toolingModeColor;
 
             // Create updated layers with the new fill color
