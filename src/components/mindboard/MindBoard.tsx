@@ -947,9 +947,10 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
     <div className="h-full w-full relative">
       <canvas
         ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onPointerDown={handleMouseDown}
+        onPointerMove={handleMouseMove}
+        onPointerUp={handleMouseUp}
+        onPointerCancel={handleMouseUp}
         style={{
           width: "100%",
           height: "100%",

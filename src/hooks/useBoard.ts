@@ -201,18 +201,17 @@ export const useBoard = () => {
 
     // Draw grid
     // drawGrid(context);
-
-    // Draw edges
-    edges.forEach((edge) => {
-      edgeRender({ edge, context, camera, theme, canvasState, activeEdgeId: activeEdges });
-    });
-
     // Draw shadow edges
     drawShadowEdgeBasedOnType({ context, canvasState });
 
     // Draw layers & sort them by selection clicked layers should be on top
     sortLayersBySelection({ layersToSort: layers, allActiveLayers: activeLayers }).forEach((layer) => {
       layerRender({ layer, context, camera, activeLayers, theme, canvasState, allLayers: layers });
+    });
+
+    // Draw edges
+    edges.forEach((edge) => {
+      edgeRender({ edge, context, camera, theme, canvasState, activeEdgeId: activeEdges });
     });
 
     // Draw shadow layer from inserting
