@@ -46,17 +46,21 @@ export const useBoard = () => {
   const isPointInSelectionToolBounds = useCallback(
     (point: { x: number; y: number }) => {
       // If no active layers, there is no selection tool
-      if (activeLayers.length === 0) return { isInSelectionTool: false };
+      if (activeLayers.length > 0 || activeEdges.length > 0) {
+        return isPointInSelectionTool({
+          point,
+          allLayers: layers,
+          activeLayers,
+          allEdges: edges,
+          activeEdges,
+          camera,
+          canvasState,
+        });
+      }
 
-      return isPointInSelectionTool({
-        point,
-        allLayers: layers,
-        activeLayers,
-        camera,
-        canvasState,
-      });
+      return { isInSelectionTool: false };
     },
-    [activeLayers, layers, camera, canvasState],
+    [activeLayers, layers, edges, activeEdges, camera, canvasState],
   );
 
   // Setup canvas
@@ -204,7 +208,7 @@ export const useBoard = () => {
     });
 
     // Draw shadow edges
-    drawShadowEdgeBasedOnType({ context, theme, canvasState });
+    drawShadowEdgeBasedOnType({ context, canvasState });
 
     // Draw layers & sort them by selection clicked layers should be on top
     sortLayersBySelection({ layersToSort: layers, allActiveLayers: activeLayers }).forEach((layer) => {

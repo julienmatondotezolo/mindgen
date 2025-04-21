@@ -53,6 +53,9 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
   const { theme } = useTheme();
   const whiteboardText = useTranslations("Whiteboard");
 
+  // Set the color of the edge
+  const edgeColor = { r: 180, g: 191, b: 204, a: 0.5 };
+
   // Edge commands
   const selectLayer = useSelectElement({ boardId });
   const addEdgeCommand = useAddEdge();
@@ -396,9 +399,6 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
       newEdgePosition: Point;
       toLayerId: string;
     }) => {
-      // Set the color of the shadow edge
-      const edgeColor = theme === "dark" ? { r: 180, g: 191, b: 204, a: 0.5 } : { r: 71, g: 85, b: 105, a: 0.5 };
-
       // Create a new edge
       const newEdge: Edge = {
         id: nanoid(),
@@ -470,9 +470,6 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
 
       const toLayerId = newLayer.id;
 
-      // Set the color of the shadow edge
-      const edgeColor = theme === "dark" ? { r: 180, g: 191, b: 204, a: 0.5 } : { r: 71, g: 85, b: 105, a: 0.5 };
-
       // Create a new edge
       const newEdge: Edge = {
         id: nanoid(),
@@ -504,7 +501,7 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
       // Select the new layer
       selectLayer({ layerIds: [newLayer.id] });
     },
-    [activeLayers, addEdgeLayerCommand, boardId, theme, whiteboardText, selectLayer],
+    [whiteboardText, activeLayers, edgeColor, addEdgeLayerCommand, boardId, selectLayer],
   );
 
   // Update an edge

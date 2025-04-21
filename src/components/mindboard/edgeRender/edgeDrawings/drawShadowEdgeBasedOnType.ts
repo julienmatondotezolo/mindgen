@@ -4,11 +4,9 @@ import { getShadowsPositionBasedOnPointerPositionInHandle } from "@/utils/layerU
 
 export const drawShadowEdgeBasedOnType = ({
   context,
-  theme,
   canvasState,
 }: {
   context: CanvasRenderingContext2D;
-  theme: string | undefined;
   canvasState: CanvasState;
 }): void => {
   const isEdgeOurEdgeDrawingMode = canvasState.mode === CanvasMode.Edge || canvasState.mode === CanvasMode.EdgeDrawing;
@@ -25,16 +23,13 @@ export const drawShadowEdgeBasedOnType = ({
     canvasState,
   });
 
-  // Set the color of the shadow edge
-  const edgeColor = theme === "dark" ? { r: 180, g: 191, b: 204, a: 0.5 } : { r: 71, g: 85, b: 105, a: 0.5 };
-
   // Create a shadow edge with semi-transparent color for the preview
   const shadowEdge: Edge = {
     id: "shadow-edge",
     start: canvasState.origin,
     end: newEdgePosition,
-    color: edgeColor,
-    hoverColor: edgeColor,
+    color: { r: 180, g: 191, b: 204, a: 0.5 },
+    hoverColor: { r: 71, g: 85, b: 105, a: 0.5 },
     thickness: 4,
     orientation: "auto",
     type: EdgeType.Solid,
