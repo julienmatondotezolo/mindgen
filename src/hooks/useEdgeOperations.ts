@@ -268,6 +268,53 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
     [],
   );
 
+  const isPointOnLine = useCallback(
+    ({ point, edge, proximityThreshold }: { point: Point; edge: Edge; proximityThreshold?: number }) => {
+      const threshold = proximityThreshold ?? edge.thickness * 3;
+
+      // Calculate distance from point to line segment
+      const px = point.x;
+      const py = point.y;
+      const x1 = edge.start.x;
+      const y1 = edge.start.y;
+      const x2 = edge.end.x;
+      const y2 = edge.end.y;
+
+      // Algorithm to calculate shortest distance from point to line segment
+      const A = px - x1;
+      const B = py - y1;
+      const C = x2 - x1;
+      const D = y2 - y1;
+
+      const dot = A * C + B * D;
+      const lenSq = C * C + D * D;
+      let param = -1;
+
+      if (lenSq !== 0) {
+        param = dot / lenSq;
+      }
+
+      let xx, yy;
+
+      if (param < 0) {
+        xx = x1;
+        yy = y1;
+      } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+      } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+      }
+
+      const dx = px - xx;
+      const dy = py - yy;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      return distance <= threshold;
+    },
+    [],
+  );
   // Check if point is edge
   const isPointOnEdge = useCallback(
     ({ point, edge, proximityThreshold }: { point: Point; edge: Edge; proximityThreshold?: number }) => {
@@ -276,9 +323,11 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
           return isPointOnCurvedEdge({ point, edge, proximityThreshold });
         case EdgeShape.SmoothStep:
           return isPointOnSmoothStepEdge({ point, edge, proximityThreshold });
+        case EdgeShape.Line:
+          return isPointOnLine({ point, edge, proximityThreshold });
       }
     },
-    [isPointOnCurvedEdge, isPointOnSmoothStepEdge],
+    [isPointOnCurvedEdge, isPointOnSmoothStepEdge, isPointOnLine],
   );
 
   // Check if point is near start or end of edge
@@ -557,6 +606,7 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
           shape: edge.shape,
           handleStart: edge.handleStart,
           handleEnd: edge.handleEnd,
+          arrowEnd: edge.arrowEnd,
         };
 
         return newEdge;
