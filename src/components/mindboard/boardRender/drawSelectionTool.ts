@@ -925,6 +925,155 @@ const drawBorderIcon = ({
   context.closePath();
 };
 
+/**
+ * Draws the spline icon in the selection toolbar
+ */
+const drawSplineIcon = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  camera: Camera,
+  canvasState: CanvasState,
+  selectedEdges: Edge[],
+) => {
+  // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+  // const activeEdge = selectedEdges.find((edge) => edge.id === canvasState.handleInfo?.edgeId);
+  const activeEdge = selectedEdges[0];
+
+  if (!activeEdge) return;
+
+  // Draw the active background
+
+  drawActiveBg(context, x, y, camera, true);
+
+  const scale = Math.max(1, 1 / camera.scale);
+  const size = 24 * scale * 0.7; // Scale the icon slightly to fit better
+
+  // Calculate offset to center the icon correctly
+  const offsetX = x - size / 2;
+  const offsetY = y - size / 2;
+
+  // Set stroke style
+  context.strokeStyle = "#fff";
+  context.lineWidth = Math.max(1, 1 / camera.scale);
+  context.lineCap = "round";
+  context.lineJoin = "round";
+
+  // Draw the first circle at (19, 5)
+  const circle1X = offsetX + (19 / 24) * size;
+  const circle1Y = offsetY + (5 / 24) * size;
+  const circle1Radius = (2 / 24) * size;
+
+  context.beginPath();
+  context.arc(circle1X, circle1Y, circle1Radius, 0, Math.PI * 2);
+  context.stroke();
+
+  // Draw the second circle at (5, 19)
+  const circle2X = offsetX + (5 / 24) * size;
+  const circle2Y = offsetY + (19 / 24) * size;
+  const circle2Radius = (2 / 24) * size;
+
+  context.beginPath();
+  context.arc(circle2X, circle2Y, circle2Radius, 0, Math.PI * 2);
+  context.stroke();
+
+  // Draw the curved path from (5, 17) to (17, 5)
+  const startX = offsetX + (5 / 24) * size;
+  const startY = offsetY + (17 / 24) * size;
+  const endX = offsetX + (17 / 24) * size;
+  const endY = offsetY + (5 / 24) * size;
+
+  context.beginPath();
+
+  switch (activeEdge.shape) {
+    case EdgeShape.Curved:
+      context.moveTo(startX, startY);
+      // Approximate the "A12 12 0 0 1" arc with a quadratic curve
+      // For a better approximation, we could use a bezier curve with control points
+      // eslint-disable-next-line no-case-declarations
+      const controlX = offsetX + (11 / 64) * size;
+      // eslint-disable-next-line no-case-declarations
+      const controlY = offsetY + (11 / 64) * size;
+
+      context.quadraticCurveTo(controlX, controlY, endX, endY);
+      break;
+    case EdgeShape.SmoothStep:
+      context.moveTo(startX, startY);
+      context.lineTo(startX, endY + 5);
+      context.lineTo(endX + 1.5, endY + 5);
+      context.lineTo(endX + 1.5, endY + 2);
+
+      context.moveTo(startX + 1, startY);
+      context.lineTo(endX, endY + 1);
+      break;
+    case EdgeShape.Line:
+      context.moveTo(startX + 1, startY);
+      context.lineTo(endX, endY + 1);
+      break;
+  }
+
+  context.stroke();
+};
+
+/**
+ * Draws the arrow icon in the selection toolbar
+ */
+const drawArrowIcon = (
+  context: CanvasRenderingContext2D, 
+  x: number, 
+  y: number, 
+  camera: Camera, 
+  active: boolean,
+  selectedEdges: Edge[]
+) => {
+  // Draw the active background
+  drawActiveBg(context, x, y, camera, active);
+  
+  const scale = Math.max(1, 1 / camera.scale);
+  const size = 24 * scale * 0.7; // Scale the icon slightly to fit better
+
+  // Calculate offset to center the icon correctly
+  const offsetX = x - size / 2;
+  const offsetY = y - size / 2;
+
+  // Set stroke style
+  // context.strokeStyle = "#4869fd";
+  context.strokeStyle = "#4869fd";
+  context.lineWidth = Math.max(1.5, 1.5 / camera.scale);
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  
+  // Draw the arrow path from the SVG
+  context.beginPath();
+  
+  // Start point at (6, 9)
+  context.moveTo(offsetX + (6 / 24) * size, offsetY + (9 / 24) * size);
+  
+  // Line to (12, 9)
+  context.lineTo(offsetX + (12 / 24) * size, offsetY + (9 / 24) * size);
+  
+  // Line to (12, 5)
+  context.lineTo(offsetX + (12 / 24) * size, offsetY + (5 / 24) * size);
+  
+  // Line to (19, 12) - the arrow tip
+  context.lineTo(offsetX + (19 / 24) * size, offsetY + (12 / 24) * size);
+  
+  // Line to (12, 19)
+  context.lineTo(offsetX + (12 / 24) * size, offsetY + (19 / 24) * size);
+  
+  // Line to (12, 15)
+  context.lineTo(offsetX + (12 / 24) * size, offsetY + (15 / 24) * size);
+  
+  // Line back to (6, 15)
+  context.lineTo(offsetX + (6 / 24) * size, offsetY + (15 / 24) * size);
+  
+  // Close the path to get back to (6, 9)
+  context.lineTo(offsetX + (6 / 24) * size, offsetY + (9 / 24) * size);
+  
+  // We can either stroke the outline or fill the arrow
+  context.stroke(); // For outline
+};
+
 // Draw the active background
 const drawActiveBg = (context: CanvasRenderingContext2D, x: number, y: number, camera: Camera, active: boolean) => {
   if (!active) return;
