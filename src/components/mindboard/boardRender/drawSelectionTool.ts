@@ -608,6 +608,48 @@ export const drawSelectionTool = ({
     }
   }
 
+  // If edge is selected, draw the edge icons
+  if (selectedEdges.length > 0) {
+    // Draw Text button (first section)
+    drawTextIcon(context, bounds.x + bounds.width / 10, bounds.y + bounds.height / 2, theme, camera, canvasState);
+
+    // Draw the color button (second section)
+    drawColorButton(
+      context,
+      bounds.x + bounds.width / 3.4,
+      bounds.y + bounds.height / 2,
+      colorToCss(selectedLayers.length === 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
+      camera,
+      canvasState,
+    );
+
+    // Draw menu button (middle section)
+    drawMenuIcon(context, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, camera, canvasState);
+
+    // Draw spline (third section)
+    drawSplineIcon(
+      context,
+      bounds.x + bounds.width / 1.4,
+      bounds.y + bounds.height / 2,
+      camera,
+      canvasState,
+      selectedEdges,
+    );
+
+    // Draw arrow (last section)
+    drawArrowIcon(
+      context, 
+      bounds.x + bounds.width / 1.1, 
+      bounds.y + bounds.height / 2, 
+      camera,
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      (canvasState.toolingMode === "EDGE_ARROW" && canvasState.isInSelectionTool === true) ||
+        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+        canvasState.toolingModeState === "EDGE_ARROW",
+      selectedEdges
+    );
+  }
+
   context.restore();
 };
 
