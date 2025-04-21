@@ -279,6 +279,56 @@ export const calculateBorderIconBounds = ({
 };
 
 /**
+ * Calculates the bounding box for the spline icon section
+ */
+export const calculateSplineIconBounds = ({
+  allEdges,
+  activeEdges,
+  camera,
+}: {
+  allEdges: Edge[] | undefined;
+  activeEdges: string[] | undefined;
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers: [], activeLayers: [], allEdges, activeEdges, camera });
+
+  if (!bounds) return null;
+
+  // Position the bounds at approximately 71% from the left edge (matching the draw position)
+  return {
+    x: bounds.x + bounds.width / 1.2 - bounds.width / 6,
+    y: bounds.y,
+    width: bounds.width / 10,
+    height: bounds.height,
+  };
+};
+
+/**
+ * Calculates the bounding box for the arrow icon section
+ */
+export const calculateArrowIconBounds = ({
+  allEdges,
+  activeEdges,
+  camera,
+}: {
+  allEdges: Edge[] | undefined;
+  activeEdges: string[] | undefined;
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers: [], activeLayers: [], allEdges, activeEdges, camera });
+
+  if (!bounds) return null;
+
+  // Position the bounds at approximately 71% from the left edge (matching the draw position)
+  return {
+    x: bounds.x + bounds.width - bounds.width / 6,
+    y: bounds.y,
+    width: bounds.width / 10,
+    height: bounds.height,
+  };
+};
+
+/**
  * Checks if a point is inside the selection tool
  * Returns an object with isInSelectionTool and toolingMode based on which section the point is in
  */
@@ -364,6 +414,8 @@ export const isPointInSelectionTool = ({
   const shapeIconBounds = calculateTextIconBounds({ allLayers, activeLayers, camera });
   const colorButtonBounds = calculateColorButtonBounds({ allLayers, activeLayers, camera });
   const menuIconBounds = calculateMenuIconBounds({ allLayers, activeLayers, camera });
+  const splineIconBounds = calculateSplineIconBounds({ allEdges, activeEdges, camera });
+  const arrowIconBounds = calculateArrowIconBounds({ allEdges, activeEdges, camera });
 
   const leftBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "left" });
   const middleBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "middle" });
@@ -458,6 +510,45 @@ export const isPointInSelectionTool = ({
       toolingMode: "LAYER_BORDER" as const,
       toolingModeBorderType: "DASHED" as LayerBorderType,
       toolingModeColor: undefined,
+    };
+  }
+
+  if (
+    splineIconBounds &&
+    point.x >= splineIconBounds.x &&
+    point.x <= splineIconBounds.x + splineIconBounds.width &&
+    point.y >= splineIconBounds.y &&
+    point.y <= splineIconBounds.y + splineIconBounds.height
+  ) {
+    let selectedEdges = allEdges?.filter((e) => activeEdges?.includes(e.id));
+
+    // Return shape conditionally based on the current shape
+    const newShape =
+      selectedEdges && selectedEdges.length > 0
+        ? selectedEdges[0].shape === EdgeShape.Curved
+          ? EdgeShape.SmoothStep
+          : selectedEdges[0].shape === EdgeShape.SmoothStep
+            ? EdgeShape.Line
+            : EdgeShape.Curved
+        : EdgeShape.Curved;
+
+    return {
+      isInSelectionTool: true,
+      toolingMode: "EDGE_SHAPE" as const,
+      toolingModeShape: newShape,
+    };
+  }
+
+  if (
+    arrowIconBounds &&
+    point.x >= arrowIconBounds.x &&
+    point.x <= arrowIconBounds.x + arrowIconBounds.width &&
+    point.y >= arrowIconBounds.y &&
+    point.y <= arrowIconBounds.y + arrowIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "EDGE_ARROW" as const,
     };
   }
 

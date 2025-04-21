@@ -262,7 +262,11 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
         }
 
         // If pointer is inside selection tool and we have active layers, change mode to Tooling
-        if (selectionToolInfo.isInSelectionTool && activeLayers.length > 0 && canvasState.mode === CanvasMode.None) {
+        if (
+          selectionToolInfo.isInSelectionTool &&
+          (activeLayers.length > 0 || activeEdgeId.length > 0) &&
+          canvasState.mode === CanvasMode.None
+        ) {
           const updatedState: any = {
             ...canvasState,
             mode: CanvasMode.Tooling,
@@ -564,6 +568,11 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             updatedState.toolingModeBorderType = selectionToolInfo.toolingModeBorderType;
           }
 
+          // Add toolingModeShape if it exists
+          if ("toolingModeShape" in selectionToolInfo) {
+            updatedState.toolingModeShape = selectionToolInfo.toolingModeShape;
+          }
+
           setCanvasState(updatedState);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
@@ -830,6 +839,32 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             }
           }
 
+          // Change EDGE SHAPE
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          if ("toolingModeShape" in selectionToolInfo && selectionToolInfo.toolingMode === "EDGE_SHAPE") {
+            const newEdgeShape = selectionToolInfo.toolingModeShape;
+
+            // Create updated edge with the new edge shape
+            if (newEdgeShape) {
+              const updatedEdges = activeEdgeId
+                .map((edgeId) => {
+                  const edge = edges.find((e) => e.id === edgeId);
+
+                  if (edge) {
+                    return {
+                      ...edge,
+                      shape: newEdgeShape,
+                    };
+                  }
+                  return null;
+                })
+                .filter((edge) => edge !== null) as Edge[];
+
+              // Update the edge with the new edge shape
+              updateEdge({ updatedEdges });
+            }
+          }
+
           setCanvasState((prev) => {
             // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
             const oldToolingModeState = prev.toolingModeState;
@@ -846,6 +881,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       }
     },
     [
+      activeEdgeId,
       activeLayers,
       addEdge,
       addEdgeLayer,
@@ -853,6 +889,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
       canvasRef,
       canvasState,
       checkIfLayerIsLocked,
+      edges,
       fitView,
       isPointInSelectionToolBounds,
       layers,

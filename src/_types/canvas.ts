@@ -248,8 +248,8 @@ export type CanvasState =
       current?: Point;
       hoveredEdgeId?: string;
       hoveredLayerId?: string;
-      toolingMode?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER";
-      toolingModeState?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER";
+      toolingMode?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER" | "EDGE_ARROW" | "EDGE_SHAPE";
+      toolingModeState?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER" | "EDGE_ARROW" | "EDGE_SHAPE";
     }
   | {
       mode: CanvasMode.Pencil;
@@ -274,13 +274,13 @@ export type CanvasState =
   | {
       mode: CanvasMode.Tooling;
       isInSelectionTool: boolean;
-      toolingMode?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER";
-      toolingModeState?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER";
+      toolingMode?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER" | "EDGE_ARROW" | "EDGE_SHAPE";
+      toolingModeState?: "LAYER_SHAPE" | "LAYER_COLOR" | "LAYER_BORDER" | "EDGE_ARROW" | "EDGE_SHAPE";
       toolingModeColor?: Color;
       toolingModeBorderColor?: Color;
       toolingModeBorderWidth?: number;
       toolingModeBorderType?: LayerBorderType;
-      toolingModeShape?: LayerType;
+      toolingModeShape?: LayerType | EdgeShape;
     }
   | {
       mode: CanvasMode.Translating;
