@@ -351,6 +351,7 @@ export const isPointInSelectionTool = ({
 }) => {
   const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
   const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+  const currentEdge = allEdges?.filter((e) => activeEdges?.includes(e.id))[0];
 
   if (!bounds) return { isInSelectionTool: false };
 
@@ -520,22 +521,20 @@ export const isPointInSelectionTool = ({
     point.y >= splineIconBounds.y &&
     point.y <= splineIconBounds.y + splineIconBounds.height
   ) {
-    let selectedEdges = allEdges?.filter((e) => activeEdges?.includes(e.id));
-
     // Return shape conditionally based on the current shape
-    const newShape =
-      selectedEdges && selectedEdges.length > 0
-        ? selectedEdges[0].shape === EdgeShape.Curved
-          ? EdgeShape.SmoothStep
-          : selectedEdges[0].shape === EdgeShape.SmoothStep
-            ? EdgeShape.Line
-            : EdgeShape.Curved
-        : EdgeShape.Curved;
+    const newShape = currentEdge
+      ? currentEdge.shape === EdgeShape.Curved
+        ? EdgeShape.SmoothStep
+        : currentEdge.shape === EdgeShape.SmoothStep
+          ? EdgeShape.Line
+          : EdgeShape.Curved
+      : EdgeShape.Curved;
 
     return {
       isInSelectionTool: true,
       toolingMode: "EDGE_SHAPE" as const,
       toolingModeShape: newShape,
+      toolingModeArrow: undefined,
     };
   }
 
@@ -549,6 +548,8 @@ export const isPointInSelectionTool = ({
     return {
       isInSelectionTool: true,
       toolingMode: "EDGE_ARROW" as const,
+      toolingModeArrow: currentEdge?.arrowEnd === true ? false : true,
+      toolingModeShape: undefined,
     };
   }
 
@@ -709,7 +710,7 @@ export const drawSelectionTool = ({
       context,
       bounds.x + bounds.width / 3.4,
       bounds.y + bounds.height / 2,
-      colorToCss(selectedLayers.length === 1 ? selectedLayers[0].fill : { r: 72, g: 105, b: 253 }),
+      colorToCss(selectedEdges.length === 1 ? selectedEdges[0].color : { r: 72, g: 105, b: 253 }),
       camera,
       canvasState,
     );
@@ -729,15 +730,12 @@ export const drawSelectionTool = ({
 
     // Draw arrow (last section)
     drawArrowIcon(
-      context, 
-      bounds.x + bounds.width / 1.1, 
-      bounds.y + bounds.height / 2, 
+      context,
+      bounds.x + bounds.width / 1.1,
+      bounds.y + bounds.height / 2,
       camera,
-      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-      (canvasState.toolingMode === "EDGE_ARROW" && canvasState.isInSelectionTool === true) ||
-        // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-        canvasState.toolingModeState === "EDGE_ARROW",
-      selectedEdges
+      canvasState,
+      selectedEdges,
     );
   }
 
@@ -910,6 +908,9 @@ const drawColorButton = (
   context.beginPath();
   context.arc(x, y, radius, 0, Math.PI * 2);
   context.fill();
+  context.arc(x, y, radius, 0, Math.PI * 2);
+  context.lineWidth = Math.max(1, 1 / camera.scale);
+  context.stroke();
 };
 
 /**
@@ -1076,8 +1077,13 @@ const drawSplineIcon = (
   if (!activeEdge) return;
 
   // Draw the active background
+  const active =
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    (canvasState.toolingMode === "EDGE_SHAPE" && canvasState.isInSelectionTool === true) ||
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    canvasState.toolingModeState === "EDGE_SHAPE";
 
-  drawActiveBg(context, x, y, camera, true);
+  drawActiveBg(context, x, y, camera, active);
 
   const scale = Math.max(1, 1 / camera.scale);
   const size = 24 * scale * 0.7; // Scale the icon slightly to fit better
@@ -1087,6 +1093,7 @@ const drawSplineIcon = (
   const offsetY = y - size / 2;
 
   // Set stroke style
+  // context.strokeStyle = active ? "#4d6aff" : "#fff";
   context.strokeStyle = "#fff";
   context.lineWidth = Math.max(1, 1 / camera.scale);
   context.lineCap = "round";
@@ -1137,7 +1144,6 @@ const drawSplineIcon = (
       context.lineTo(endX + 1.5, endY + 2);
 
       context.moveTo(startX + 1, startY);
-      context.lineTo(endX, endY + 1);
       break;
     case EdgeShape.Line:
       context.moveTo(startX + 1, startY);
@@ -1152,16 +1158,25 @@ const drawSplineIcon = (
  * Draws the arrow icon in the selection toolbar
  */
 const drawArrowIcon = (
-  context: CanvasRenderingContext2D, 
-  x: number, 
-  y: number, 
-  camera: Camera, 
-  active: boolean,
-  selectedEdges: Edge[]
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  camera: Camera,
+  canvasState: CanvasState,
+  selectedEdges: Edge[],
 ) => {
+  const currentEdgeArrowState = selectedEdges[0]?.arrowEnd;
+
+  // Draw the active background
+  const active =
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    (canvasState.toolingMode === "EDGE_ARROW" && canvasState.isInSelectionTool === true) ||
+    // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+    canvasState.toolingModeState === "EDGE_ARROW";
+
   // Draw the active background
   drawActiveBg(context, x, y, camera, active);
-  
+
   const scale = Math.max(1, 1 / camera.scale);
   const size = 24 * scale * 0.7; // Scale the icon slightly to fit better
 
@@ -1170,41 +1185,46 @@ const drawArrowIcon = (
   const offsetY = y - size / 2;
 
   // Set stroke style
-  // context.strokeStyle = "#4869fd";
-  context.strokeStyle = "#4869fd";
+  context.strokeStyle = currentEdgeArrowState ? "#4d6aff" : "#fff";
   context.lineWidth = Math.max(1.5, 1.5 / camera.scale);
   context.lineCap = "round";
   context.lineJoin = "round";
-  
+
   // Draw the arrow path from the SVG
   context.beginPath();
-  
+
   // Start point at (6, 9)
   context.moveTo(offsetX + (6 / 24) * size, offsetY + (9 / 24) * size);
-  
+
   // Line to (12, 9)
   context.lineTo(offsetX + (12 / 24) * size, offsetY + (9 / 24) * size);
-  
+
   // Line to (12, 5)
   context.lineTo(offsetX + (12 / 24) * size, offsetY + (5 / 24) * size);
-  
+
   // Line to (19, 12) - the arrow tip
   context.lineTo(offsetX + (19 / 24) * size, offsetY + (12 / 24) * size);
-  
+
   // Line to (12, 19)
   context.lineTo(offsetX + (12 / 24) * size, offsetY + (19 / 24) * size);
-  
+
   // Line to (12, 15)
   context.lineTo(offsetX + (12 / 24) * size, offsetY + (15 / 24) * size);
-  
+
   // Line back to (6, 15)
   context.lineTo(offsetX + (6 / 24) * size, offsetY + (15 / 24) * size);
-  
+
   // Close the path to get back to (6, 9)
   context.lineTo(offsetX + (6 / 24) * size, offsetY + (9 / 24) * size);
-  
+
   // We can either stroke the outline or fill the arrow
   context.stroke(); // For outline
+
+  // Fill the arrow
+  if (currentEdgeArrowState) {
+    context.fillStyle = currentEdgeArrowState ? "#4d6aff" : "#fff";
+    context.fill();
+  }
 };
 
 // Draw the active background

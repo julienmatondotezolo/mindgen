@@ -525,6 +525,7 @@ export const useEdgeOperations = ({ boardId }: { boardId: string }) => {
           shape: edge.shape,
           handleStart: edge.handleStart,
           handleEnd: edge.handleEnd,
+          arrowEnd: edge.arrowEnd,
         };
 
         return newEdge;

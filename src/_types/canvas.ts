@@ -281,6 +281,7 @@ export type CanvasState =
       toolingModeBorderWidth?: number;
       toolingModeBorderType?: LayerBorderType;
       toolingModeShape?: LayerType | EdgeShape;
+      toolingModeArrow?: boolean;
     }
   | {
       mode: CanvasMode.Translating;

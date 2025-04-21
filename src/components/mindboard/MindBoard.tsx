@@ -573,6 +573,11 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             updatedState.toolingModeShape = selectionToolInfo.toolingModeShape;
           }
 
+          // Add toolingModeArrow if it exists
+          if ("toolingModeArrow" in selectionToolInfo) {
+            updatedState.toolingModeArrow = selectionToolInfo.toolingModeArrow;
+          }
+
           setCanvasState(updatedState);
         }
       } else if (canvasState.mode === CanvasMode.Translating) {
@@ -854,6 +859,32 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
                     return {
                       ...edge,
                       shape: newEdgeShape,
+                    };
+                  }
+                  return null;
+                })
+                .filter((edge) => edge !== null) as Edge[];
+
+              // Update the edge with the new edge shape
+              updateEdge({ updatedEdges });
+            }
+          }
+
+          // Change EDGE ARROW
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          if ("toolingModeArrow" in selectionToolInfo && selectionToolInfo.toolingMode === "EDGE_ARROW") {
+            const newEdgeArrowState = selectionToolInfo.toolingModeArrow;
+
+            // Create updated edge with the new edge shape
+            if (newEdgeArrowState || newEdgeArrowState === false) {
+              const updatedEdges = activeEdgeId
+                .map((edgeId) => {
+                  const edge = edges.find((e) => e.id === edgeId);
+
+                  if (edge) {
+                    return {
+                      ...edge,
+                      arrowEnd: newEdgeArrowState,
                     };
                   }
                   return null;
