@@ -1,4 +1,4 @@
-import { Camera, CanvasMode, CanvasState, Edge, Layer, LayerBorderType, Point } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Edge, EdgeShape, Layer, LayerBorderType, Point } from "@/_types";
 import { COLORS, colorToCss } from "@/utils/canvasUtils";
 import { calculateEdgeBoundingBox, calculateLayerBoundingBox } from "@/utils/layerUtils";
 
@@ -31,12 +31,12 @@ export const calculateSelectionToolBounds = ({
 
   if (selectedLayers.length > 0) {
     box = calculateLayerBoundingBox(selectedLayers);
-    width = 160;
+    width = 53.3333333333 * 3;
   }
 
   if (selectedEdges.length > 0) {
     box = calculateEdgeBoundingBox(selectedEdges);
-    width = 214;
+    width = 53.3333333333 * 5;
   }
 
   if (!box) return null;
@@ -533,8 +533,11 @@ export const drawSelectionTool = ({
 
   // Draw divider lines between buttons
   context.fillStyle = theme === "dark" ? "#444" : "#555";
-  const firstDividerX = bounds.x + bounds.width / 3;
-  const secondDividerX = bounds.x + (bounds.width / 3) * 2;
+
+  const SECTION_COUNT = selectedLayers ? 3 : selectedEdges ? 10 : 0;
+
+  const firstDividerX = bounds.x + bounds.width / SECTION_COUNT;
+  const secondDividerX = bounds.x + (bounds.width / SECTION_COUNT) * 2;
 
   // If layers are selected, draw the layer icons
   if (selectedLayers.length > 0) {
