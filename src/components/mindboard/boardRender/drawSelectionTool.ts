@@ -63,13 +63,17 @@ export const calculateSelectionToolBounds = ({
 export const calculateColorPaletteBounds = ({
   allLayers,
   activeLayers,
+  allEdges,
+  activeEdges,
   camera,
 }: {
   allLayers: Layer[];
   activeLayers: string[];
+  allEdges?: Edge[];
+  activeEdges?: string[];
   camera: Camera;
 }) => {
-  const toolbarBounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+  const toolbarBounds = calculateSelectionToolBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!toolbarBounds) return null;
 
@@ -123,13 +127,17 @@ export const calculateBorderStyleBounds = ({
 export const calculateColorCirclesBounds = ({
   allLayers,
   activeLayers,
+  allEdges,
+  activeEdges,
   camera,
 }: {
   allLayers: Layer[];
   activeLayers: string[];
+  allEdges?: Edge[];
+  activeEdges?: string[];
   camera: Camera;
 }) => {
-  const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, camera });
+  const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!paletteBounds) return null;
 
@@ -142,14 +150,14 @@ export const calculateColorCirclesBounds = ({
 
   // Calculate horizontal and vertical spacing
   const horizontalSpacing = paletteBounds.width / (colorsPerRow + 1);
-  const verticalSpacing = paletteBounds.height / (rows + 1);
+  const verticalSpacing = paletteBounds.height / (rows + 0.4);
 
   return COLORS.map((color, index) => {
     const row = Math.floor(index / colorsPerRow);
     const col = index % colorsPerRow;
 
     const x = paletteBounds.x + horizontalSpacing * (col + 1);
-    const y = paletteBounds.y + verticalSpacing * (row + 1);
+    const y = paletteBounds.y + verticalSpacing * (row + 0.7);
 
     return {
       color,
@@ -319,11 +327,10 @@ export const calculateEdgeColorIconBounds = ({
 
   if (!bounds) return null;
 
-  // Position the bounds at approximately 71% from the left edge (matching the draw position)
   return {
-    x: bounds.x + bounds.width / 1.2 - bounds.width / 6,
+    x: bounds.x + bounds.width / 9 + 35,
     y: bounds.y,
-    width: bounds.width / 10,
+    width: bounds.width / 8,
     height: bounds.height,
   };
 };
@@ -431,8 +438,12 @@ export const isPointInSelectionTool = ({
   if (!bounds) return { isInSelectionTool: false };
 
   // Check if we're in LAYER_COLOR mode and if the point is in the color palette
-  if (canvasState && "toolingModeState" in canvasState && canvasState.toolingModeState === "LAYER_COLOR") {
-    const colorCircles = calculateColorCirclesBounds({ allLayers, activeLayers, camera });
+  if (
+    canvasState &&
+    "toolingModeState" in canvasState &&
+    (canvasState.toolingModeState === "LAYER_COLOR" || canvasState.toolingModeState === "EDGE_COLOR")
+  ) {
+    const colorCircles = calculateColorCirclesBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
     if (colorCircles) {
       // Check if the point is inside any color circle
@@ -442,7 +453,7 @@ export const isPointInSelectionTool = ({
         if (distance <= circle.radius) {
           return {
             isInSelectionTool: true,
-            toolingMode: "LAYER_COLOR" as const,
+            toolingMode: canvasState.toolingModeState,
             toolingModeColor: circle.color,
             toolingModeBorderWidth: undefined,
             toolingModeBorderType: undefined,
@@ -451,7 +462,7 @@ export const isPointInSelectionTool = ({
       }
 
       // Check if the point is in the color palette but not on any circle
-      const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, camera });
+      const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
       if (
         paletteBounds &&
@@ -462,7 +473,7 @@ export const isPointInSelectionTool = ({
       ) {
         return {
           isInSelectionTool: true,
-          toolingMode: "LAYER_COLOR" as const,
+          toolingMode: canvasState.toolingModeState,
           toolingModeBorderWidth: undefined,
           toolingModeBorderType: undefined,
         };
@@ -604,6 +615,21 @@ export const isPointInSelectionTool = ({
     return {
       isInSelectionTool: true,
       toolingMode: "EDGE_TEXT" as const,
+      toolingModeShape: undefined,
+      toolingModeArrow: undefined,
+    };
+  }
+
+  if (
+    edgeColorIconBounds &&
+    point.x >= edgeColorIconBounds.x &&
+    point.x <= edgeColorIconBounds.x + edgeColorIconBounds.width &&
+    point.y >= edgeColorIconBounds.y &&
+    point.y <= edgeColorIconBounds.y + edgeColorIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "EDGE_COLOR" as const,
       toolingModeShape: undefined,
       toolingModeArrow: undefined,
     };
@@ -812,6 +838,10 @@ export const drawSelectionTool = ({
 
     // Draw menu button (middle section)
     drawMenuIcon(context, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, camera, canvasState);
+    // Draw color palette if in EDGE_COLOR mode
+    if ("toolingModeState" in canvasState && canvasState.toolingModeState === "EDGE_COLOR") {
+      drawColorPalette(context, { allLayers, activeLayers, allEdges, activeEdges, camera, theme });
+    }
 
     // Draw spline (third section)
     drawSplineIcon(
@@ -838,23 +868,27 @@ export const drawSelectionTool = ({
 };
 
 /**
- * Draws the color palette when in LAYER_COLOR mode
+ * Draws the color palette when in LAYER_COLOR our EDGE_COLOR mode
  */
 const drawColorPalette = (
   context: CanvasRenderingContext2D,
   {
     allLayers,
     activeLayers,
+    allEdges,
+    activeEdges,
     camera,
     theme,
   }: {
     allLayers: Layer[];
     activeLayers: string[];
+    allEdges?: Edge[];
+    activeEdges?: string[];
     camera: Camera;
     theme: string | undefined;
   },
 ) => {
-  const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, camera });
+  const paletteBounds = calculateColorPaletteBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!paletteBounds) return;
 
@@ -871,7 +905,7 @@ const drawColorPalette = (
   context.shadowOffsetY = 2;
 
   // Draw color circles
-  const colorCircles = calculateColorCirclesBounds({ allLayers, activeLayers, camera });
+  const colorCircles = calculateColorCirclesBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!colorCircles) return;
 
@@ -995,9 +1029,13 @@ const drawColorButton = (
     y,
     camera,
     // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-    (canvasState.toolingMode === "LAYER_COLOR" && canvasState.isInSelectionTool === true) ||
+    ((canvasState.toolingMode === "LAYER_COLOR" || canvasState.toolingMode === "EDGE_COLOR") &&
       // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-      canvasState.toolingModeState === "LAYER_COLOR",
+      canvasState.isInSelectionTool === true) ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "LAYER_COLOR" ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "EDGE_COLOR",
   );
 
   const radius = Math.max(10, 10 / camera.scale);
