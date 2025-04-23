@@ -281,6 +281,81 @@ export const calculateBorderIconBounds = ({
 /**
  * Calculates the bounding box for the spline icon section
  */
+export const calculateEdgeTextIconBounds = ({
+  allEdges,
+  activeEdges,
+  camera,
+}: {
+  allEdges: Edge[] | undefined;
+  activeEdges: string[] | undefined;
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers: [], activeLayers: [], allEdges, activeEdges, camera });
+
+  if (!bounds) return null;
+
+  // Position the bounds at approximately 71% from the left edge (matching the draw position)
+  return {
+    x: bounds.x + 25,
+    y: bounds.y,
+    width: bounds.width / 9,
+    height: bounds.height,
+  };
+};
+
+/**
+ * Calculates the bounding box for the spline icon section
+ */
+export const calculateEdgeColorIconBounds = ({
+  allEdges,
+  activeEdges,
+  camera,
+}: {
+  allEdges: Edge[] | undefined;
+  activeEdges: string[] | undefined;
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers: [], activeLayers: [], allEdges, activeEdges, camera });
+
+  if (!bounds) return null;
+
+  // Position the bounds at approximately 71% from the left edge (matching the draw position)
+  return {
+    x: bounds.x + bounds.width / 1.2 - bounds.width / 6,
+    y: bounds.y,
+    width: bounds.width / 10,
+    height: bounds.height,
+  };
+};
+
+/**
+ * Calculates the bounding box for the spline icon section
+ */
+export const calculateEdgeMenuIconBounds = ({
+  allEdges,
+  activeEdges,
+  camera,
+}: {
+  allEdges: Edge[] | undefined;
+  activeEdges: string[] | undefined;
+  camera: Camera;
+}) => {
+  const bounds = calculateSelectionToolBounds({ allLayers: [], activeLayers: [], allEdges, activeEdges, camera });
+
+  if (!bounds) return null;
+
+  // Position the bounds at approximately 71% from the left edge (matching the draw position)
+  return {
+    x: bounds.x + bounds.width / 1.2 - bounds.width / 6,
+    y: bounds.y,
+    width: bounds.width / 10,
+    height: bounds.height,
+  };
+};
+
+/**
+ * Calculates the bounding box for the spline icon section
+ */
 export const calculateSplineIconBounds = ({
   allEdges,
   activeEdges,
@@ -412,9 +487,14 @@ export const isPointInSelectionTool = ({
   if (!isInBounds && !isInBorderStyleBounds) return { isInSelectionTool: false };
 
   // Check which section the point is in
+  // LAYER BOUNDS
   const shapeIconBounds = calculateTextIconBounds({ allLayers, activeLayers, camera });
   const colorButtonBounds = calculateColorButtonBounds({ allLayers, activeLayers, camera });
   const menuIconBounds = calculateMenuIconBounds({ allLayers, activeLayers, camera });
+  // EDGE BOUNDS
+  const edgeTextIconBounds = calculateEdgeTextIconBounds({ allEdges, activeEdges, camera });
+  const edgeColorIconBounds = calculateEdgeColorIconBounds({ allEdges, activeEdges, camera });
+  const edgeMenuIconBounds = calculateEdgeMenuIconBounds({ allEdges, activeEdges, camera });
   const splineIconBounds = calculateSplineIconBounds({ allEdges, activeEdges, camera });
   const arrowIconBounds = calculateArrowIconBounds({ allEdges, activeEdges, camera });
 
@@ -511,6 +591,21 @@ export const isPointInSelectionTool = ({
       toolingMode: "LAYER_BORDER" as const,
       toolingModeBorderType: "DASHED" as LayerBorderType,
       toolingModeColor: undefined,
+    };
+  }
+
+  if (
+    edgeTextIconBounds &&
+    point.x >= edgeTextIconBounds.x &&
+    point.x <= edgeTextIconBounds.x + edgeTextIconBounds.width &&
+    point.y >= edgeTextIconBounds.y &&
+    point.y <= edgeTextIconBounds.y + edgeTextIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "EDGE_TEXT" as const,
+      toolingModeShape: undefined,
+      toolingModeArrow: undefined,
     };
   }
 
@@ -838,9 +933,13 @@ const drawTextIcon = (
     y,
     camera,
     // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-    (canvasState.toolingMode === "LAYER_SHAPE" && canvasState.isInSelectionTool === true) ||
+    canvasState.toolingMode === "LAYER_SHAPE" ||
       // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-      canvasState.toolingModeState === "LAYER_SHAPE",
+      (canvasState.toolingMode === "EDGE_TEXT" && canvasState.isInSelectionTool === true) ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "LAYER_SHAPE" ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "EDGE_TEXT",
   );
 
   const scale = Math.max(1, 1 / camera.scale);
