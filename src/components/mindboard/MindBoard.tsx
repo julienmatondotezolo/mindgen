@@ -844,6 +844,32 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             }
           }
 
+          // Change EDGE COLOR
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          if ("toolingModeColor" in selectionToolInfo && selectionToolInfo.toolingMode === "EDGE_COLOR") {
+            const newEdgeColor = selectionToolInfo.toolingModeColor;
+
+            // Create updated edge with the new edge color
+            if (newEdgeColor) {
+              const updatedEdges = activeEdgeId
+                .map((edgeId) => {
+                  const edge = edges.find((e) => e.id === edgeId);
+
+                  if (edge) {
+                    return {
+                      ...edge,
+                      color: hexToRgba(newEdgeColor),
+                    };
+                  }
+                  return null;
+                })
+                .filter((edge) => edge !== null) as Edge[];
+
+              // Update the edge with the new edge shape
+              updateEdge({ updatedEdges });
+            }
+          }
+
           // Change EDGE SHAPE
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           if ("toolingModeShape" in selectionToolInfo && selectionToolInfo.toolingMode === "EDGE_SHAPE") {
