@@ -97,13 +97,17 @@ export const calculateColorPaletteBounds = ({
 export const calculateBorderStyleBounds = ({
   allLayers,
   activeLayers,
+  allEdges,
+  activeEdges,
   camera,
 }: {
   allLayers: Layer[];
   activeLayers: string[];
+  allEdges?: Edge[];
+  activeEdges?: string[];
   camera: Camera;
 }) => {
-  const toolbarBounds = calculateSelectionToolBounds({ allLayers, activeLayers, camera });
+  const toolbarBounds = calculateSelectionToolBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!toolbarBounds) return null;
 
@@ -249,15 +253,19 @@ export const calculateMenuIconBounds = ({
 export const calculateBorderIconBounds = ({
   allLayers,
   activeLayers,
+  allEdges,
+  activeEdges,
   camera,
   section,
 }: {
   allLayers: Layer[];
   activeLayers: string[];
+  allEdges?: Edge[];
+  activeEdges?: string[];
   camera: Camera;
   section: "left" | "middle" | "right";
 }) => {
-  const bounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+  const bounds = calculateBorderStyleBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!bounds) return null;
 
@@ -351,11 +359,10 @@ export const calculateEdgeMenuIconBounds = ({
 
   if (!bounds) return null;
 
-  // Position the bounds at approximately 71% from the left edge (matching the draw position)
   return {
-    x: bounds.x + bounds.width / 1.2 - bounds.width / 6,
+    x: bounds.x + bounds.width / 2 - bounds.width / 8 / 2,
     y: bounds.y,
-    width: bounds.width / 10,
+    width: bounds.width / 8,
     height: bounds.height,
   };
 };
@@ -432,7 +439,7 @@ export const isPointInSelectionTool = ({
   canvasState?: CanvasState;
 }) => {
   const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
-  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
   const currentEdge = allEdges?.filter((e) => activeEdges?.includes(e.id))[0];
 
   if (!bounds) return { isInSelectionTool: false };
@@ -509,9 +516,30 @@ export const isPointInSelectionTool = ({
   const splineIconBounds = calculateSplineIconBounds({ allEdges, activeEdges, camera });
   const arrowIconBounds = calculateArrowIconBounds({ allEdges, activeEdges, camera });
 
-  const leftBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "left" });
-  const middleBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "middle" });
-  const rightBorderIconBounds = calculateBorderIconBounds({ allLayers, activeLayers, camera, section: "right" });
+  const leftBorderIconBounds = calculateBorderIconBounds({
+    allLayers,
+    activeLayers,
+    allEdges,
+    activeEdges,
+    camera,
+    section: "left",
+  });
+  const middleBorderIconBounds = calculateBorderIconBounds({
+    allLayers,
+    activeLayers,
+    allEdges,
+    activeEdges,
+    camera,
+    section: "middle",
+  });
+  const rightBorderIconBounds = calculateBorderIconBounds({
+    allLayers,
+    activeLayers,
+    allEdges,
+    activeEdges,
+    camera,
+    section: "right",
+  });
 
   if (
     shapeIconBounds &&
@@ -567,7 +595,8 @@ export const isPointInSelectionTool = ({
   ) {
     return {
       isInSelectionTool: true,
-      toolingMode: "LAYER_BORDER" as const,
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      toolingMode: canvasState.toolingModeState,
       toolingModeBorderWidth: 2,
       toolingModeBorderType: undefined,
       toolingModeColor: undefined,
@@ -583,7 +612,8 @@ export const isPointInSelectionTool = ({
   ) {
     return {
       isInSelectionTool: true,
-      toolingMode: "LAYER_BORDER" as const,
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      toolingMode: canvasState.toolingModeState,
       toolingModeBorderWidth: 4,
       toolingModeBorderType: undefined,
       toolingModeColor: undefined,
@@ -599,7 +629,8 @@ export const isPointInSelectionTool = ({
   ) {
     return {
       isInSelectionTool: true,
-      toolingMode: "LAYER_BORDER" as const,
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      toolingMode: canvasState.toolingModeState,
       toolingModeBorderType: "DASHED" as LayerBorderType,
       toolingModeColor: undefined,
     };
@@ -630,6 +661,21 @@ export const isPointInSelectionTool = ({
     return {
       isInSelectionTool: true,
       toolingMode: "EDGE_COLOR" as const,
+      toolingModeShape: undefined,
+      toolingModeArrow: undefined,
+    };
+  }
+
+  if (
+    edgeMenuIconBounds &&
+    point.x >= edgeMenuIconBounds.x &&
+    point.x <= edgeMenuIconBounds.x + edgeMenuIconBounds.width &&
+    point.y >= edgeMenuIconBounds.y &&
+    point.y <= edgeMenuIconBounds.y + edgeMenuIconBounds.height
+  ) {
+    return {
+      isInSelectionTool: true,
+      toolingMode: "EDGE_BORDER" as const,
       toolingModeShape: undefined,
       toolingModeArrow: undefined,
     };
@@ -725,7 +771,7 @@ export const drawSelectionTool = ({
 
   // Get the toolbar bounds
   const bounds = calculateSelectionToolBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
-  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!bounds) return;
 
@@ -841,6 +887,52 @@ export const drawSelectionTool = ({
     // Draw color palette if in EDGE_COLOR mode
     if ("toolingModeState" in canvasState && canvasState.toolingModeState === "EDGE_COLOR") {
       drawColorPalette(context, { allLayers, activeLayers, allEdges, activeEdges, camera, theme });
+    }
+
+    // Draw border style if in LAYER_BORDER mode
+    if ("toolingModeState" in canvasState && borderStyleBounds && canvasState.toolingModeState === "EDGE_BORDER") {
+      drawBorderStyle(context, { allLayers, activeLayers, allEdges, activeEdges, camera, theme });
+      drawBorderIcon({
+        context,
+        x: borderStyleBounds.x + borderStyleBounds.width / 6,
+        y: borderStyleBounds.y + borderStyleBounds.height / 2,
+        camera,
+        lineSize: 2,
+        active:
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingMode === "EDGE_BORDER" &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingModeBorderWidth === 2 &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          !canvasState.toolingModeBorderType,
+      });
+      drawBorderIcon({
+        context,
+        x: firstDividerX + borderStyleBounds.width / 6,
+        y: borderStyleBounds.y + borderStyleBounds.height / 2,
+        camera,
+        lineSize: 4,
+        active:
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingMode === "EDGE_BORDER" &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingModeBorderWidth === 4 &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          !canvasState.toolingModeBorderType,
+      });
+      drawBorderIcon({
+        context,
+        x: secondDividerX + borderStyleBounds.width / 6,
+        y: borderStyleBounds.y + borderStyleBounds.height / 2,
+        camera,
+        lineSize: 2,
+        dashed: true,
+        active:
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingMode === "EDGE_BORDER" &&
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          canvasState.toolingModeBorderType === "DASHED",
+      });
     }
 
     // Draw spline (third section)
@@ -1067,9 +1159,13 @@ const drawMenuIcon = (
     y,
     camera,
     // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-    (canvasState.toolingMode === "LAYER_BORDER" && canvasState.isInSelectionTool === true) ||
+    ((canvasState.toolingMode === "LAYER_BORDER" || canvasState.toolingMode === "EDGE_BORDER") &&
       // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-      canvasState.toolingModeState === "LAYER_BORDER",
+      canvasState.isInSelectionTool === true) ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "LAYER_BORDER" ||
+      // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+      canvasState.toolingModeState === "EDGE_BORDER",
   );
 
   const width = Math.max(16, 16 / camera.scale);
@@ -1113,16 +1209,20 @@ const drawBorderStyle = (
   {
     allLayers,
     activeLayers,
+    allEdges,
+    activeEdges,
     camera,
     theme,
   }: {
     allLayers: Layer[];
     activeLayers: string[];
+    allEdges?: Edge[];
+    activeEdges?: string[];
     camera: Camera;
     theme: string | undefined;
   },
 ) => {
-  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, camera });
+  const borderStyleBounds = calculateBorderStyleBounds({ allLayers, activeLayers, allEdges, activeEdges, camera });
 
   if (!borderStyleBounds) return;
 
@@ -1172,6 +1272,7 @@ const drawBorderIcon = ({
   active: boolean;
   dashed?: boolean;
 }) => {
+  context.save();
   // Draw the active background
   drawActiveBg(context, x, y, camera, active);
 
@@ -1194,6 +1295,7 @@ const drawBorderIcon = ({
   context.lineTo(x + width / 2, y + width / 2);
   context.stroke();
   context.closePath();
+  context.restore();
 };
 
 /**

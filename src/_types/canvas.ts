@@ -255,7 +255,8 @@ export type CanvasState =
         | "EDGE_ARROW"
         | "EDGE_SHAPE"
         | "EDGE_COLOR"
-        | "EDGE_TEXT";
+        | "EDGE_TEXT"
+        | "EDGE_BORDER";
       toolingModeState?:
         | "LAYER_SHAPE"
         | "LAYER_COLOR"
@@ -263,7 +264,8 @@ export type CanvasState =
         | "EDGE_ARROW"
         | "EDGE_SHAPE"
         | "EDGE_COLOR"
-        | "EDGE_TEXT";
+        | "EDGE_TEXT"
+        | "EDGE_BORDER";
     }
   | {
       mode: CanvasMode.Pencil;
@@ -295,7 +297,8 @@ export type CanvasState =
         | "EDGE_ARROW"
         | "EDGE_SHAPE"
         | "EDGE_COLOR"
-        | "EDGE_TEXT";
+        | "EDGE_TEXT"
+        | "EDGE_BORDER";
       toolingModeState?:
         | "LAYER_SHAPE"
         | "LAYER_COLOR"
@@ -303,7 +306,8 @@ export type CanvasState =
         | "EDGE_ARROW"
         | "EDGE_SHAPE"
         | "EDGE_COLOR"
-        | "EDGE_TEXT";
+        | "EDGE_TEXT"
+        | "EDGE_BORDER";
       toolingModeColor?: Color;
       toolingModeBorderColor?: Color;
       toolingModeBorderWidth?: number;
