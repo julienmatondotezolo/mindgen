@@ -1,21 +1,33 @@
-import { CanvasMode, CanvasState, Edge, EdgeShape, HandlePosition } from "@/_types";
+import { Camera, CanvasMode, CanvasState, Edge, EdgeShape, EdgeType, HandlePosition } from "@/_types";
 import { drawEdgeCurvedLine, drawEdgeStepLine, getControlWithCurvature } from "@/utils/edgeUtils";
 
 export const drawEdgeBasedOnType = ({
   edge,
   context,
   canvasState,
+  camera,
   activeEdgeId,
 }: {
   edge: Edge;
   context: CanvasRenderingContext2D;
   canvasState: CanvasState;
+  camera: Camera;
   activeEdgeId: string[];
 }) => {
   const colorStyleOnHover =
     canvasState.mode === CanvasMode.None && canvasState.hoveredEdgeId === edge.id && !activeEdgeId.includes(edge.id)
       ? `rgb(${edge.hoverColor.r}, ${edge.hoverColor.g}, ${edge.hoverColor.b})`
       : `rgb(${edge.color.r}, ${edge.color.g}, ${edge.color.b})`;
+
+  // Save the current context state to restore it later
+  context.save();
+  
+  // Set line dash pattern for this function only
+  if (edge.type === EdgeType.Dashed) {
+    context.setLineDash([4, 12]); // Dashed line pattern
+  } else {
+    context.setLineDash([]); // Solid line pattern
+  }
 
   context.beginPath();
 
@@ -104,4 +116,7 @@ export const drawEdgeBasedOnType = ({
     context.fillStyle = colorStyleOnHover;
     context.fill();
   }
+  
+  // Restore the context state to what it was before (resets the line dash pattern)
+  context.restore();
 };

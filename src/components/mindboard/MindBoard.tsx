@@ -896,6 +896,58 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
             }
           }
 
+          // Change EDGE BORDER WIDTH
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          if ("toolingModeBorderWidth" in selectionToolInfo && selectionToolInfo.toolingMode === "EDGE_BORDER") {
+            const newEdgeThickness = selectionToolInfo.toolingModeBorderWidth;
+
+            // Create updated edge with the new edge border width
+            if (newEdgeThickness) {
+              const updatedEdges = activeEdgeId
+                .map((edgeId) => {
+                  const edge = edges.find((e) => e.id === edgeId);
+
+                  if (edge) {
+                    return {
+                      ...edge,
+                      thickness: newEdgeThickness,
+                    };
+                  }
+                  return null;
+                })
+                .filter((edge) => edge !== null) as Edge[];
+
+              // Update the edge with the new edge shape
+              updateEdge({ updatedEdges });
+            }
+          }
+
+          // Change EDGE BORDER TYPE
+          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+          if ("toolingModeBorderType" in selectionToolInfo && selectionToolInfo.toolingMode === "EDGE_BORDER") {
+            const newEdgeType = selectionToolInfo.toolingModeBorderType;
+
+            // Create updated edge with the new edge border width
+            if (newEdgeType) {
+              const updatedEdges = activeEdgeId
+                .map((edgeId) => {
+                  const edge = edges.find((e) => e.id === edgeId);
+
+                  if (edge) {
+                    return {
+                      ...edge,
+                      type: newEdgeType,
+                    };
+                  }
+                  return null;
+                })
+                .filter((edge) => edge !== null) as Edge[];
+
+              // Update the edge with the new edge shape
+              updateEdge({ updatedEdges });
+            }
+          }
+
           // Change EDGE ARROW
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           if ("toolingModeArrow" in selectionToolInfo && selectionToolInfo.toolingMode === "EDGE_ARROW") {

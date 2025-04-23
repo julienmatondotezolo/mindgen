@@ -40,8 +40,8 @@ export enum HandlePosition {
 export type EdgeOrientation = "auto" | "10" | "45" | "0" | "90" | "-180" | "180" | "270";
 
 export enum EdgeType {
-  Solid,
-  Dashed,
+  Solid = "SOLID",
+  Dashed = "DASHED",
 }
 
 export enum EdgeShape {
@@ -311,7 +311,7 @@ export type CanvasState =
       toolingModeColor?: Color;
       toolingModeBorderColor?: Color;
       toolingModeBorderWidth?: number;
-      toolingModeBorderType?: LayerBorderType;
+      toolingModeBorderType?: LayerBorderType | EdgeType;
       toolingModeShape?: LayerType | EdgeShape;
       toolingModeArrow?: boolean;
     }
