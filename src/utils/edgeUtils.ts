@@ -652,7 +652,7 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
 
     case "top-to-bottom": {
       // Top to bottom
-      if (targetInPoint.y + 13 > sourceOutPoint.y) {
+      if (targetInPoint.y - 13 > sourceOutPoint.y) {
         // Vertical to vertical
         const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
 
@@ -700,10 +700,10 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
         context.lineTo(targetInPoint.x - (midX > sourceOutPoint.x ? borderRadius : -borderRadius), targetInPoint.y);
 
         // Fourth/last corner - connect directly to the target
-        context.quadraticCurveTo(targetInPoint.x, targetInPoint.y, targetInPoint.x, targetInPoint.y + borderRadius);
+        context.quadraticCurveTo(targetInPoint.x, targetInPoint.y, targetInPoint.x, targetInPoint.y - borderRadius);
 
         // Final vertical segment
-        context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
+        context.lineTo(targetInPoint.x, targetInPoint.y - gapFiller);
       } else {
         // Target is not underneath source (inverse case)
         const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
