@@ -649,6 +649,95 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
       }
       break;
     }
+
+    case "top-to-bottom": {
+      // Top to bottom
+      if (targetInPoint.y + 13 > sourceOutPoint.y) {
+        // Vertical to vertical
+        const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
+
+        // Check if midX is within 10 pixels of sourceOutPoint.x
+        if (Math.abs(midX - sourceOutPoint.x) <= 10) {
+          // Only draw the last line segment when midX is very close to sourceOutPoint.x
+          context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
+          return;
+        }
+
+        // First line segment
+        context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
+
+        // First corner
+        context.quadraticCurveTo(
+          sourceOutPoint.x,
+          sourceOutPoint.y,
+          sourceOutPoint.x + (midX > sourceOutPoint.x ? borderRadius : -borderRadius),
+          sourceOutPoint.y,
+        );
+
+        // Middle horizontal segment
+        context.lineTo(midX - (midX > sourceOutPoint.x ? borderRadius : -borderRadius), sourceOutPoint.y);
+
+        // Second corner
+        context.quadraticCurveTo(
+          midX,
+          sourceOutPoint.y,
+          midX,
+          sourceOutPoint.y + (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius),
+        );
+
+        // Middle vertical segment
+        context.lineTo(midX, targetInPoint.y - (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius));
+
+        // Third corner
+        context.quadraticCurveTo(
+          midX,
+          targetInPoint.y,
+          midX + (targetInPoint.x > midX ? borderRadius : -borderRadius),
+          targetInPoint.y,
+        );
+
+        // Final horizontal segment
+        context.lineTo(targetInPoint.x - (midX > sourceOutPoint.x ? borderRadius : -borderRadius), targetInPoint.y);
+
+        // Fourth/last corner - connect directly to the target
+        context.quadraticCurveTo(targetInPoint.x, targetInPoint.y, targetInPoint.x, targetInPoint.y + borderRadius);
+
+        // Final vertical segment
+        context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
+      } else {
+        // Target is not underneath source (inverse case)
+        const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
+        const midY = (sourceOutPoint.y + targetInPoint.y) / 2;
+
+        // Check if midX is within 7 pixels of sourceOutPoint.x
+        if (Math.abs(midX - sourceOutPoint.x) <= 7) {
+          // Only draw the last line segment when midX is very close to sourceOutPoint.x
+          context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
+          return;
+        }
+
+        // First line segment (vertical from source)
+        context.lineTo(sourceOutPoint.x, midY + borderRadius);
+
+        // First corner
+        context.quadraticCurveTo(
+          sourceOutPoint.x,
+          midY,
+          sourceOutPoint.x + (midX > sourceOutPoint.x ? borderRadius : -borderRadius),
+          midY,
+        );
+
+        // Middle horizontal segment
+        context.lineTo(targetInPoint.x - (midX > sourceOutPoint.x ? borderRadius : -borderRadius), midY);
+
+        // Last corner
+        context.quadraticCurveTo(targetInPoint.x, midY, targetInPoint.x, midY - borderRadius);
+
+        // Last line segment (vertical to target)
+        context.lineTo(targetInPoint.x, targetInPoint.y - gapFiller);
+        break;
+      }
+    }
   }
 }
 
@@ -693,7 +782,7 @@ function getRoutingType(sourcePosition: HandlePosition, targetPosition: HandlePo
         case HandlePosition.Top:
           return "vertical-to-vertical";
         case HandlePosition.Bottom:
-          return "vertical-to-vertical";
+          return "top-to-bottom";
         default:
           return "vertical-to-vertical";
       }
