@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Camera, CanvasState, Edge } from "@/_types";
 
-import { drawEdgeActiveSelection, drawEdgeBasedOnType, drawEdgeHandles } from "./edgeDrawings";
+import { drawEdgeActiveSelection, drawEdgeBasedOnType, drawEdgeHandles, drawEdgeText } from "./edgeDrawings";
 
 export const edgeRender = ({
   edge,
@@ -22,4 +22,6 @@ export const edgeRender = ({
   drawEdgeBasedOnType({ edge, context, canvasState, camera, activeEdgeId });
   drawEdgeActiveSelection({ edge, context, theme, activeEdgeId });
   drawEdgeHandles({ edge, context, canvasState, theme, camera, activeEdgeId });
+  // Draw text with background rectangle
+  drawEdgeText({ edge, context, theme });
 };

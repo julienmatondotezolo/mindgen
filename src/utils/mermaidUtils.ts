@@ -15,9 +15,9 @@ import {
 // Default colors for different node types
 const DEFAULT_COLORS = {
   RECTANGLE: { r: 77, g: 106, b: 255 },
-  DIAMOND: { r: 77, g: 106, b: 255 },
-  START: { r: 255, g: 87, b: 51 },
-  END: { r: 77, g: 106, b: 255 },
+  DIAMOND: { r: 124, g: 58, b: 237 },
+  START: { r: 51, g: 204, b: 51 },
+  END: { r: 255, g: 87, b: 51 },
 };
 
 // Default edge colors
@@ -429,6 +429,8 @@ export function mermaidToJson(mermaidCode: string): { layers: Layer[]; edges: Ed
     } else {
       if (node.text.toLowerCase().includes("start") || node.text.toLowerCase().includes("begin")) {
         fill = DEFAULT_COLORS.START;
+      } else if (node.text.toLowerCase().includes("end")) {
+        fill = DEFAULT_COLORS.END;
       } else {
         fill = DEFAULT_COLORS.RECTANGLE;
       }
