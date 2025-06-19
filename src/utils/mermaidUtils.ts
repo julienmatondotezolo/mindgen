@@ -535,7 +535,7 @@ export function mermaidToJson(mermaidCode: string): { layers: Layer[]; edges: Ed
       thickness: 2,
       orientation: "auto",
       type: EdgeType.Solid,
-      shape: EdgeShape.Line,
+      shape: EdgeShape.SmoothStep,
       label: mermaidEdge.label || "",
     };
 

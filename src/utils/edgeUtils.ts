@@ -447,120 +447,7 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
 
   // Use Manhattan routing with rounded corners based on the routing type
   switch (routingType) {
-    case "horizontal-to-vertical": {
-      // Horizontal source (Left/Right), vertical target (Top/Bottom)
-      const cornerX = sourceOutPoint.x;
-      const cornerY = targetInPoint.y;
-
-      // Draw line to source offset point
-      context.lineTo(sourceOutPoint.x - sourceDirX * borderRadius, sourceOutPoint.y);
-
-      // First corner
-      context.quadraticCurveTo(
-        cornerX,
-        sourceOutPoint.y,
-        cornerX,
-        sourceOutPoint.y + (cornerY > sourceOutPoint.y ? borderRadius : -borderRadius),
-      );
-
-      // Draw line to next corner
-      context.lineTo(cornerX, cornerY - targetDirY * borderRadius);
-
-      // Second corner
-      context.quadraticCurveTo(
-        cornerX,
-        cornerY,
-        cornerX + (targetInPoint.x > cornerX ? borderRadius : -borderRadius),
-        cornerY,
-      );
-
-      // Draw line to target in point
-      context.lineTo(targetInPoint.x, targetInPoint.y);
-      break;
-    }
-
-    case "vertical-to-horizontal": {
-      // Vertical source (Top/Bottom), horizontal target (Left/Right)
-      const cornerX = targetInPoint.x;
-      const cornerY = sourceOutPoint.y;
-
-      // Draw line to source offset point
-      context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
-
-      // First corner
-      context.quadraticCurveTo(
-        sourceOutPoint.x,
-        cornerY,
-        sourceOutPoint.x + (cornerX > sourceOutPoint.x ? borderRadius : -borderRadius),
-        cornerY,
-      );
-
-      // Draw line to next corner
-      context.lineTo(cornerX - targetDirX * borderRadius, cornerY);
-
-      // Second corner
-      context.quadraticCurveTo(
-        cornerX,
-        cornerY,
-        cornerX,
-        cornerY + (targetInPoint.y > cornerY ? borderRadius : -borderRadius),
-      );
-
-      // Draw line to target in point
-      context.lineTo(targetInPoint.x, targetInPoint.y);
-      break;
-    }
-
-    case "horizontal-to-horizontal": {
-      // Horizontal to horizontal
-      const midY = (sourceOutPoint.y + targetInPoint.y) / 2;
-
-      // Draw line to first corner point
-      context.lineTo(sourceOutPoint.x - sourceDirX * borderRadius, sourceOutPoint.y);
-
-      // First corner
-      context.quadraticCurveTo(
-        sourceOutPoint.x,
-        sourceOutPoint.y,
-        sourceOutPoint.x,
-        sourceOutPoint.y + (midY > sourceOutPoint.y ? borderRadius : -borderRadius),
-      );
-
-      // Middle vertical segment
-      context.lineTo(sourceOutPoint.x, midY);
-
-      // Second corner
-      context.quadraticCurveTo(
-        sourceOutPoint.x,
-        midY,
-        sourceOutPoint.x + (targetInPoint.x > sourceOutPoint.x ? borderRadius : -borderRadius),
-        midY,
-      );
-
-      // Middle horizontal segment
-      context.lineTo(targetInPoint.x - (targetInPoint.x > sourceOutPoint.x ? borderRadius : -borderRadius), midY);
-
-      // Third corner
-      context.quadraticCurveTo(
-        targetInPoint.x,
-        midY,
-        targetInPoint.x,
-        midY + (targetInPoint.y > midY ? borderRadius : -borderRadius),
-      );
-
-      // Final vertical segment
-      context.lineTo(targetInPoint.x, targetInPoint.y - targetDirY * borderRadius);
-
-      // Fourth/last corner
-      context.quadraticCurveTo(
-        targetInPoint.x,
-        targetInPoint.y,
-        targetInPoint.x + (edge.end.x > targetInPoint.x ? borderRadius : -borderRadius),
-        targetInPoint.y,
-      );
-      break;
-    }
-
+    // GOOD ONE
     case "bottom-to-top": {
       // Target is underneath source
       if (targetInPoint.y + 13 > sourceOutPoint.y) {
@@ -712,7 +599,7 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
         // Check if midX is within 7 pixels of sourceOutPoint.x
         if (Math.abs(midX - sourceOutPoint.x) <= 7) {
           // Only draw the last line segment when midX is very close to sourceOutPoint.x
-          context.lineTo(targetInPoint.x, targetInPoint.y + gapFiller);
+          context.lineTo(targetInPoint.x, targetInPoint.y - gapFiller);
           return;
         }
 
@@ -735,8 +622,92 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
 
         // Last line segment (vertical to target)
         context.lineTo(targetInPoint.x, targetInPoint.y - gapFiller);
-        break;
       }
+      break;
+    }
+
+    case "top-to-left": {
+      // Top to left - source goes up, target comes from left
+      // Target is to the left of source
+      if (sourceOutPoint.x - 13 > targetInPoint.x) {
+        // Simple case: target is clearly to the left
+        const midY = (sourceOutPoint.y + targetInPoint.y) / 2;
+
+        // Check if midY is within 7 pixels of sourceOutPoint.y
+        if (Math.abs(midY - sourceOutPoint.y) <= 7) {
+          // Only draw the last line segment when midY is very close to sourceOutPoint.y
+          context.lineTo(targetInPoint.x + gapFiller, targetInPoint.y);
+          return;
+        }
+
+        // First line segment (vertical from source)
+        context.lineTo(sourceOutPoint.x, midY - borderRadius);
+
+        // First corner
+        context.quadraticCurveTo(
+          sourceOutPoint.x,
+          midY,
+          sourceOutPoint.x + (targetInPoint.x < sourceOutPoint.x ? -borderRadius : borderRadius),
+          midY,
+        );
+
+        // Middle horizontal segment
+        context.lineTo(targetInPoint.x + borderRadius, midY);
+
+        // Last corner
+        context.quadraticCurveTo(targetInPoint.x, midY, targetInPoint.x, midY + borderRadius);
+
+        // Last line segment (horizontal to target)
+        context.lineTo(targetInPoint.x + gapFiller, targetInPoint.y);
+      } else {
+        // Complex case: target is not clearly to the left (overlapping or very close)
+        const midX = (sourceOutPoint.x + targetInPoint.x) / 2;
+        const midY = (sourceOutPoint.y + targetInPoint.y) / 2;
+
+        // Check if midY is within 7 pixels of sourceOutPoint.y
+        if (Math.abs(midY - sourceOutPoint.y) <= 7) {
+          // Only draw the last line segment when midY is very close to sourceOutPoint.y
+          context.lineTo(targetInPoint.x + gapFiller, targetInPoint.y);
+          return;
+        }
+
+        // First line segment (vertical from source)
+        context.lineTo(sourceOutPoint.x, sourceOutPoint.y - sourceDirY * borderRadius);
+
+        // First corner
+        context.quadraticCurveTo(
+          sourceOutPoint.x,
+          sourceOutPoint.y,
+          sourceOutPoint.x + (midX < sourceOutPoint.x ? -borderRadius : borderRadius),
+          sourceOutPoint.y,
+        );
+
+        // Middle horizontal segment
+        context.lineTo(midX + (midX < sourceOutPoint.x ? borderRadius : -borderRadius), sourceOutPoint.y);
+
+        // Second corner
+        context.quadraticCurveTo(
+          midX,
+          sourceOutPoint.y,
+          midX,
+          sourceOutPoint.y + (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius),
+        );
+
+        // Middle vertical segment
+        context.lineTo(midX, targetInPoint.y - (targetInPoint.y > sourceOutPoint.y ? borderRadius : -borderRadius));
+
+        // Third corner
+        context.quadraticCurveTo(
+          midX,
+          targetInPoint.y,
+          midX + (targetInPoint.x < midX ? -borderRadius : borderRadius),
+          targetInPoint.y,
+        );
+
+        // Final horizontal segment
+        context.lineTo(targetInPoint.x + gapFiller, targetInPoint.y);
+      }
+      break;
     }
   }
 }
@@ -776,9 +747,9 @@ function getRoutingType(sourcePosition: HandlePosition, targetPosition: HandlePo
     case HandlePosition.Top:
       switch (targetPosition) {
         case HandlePosition.Left:
-          return "vertical-to-horizontal";
+          return "top-to-left";
         case HandlePosition.Right:
-          return "vertical-to-horizontal";
+          return "top-to-right";
         case HandlePosition.Top:
           return "vertical-to-vertical";
         case HandlePosition.Bottom:

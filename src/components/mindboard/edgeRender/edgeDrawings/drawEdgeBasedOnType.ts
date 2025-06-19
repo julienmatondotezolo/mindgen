@@ -77,7 +77,7 @@ export const drawEdgeBasedOnType = ({
         angle = (orientationDegrees * Math.PI) / 180;
       } else {
         // For curved edges, use the tangent at the endpoint by estimating from control points
-        if (edge.shape === EdgeShape.Curved) {
+        if (edge.shape === EdgeShape.Curved || edge.shape === EdgeShape.SmoothStep) {
           const targetPosition = edge.handleEnd || HandlePosition.Top;
           const [, , targetControlX, targetControlY] = [
             edge.start.x,
