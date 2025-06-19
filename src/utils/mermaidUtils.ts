@@ -6,6 +6,7 @@ import {
   Edge,
   EdgeShape,
   EdgeType,
+  EllipseLayer,
   HandlePosition,
   Layer,
   LayerType,
@@ -15,6 +16,7 @@ import {
 // Default colors for different node types
 const DEFAULT_COLORS = {
   RECTANGLE: { r: 77, g: 106, b: 255 },
+  ELLIPSE: { r: 245, g: 158, b: 11 },
   DIAMOND: { r: 124, g: 58, b: 237 },
   START: { r: 51, g: 204, b: 51 },
   END: { r: 255, g: 87, b: 51 },
@@ -99,8 +101,8 @@ function parseMermaidFlowchart(mermaidCode: string): {
       return { id: diamondMatch[1], text: diamondMatch[2], shape: "diamond" };
     }
 
-    // Circle: C(Text)
-    const circleMatch = nodeText.match(/^(\w+)\(([^)]+)\)$/);
+    // Circle: C((Text))
+    const circleMatch = nodeText.match(/^(\w+)\(\(([^)]+)\)\)$/);
 
     if (circleMatch) {
       return { id: circleMatch[1], text: circleMatch[2], shape: "circle" };
@@ -111,7 +113,7 @@ function parseMermaidFlowchart(mermaidCode: string): {
 
   for (const line of lines) {
     // Parse edges with various arrow syntaxes
-    // Handle: A --> B, A -->|Label| B, A[Text] --> B{Text2}
+    // Handle: A --> B, A -->|Label| B, A[Text] --> B{Text2}, A --> C((Text3))
     const arrowMatches = [
       // Pattern: anything -->|Label| anything
       line.match(/^(.+?)\s*-->\s*\|\s*([^|]+)\s*\|\s*(.+)$/),
@@ -405,52 +407,93 @@ export function mermaidToJson(mermaidCode: string): { layers: Layer[]; edges: Ed
     let width = 200;
     let height = 60;
 
-    if (node.shape === "diamond") {
-      fill = DEFAULT_COLORS.DIAMOND;
-      width = 200;
-      height = 200;
+    switch (node.shape) {
+      case "diamond": {
+        fill = DEFAULT_COLORS.DIAMOND;
+        width = 200;
+        height = 200;
 
-      const layer: DiamondLayer = {
-        type: LayerType.Diamond,
-        id: newId,
-        x: position.x,
-        y: position.y,
-        height,
-        width,
-        fill,
-        value: node.text,
-        valueStyle: undefined,
-        borderColor: undefined,
-        borderWidth: undefined,
-        borderType: undefined,
-      };
+        const diamondLayer: DiamondLayer = {
+          type: LayerType.Diamond,
+          id: newId,
+          x: position.x,
+          y: position.y,
+          height,
+          width,
+          fill,
+          value: node.text,
+          valueStyle: undefined,
+          borderColor: undefined,
+          borderWidth: undefined,
+          borderType: undefined,
+        };
 
-      layers.push(layer);
-    } else {
-      if (node.text.toLowerCase().includes("start") || node.text.toLowerCase().includes("begin")) {
-        fill = DEFAULT_COLORS.START;
-      } else if (node.text.toLowerCase().includes("end")) {
-        fill = DEFAULT_COLORS.END;
-      } else {
-        fill = DEFAULT_COLORS.RECTANGLE;
+        layers.push(diamondLayer);
+        break;
       }
 
-      const layer: RectangleLayer = {
-        type: LayerType.Rectangle,
-        id: newId,
-        x: position.x,
-        y: position.y,
-        height,
-        width,
-        fill,
-        value: node.text,
-        valueStyle: undefined,
-        borderColor: undefined,
-        borderWidth: undefined,
-        borderType: undefined,
-      };
+      case "circle": {
+        // Set color based on text content
+        if (node.text.toLowerCase().includes("start") || node.text.toLowerCase().includes("begin")) {
+          fill = DEFAULT_COLORS.START;
+        } else if (node.text.toLowerCase().includes("end") || node.text.toLowerCase().includes("stop")) {
+          fill = DEFAULT_COLORS.END;
+        } else {
+          fill = DEFAULT_COLORS.ELLIPSE;
+        }
 
-      layers.push(layer);
+        // Make circles more square-like
+        width = 180;
+        height = 180;
+
+        const ellipseLayer: EllipseLayer = {
+          type: LayerType.Ellipse,
+          id: newId,
+          x: position.x,
+          y: position.y,
+          height,
+          width,
+          fill,
+          value: node.text,
+          valueStyle: undefined,
+          borderColor: undefined,
+          borderWidth: undefined,
+          borderType: undefined,
+        };
+
+        layers.push(ellipseLayer);
+        break;
+      }
+
+      case "rectangle":
+      default: {
+        // Set color based on text content
+        if (node.text.toLowerCase().includes("start") || node.text.toLowerCase().includes("begin")) {
+          fill = DEFAULT_COLORS.START;
+        } else if (node.text.toLowerCase().includes("end") || node.text.toLowerCase().includes("stop")) {
+          fill = DEFAULT_COLORS.END;
+        } else {
+          fill = DEFAULT_COLORS.RECTANGLE;
+        }
+
+        const rectangleLayer: RectangleLayer = {
+          type: LayerType.Rectangle,
+          id: newId,
+          x: position.x,
+          y: position.y,
+          height,
+          width,
+          fill,
+          value: node.text,
+          valueStyle: undefined,
+          borderColor: undefined,
+          borderWidth: undefined,
+          borderType: undefined,
+        };
+
+        layers.push(rectangleLayer);
+        break;
+      }
     }
   }
 
