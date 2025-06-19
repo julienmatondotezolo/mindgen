@@ -1,6 +1,5 @@
 export * from "./canvasUtils";
 export * from "./checkPermission";
-export * from "./convertToMermaid";
 export * from "./edgeUtils";
 export * from "./emptyMindMapObject";
 export * from "./exportMindmap";
@@ -9,6 +8,7 @@ export * from "./formatDate";
 export * from "./handleStreamMindmapData";
 export * from "./importMindmap";
 export * from "./layerUtils";
+export * from "./mermaidUtils";
 export * from "./promiseReader";
 export * from "./refreshPage";
 export * from "./scroll";

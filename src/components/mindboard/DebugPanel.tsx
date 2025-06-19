@@ -1,6 +1,10 @@
 import React from "react";
+import { useRecoilValue } from "recoil";
 
 import { CanvasMode, LockedState } from "@/_types/canvas";
+import { edgesAtomState, layerAtomState } from "@/state";
+
+import { DebugEditor } from "./DebugEditor";
 
 // Debug Panel Component
 export const DebugPanel = ({
@@ -20,6 +24,9 @@ export const DebugPanel = ({
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const layers = useRecoilValue(layerAtomState);
+  const edges = useRecoilValue(edgesAtomState);
+
   const toggleOpen = () => {
     setIsOpen(!isOpen);
   };
@@ -77,6 +84,9 @@ export const DebugPanel = ({
               {JSON.stringify(lockedElements, null, 2)}
             </pre>
           </div>
+
+          {/* Debug Editor */}
+          <DebugEditor layers={layers} edges={edges} />
         </div>
       )}
     </div>

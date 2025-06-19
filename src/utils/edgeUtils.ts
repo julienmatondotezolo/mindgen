@@ -561,7 +561,7 @@ export function drawEdgeStepLine({ edge, context }: { edge: Edge; context: Canva
       break;
     }
 
-    case "vertical-to-vertical": {
+    case "bottom-to-top": {
       // Target is underneath source
       if (targetInPoint.y + 13 > sourceOutPoint.y) {
         // Constant
@@ -794,7 +794,7 @@ function getRoutingType(sourcePosition: HandlePosition, targetPosition: HandlePo
         case HandlePosition.Right:
           return "vertical-to-horizontal";
         case HandlePosition.Top:
-          return "vertical-to-vertical";
+          return "bottom-to-top";
         case HandlePosition.Bottom:
           return "vertical-to-vertical";
         default:

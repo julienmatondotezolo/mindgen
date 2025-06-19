@@ -215,6 +215,7 @@ const MindBoard = ({ boardData }: { boardData: BoardDataProps }) => {
 
   const handleMouseMove = useCallback(
     async (e: React.PointerEvent<HTMLCanvasElement>) => {
+      // console.log("e:", e.movementX, e.movementY);
       const point = canvasPointFromEvent(e, camera, canvasRef.current);
       // Find layers at current mouse position
       const layersAtPoint = findLayerAtPoint(point);

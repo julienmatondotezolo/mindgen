@@ -5,7 +5,6 @@ export const drawEdgeBasedOnType = ({
   edge,
   context,
   canvasState,
-  camera,
   activeEdgeId,
 }: {
   edge: Edge;
@@ -21,7 +20,7 @@ export const drawEdgeBasedOnType = ({
 
   // Save the current context state to restore it later
   context.save();
-  
+
   // Set line dash pattern for this function only
   if (edge.type === EdgeType.Dashed) {
     context.setLineDash([4, 12]); // Dashed line pattern
@@ -116,7 +115,7 @@ export const drawEdgeBasedOnType = ({
     context.fillStyle = colorStyleOnHover;
     context.fill();
   }
-  
+
   // Restore the context state to what it was before (resets the line dash pattern)
   context.restore();
 };

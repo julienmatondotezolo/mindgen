@@ -631,7 +631,7 @@ export const isPointInSelectionTool = ({
       isInSelectionTool: true,
       // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
       toolingMode: canvasState.toolingModeState,
-      toolingModeBorderType: currentEdge?.type === EdgeType.Dashed ? "SOLID" : "DASHED" as LayerBorderType | EdgeType,
+      toolingModeBorderType: currentEdge?.type === EdgeType.Dashed ? "SOLID" : ("DASHED" as LayerBorderType | EdgeType),
       toolingModeColor: undefined,
     };
   }
@@ -904,10 +904,11 @@ export const drawSelectionTool = ({
         active:
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           (canvasState.toolingMode === "EDGE_BORDER" &&
-          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-          canvasState.toolingModeBorderWidth === 2 &&
-          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-          !canvasState.toolingModeBorderType) || (selectedEdges.length > 0 && selectedEdges[0].thickness === 2),
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            canvasState.toolingModeBorderWidth === 2 &&
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            !canvasState.toolingModeBorderType) ||
+          (selectedEdges.length > 0 && selectedEdges[0].thickness === 2),
       });
       drawBorderIcon({
         context,
@@ -918,10 +919,11 @@ export const drawSelectionTool = ({
         active:
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           (canvasState.toolingMode === "EDGE_BORDER" &&
-          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-          canvasState.toolingModeBorderWidth === 4 &&
-          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-          !canvasState.toolingModeBorderType) || (selectedEdges.length > 0 && selectedEdges[0].thickness === 4),
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            canvasState.toolingModeBorderWidth === 4 &&
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            !canvasState.toolingModeBorderType) ||
+          (selectedEdges.length > 0 && selectedEdges[0].thickness === 4),
       });
       drawBorderIcon({
         context,
@@ -933,8 +935,9 @@ export const drawSelectionTool = ({
         active:
           // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
           (canvasState.toolingMode === "EDGE_BORDER" &&
-          // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
-          canvasState.toolingModeBorderType === "DASHED") || (selectedEdges.length > 0 && selectedEdges[0].type === EdgeType.Dashed),
+            // @ts-ignore - handleInfo property exists on Edge mode but TypeScript doesn't know
+            canvasState.toolingModeBorderType === "DASHED") ||
+          (selectedEdges.length > 0 && selectedEdges[0].type === EdgeType.Dashed),
       });
     }
 
