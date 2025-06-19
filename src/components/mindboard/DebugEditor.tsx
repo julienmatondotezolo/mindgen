@@ -17,19 +17,21 @@ export const DebugEditor: React.FC<DebugEditorProps> = ({ layers, edges }) => {
   const setEdges = useSetRecoilState(edgesAtomState);
 
   useEffect(() => {
-    const result = mermaidToJson(mermaidCode);
+    // const result = mermaidToJson(mermaidCode);
 
-    if (!result) {
-      return;
-    }
-
+    // if (result) {
+    //   setJsonCode(JSON.stringify({ layers: result.layers, edges: result.edges }, null, 2));
+    //   return;
+    // }
     // Update JSON code
-    setJsonCode(JSON.stringify({ layers: result.layers, edges: result.edges }, null, 2));
-  }, [layers, edges, mermaidCode]);
+    setJsonCode(JSON.stringify({ layers, edges }, null, 2));
+  }, [layers, edges]);
 
   const handleSubmit = () => {
     try {
-      const parsedData = JSON.parse(jsonCode);
+      const result = mermaidToJson(mermaidCode);
+      const mermaidParseToJSON = JSON.stringify({ layers: result.layers, edges: result.edges }, null, 2);
+      const parsedData = JSON.parse(mermaidParseToJSON);
 
       if (parsedData.layers && parsedData.edges) {
         setLayers(parsedData.layers);
