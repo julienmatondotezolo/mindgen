@@ -24,6 +24,9 @@ const DEFAULT_COLORS = {
 const DEFAULT_EDGE_COLOR = { r: 180, g: 191, b: 204 };
 const DEFAULT_HOVER_COLOR = { r: 77, g: 106, b: 255 };
 
+// Flowchart direction types
+type FlowchartDirection = "TD" | "TB" | "LR" | "RL" | "BT";
+
 // Interface for parsed mermaid nodes
 interface MermaidNode {
   id: string;
@@ -39,9 +42,36 @@ interface MermaidEdge {
 }
 
 /**
+ * Parses the flowchart direction from the mermaid code
+ */
+function parseFlowchartDirection(mermaidCode: string): FlowchartDirection {
+  const lines = mermaidCode.split("\n").map((line) => line.trim());
+
+  for (const line of lines) {
+    const match = line.match(/^flowchart\s+(TD|TB|LR|RL|BT)$/i);
+
+    if (match) {
+      return match[1].toUpperCase() as FlowchartDirection;
+    }
+    // Handle case where direction is missing (default to TD)
+    if (line.match(/^flowchart$/i)) {
+      return "TD";
+    }
+  }
+
+  return "TD"; // Default direction
+}
+
+/**
  * Parses a Mermaid flowchart string and extracts nodes and edges
  */
-function parseMermaidFlowchart(mermaidCode: string): { nodes: MermaidNode[]; edges: MermaidEdge[] } {
+function parseMermaidFlowchart(mermaidCode: string): {
+  nodes: MermaidNode[];
+  edges: MermaidEdge[];
+  direction: FlowchartDirection;
+} {
+  const direction = parseFlowchartDirection(mermaidCode);
+
   const lines = mermaidCode
     .split("\n")
     .map((line) => line.trim())
@@ -161,13 +191,17 @@ function parseMermaidFlowchart(mermaidCode: string): { nodes: MermaidNode[]; edg
     }
   }
 
-  return { nodes, edges };
+  return { nodes, edges, direction };
 }
 
 /**
- * Calculates positions for nodes in a basic top-down layout
+ * Calculates positions for nodes based on flowchart direction
  */
-function calculateNodePositions(nodes: MermaidNode[], edges: MermaidEdge[]): Map<string, { x: number; y: number }> {
+function calculateNodePositions(
+  nodes: MermaidNode[],
+  edges: MermaidEdge[],
+  direction: FlowchartDirection = "TD",
+): Map<string, { x: number; y: number }> {
   const positions = new Map<string, { x: number; y: number }>();
 
   // Create adjacency lists
@@ -230,17 +264,49 @@ function calculateNodePositions(nodes: MermaidNode[], edges: MermaidEdge[]): Map
     }
   }
 
-  // Calculate positions
-  const layerHeight = 300;
-  const nodeSpacing = 280;
+  // Calculate positions based on direction
+  const spacing = 280; // Distance between nodes
+  const layerSpacing = 300; // Distance between layers
 
   for (let layerIndex = 0; layerIndex < layers.length; layerIndex++) {
     const layer = layers[layerIndex];
-    const y = layerIndex * layerHeight - ((layers.length - 1) * layerHeight) / 2;
 
     for (let nodeIndex = 0; nodeIndex < layer.length; nodeIndex++) {
       const nodeId = layer[nodeIndex];
-      const x = (nodeIndex - (layer.length - 1) / 2) * nodeSpacing;
+      let x: number, y: number;
+
+      // Calculate positions based on direction
+      switch (direction) {
+        case "TD":
+        case "TB":
+          // Top to Bottom (default)
+          x = (nodeIndex - (layer.length - 1) / 2) * spacing + 264;
+          y = layerIndex * layerSpacing - 464;
+          break;
+
+        case "LR":
+          // Left to Right
+          x = layerIndex * layerSpacing - 464;
+          y = (nodeIndex - (layer.length - 1) / 2) * spacing + 0;
+          break;
+
+        case "RL":
+          // Right to Left
+          x = -layerIndex * layerSpacing + 464;
+          y = (nodeIndex - (layer.length - 1) / 2) * spacing + 0;
+          break;
+
+        case "BT":
+          // Bottom to Top
+          x = (nodeIndex - (layer.length - 1) / 2) * spacing + 264;
+          y = -layerIndex * layerSpacing + 464;
+          break;
+
+        default:
+          // Fallback to TD
+          x = (nodeIndex - (layer.length - 1) / 2) * spacing + 264;
+          y = layerIndex * layerSpacing - 464;
+      }
 
       positions.set(nodeId, { x, y });
     }
@@ -250,11 +316,79 @@ function calculateNodePositions(nodes: MermaidNode[], edges: MermaidEdge[]): Map
 }
 
 /**
+ * Determines handle positions based on flowchart direction and node positions
+ */
+function getOptimalHandlePositions(
+  fromLayer: Layer,
+  toLayer: Layer,
+  direction: FlowchartDirection,
+): { handleStart: HandlePosition; handleEnd: HandlePosition } {
+  const fromCenterX = fromLayer.x + fromLayer.width / 2;
+  const fromCenterY = fromLayer.y + fromLayer.height / 2;
+  const toCenterX = toLayer.x + toLayer.width / 2;
+  const toCenterY = toLayer.y + toLayer.height / 2;
+
+  // Default handle positions based on direction
+  switch (direction) {
+    case "TD":
+    case "TB":
+      // Top to Bottom - prefer vertical connections
+      if (fromCenterY < toCenterY) {
+        return { handleStart: HandlePosition.Bottom, handleEnd: HandlePosition.Top };
+      } else {
+        return { handleStart: HandlePosition.Top, handleEnd: HandlePosition.Bottom };
+      }
+
+    case "LR":
+      // Left to Right - prefer horizontal connections
+      if (fromCenterX < toCenterX) {
+        return { handleStart: HandlePosition.Right, handleEnd: HandlePosition.Left };
+      } else {
+        return { handleStart: HandlePosition.Left, handleEnd: HandlePosition.Right };
+      }
+
+    case "RL":
+      // Right to Left - prefer horizontal connections (reversed)
+      if (fromCenterX > toCenterX) {
+        return { handleStart: HandlePosition.Left, handleEnd: HandlePosition.Right };
+      } else {
+        return { handleStart: HandlePosition.Right, handleEnd: HandlePosition.Left };
+      }
+
+    case "BT":
+      // Bottom to Top - prefer vertical connections (reversed)
+      if (fromCenterY > toCenterY) {
+        return { handleStart: HandlePosition.Top, handleEnd: HandlePosition.Bottom };
+      } else {
+        return { handleStart: HandlePosition.Bottom, handleEnd: HandlePosition.Top };
+      }
+
+    default:
+      // Fallback to auto-detection
+      if (Math.abs(fromCenterX - toCenterX) > Math.abs(fromCenterY - toCenterY)) {
+        // Horizontal connection
+        if (fromCenterX < toCenterX) {
+          return { handleStart: HandlePosition.Right, handleEnd: HandlePosition.Left };
+        } else {
+          return { handleStart: HandlePosition.Left, handleEnd: HandlePosition.Right };
+        }
+      } else {
+        // Vertical connection
+        if (fromCenterY < toCenterY) {
+          return { handleStart: HandlePosition.Bottom, handleEnd: HandlePosition.Top };
+        } else {
+          return { handleStart: HandlePosition.Top, handleEnd: HandlePosition.Bottom };
+        }
+      }
+  }
+}
+
+/**
  * Converts a Mermaid flowchart to the specified JSON format
  */
 export function mermaidToJson(mermaidCode: string): { layers: Layer[]; edges: Edge[] } {
-  const { nodes: mermaidNodes, edges: mermaidEdges } = parseMermaidFlowchart(mermaidCode);
-  const positions = calculateNodePositions(mermaidNodes, mermaidEdges);
+  const { nodes: mermaidNodes, edges: mermaidEdges, direction } = parseMermaidFlowchart(mermaidCode);
+  const positions = calculateNodePositions(mermaidNodes, mermaidEdges, direction);
 
   const layers: Layer[] = [];
   const edges: Edge[] = [];
@@ -330,35 +464,8 @@ export function mermaidToJson(mermaidCode: string): { layers: Layer[]; edges: Ed
 
     if (!fromLayer || !toLayer) continue;
 
-    // Calculate edge start and end points
-    const fromCenterX = fromLayer.x + fromLayer.width / 2;
-    const fromCenterY = fromLayer.y + fromLayer.height / 2;
-    const toCenterX = toLayer.x + toLayer.width / 2;
-    const toCenterY = toLayer.y + toLayer.height / 2;
-
-    // Determine handle positions based on relative positions
-    let handleStart: HandlePosition;
-    let handleEnd: HandlePosition;
-
-    if (Math.abs(fromCenterX - toCenterX) > Math.abs(fromCenterY - toCenterY)) {
-      // Horizontal connection
-      if (fromCenterX < toCenterX) {
-        handleStart = HandlePosition.Right;
-        handleEnd = HandlePosition.Left;
-      } else {
-        handleStart = HandlePosition.Left;
-        handleEnd = HandlePosition.Right;
-      }
-    } else {
-      // Vertical connection
-      if (fromCenterY < toCenterY) {
-        handleStart = HandlePosition.Bottom;
-        handleEnd = HandlePosition.Top;
-      } else {
-        handleStart = HandlePosition.Top;
-        handleEnd = HandlePosition.Bottom;
-      }
-    }
+    // Get optimal handle positions based on direction
+    const { handleStart, handleEnd } = getOptimalHandlePositions(fromLayer, toLayer, direction);
 
     // Calculate exact connection points
     const startPoint = getConnectionPoint(fromLayer, handleStart);
