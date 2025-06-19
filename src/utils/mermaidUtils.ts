@@ -13,6 +13,8 @@ import {
   RectangleLayer,
 } from "@/_types/canvas";
 
+import { getHandlePosition } from "./layerUtils";
+
 // Default colors for different node types
 const DEFAULT_COLORS = {
   RECTANGLE: { r: 77, g: 106, b: 255 },
@@ -533,7 +535,7 @@ export function mermaidToJson(mermaidCode: string): { layers: Layer[]; edges: Ed
       thickness: 2,
       orientation: "auto",
       type: EdgeType.Solid,
-      shape: EdgeShape.Curved,
+      shape: EdgeShape.Line,
       label: mermaidEdge.label || "",
     };
 
@@ -547,6 +549,16 @@ export function mermaidToJson(mermaidCode: string): { layers: Layer[]; edges: Ed
  * Helper function to get connection point for a layer at a specific handle position
  */
 function getConnectionPoint(layer: Layer, position: HandlePosition): { x: number; y: number } {
+  const { handlePositions } = getHandlePosition(layer);
+
+  // Find the handle position that matches the requested position
+  const handle = handlePositions.find((h) => h.position === position);
+
+  if (handle) {
+    return { x: handle.x, y: handle.y };
+  }
+
+  // Fallback to the original calculation if handle not found
   switch (position) {
     case HandlePosition.Top:
       return { x: layer.x + layer.width / 2, y: layer.y };
